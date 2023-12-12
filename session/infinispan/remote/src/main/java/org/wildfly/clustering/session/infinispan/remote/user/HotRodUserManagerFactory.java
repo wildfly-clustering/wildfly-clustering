@@ -38,11 +38,11 @@ public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, 
 	}
 
 	@Override
-	public <L> UserManager<C, L, D, S, TransactionBatch> createUserManager(UserManagerConfiguration<L, TransactionBatch> configuration) {
+	public <T> UserManager<C, T, D, S, TransactionBatch> createUserManager(UserManagerConfiguration<T, TransactionBatch> configuration) {
 		Marshaller<C, MarshalledValue<C, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller()));
-		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, L>, C, L> contextFactory = new HotRodUserContextFactory<>(this.configuration, marshaller, configuration.getUserContextFactory());
+		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T> contextFactory = new HotRodUserContextFactory<>(this.configuration, marshaller, configuration.getTransientContextFactory());
 		UserSessionsFactory<Map<D, S>, D, S> sessionsFactory = new HotRodUserSessionsFactory<>(this.configuration);
-		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, L>, C, L, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory);
+		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory);
 		IdentifierFactory<String> identifierFactory = new SimpleIdentifierFactory<>(configuration.getIdentifierFactory());
 		return new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatcher());
 	}

@@ -5,8 +5,7 @@
 
 package org.wildfly.clustering.session.cache.metadata.fine;
 
-import java.util.function.Supplier;
-
+import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.cache.Contextual;
 
 /**
@@ -19,7 +18,7 @@ public interface SessionMetaDataEntry<C> extends Contextual<C> {
 	SessionAccessMetaDataEntry getAccessMetaDataEntry();
 
 	@Override
-	default C getContext(Supplier<C> factory) {
-		return this.getCreationMetaDataEntry().getContext(factory);
+	default Supplied<C> getContext() {
+		return this.getCreationMetaDataEntry().getContext();
 	}
 }

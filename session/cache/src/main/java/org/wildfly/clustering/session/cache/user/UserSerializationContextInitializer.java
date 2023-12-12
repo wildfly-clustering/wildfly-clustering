@@ -17,6 +17,6 @@ public class UserSerializationContextInitializer extends AbstractSerializationCo
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new FunctionalScalarMarshaller<>(UserContextEntry.class, Scalar.ANY, UserContextEntry::getContext, UserContextEntry::new));
+		context.registerMarshaller(new FunctionalScalarMarshaller<>(UserContextEntry.class, Scalar.ANY, UserContextEntry::getPersistentContext, UserContextEntry::new));
 	}
 }

@@ -17,16 +17,21 @@ import org.wildfly.clustering.session.user.User;
 /**
  * Creates an {@link User} from its cache storage value.
  * @author Paul Ferraro
- * @param <V> the cache value type
+ * @param <CV> the user context value type
+ * @param <C> the persistent context type
+ * @param <T> the transient context type
+ * @param <SV> the user sessions value type
+ * @param <D> the deployment type
+ * @param <S> the session type
  */
-public interface UserFactory<CV, C, L, SV, D, S> extends BiCreator<String, CV, SV, C>, BiLocator<String, CV, SV>, Remover<String> {
+public interface UserFactory<CV, C, T, SV, D, S> extends BiCreator<String, CV, SV, C>, BiLocator<String, CV, SV>, Remover<String> {
 
-	UserContextFactory<CV, C, L> getUserContextFactory();
+	UserContextFactory<CV, C, T> getUserContextFactory();
 	UserSessionsFactory<SV, D, S> getUserSessionsFactory();
 
-	User<C, L, D, S> createUser(String id, Map.Entry<CV, SV> value);
+	User<C, T, D, S> createUser(String id, Map.Entry<CV, SV> value);
 
-	default CompletionStage<User<C, L, D, S>> createUserAsync(String id, Map.Entry<CompletionStage<CV>, CompletionStage<SV>> entry) {
+	default CompletionStage<User<C, T, D, S>> createUserAsync(String id, Map.Entry<CompletionStage<CV>, CompletionStage<SV>> entry) {
 		return entry.getKey().thenCombine(entry.getValue(), AbstractMap.SimpleImmutableEntry::new).thenApply(value -> this.createUser(id, value));
 	}
 

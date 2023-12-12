@@ -5,12 +5,14 @@
 
 package org.wildfly.clustering.session.cache.user;
 
-import org.wildfly.clustering.session.cache.Contextual;
+import org.wildfly.clustering.server.util.Supplied;
 
 /**
  * @author Paul Ferraro
  */
-public interface UserContext<C, L> extends Contextual<L> {
+public interface UserContext<C, T> {
 
-	C getContext();
+	C getPersistentContext();
+
+	Supplied<T> getTransientContext();
 }

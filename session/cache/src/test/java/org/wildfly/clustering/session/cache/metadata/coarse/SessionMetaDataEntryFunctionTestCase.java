@@ -23,8 +23,8 @@ public class SessionMetaDataEntryFunctionTestCase extends AbstractSessionMetaDat
 	@Override
 	public void accept(ContextualSessionMetaDataEntry<Object> entry) {
 		Object context = UUID.randomUUID();
-		assertSame(context, entry.getContext(Functions.constantSupplier(context)));
-		assertSame(context, entry.getContext(Functions.constantSupplier(null)));
+		assertSame(context, entry.getContext().get(Functions.constantSupplier(context)));
+		assertSame(context, entry.getContext().get(Functions.constantSupplier(null)));
 
 		MutableSessionMetaDataOffsetValues delta = MutableSessionMetaDataOffsetValues.from(entry);
 
@@ -42,6 +42,6 @@ public class SessionMetaDataEntryFunctionTestCase extends AbstractSessionMetaDat
 
 		this.verifyUpdatedState(resultEntry);
 
-		assertSame(context, resultEntry.getContext(Functions.constantSupplier(null)));
+		assertSame(context, resultEntry.getContext().get(Functions.constantSupplier(null)));
 	}
 }

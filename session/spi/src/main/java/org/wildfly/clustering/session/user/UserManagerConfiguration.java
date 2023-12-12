@@ -12,10 +12,12 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.manager.ManagerConfiguration;
 
 /**
+ * Encapsulates the configuration of a user manager.
  * @author Paul Ferraro
- * @param <L> local context type
+ * @param <T> the transient context type
+ * @param <B> the batch type
  */
-public interface UserManagerConfiguration<L, B extends Batch> extends ManagerConfiguration<String, B> {
+public interface UserManagerConfiguration<T, B extends Batch> extends ManagerConfiguration<String, B> {
 	ByteBufferMarshaller getMarshaller();
-	Supplier<L> getUserContextFactory();
+	Supplier<T> getTransientContextFactory();
 }

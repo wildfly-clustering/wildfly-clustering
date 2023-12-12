@@ -23,8 +23,8 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 	@Override
 	public void accept(SessionCreationMetaDataEntry<Object> entry) {
 		Object context = UUID.randomUUID();
-		assertSame(context, entry.getContext(Functions.constantSupplier(context)));
-		assertSame(context, entry.getContext(Functions.constantSupplier(null)));
+		assertSame(context, entry.getContext().get(Functions.constantSupplier(context)));
+		assertSame(context, entry.getContext().get(Functions.constantSupplier(null)));
 
 		OffsetValue<Duration> timeoutOffset = OffsetValue.from(entry.getTimeout());
 
@@ -42,6 +42,6 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 
 		this.verifyUpdatedState(resultEntry);
 
-		assertSame(context, resultEntry.getContext(Functions.constantSupplier(null)));
+		assertSame(context, resultEntry.getContext().get(Functions.constantSupplier(null)));
 	}
 }

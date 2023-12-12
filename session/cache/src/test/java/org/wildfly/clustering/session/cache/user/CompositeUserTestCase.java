@@ -30,7 +30,7 @@ public class CompositeUserTestCase {
 
 	@Test
 	public void getContext() {
-		assertSame(this.context, this.user.getContext());
+		assertSame(this.context, this.user.getPersistentContext());
 	}
 
 	@Test
@@ -47,6 +47,6 @@ public class CompositeUserTestCase {
 
 	@Test
 	public void getLocalContext() {
-		assertSame(this.localContext, this.user.getLocalContext());
+		assertSame(this.localContext, this.user.getTransientContext());
 	}
 }

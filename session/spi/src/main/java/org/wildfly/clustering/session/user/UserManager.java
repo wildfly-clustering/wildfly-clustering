@@ -8,26 +8,27 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.manager.Manager;
 
 /**
- * The SSO equivalent of a session manager.
+ * A user manager.
  * @author Paul Ferraro
  * @param <C> the user context type
- * @param <L> the local context type
+ * @param <T> the transient user context type
  * @param <D> the deployment identifier type
  * @param <S> the session identifier type
  * @param <B> the batch type
  */
-public interface UserManager<C, L, D, S, B extends Batch> extends Manager<String, B> {
+public interface UserManager<C, T, D, S, B extends Batch> extends Manager<String, B> {
 	/**
-	 * Creates a new single sign on entry.
-	 * @param ssoId a unique SSO identifier
-	 * @return a new SSO.
+	 * Creates a new user with the specified identifier and context.
+	 * @param id a unique user identifier
+	 * @param context the user context
+	 * @return a new user
 	 */
-	User<C, L, D, S> createUser(String id, C context);
+	User<C, T, D, S> createUser(String id, C context);
 
 	/**
-	 * Returns the single sign on entry identified by the specified identifier.
-	 * @param ssoId a unique SSO identifier
-	 * @return an existing SSO, or null, if no SSO was found
+	 * Returns the user identified by the specified identifier.
+	 * @param id a unique user identifier
+	 * @return an existing user, or null, if no user exists for the specified identifier.
 	 */
-	User<C, L, D, S> findUser(String id);
+	User<C, T, D, S> findUser(String id);
 }

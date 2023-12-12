@@ -37,7 +37,7 @@ public abstract class AbstractSessionMetaDataEntryTestCase implements Consumer<C
 		assertEquals(this.created, entry.getLastAccessStartTime().get());
 		assertEquals(this.created, entry.getLastAccessEndTime().get());
 		assertEquals(Duration.ZERO, entry.getTimeout());
-		assertNull(entry.getContext(() -> null));
+		assertNull(entry.getContext().get(() -> null));
 
 		// Apply original state
 		entry.getLastAccessStartTime().set(this.originalLastAccessStartTime);

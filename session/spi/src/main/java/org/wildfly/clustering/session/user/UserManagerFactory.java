@@ -7,18 +7,18 @@ package org.wildfly.clustering.session.user;
 import org.wildfly.clustering.cache.batch.Batch;
 
 /**
- * Factory for creating SSO manager instances.
+ * Factory for creating user manager instances.
  * @param <C> the user context type
- * @param <D> deployment type
- * @param <S> session type
- * @param <B> batch type
+ * @param <D> the deployment type
+ * @param <S> the session type
+ * @param <B> thge batch type
  */
 public interface UserManagerFactory<C, D, S, B extends Batch> {
 	/**
 	 * Creates a new user manager using the specified configuration.
-	 * @param <L> local context type
-	 * @param config a user manager configuration
+	 * @param <T> the transient user context type
+	 * @param configuration a user manager configuration
 	 * @return a new user manager
 	 */
-	<L> UserManager<C, L, D, S, B> createUserManager(UserManagerConfiguration<L, B> config);
+	<T> UserManager<C, T, D, S, B> createUserManager(UserManagerConfiguration<T, B> configuration);
 }

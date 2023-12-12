@@ -13,26 +13,36 @@ import org.wildfly.clustering.server.manager.IdentifierFactory;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
-public class DefaultUserManager<CV, C, L, SV, D, S, B extends Batch> implements UserManager<C, L, D, S, B> {
+/**
+ * A default user manager implementation that delegates to a user factory.
+ * @param <CV> the user context value type
+ * @param <C> the persistent context type
+ * @param <T> the transient context type
+ * @param <SV> the user sessions value type
+ * @param <D> the deployment type
+ * @param <S> the session type
+ * @param <B> the batch type
+ */
+public class DefaultUserManager<CV, C, T, SV, D, S, B extends Batch> implements UserManager<C, T, D, S, B> {
 
-	private final UserFactory<CV, C, L, SV, D, S> factory;
+	private final UserFactory<CV, C, T, SV, D, S> factory;
 	private final Batcher<B> batcher;
 	private final IdentifierFactory<String> identifierFactory;
 
-	public DefaultUserManager(UserFactory<CV, C, L, SV, D, S> factory, IdentifierFactory<String> identifierFactory, Batcher<B> batcher) {
+	public DefaultUserManager(UserFactory<CV, C, T, SV, D, S> factory, IdentifierFactory<String> identifierFactory, Batcher<B> batcher) {
 		this.factory = factory;
 		this.batcher = batcher;
 		this.identifierFactory = identifierFactory;
 	}
 
 	@Override
-	public User<C, L, D, S> createUser(String id, C context) {
+	public User<C, T, D, S> createUser(String id, C context) {
 		Map.Entry<CV, SV> value = this.factory.createValue(id, context);
 		return this.factory.createUser(id, value);
 	}
 
 	@Override
-	public User<C, L, D, S> findUser(String id) {
+	public User<C, T, D, S> findUser(String id) {
 		Map.Entry<CV, SV> value = this.factory.findValue(id);
 		return (value != null) ? this.factory.createUser(id, value) : null;
 	}
