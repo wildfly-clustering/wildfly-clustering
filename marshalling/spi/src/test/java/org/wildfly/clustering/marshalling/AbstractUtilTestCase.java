@@ -104,8 +104,9 @@ public abstract class AbstractUtilTestCase {
 	@Test
 	public void testCurrency() throws IOException {
 		MarshallingTester<Currency> tester = this.factory.createTester();
-		tester.test(Currency.getInstance(Locale.getDefault()));
-		tester.test(Currency.getInstance(Locale.UK));
+		for (Currency currency : Currency.getAvailableCurrencies()) {
+			tester.test(currency);
+		}
 	}
 
 	@Test
@@ -190,9 +191,9 @@ public abstract class AbstractUtilTestCase {
 	@Test
 	public void testLocale() throws IOException {
 		MarshallingTester<Locale> tester = this.factory.createTester();
-		tester.test(Locale.getDefault());
-		tester.test(Locale.ENGLISH);
-		tester.test(Locale.CANADA_FRENCH);
+		for (Locale locale : Locale.getAvailableLocales()) {
+			tester.test(locale);
+		}
 	}
 
 	@Test
