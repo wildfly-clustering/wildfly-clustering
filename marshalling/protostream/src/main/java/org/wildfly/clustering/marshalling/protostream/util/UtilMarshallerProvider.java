@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -51,7 +50,7 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
 	ARRAY_LIST(new CollectionMarshaller<>(ArrayList::new)),
 	BIT_SET(new FunctionalScalarMarshaller<>(Scalar.BYTE_ARRAY.cast(byte[].class), BitSet::new, BitSet::isEmpty, BitSet::toByteArray, BitSet::valueOf)),
 	CALENDAR(new CalendarMarshaller()),
-	CURRENCY(new FunctionalScalarMarshaller<>(Currency.class, Scalar.STRING.cast(String.class), Functions.constantSupplier(getDefaultCurrency()), Currency::getCurrencyCode, Currency::getInstance)),
+	CURRENCY(new FunctionalScalarMarshaller<>(Currency.class, Scalar.STRING.cast(String.class), Currency::getCurrencyCode, Currency::getInstance)),
 	DATE(new FunctionalMarshaller<>(Date.class, Instant.class, Date::toInstant, Date::from)),
 	EMPTY_LIST(new ValueMarshaller<>(Collections.emptyList())),
 	EMPTY_MAP(new ValueMarshaller<>(Collections.emptyMap())),
@@ -70,7 +69,7 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
 	LINKED_LIST(new CollectionMarshaller<>(LinkedList::new)),
 	LIST12(new UnmodifiableCollectionMarshaller<>(List.of(Boolean.TRUE).getClass().asSubclass(List.class), List::of)),
 	LISTN(new UnmodifiableCollectionMarshaller<>(List.of().getClass().asSubclass(List.class), List::of)),
-	LOCALE(new FunctionalScalarMarshaller<>(Scalar.STRING.cast(String.class), Functions.constantSupplier(Locale.getDefault()), Locale::toLanguageTag, Locale::forLanguageTag)),
+	LOCALE(new LocaleMarshaller()),
 	MAP1(new UnmodifiableMapMarshaller<>(Map.of(Boolean.TRUE, Boolean.FALSE).getClass().asSubclass(Map.class), Map::ofEntries)),
 	MAPN(new UnmodifiableMapMarshaller<>(Map.of().getClass().asSubclass(Map.class), Map::ofEntries)),
 	SET12(new UnmodifiableCollectionMarshaller<>(Set.of(Boolean.TRUE).getClass().asSubclass(Set.class), Set::of)),
@@ -112,13 +111,5 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
 	@Override
 	public ProtoStreamMarshaller<?> getMarshaller() {
 		return this.marshaller;
-	}
-
-	private static Currency getDefaultCurrency() {
-		try {
-			return Currency.getInstance(Locale.getDefault());
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
 	}
 }

@@ -106,7 +106,8 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
 		this(targetClass, marshaller, defaultFactory, new ExceptionPredicate<T, IOException>() {
 			@Override
 			public boolean test(T value) throws IOException {
-				return equals.test(function.apply(value), function.apply(defaultFactory.get()));
+				T defaultInstance = defaultFactory.get();
+				return (defaultInstance != null) && equals.test(function.apply(value), function.apply(defaultInstance));
 			}
 		}, function, factory);
 	}

@@ -281,7 +281,11 @@ message LinkedList {
  * @TypeId(43)
  */
 message Locale {
-	optional	string	value	= 1;
+	optional	string	language	= 1;
+	optional	string	region	= 2;
+	optional	string	variant	= 3;
+	optional	string	script	= 4;
+	repeated	string	extension	= 5;
 }
 
 /**
