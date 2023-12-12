@@ -1,0 +1,51 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package org.wildfly.clustering.marshalling.jboss;
+
+import java.util.EnumSet;
+import java.util.function.Function;
+
+import org.jboss.marshalling.MarshallingConfiguration;
+
+/**
+ * Repository of versioned {@link MarshallingConfiguration}s.
+ * @author Paul Ferraro
+ */
+public interface MarshallingConfigurationRepository {
+	/**
+	 * Returns the current marshalling configuration version.
+	 * @return a version
+	 */
+	int getCurrentVersion();
+
+	/**
+	 * Returns the marshalling configuration for the specified version.
+	 * @param version a version
+	 * @return a marshalling configuration
+	 */
+	MarshallingConfiguration getMarshallingConfiguration(int version);
+
+	static <C, E extends Enum<E> & Function<C, MarshallingConfiguration>> MarshallingConfigurationRepository from(E current, C context) {
+		return from(current.ordinal() + 1, EnumSet.allOf(current.getDeclaringClass()).stream().map(c -> c.apply(context)).toArray(MarshallingConfiguration[]::new));
+	}
+
+	static MarshallingConfigurationRepository from(MarshallingConfiguration... configurations) {
+		return from(configurations.length, configurations);
+	}
+
+	static MarshallingConfigurationRepository from(int currentVersion, MarshallingConfiguration... configurations) {
+		return new MarshallingConfigurationRepository() {
+			@Override
+			public int getCurrentVersion() {
+				return currentVersion;
+			}
+
+			@Override
+			public MarshallingConfiguration getMarshallingConfiguration(int version) {
+				return configurations[version - 1];
+			}
+		};
+	}
+}

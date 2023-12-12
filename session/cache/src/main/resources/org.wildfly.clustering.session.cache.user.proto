@@ -1,0 +1,12 @@
+package org.wildfly.clustering.session.cache.user;
+
+import "org.wildfly.clustering.marshalling.proto";
+
+// IDs: 235 - 239
+
+/**
+ * @TypeId(235)
+ */
+message UserContextEntry {
+	optional	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	context	= 1;
+}

@@ -1,0 +1,10 @@
+package org.wildfly.clustering.session.infinispan.remote.attributes;
+
+// IDs: 200 - 204
+
+/**
+ * @TypeId(202)
+ */
+message SessionAttributesKey {
+	optional	bytes	id	= 1;
+}

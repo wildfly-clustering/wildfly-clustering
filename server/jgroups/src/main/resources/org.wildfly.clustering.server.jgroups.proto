@@ -1,0 +1,14 @@
+package org.wildfly.clustering.server.jgroups;
+
+import "org.jgroups.stack.proto";
+import "org.jgroups.util.proto";
+
+// IDs: 131-132
+
+/**
+ * @TypeId(131)
+ */
+message JChannelGroupMember {
+	optional	org.jgroups.util.UUID	uuidAddress	= 1;
+	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
+}

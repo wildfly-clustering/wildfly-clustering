@@ -1,0 +1,10 @@
+package org.wildfly.clustering.server.jgroups.dispatcher;
+
+// IDs: 130
+
+/**
+ * @TypeId(130)
+ */
+enum ServiceResponse {
+	NO_SUCH_SERVICE	= 0;
+}
