@@ -44,7 +44,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 	private static final String CLUSTER_NAME = "cluster";
 	private static final String[] MEMBER_NAMES = new String[] { "member0", "member1", "member2" };
 	private static final Duration VIEW_CHANGE_DURATION = Duration.ofSeconds(20);
-	private static final Duration PARTITION_MERGE_DURATION = Duration.ofSeconds(120);
+	private static final Duration SPLIT_MERGE_DURATION = Duration.ofSeconds(120);
 
 	private final ExceptionBiFunction<String, String, GroupITCaseConfiguration<A, M>, Exception> factory;
 	private final Function<A, Address> mapper;
@@ -183,7 +183,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						channel1.getProtocolStack().insertProtocol(discard1, ProtocolStack.Position.ABOVE, TP.class);
 
 						start = Instant.now();
-						splitEvent = splitEvents.poll(PARTITION_MERGE_DURATION.toSeconds(), TimeUnit.SECONDS);
+						splitEvent = splitEvents.poll(SPLIT_MERGE_DURATION.toSeconds(), TimeUnit.SECONDS);
 						System.out.println("Network partition created after " + Duration.between(start, Instant.now()));
 						updateEvent = updateEvents.poll();
 						mergeEvent = mergeEvents.poll();
@@ -210,7 +210,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						channel1.getProtocolStack().removeProtocol(DISCARD.class);
 
 						start = Instant.now();
-						mergeEvent = mergeEvents.poll(PARTITION_MERGE_DURATION.toSeconds(), TimeUnit.SECONDS);
+						mergeEvent = mergeEvents.poll(SPLIT_MERGE_DURATION.toSeconds(), TimeUnit.SECONDS);
 						System.out.println("Network partition resolved after " + Duration.between(start, Instant.now()));
 						splitEvent = splitEvents.poll();
 						updateEvent = updateEvents.poll();

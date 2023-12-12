@@ -16,13 +16,12 @@ import org.jgroups.JChannel;
 public enum JChannelFactory implements Function<String, JChannel> {
 	INSTANCE;
 
-	static final String JGROUPS_CONFIG = "fast.xml";
+	static final String JGROUPS_CONFIG = "jgroups.xml";
 
 	static {
 		System.setProperty("jgroups.bind_addr", InetAddress.getLoopbackAddress().getHostAddress());
 	}
 
-	
 	@Override
 	public JChannel apply(String memberName) {
 		try {
