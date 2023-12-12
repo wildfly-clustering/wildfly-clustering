@@ -1,0 +1,136 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.wildfly.clustering.session.cache.metadata.coarse;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.server.offset.OffsetValue;
+import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
+
+/**
+ * @author Paul Ferraro
+ */
+public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMetaDataTestCase {
+
+	static class Parameters implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			MutableSessionMetaDataEntry entry = mock(MutableSessionMetaDataEntry.class);
+			CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+			InvalidatableSessionMetaData metaData = new DefaultSessionMetaData(entry, mutator);
+			return Stream.of(Arguments.of(entry, mutator, metaData));
+		}
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void testCreationTime(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.testCreationTime(entry, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void testLastAccessStartTime(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.testLastAccessStartTime(entry, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void testLastAccessEndTime(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.testLastAccessEndTime(entry, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void testTimeout(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.testTimeout(entry, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void setLastAccess(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		Instant endTime = Instant.now();
+		Instant startTime = endTime.minus(Duration.ofMillis(500));
+		OffsetValue<Instant> lastAccessStartTime = Mockito.mock(OffsetValue.class);
+		OffsetValue<Instant> lastAccessEndTime = Mockito.mock(OffsetValue.class);
+
+		ArgumentCaptor<Instant> lastAccessStartTimeCaptor = ArgumentCaptor.forClass(Instant.class);
+		ArgumentCaptor<Instant> lastAccessEndTimeCaptor = ArgumentCaptor.forClass(Instant.class);
+
+		doReturn(lastAccessStartTime).when(entry).getLastAccessStartTime();
+		doReturn(lastAccessEndTime).when(entry).getLastAccessEndTime();
+
+		doNothing().when(lastAccessStartTime).set(lastAccessStartTimeCaptor.capture());
+		doNothing().when(lastAccessEndTime).set(lastAccessEndTimeCaptor.capture());
+
+		metaData.setLastAccess(startTime, endTime);
+
+		Instant normalizedStartTime = lastAccessStartTimeCaptor.getValue();
+		Instant normalizedEndTime = lastAccessEndTimeCaptor.getValue();
+
+		// Verify millisecond precision
+		assertEquals(0, normalizedStartTime.getNano() % Duration.ofMillis(1).getNano());
+		assertEquals(startTime.toEpochMilli(), normalizedStartTime.toEpochMilli());
+
+		// Verify second precision
+		Duration lastAccessDuration = Duration.between(normalizedStartTime, normalizedEndTime);
+		assertEquals(1, lastAccessDuration.getSeconds());
+		assertEquals(0, lastAccessDuration.getNano());
+
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void setTimeout(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		Duration timeout = Duration.ofHours(1);
+
+		metaData.setTimeout(timeout);
+
+		Mockito.verify(entry).setTimeout(timeout);
+
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void invalidate(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		assertTrue(metaData.isValid());
+
+		metaData.invalidate();
+
+		Mockito.verifyNoInteractions(entry);
+		Mockito.verifyNoInteractions(mutator);
+
+		assertFalse(metaData.isValid());
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void close(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		metaData.close();
+
+		Mockito.verifyNoInteractions(entry);
+		Mockito.verify(mutator).mutate();
+	}
+}

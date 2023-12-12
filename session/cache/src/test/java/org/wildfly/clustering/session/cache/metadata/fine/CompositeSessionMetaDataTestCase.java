@@ -1,0 +1,132 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package org.wildfly.clustering.session.cache.metadata.fine;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.mockito.Mockito;
+import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
+
+/**
+ * Unit test for {@link CompositeSessionMetaData}.
+ * @author Paul Ferraro
+ */
+public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMetaDataTestCase {
+
+	static class Parameters implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			SessionCreationMetaData creationMetaData = mock(SessionCreationMetaData.class);
+			SessionAccessMetaData accessMetaData = mock(SessionAccessMetaData.class);
+			CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+			InvalidatableSessionMetaData metaData = new CompositeSessionMetaData(creationMetaData, accessMetaData, mutator);
+			return Stream.of(Arguments.of(creationMetaData, accessMetaData, mutator, metaData));
+		}
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void isNew(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.isNew(creationMetaData, accessMetaData, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void isExpired(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.isExpired(creationMetaData, accessMetaData, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void getCreationTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.getCreationTime(creationMetaData, accessMetaData, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void getLastAccessStartTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.getLastAccessStartTime(creationMetaData, accessMetaData, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void getLastAccessEndTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.getLastAccessEndTime(creationMetaData, accessMetaData, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void getMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		super.getMaxInactiveInterval(creationMetaData, accessMetaData, metaData);
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void setLastAccessedTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		// New session
+		Instant endTime = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+		Duration lastAccess = Duration.ofSeconds(1L);
+		Instant startTime = endTime.minus(lastAccess);
+
+		when(creationMetaData.getCreationTime()).thenReturn(startTime);
+
+		metaData.setLastAccess(startTime, endTime);
+
+		verify(accessMetaData).setLastAccessDuration(Duration.ZERO, lastAccess);
+		verifyNoInteractions(mutator);
+
+		reset(creationMetaData, accessMetaData);
+
+		// Existing session
+		Duration sinceCreated = Duration.ofSeconds(10L);
+
+		when(creationMetaData.getCreationTime()).thenReturn(startTime.minus(sinceCreated));
+
+		metaData.setLastAccess(startTime, endTime);
+
+		verify(accessMetaData).setLastAccessDuration(sinceCreated, lastAccess);
+		verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void setMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		Duration duration = Duration.ZERO;
+
+		metaData.setTimeout(duration);
+
+		verify(creationMetaData).setTimeout(duration);
+		verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(Parameters.class)
+	public void close(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		metaData.close();
+
+		verify(mutator).mutate();
+	}
+}
