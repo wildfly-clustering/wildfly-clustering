@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
-import java.security.AccessController;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -60,12 +59,13 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 		this.blocking = this.cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	@Override
 	public ListenerRegistration register() {
 		this.cache.addListener(this);
 		return () -> {
 			this.cache.removeListener(this);
-			AccessController.doPrivileged(DefaultExecutorService.shutdownNow(this.executor));
+			java.security.AccessController.doPrivileged(DefaultExecutorService.shutdownNow(this.executor));
 			try {
 				this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {

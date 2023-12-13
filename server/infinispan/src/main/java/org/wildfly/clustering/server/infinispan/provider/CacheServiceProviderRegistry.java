@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.server.infinispan.provider;
 
-import java.security.AccessController;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashSet;
@@ -92,8 +91,9 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 		this.listeners.clear();
 	}
 
+	@SuppressWarnings({ "removal", "deprecation" })
 	private void shutdown(ExecutorService executor) {
-		AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
+		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
 		try {
 			executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {

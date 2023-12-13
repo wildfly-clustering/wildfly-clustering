@@ -6,7 +6,6 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.io.IOException;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Map;
@@ -37,12 +36,13 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M>, Function<Co
 	private final BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory;
 	private final Invoker invoker;
 
+	@SuppressWarnings({ "removal", "deprecation" })
 	public PrimaryOwnerScheduler(PrimaryOwnerSchedulerConfiguration<I, M> configuration) {
 		this.scheduleCommandFactory = configuration.getScheduleCommandFactory();
 		this.affinity = configuration.getAffinity();
 		this.invoker = configuration.getInvoker();
 		CacheEntryScheduler<I, M> scheduler = configuration.getScheduler();
-		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(configuration.getName(), scheduler, AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> scheduler.getClass().getClassLoader()));
+		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(configuration.getName(), scheduler, java.security.AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> scheduler.getClass().getClassLoader()));
 	}
 
 	@Override

@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.server.local.scheduler;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -20,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
@@ -77,12 +76,10 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 		return this.entries.stream().map(Map.Entry::getKey);
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	@Override
 	public void close() {
-		AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-			this.executor.shutdown();
-			return null;
-		});
+		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(this.executor));
 		if (!this.closeTimeout.isNegative() && !this.closeTimeout.isZero()) {
 			try {
 				this.executor.awaitTermination(this.closeTimeout.toMillis(), TimeUnit.MILLISECONDS);

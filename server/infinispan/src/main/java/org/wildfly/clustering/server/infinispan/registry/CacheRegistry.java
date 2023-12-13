@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.server.infinispan.registry;
 
-import java.security.AccessController;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
@@ -272,8 +271,9 @@ public class CacheRegistry<K, V> implements Registry<K, V, CacheContainerGroupMe
 		}
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	private void shutdown(ExecutorService executor) {
-		AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
+		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
 		try {
 			executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {

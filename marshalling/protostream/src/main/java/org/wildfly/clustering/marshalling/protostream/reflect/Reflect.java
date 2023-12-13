@@ -10,7 +10,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,8 +21,9 @@ import java.util.List;
  */
 final class Reflect {
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static Field findField(Class<?> sourceClass, Class<?> fieldType) {
-		return AccessController.doPrivileged(new PrivilegedAction<Field>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<Field>() {
 			@Override
 			public Field run() {
 				List<Field> assignableFields = new LinkedList<>();
@@ -62,8 +62,9 @@ final class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static Method findMethod(Class<?> sourceClass, Class<?> returnType) {
-		return AccessController.doPrivileged(new PrivilegedAction<Method>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<Method>() {
 			@Override
 			public Method run() {
 				List<Method> matchingMethods = new LinkedList<>();
@@ -90,8 +91,9 @@ final class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static Method findMethod(Class<?> sourceClass, String methodName) {
-		return AccessController.doPrivileged(new PrivilegedAction<Method>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<Method>() {
 			@Override
 			public Method run() {
 				try {
@@ -105,8 +107,9 @@ final class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> Constructor<T> getConstructor(Class<T> sourceClass, Class<?>... parameterTypes) {
-		return AccessController.doPrivileged(new PrivilegedAction<Constructor<T>>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<Constructor<T>>() {
 			@Override
 			public Constructor<T> run() {
 				try {
@@ -120,8 +123,9 @@ final class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
-		return AccessController.doPrivileged(new PrivilegedAction<T>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
 			public T run() {
 				try {
@@ -137,8 +141,9 @@ final class Reflect {
 		return getValue(source, field, Object.class);
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T getValue(Object source, Field field, Class<T> fieldType) {
-		return AccessController.doPrivileged(new PrivilegedAction<T>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
 			public T run() {
 				try {
@@ -151,7 +156,7 @@ final class Reflect {
 	}
 
 	static void setValue(Object source, Field field, Object value) {
-		AccessController.doPrivileged(new PrivilegedAction<Void>() {
+		java.security.AccessController.doPrivileged(new PrivilegedAction<Void>() {
 			@Override
 			public Void run() {
 				try {
@@ -168,8 +173,9 @@ final class Reflect {
 		return invoke(source, method, Object.class);
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T invoke(Object source, Method method, Class<T> returnClass) {
-		return AccessController.doPrivileged(new PrivilegedAction<T>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
 			public T run() {
 				try {
@@ -180,13 +186,14 @@ final class Reflect {
 			}
 		});
 	}
-
+/*
 	static Object invoke(Object source, String methodName) {
 		return invoke(source, methodName, Object.class);
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T invoke(Object source, String methodName, Class<T> returnType) {
-		return AccessController.doPrivileged(new PrivilegedAction<T>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
 			public T run() {
 				Method method = findMethod(source.getClass(), methodName);
@@ -194,4 +201,5 @@ final class Reflect {
 			}
 		});
 	}
+*/
 }
