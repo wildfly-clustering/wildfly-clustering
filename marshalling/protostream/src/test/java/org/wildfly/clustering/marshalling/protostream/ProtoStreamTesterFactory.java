@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.ByteBufferTestMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTester;

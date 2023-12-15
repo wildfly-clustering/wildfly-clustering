@@ -7,13 +7,13 @@ package org.wildfly.clustering.session.cache;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.function.Supplier;
-
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.Remover;
+import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
+import org.wildfly.common.function.Functions;
 
 /**
  * Unit test for {@link CompositeSession}.
@@ -25,10 +25,9 @@ public class CompositeSessionTestCase {
 	private final InvalidatableSessionMetaData metaData = mock(InvalidatableSessionMetaData.class);
 	private final SessionAttributes attributes = mock(SessionAttributes.class);
 	private final Remover<String> remover = mock(Remover.class);
-	private final Supplier<Object> contextFactory = mock(Supplier.class);
-	private final Contextual<Object> contextual = mock(Contextual.class);
+	private final Object context = new Object();
 
-	private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, this.contextual, this.contextFactory, this.remover);
+	private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, Supplied.simple(), Functions.constantSupplier(this.context), this.remover);
 
 	@Test
 	public void getId() {
@@ -95,11 +94,8 @@ public class CompositeSessionTestCase {
 
 	@Test
 	public void getLocalContext() {
-		Object expected = new Object();
-		doReturn(expected).when(this.contextual).getContext(this.contextFactory);
-
 		Object result = this.session.getContext();
 
-		assertSame(expected, result);
+		assertSame(this.context, result);
 	}
 }

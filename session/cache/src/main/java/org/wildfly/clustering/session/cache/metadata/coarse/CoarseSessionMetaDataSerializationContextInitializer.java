@@ -5,8 +5,8 @@
 
 package org.wildfly.clustering.session.cache.metadata.coarse;
 
-import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
  * @author Paul Ferraro

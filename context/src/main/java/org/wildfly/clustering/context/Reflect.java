@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.context;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ServiceLoader;
 import java.util.concurrent.ThreadFactory;
@@ -19,8 +18,9 @@ import org.jboss.threads.JBossThreadFactory;
  */
 class Reflect {
 
+	@SuppressWarnings({ "removal", "deprecation" })
 	static ClassLoader getClassLoader(Class<?> targetClass) {
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
 				return targetClass.getClassLoader();
@@ -28,8 +28,9 @@ class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "removal", "deprecation" })
 	static ThreadFactory createThreadFactory(Supplier<ThreadGroup> group) {
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ThreadFactory run() {
 				return new JBossThreadFactory(group.get(), Boolean.FALSE, null, "%G - %t", null, null);
@@ -37,8 +38,9 @@ class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "removal", "deprecation" })
 	static ClassLoader getContextClassLoader(Thread thread) {
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
 				return thread.getContextClassLoader();
@@ -46,8 +48,9 @@ class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "removal", "deprecation" })
 	static ClassLoader setContextClassLoader(Thread thread, ClassLoader loader) {
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
 				ClassLoader current = thread.getContextClassLoader();
@@ -57,8 +60,9 @@ class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "removal", "deprecation" })
 	static <T> void load(Class<T> targetClass, Consumer<T> consumer) {
-		AccessController.doPrivileged(new PrivilegedAction<>() {
+		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Void run() {
 				for (T provider : ServiceLoader.load(targetClass, targetClass.getClassLoader())) {

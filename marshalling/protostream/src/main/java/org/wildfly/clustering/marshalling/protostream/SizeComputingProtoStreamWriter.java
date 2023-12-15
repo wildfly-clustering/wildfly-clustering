@@ -22,7 +22,7 @@ public class SizeComputingProtoStreamWriter extends AbstractProtoStreamWriter im
 	private final ProtoStreamWriterContext context;
 	private boolean present = true;
 
-	public SizeComputingProtoStreamWriter(ProtoStreamSizeOperation operation, ProtoStreamWriterContext context) {
+	SizeComputingProtoStreamWriter(ProtoStreamSizeOperation operation, ProtoStreamWriterContext context) {
 		// Creates a TagWriter using a NoopEncoder
 		this(TagWriterImpl.newInstance(operation.getSerializationContext()), context);
 	}

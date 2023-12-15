@@ -18,7 +18,7 @@ public class ScalarFieldMarshaller<T> implements FieldMarshaller<T> {
 
 	private final ScalarMarshaller<T> marshaller;
 
-	public ScalarFieldMarshaller(ScalarMarshaller<T> marshaller) {
+	ScalarFieldMarshaller(ScalarMarshaller<T> marshaller) {
 		this.marshaller = marshaller;
 	}
 

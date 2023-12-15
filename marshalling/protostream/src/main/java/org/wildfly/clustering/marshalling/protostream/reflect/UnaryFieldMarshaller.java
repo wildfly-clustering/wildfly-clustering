@@ -7,9 +7,6 @@ package org.wildfly.clustering.marshalling.protostream.reflect;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.function.Function;
 
 /**
@@ -30,16 +27,7 @@ public class UnaryFieldMarshaller<T, F> extends UnaryMemberMarshaller<T, Field, 
 		this(targetClass, fieldClass, new Function<>() {
 			@Override
 			public T apply(F value) {
-				return AccessController.doPrivileged(new PrivilegedAction<>() {
-					@Override
-					public T run() {
-						try {
-							return constructor.newInstance(value);
-						} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-							throw new IllegalStateException(e);
-						}
-					}
-				});
+				return Reflect.newInstance(constructor, value);
 			}
 		});
 	}

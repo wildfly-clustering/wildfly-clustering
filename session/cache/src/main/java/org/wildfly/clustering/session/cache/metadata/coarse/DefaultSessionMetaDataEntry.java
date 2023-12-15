@@ -8,11 +8,9 @@ package org.wildfly.clustering.session.cache.metadata.coarse;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.server.offset.OffsetValue;
+import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -26,7 +24,7 @@ public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaData
 	private final OffsetValue<Instant> lastAccessStartTime;
 	// The end time of the last access, expressed an an offset from the start time of the last access
 	private final OffsetValue<Instant> lastAccessEndTime;
-	private final AtomicReference<C> context = new AtomicReference<>();
+	private final Supplied<C> context = Supplied.cached();
 
 	public DefaultSessionMetaDataEntry() {
 		// Only retain millisecond precision
@@ -64,8 +62,8 @@ public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaData
 	}
 
 	@Override
-	public C getContext(Supplier<C> factory) {
-		return this.context.updateAndGet(context -> Optional.ofNullable(context).orElseGet(factory));
+	public Supplied<C> getContext() {
+		return this.context;
 	}
 
 	@Override
@@ -74,7 +72,7 @@ public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaData
 		result.setTimeout(delta.getTimeoutOffset().apply(this.timeout));
 		result.getLastAccessStartTime().set(delta.getLastAccessStartTimeOffset().apply(this.lastAccessStartTime.get()));
 		result.getLastAccessEndTime().set(delta.getLastAccessEndTimeOffset().apply(this.lastAccessEndTime.get()));
-		result.getContext(Functions.constantSupplier(this.context.get()));
+		result.getContext().get(Functions.constantSupplier(this.context.get(Functions.constantSupplier(null))));
 		return result;
 	}
 

@@ -5,8 +5,8 @@
 
 package org.wildfly.clustering.cache.infinispan.marshalling.protostream;
 
-import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
  * @author Paul Ferraro

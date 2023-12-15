@@ -10,13 +10,14 @@ import static org.mockito.Mockito.*;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
+import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
@@ -30,9 +31,9 @@ import org.wildfly.clustering.session.Session;
 public class CompositeSessionFactoryTestCase {
 	private final SessionMetaDataFactory<Contextual<Object>> metaDataFactory = mock(SessionMetaDataFactory.class);
 	private final SessionAttributesFactory<Object, Object> attributesFactory = mock(SessionAttributesFactory.class);
-	private final Supplier<Object> localContextFactory = mock(Supplier.class);
+	private final Object transientContext = new Object();
 
-	private final SessionFactory<Object, Contextual<Object>, Object, Object> factory = new CompositeSessionFactory<>(this.metaDataFactory, this.attributesFactory, this.localContextFactory);
+	private final SessionFactory<Object, Contextual<Object>, Object, Object> factory = new CompositeSessionFactory<>(this.metaDataFactory, this.attributesFactory, Functions.constantSupplier(this.transientContext));
 
 	@Test
 	public void createValue() {
@@ -96,7 +97,6 @@ public class CompositeSessionFactoryTestCase {
 
 	@Test
 	public void createSession() {
-		Object localContext = new Object();
 		Contextual<Object> contextual = mock(Contextual.class);
 		Object attributesValue = new Object();
 		InvalidatableSessionMetaData metaData = mock(InvalidatableSessionMetaData.class);
@@ -106,14 +106,14 @@ public class CompositeSessionFactoryTestCase {
 
 		when(this.metaDataFactory.createSessionMetaData(id, contextual)).thenReturn(metaData);
 		when(this.attributesFactory.createSessionAttributes(same(id), same(attributesValue), same(metaData), same(context))).thenReturn(attributes);
-		when(contextual.getContext(this.localContextFactory)).thenReturn(localContext);
+		when(contextual.getContext()).thenReturn(Supplied.simple());
 
 		Session<Object> result = this.factory.createSession(id, Map.entry(contextual, attributesValue), context);
 
 		assertSame(id, result.getId());
 		assertSame(metaData, result.getMetaData());
 		assertSame(attributes, result.getAttributes());
-		assertSame(localContext, result.getContext());
+		assertSame(this.transientContext, result.getContext());
 	}
 
 	@Test

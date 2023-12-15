@@ -25,7 +25,7 @@ public class DefaultProtoStreamSizeOperation extends AbstractProtoStreamOperatio
 	 * Creates a new ProtoStream size operation using a new context.
 	 * @param context the serialization context
 	 */
-	public DefaultProtoStreamSizeOperation(ImmutableSerializationContext context) {
+	DefaultProtoStreamSizeOperation(ImmutableSerializationContext context) {
 		this(context, new DefaultProtoStreamWriterContext());
 	}
 
@@ -34,7 +34,7 @@ public class DefaultProtoStreamSizeOperation extends AbstractProtoStreamOperatio
 	 * @param context the serialization context
 	 * @param sizeContext the context of the size operation
 	 */
-	public DefaultProtoStreamSizeOperation(ImmutableSerializationContext context, ProtoStreamWriterContext writerContext) {
+	DefaultProtoStreamSizeOperation(ImmutableSerializationContext context, ProtoStreamWriterContext writerContext) {
 		super(context);
 		this.context = writerContext;
 	}

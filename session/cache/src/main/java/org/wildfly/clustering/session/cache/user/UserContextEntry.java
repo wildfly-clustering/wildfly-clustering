@@ -1,40 +1,33 @@
 /*
- * Copyright The WildFly Authors
+- * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.clustering.session.cache.user;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import org.wildfly.clustering.server.util.Supplied;
 
 /**
  * Cache entry that stores persistent and transient user identity..
  * @author Paul Ferraro
  * @param <C> the persistent user context type
- * @param <L> the transient user context type
+ * @param <T> the transient user context type
  */
-public class UserContextEntry<C, L> implements UserContext<C, L> {
+public class UserContextEntry<C, T> implements UserContext<C, T> {
 
-	private final C context;
-	private final AtomicReference<L> transientContext = new AtomicReference<>();
+	private final C persistentContext;
+	private final Supplied<T> transientContext = Supplied.cached();
 
-	public UserContextEntry(C context) {
-		this.context = context;
+	public UserContextEntry(C persistentContext) {
+		this.persistentContext = persistentContext;
 	}
 
 	@Override
-	public C getContext() {
-		return this.context;
+	public C getPersistentContext() {
+		return this.persistentContext;
 	}
 
 	@Override
-	public L getContext(Supplier<L> factory) {
-		return this.transientContext.updateAndGet(new UnaryOperator<>() {
-			@Override
-			public L apply(L context) {
-				return (context != null) ? context : factory.get();
-			}
-		});
+	public Supplied<T> getTransientContext() {
+		return this.transientContext;
 	}
 }

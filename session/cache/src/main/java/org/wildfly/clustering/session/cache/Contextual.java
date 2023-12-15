@@ -5,17 +5,17 @@
 
 package org.wildfly.clustering.session.cache;
 
-import java.util.function.Supplier;
+import org.wildfly.clustering.server.util.Supplied;
 
 /**
- * Provides access to a local context.
+ * Implemented by object with a supplied context.
  * @author Paul Ferraro
  */
 public interface Contextual<C> {
+
 	/**
-	 * Returns the context, creating it from the specified factory, if necessary.
-	 * @param a context factory
-	 * @return the context.
+	 * Returns the context as a supplied value.
+	 * @return a supplied context.
 	 */
-	C getContext(Supplier<C> factory);
+	Supplied<C> getContext();
 }

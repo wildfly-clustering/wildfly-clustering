@@ -16,11 +16,11 @@ public abstract class AbstractProtoStreamOperation implements ProtoStreamOperati
 
 	private final OperationContext context;
 
-	public AbstractProtoStreamOperation(ImmutableSerializationContext context) {
+	AbstractProtoStreamOperation(ImmutableSerializationContext context) {
 		this(TagWriterImpl.newInstance(context));
 	}
 
-	public AbstractProtoStreamOperation(OperationContext context) {
+	AbstractProtoStreamOperation(OperationContext context) {
 		this.context = context;
 	}
 

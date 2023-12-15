@@ -24,24 +24,24 @@ import org.wildfly.common.function.Functions;
 /**
  * @author Paul Ferraro
  */
-public class HotRodUserContextFactory<C, CV, L> implements UserContextFactory<UserContext<CV, L>, C, L> {
+public class HotRodUserContextFactory<C, CV, T> implements UserContextFactory<UserContext<CV, T>, C, T> {
 
-	private final RemoteCache<UserContextKey, UserContext<CV, L>> cache;
+	private final RemoteCache<UserContextKey, UserContext<CV, T>> cache;
 	private final Flag[] ignoreReturnFlags;
 	private final Marshaller<C, CV> marshaller;
-	private final Supplier<L> localContextFactory;
+	private final Supplier<T> contextFactory;
 
-	public HotRodUserContextFactory(RemoteCacheConfiguration configuration, Marshaller<C, CV> marshaller, Supplier<L> localContextFactory) {
+	public HotRodUserContextFactory(RemoteCacheConfiguration configuration, Marshaller<C, CV> marshaller, Supplier<T> contextFactory) {
 		this.cache = configuration.getCache();
 		this.ignoreReturnFlags = configuration.getIgnoreReturnFlags();
 		this.marshaller = marshaller;
-		this.localContextFactory = localContextFactory;
+		this.contextFactory = contextFactory;
 	}
 
 	@Override
-	public CompletionStage<UserContext<CV, L>> createValueAsync(String id, C context) {
+	public CompletionStage<UserContext<CV, T>> createValueAsync(String id, C context) {
 		try {
-			UserContext<CV, L> entry = new UserContextEntry<>(this.marshaller.write(context));
+			UserContext<CV, T> entry = new UserContextEntry<>(this.marshaller.write(context));
 			return this.cache.withFlags(this.ignoreReturnFlags).putAsync(new UserContextKey(id), entry).thenApply(v -> entry);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
@@ -49,7 +49,7 @@ public class HotRodUserContextFactory<C, CV, L> implements UserContextFactory<Us
 	}
 
 	@Override
-	public CompletionStage<UserContext<CV, L>> findValueAsync(String id) {
+	public CompletionStage<UserContext<CV, T>> findValueAsync(String id) {
 		return this.cache.getAsync(new UserContextKey(id));
 	}
 
@@ -59,10 +59,10 @@ public class HotRodUserContextFactory<C, CV, L> implements UserContextFactory<Us
 	}
 
 	@Override
-	public Map.Entry<C, L> createUserContext(UserContext<CV, L> entry) {
+	public Map.Entry<C, T> createUserContext(UserContext<CV, T> entry) {
 		try {
-			C context = this.marshaller.read(entry.getContext());
-			return new AbstractMap.SimpleImmutableEntry<>(context, entry.getContext(this.localContextFactory));
+			C context = this.marshaller.read(entry.getPersistentContext());
+			return new AbstractMap.SimpleImmutableEntry<>(context, entry.getTransientContext().get(this.contextFactory));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}

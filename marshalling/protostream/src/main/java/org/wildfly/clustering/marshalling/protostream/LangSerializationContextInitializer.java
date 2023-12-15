@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.SerializationContext;
-
 /**
  * Initializer that registers protobuf schema for java.lang.* classes.
  * @author Paul Ferraro

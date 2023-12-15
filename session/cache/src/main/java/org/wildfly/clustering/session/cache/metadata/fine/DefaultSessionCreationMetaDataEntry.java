@@ -8,11 +8,10 @@ package org.wildfly.clustering.session.cache.metadata.fine;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.server.offset.Offset;
+import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -22,7 +21,7 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 
 	private final Instant creationTime;
 	private volatile Duration timeout = Duration.ZERO;
-	private final AtomicReference<C> context = new AtomicReference<>();
+	private final Supplied<C> context = Supplied.cached();
 
 	public DefaultSessionCreationMetaDataEntry() {
 		// Only retain millisecond precision
@@ -49,15 +48,15 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 	}
 
 	@Override
-	public C getContext(Supplier<C> factory) {
-		return this.context.updateAndGet(context -> Optional.ofNullable(context).orElseGet(factory));
+	public Supplied<C> getContext() {
+		return this.context;
 	}
 
 	@Override
 	public SessionCreationMetaDataEntry<C> remap(Supplier<Offset<Duration>> timeoutOffset) {
 		SessionCreationMetaDataEntry<C> result = new DefaultSessionCreationMetaDataEntry<>(this.creationTime);
 		result.setTimeout(timeoutOffset.get().apply(this.timeout));
-		result.getContext(Functions.constantSupplier(this.context.get()));
+		result.getContext().get(Functions.constantSupplier(this.context.get(Functions.constantSupplier(null))));
 		return result;
 	}
 

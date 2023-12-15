@@ -11,30 +11,36 @@ import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
- * @author Paul Ferraro
+ * A user factory that creates composite users.
+ * @param <CV> the user context value type
+ * @param <C> the persistent context type
+ * @param <T> the transient context type
+ * @param <SV> the user sessions value type
+ * @param <D> the deployment type
+ * @param <S> the session type
  */
-public class CompositeUserFactory<CV, C, L, SV, D, S> implements UserFactory<CV, C, L, SV, D, S> {
+public class CompositeUserFactory<CV, C, T, SV, D, S> implements UserFactory<CV, C, T, SV, D, S> {
 
-	private final UserContextFactory<CV, C, L> contextFactory;
+	private final UserContextFactory<CV, C, T> contextFactory;
 	private final UserSessionsFactory<SV, D, S> sessionsFactory;
 
-	public CompositeUserFactory(UserContextFactory<CV, C, L> contextFactory, UserSessionsFactory<SV, D, S> sessionsFactory) {
+	public CompositeUserFactory(UserContextFactory<CV, C, T> contextFactory, UserSessionsFactory<SV, D, S> sessionsFactory) {
 		this.contextFactory = contextFactory;
 		this.sessionsFactory = sessionsFactory;
 	}
 
 	@Override
-	public User<C, L, D, S> createUser(String id, Map.Entry<CV, SV> entry) {
+	public User<C, T, D, S> createUser(String id, Map.Entry<CV, SV> entry) {
 		CV contextValue = entry.getKey();
 		SV sessionsValue = entry.getValue();
 		if ((contextValue == null) || (sessionsValue == null)) return null;
-		Map.Entry<C, L> context = this.contextFactory.createUserContext(contextValue);
+		Map.Entry<C, T> context = this.contextFactory.createUserContext(contextValue);
 		UserSessions<D, S> sessions = this.sessionsFactory.createUserSessions(id, sessionsValue);
 		return new CompositeUser<>(id, context, sessions, this);
 	}
 
 	@Override
-	public UserContextFactory<CV, C, L> getUserContextFactory() {
+	public UserContextFactory<CV, C, T> getUserContextFactory() {
 		return this.contextFactory;
 	}
 

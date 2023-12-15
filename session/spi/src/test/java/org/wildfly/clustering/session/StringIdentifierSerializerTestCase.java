@@ -34,7 +34,7 @@ public class StringIdentifierSerializerTestCase {
 		io.undertow.server.session.SessionIdGenerator generator = new SecureRandomSessionIdGenerator();
 		test(IdentifierMarshaller.BASE64, generator::createSessionId);
 	}
-   
+
 	@Test
 	public void testHex() throws IOException {
 		org.apache.catalina.SessionIdGenerator generator = new StandardSessionIdGenerator();

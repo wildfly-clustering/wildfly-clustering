@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.server.local.listener;
 
-import java.security.AccessController;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,8 +72,9 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 		}
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	private void shutdown(ExecutorService executor) {
-		AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
+		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
 		try {
 			executor.awaitTermination(this.shutdownTimeout.toMillis(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {

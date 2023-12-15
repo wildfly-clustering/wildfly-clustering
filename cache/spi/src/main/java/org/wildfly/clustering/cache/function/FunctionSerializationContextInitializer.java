@@ -5,12 +5,11 @@
 
 package org.wildfly.clustering.cache.function;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
@@ -23,6 +22,6 @@ public class FunctionSerializationContextInitializer extends AbstractSerializati
 		context.registerMarshaller(new MapComputeFunctionMarshaller());
 		context.registerMarshaller(new CollectionFunctionMarshaller<>(SetAddFunction.class, SetAddFunction::new));
 		context.registerMarshaller(new CollectionFunctionMarshaller<>(SetRemoveFunction.class, SetRemoveFunction::new));
-		context.registerMarshaller(new FunctionalScalarMarshaller<>(RemappingFunction.class, Scalar.ANY, RemappingFunction::getOperand, RemappingFunction::new));
+		context.registerMarshaller(Scalar.ANY.toMarshaller(RemappingFunction.class, RemappingFunction::getOperand, RemappingFunction::new));
 	}
 }

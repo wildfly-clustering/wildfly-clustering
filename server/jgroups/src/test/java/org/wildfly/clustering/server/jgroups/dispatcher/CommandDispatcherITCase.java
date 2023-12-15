@@ -18,6 +18,7 @@ import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.jgroups.dispatcher.test.IdentityCommand;
 import org.wildfly.common.function.ExceptionBiFunction;
 
 /**

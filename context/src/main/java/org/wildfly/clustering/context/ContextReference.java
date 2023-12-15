@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  */
 public interface ContextReference<C> extends Supplier<C>, Consumer<C> {
 
-	public static <C> ContextReference<C> fromThreadLocal(ThreadLocal<C> threadLocal) {
+	static <C> ContextReference<C> fromThreadLocal(ThreadLocal<C> threadLocal) {
 		return new ContextReference<>() {
 			@Override
 			public C get() {

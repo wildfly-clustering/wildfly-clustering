@@ -26,6 +26,6 @@ public class AuthenticationEntryMarshallerTestCase {
 	}
 
 	static void assertEquals(UserContextEntry<String, Object> entry1, UserContextEntry<String, Object> entry2) {
-		Assertions.assertEquals(entry1.getContext(), entry2.getContext());
+		Assertions.assertEquals(entry1.getPersistentContext(), entry2.getPersistentContext());
 	}
 }

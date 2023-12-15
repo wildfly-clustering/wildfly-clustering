@@ -394,7 +394,6 @@ public interface Contextualizer {
 				}
 				return result;
 			}
-			
 		};
 	}
 }

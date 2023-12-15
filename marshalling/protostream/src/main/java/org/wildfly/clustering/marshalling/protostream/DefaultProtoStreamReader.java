@@ -39,11 +39,11 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
 
 	private int currentTag = 0;
 
-	public DefaultProtoStreamReader(ReadContext context) {
+	DefaultProtoStreamReader(ReadContext context) {
 		this(context, new DefaultProtoStreamReaderContext());
 	}
 
-	private DefaultProtoStreamReader(ReadContext context, ProtoStreamReaderContext readerContext) {
+	DefaultProtoStreamReader(ReadContext context, ProtoStreamReaderContext readerContext) {
 		super(context);
 		this.reader = context.getReader();
 		this.context = readerContext;

@@ -5,7 +5,10 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
 import java.util.function.Supplier;
+
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Marshaller for a set of fields, to be shared between multiple marshallers.
@@ -52,5 +55,40 @@ public interface FieldSetMarshaller<T, V> extends FieldReadable<V>, Writable<T> 
 		default T build(V value) {
 			return value.get();
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	default ProtoStreamMarshaller<T> asMarshaller() {
+		return this.asMarshaller((Class<T>) FieldSetMarshaller.this.build(FieldSetMarshaller.this.createInitialValue()).getClass());
+	}
+
+	default ProtoStreamMarshaller<T> asMarshaller(Class<? extends T> targetClass) {
+		return new ProtoStreamMarshaller<>() {
+			@Override
+			public Class<? extends T> getJavaClass() {
+				return targetClass;
+			}
+
+			@Override
+			public T readFrom(ProtoStreamReader reader) throws IOException {
+				FieldSetReader<V> valueReader = reader.createFieldSetReader(FieldSetMarshaller.this, 1);
+				V value = FieldSetMarshaller.this.createInitialValue();
+				while (!reader.isAtEnd()) {
+					int tag = reader.readTag();
+					int index = WireType.getTagFieldNumber(tag);
+					if (valueReader.contains(index)) {
+						value = valueReader.readField(value);
+					} else {
+						reader.skipField(tag);
+					}
+				}
+				return FieldSetMarshaller.this.build(value);
+			}
+
+			@Override
+			public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
+				writer.createFieldSetWriter(FieldSetMarshaller.this, 1).writeFields(value);
+			}
+		};
 	}
 }

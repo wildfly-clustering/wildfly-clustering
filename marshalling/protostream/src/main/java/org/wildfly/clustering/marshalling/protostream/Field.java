@@ -10,7 +10,7 @@ package org.wildfly.clustering.marshalling.protostream;
  * @author Paul Ferraro
  * @param <T> the type of the associated marshaller
  */
-public interface Field<T> {
+interface Field<T> {
 	/**
 	 * Returns the index of this field.
 	 * @return the index of this field.

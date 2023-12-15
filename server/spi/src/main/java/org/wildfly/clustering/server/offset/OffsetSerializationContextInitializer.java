@@ -7,11 +7,11 @@ package org.wildfly.clustering.server.offset;
 
 import java.time.Duration;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
@@ -21,7 +21,8 @@ public class OffsetSerializationContextInitializer extends AbstractSerialization
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new FunctionalMarshaller<>(Offset.DurationOffset.class, Duration.class, Offset.DurationOffset::get, Offset.DurationOffset::new));
-		context.registerMarshaller(new FunctionalMarshaller<>(Offset.InstantOffset.class, Duration.class, Offset.InstantOffset::get, Offset.InstantOffset::new));
+		ProtoStreamMarshaller<Duration> marshaller = (ProtoStreamMarshaller<Duration>) context.getMarshaller(Duration.class);
+		context.registerMarshaller(marshaller.map(Offset.DurationOffset.class, Offset.DurationOffset::get, Offset.DurationOffset::new));
+		context.registerMarshaller(marshaller.map(Offset.InstantOffset.class, Offset.InstantOffset::get, Offset.InstantOffset::new));
 	}
 }

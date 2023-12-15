@@ -5,8 +5,7 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
+import org.infinispan.protostream.DescriptorParserException;
 
 /**
  * @author Paul Ferraro
@@ -17,33 +16,33 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 	private final ClassLoader loader;
 
 	protected AbstractSerializationContextInitializer() {
-		this(null);
+		this.resourceName = this.getClass().getPackage().getName() + ".proto";
+		this.loader = Reflect.getClassLoader(this.getClass());
 	}
 
 	protected AbstractSerializationContextInitializer(String resourceName) {
-		this(resourceName, null);
+		this.resourceName = resourceName;
+		this.loader = Reflect.getClassLoader(this.getClass());
 	}
 
-	protected AbstractSerializationContextInitializer(String resourceName, ClassLoader loader) {
-		this.resourceName = (resourceName == null) ? this.getClass().getPackage().getName() + ".proto" : resourceName;
-		this.loader = (loader == null) ? Reflect.getClassLoader(this.getClass()) : loader;
-	}
-
-	@Deprecated
-	@Override
-	public final String getProtoFileName() {
-		return null;
-	}
-
-	@Deprecated
-	@Override
-	public final String getProtoFile() {
-		return null;
+	protected AbstractSerializationContextInitializer(String resourceName, Class<?> containingClass) {
+		this.resourceName = resourceName;
+		this.loader = Reflect.getClassLoader(containingClass);
 	}
 
 	@Override
 	public void registerSchema(SerializationContext context) {
-		context.registerProtoFiles(Reflect.loadSchemas(this.resourceName, this.loader));
+		try {
+			context.registerProtoFiles(Reflect.loadSchemas(this.resourceName, this.loader));
+		} catch (DescriptorParserException e) {
+			try {
+				// If parsing failed, unregister this schema so others can register
+				context.unregisterProtoFile(this.resourceName);
+			} catch (RuntimeException re) {
+				// Ignore
+			}
+			throw e;
+		}
 	}
 
 	@Override

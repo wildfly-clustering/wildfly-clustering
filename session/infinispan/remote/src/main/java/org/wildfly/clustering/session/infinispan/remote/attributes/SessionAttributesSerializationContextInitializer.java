@@ -5,9 +5,9 @@
 
 package org.wildfly.clustering.session.infinispan.remote.attributes;
 
-import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.session.cache.SessionKeyMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.session.cache.IdentifierMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -16,6 +16,6 @@ public class SessionAttributesSerializationContextInitializer extends AbstractSe
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new SessionKeyMarshaller<>(SessionAttributesKey.class, SessionAttributesKey::new));
+		context.registerMarshaller(IdentifierMarshaller.getKeyMarshaller(SessionAttributesKey::new));
 	}
 }

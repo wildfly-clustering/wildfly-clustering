@@ -11,6 +11,11 @@ import java.util.Set;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.session.user.UserSessions;
 
+/**
+ * A mutable user sessions implementation.
+ * @param <D> the deployment type
+ * @param <S> the session type
+ */
 public class MutableUserSessions<D, S> implements UserSessions<D, S> {
 
 	private final Map<D, S> sessions;

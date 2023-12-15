@@ -123,7 +123,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 	 * first or last node.  Active nodes cannot be unlinked.
 	 *
 	 * A "self-link" is a next or prev reference that is the same node:
-	 *   p.prev == p  or  p.next == p
+	 * p.prev == p  or  p.next == p
 	 * Self-links are used in the node unlinking process.  Active nodes
 	 * never have self-links.
 	 *

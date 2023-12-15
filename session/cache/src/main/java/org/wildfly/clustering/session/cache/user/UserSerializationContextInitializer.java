@@ -5,10 +5,9 @@
 
 package org.wildfly.clustering.session.cache.user;
 
-import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
  * @author Paul Ferraro
@@ -17,6 +16,6 @@ public class UserSerializationContextInitializer extends AbstractSerializationCo
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new FunctionalScalarMarshaller<>(UserContextEntry.class, Scalar.ANY, UserContextEntry::getContext, UserContextEntry::new));
+		context.registerMarshaller(Scalar.ANY.toMarshaller(UserContextEntry.class, UserContextEntry::getPersistentContext, UserContextEntry::new));
 	}
 }

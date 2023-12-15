@@ -8,11 +8,11 @@ package org.wildfly.clustering.session.user;
  * Represents a user, associated with one or more sessions.
  * @author Paul Ferraro
  * @param <C> the user context type
- * @param <L> the local context type
+ * @param <T> the transient context type
  * @param <D> the deployment identifier type
  * @param <S> the session identifier type
  */
-public interface User<C, L, D, S> {
+public interface User<C, T, D, S> {
 	/**
 	 * Returns the unique identifier for this user.
 	 * @return a unique identifier
@@ -20,17 +20,16 @@ public interface User<C, L, D, S> {
 	String getId();
 
 	/**
-	 * Returns the replicated context of this user.
-	 * @return the user context.
+	 * Returns the persistent context of this user.
+	 * @return the persistent user context.
 	 */
-	C getContext();
+	C getPersistentContext();
 
 	/**
-	 * The local context of this user.
-	 * The local context is *not* replicated to other nodes in the cluster.
-	 * @return a local context.
+	 * Returns the transient context of this user.
+	 * @return the transient user context
 	 */
-	L getLocalContext();
+	T getTransientContext();
 
 	/**
 	 * Returns the sessions for this user.

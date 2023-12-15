@@ -23,24 +23,24 @@ import org.wildfly.common.function.Functions;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanUserContextFactory<C, CV, L> implements UserContextFactory<UserContext<CV, L>, C, L> {
+public class InfinispanUserContextFactory<C, CV, T> implements UserContextFactory<UserContext<CV, T>, C, T> {
 
-	private final Cache<UserContextKey, UserContext<CV, L>> findCache;
-	private final Cache<UserContextKey, UserContext<CV, L>> writeCache;
+	private final Cache<UserContextKey, UserContext<CV, T>> findCache;
+	private final Cache<UserContextKey, UserContext<CV, T>> writeCache;
 	private final Marshaller<C, CV> marshaller;
-	private final Supplier<L> localContextFactory;
+	private final Supplier<T> contextFactory;
 
-	public InfinispanUserContextFactory(EmbeddedCacheConfiguration configuration, Marshaller<C, CV> marshaller, Supplier<L> localContextFactory) {
+	public InfinispanUserContextFactory(EmbeddedCacheConfiguration configuration, Marshaller<C, CV> marshaller, Supplier<T> contextFactory) {
 		this.writeCache = configuration.getWriteOnlyCache();
 		this.findCache = configuration.getReadForUpdateCache();
 		this.marshaller = marshaller;
-		this.localContextFactory = localContextFactory;
+		this.contextFactory = contextFactory;
 	}
 
 	@Override
-	public CompletionStage<UserContext<CV, L>> createValueAsync(String id, C context) {
+	public CompletionStage<UserContext<CV, T>> createValueAsync(String id, C context) {
 		try {
-			UserContext<CV, L> entry = new UserContextEntry<>(this.marshaller.write(context));
+			UserContext<CV, T> entry = new UserContextEntry<>(this.marshaller.write(context));
 			return this.writeCache.putAsync(new UserContextKey(id), entry).thenApply(v -> entry);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
@@ -48,7 +48,7 @@ public class InfinispanUserContextFactory<C, CV, L> implements UserContextFactor
 	}
 
 	@Override
-	public CompletionStage<UserContext<CV, L>> findValueAsync(String id) {
+	public CompletionStage<UserContext<CV, T>> findValueAsync(String id) {
 		return this.findCache.getAsync(new UserContextKey(id));
 	}
 
@@ -58,10 +58,10 @@ public class InfinispanUserContextFactory<C, CV, L> implements UserContextFactor
 	}
 
 	@Override
-	public Map.Entry<C, L> createUserContext(UserContext<CV, L> entry) {
+	public Map.Entry<C, T> createUserContext(UserContext<CV, T> entry) {
 		try {
-			C context = this.marshaller.read(entry.getContext());
-			return new AbstractMap.SimpleImmutableEntry<>(context, entry.getContext(this.localContextFactory));
+			C context = this.marshaller.read(entry.getPersistentContext());
+			return new AbstractMap.SimpleImmutableEntry<>(context, entry.getTransientContext().get(this.contextFactory));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}

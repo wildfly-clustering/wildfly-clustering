@@ -8,7 +8,6 @@ package org.wildfly.clustering.cache.infinispan.marshalling.protostream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.OptionalInt;
 import java.util.ServiceLoader;
@@ -31,9 +30,10 @@ public class WrappedMessageByteBufferMarshaller implements ByteBufferMarshaller 
 		this(createSerializationContext(loader));
 	}
 
+	@SuppressWarnings({ "removal", "deprecation" })
 	private static ImmutableSerializationContext createSerializationContext(ClassLoader loader) {
 		SerializationContext context = ProtobufUtil.newSerializationContext();
-		AccessController.doPrivileged(new PrivilegedAction<>() {
+		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Void run() {
 				for (SerializationContextInitializer initializer : ServiceLoader.load(SerializationContextInitializer.class, loader)) {

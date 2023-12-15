@@ -5,10 +5,9 @@
 
 package org.wildfly.clustering.server.local;
 
-import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
  * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
@@ -19,6 +18,6 @@ public class LocalServerSerializationContextInitializer extends AbstractSerializ
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new FunctionalScalarMarshaller<>(DefaultLocalGroupMember.class, Scalar.STRING.cast(String.class), DefaultLocalGroupMember::getName, DefaultLocalGroupMember::new));
+		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(DefaultLocalGroupMember.class, DefaultLocalGroupMember::getName, DefaultLocalGroupMember::new));
 	}
 }

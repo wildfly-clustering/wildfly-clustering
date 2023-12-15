@@ -5,11 +5,11 @@
 
 package org.wildfly.clustering.server.jgroups.dispatcher;
 
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * {@link SerializationContextInitializer} for this package.
@@ -20,6 +20,6 @@ public class CommandDispatcherSerializationContextInitializer extends AbstractSe
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new EnumMarshaller<>(ServiceResponse.class));
+		context.registerMarshaller(ProtoStreamMarshaller.of(ServiceResponse.class));
 	}
 }

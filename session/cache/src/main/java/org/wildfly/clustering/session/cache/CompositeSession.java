@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.cache;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.Remover;
+import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
@@ -20,15 +21,15 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 
 	private final InvalidatableSessionMetaData metaData;
 	private final SessionAttributes attributes;
-	private final Contextual<C> contextual;
+	private final Supplied<C> context;
 	private final Supplier<C> contextFactory;
 	private final Remover<String> remover;
 
-	public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, Contextual<C> contextual, Supplier<C> contextFactory, Remover<String> remover) {
+	public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, Supplied<C> context, Supplier<C> contextFactory, Remover<String> remover) {
 		super(id, metaData, attributes);
 		this.metaData = metaData;
 		this.attributes = attributes;
-		this.contextual = contextual;
+		this.context = context;
 		this.contextFactory = contextFactory;
 		this.remover = remover;
 	}
@@ -65,6 +66,6 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 
 	@Override
 	public C getContext() {
-		return this.contextual.getContext(this.contextFactory);
+		return this.context.get(this.contextFactory);
 	}
 }

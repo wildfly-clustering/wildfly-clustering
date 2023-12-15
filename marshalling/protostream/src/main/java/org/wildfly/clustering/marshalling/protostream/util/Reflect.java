@@ -7,7 +7,6 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,8 +16,9 @@ import java.util.List;
  */
 class Reflect {
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static Field findField(Class<?> sourceClass, Class<?> fieldType) {
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Field run() {
 				List<Field> assignableFields = new LinkedList<>();
@@ -57,8 +57,9 @@ class Reflect {
 		});
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T getValue(Object source, Field field, Class<T> fieldType) {
-		return AccessController.doPrivileged(new PrivilegedAction<T>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
 			public T run() {
 				try {

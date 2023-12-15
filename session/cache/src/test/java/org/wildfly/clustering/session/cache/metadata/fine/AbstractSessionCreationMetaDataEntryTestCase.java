@@ -31,7 +31,7 @@ public abstract class AbstractSessionCreationMetaDataEntryTestCase implements Co
 		// Verify defaults
 		assertEquals(this.created, entry.getCreationTime());
 		assertEquals(Duration.ZERO, entry.getTimeout());
-		assertNull(entry.getContext(() -> null));
+		assertNull(entry.getContext().get(() -> null));
 
 		// Apply original state
 		entry.setTimeout(this.originalTimeout);

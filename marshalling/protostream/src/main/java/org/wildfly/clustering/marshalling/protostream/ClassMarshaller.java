@@ -19,7 +19,7 @@ public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 
 	private final Field<Class<?>> field;
 
-	public ClassMarshaller(ClassLoaderMarshaller marshaller) {
+	ClassMarshaller(ClassLoaderMarshaller marshaller) {
 		ClassField[] fields = ClassField.values();
 		this.field = new LoadedClassField(marshaller, fields[fields.length - 1].getIndex() + 1);
 	}
