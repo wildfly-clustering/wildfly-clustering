@@ -24,7 +24,7 @@ public enum JBossTesterFactory implements MarshallingTesterFactory, Supplier<Byt
 	private final ByteBufferMarshaller marshaller;
 
 	JBossTesterFactory() {
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		ClassLoader loader = ClassLoader.getSystemClassLoader();
 		MarshallingConfiguration configuration = new MarshallingConfiguration();
 		configuration.setClassTable(new LoadedClassTable(loader));
 		configuration.setObjectTable(new LoadedObjectTable(loader));

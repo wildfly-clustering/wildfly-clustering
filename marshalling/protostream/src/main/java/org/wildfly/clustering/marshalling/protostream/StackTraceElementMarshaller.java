@@ -36,13 +36,13 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
 				case CLASS_NAME_INDEX:
-					className = reader.readAny(String.class);
+					className = reader.readString();
 					break;
 				case METHOD_NAME_INDEX:
-					methodName = reader.readAny(String.class);
+					methodName = reader.readString();
 					break;
 				case FILE_NAME_INDEX:
-					fileName = reader.readAny(String.class);
+					fileName = reader.readString();
 					break;
 				case LINE_NUMBER_INDEX:
 					line = reader.readUInt32();
@@ -52,13 +52,13 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
 					}
 					break;
 				case CLASS_LOADER_NAME_INDEX:
-					classLoaderName = reader.readAny(String.class);
+					classLoaderName = reader.readString();
 					break;
 				case MODULE_NAME_INDEX:
-					moduleName = reader.readAny(String.class);
+					moduleName = reader.readString();
 					break;
 				case MODULE_VERSION_INDEX:
-					moduleVersion = reader.readAny(String.class);
+					moduleVersion = reader.readString();
 					break;
 				default:
 					reader.skipField(tag);
@@ -69,11 +69,11 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, StackTraceElement element) throws IOException {
-		writer.writeAny(CLASS_NAME_INDEX, element.getClassName());
-		writer.writeAny(METHOD_NAME_INDEX, element.getMethodName());
+		writer.writeString(CLASS_NAME_INDEX, element.getClassName());
+		writer.writeString(METHOD_NAME_INDEX, element.getMethodName());
 		String fileName = element.getFileName();
 		if (fileName != null) {
-			writer.writeAny(FILE_NAME_INDEX, fileName);
+			writer.writeString(FILE_NAME_INDEX, fileName);
 		}
 		int line = element.getLineNumber();
 		boolean nativeMethod = element.isNativeMethod();
@@ -82,15 +82,15 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
 		}
 		String classLoaderName = element.getClassLoaderName();
 		if (classLoaderName != null) {
-			writer.writeAny(CLASS_LOADER_NAME_INDEX, classLoaderName);
+			writer.writeString(CLASS_LOADER_NAME_INDEX, classLoaderName);
 		}
 		String moduleName = element.getModuleName();
 		if (moduleName != null) {
-			writer.writeAny(MODULE_NAME_INDEX, moduleName);
+			writer.writeString(MODULE_NAME_INDEX, moduleName);
 		}
 		String moduleVersion = element.getModuleVersion();
 		if (moduleVersion != null) {
-			writer.writeAny(MODULE_VERSION_INDEX, moduleVersion);
+			writer.writeString(MODULE_VERSION_INDEX, moduleVersion);
 		}
 	}
 

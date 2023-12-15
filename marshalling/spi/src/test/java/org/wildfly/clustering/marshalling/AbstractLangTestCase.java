@@ -222,24 +222,26 @@ public abstract class AbstractLangTestCase {
 
 	@Test
 	public void testException() throws IOException {
-		try {
-			try {
-				try {
-					throw new Error("foo");
-				} catch (Throwable e) {
-					throw new RuntimeException("bar", e);
-				}
-			} catch (Throwable e) {
-				throw new Exception(e);
-			}
-		} catch (Throwable e) {
-			this.factory.<Throwable> createTester().test(e, AbstractLangTestCase::assertEquals);
-		}
+		Throwable exception = new RuntimeException("foo");
+		exception.setStackTrace(new StackTraceElement[] { exception.getStackTrace()[0] });
+		Throwable cause = new Exception("bar");
+		cause.setStackTrace(new StackTraceElement[] { cause.getStackTrace()[0] });
+		Throwable suppressed = new Error("baz");
+		suppressed.setStackTrace(new StackTraceElement[] { suppressed.getStackTrace()[0] });
+		exception.initCause(cause);
+		exception.addSuppressed(suppressed);
+		this.factory.<Throwable>createTester().test(exception, AbstractLangTestCase::assertEquals);
+	}
+
+	@Test
+	public void testStackTrace() throws IOException {
+		this.factory.<StackTraceElement>createTester().test(new StackTraceElement("class", "method", "file", -1), AbstractLangTestCase::assertEquals);
+		this.factory.<StackTraceElement>createTester().test(new StackTraceElement("loader", "module", "1.0", "class", "method", "file", 1), AbstractLangTestCase::assertEquals);
 	}
 
 	@Test
 	public void testProxy() throws IOException {
-		Object proxy = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class<?>[] { Iterable.class }, new TestInvocationHandler("foo"));
+		Object proxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class<?>[] { Iterable.class }, new TestInvocationHandler("foo"));
 
 		this.factory.createTester().test(proxy, AbstractLangTestCase::assertProxyEquals);
 	}
@@ -256,15 +258,9 @@ public abstract class AbstractLangTestCase {
 
 		StackTraceElement[] expectedStackTrace = expected.getStackTrace();
 		StackTraceElement[] actualStackTrace = expected.getStackTrace();
-		// Java 9 adds other fields to stack trace, for which normal equality checks will fail
 		Assertions.assertEquals(expectedStackTrace.length, actualStackTrace.length);
 		for (int i = 0; i < expectedStackTrace.length; ++i) {
-			StackTraceElement expectedElement = expectedStackTrace[i];
-			StackTraceElement actualElement = actualStackTrace[i];
-			Assertions.assertEquals(expectedElement.getClassName(), actualElement.getClassName());
-			Assertions.assertEquals(expectedElement.getMethodName(), actualElement.getMethodName());
-			Assertions.assertEquals(expectedElement.getFileName(), actualElement.getFileName());
-			Assertions.assertEquals(expectedElement.getLineNumber(), actualElement.getLineNumber());
+			assertEquals(expectedStackTrace[i], actualStackTrace[i]);
 		}
 
 		Throwable[] expectedSuppressed = expected.getSuppressed();
@@ -281,5 +277,15 @@ public abstract class AbstractLangTestCase {
 		} else {
 			assertSame(cause1, cause2);
 		}
+	}
+
+	private static void assertEquals(StackTraceElement expected, StackTraceElement actual) {
+		Assertions.assertEquals(expected.getClassName(), actual.getClassName());
+		Assertions.assertEquals(expected.getMethodName(), actual.getMethodName());
+		Assertions.assertEquals(expected.getFileName(), actual.getFileName());
+		Assertions.assertEquals(expected.getLineNumber(), actual.getLineNumber());
+		Assertions.assertEquals(expected.getClassLoaderName(), actual.getClassLoaderName());
+		Assertions.assertEquals(expected.getModuleName(), actual.getModuleName());
+		Assertions.assertEquals(expected.getModuleVersion(), actual.getModuleVersion());
 	}
 }
