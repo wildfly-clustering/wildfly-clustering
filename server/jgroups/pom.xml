@@ -70,18 +70,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.squareup</groupId>
-			<artifactId>protoparser</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.infinispan.protostream</groupId>
 			<artifactId>protostream-processor</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.marshalling</groupId>
-			<artifactId>jboss-marshalling-river</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

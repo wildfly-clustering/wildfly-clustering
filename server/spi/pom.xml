@@ -34,15 +34,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly.common</groupId>
-			<artifactId>wildfly-common</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 			<scope>test</scope>
@@ -50,12 +41,6 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-java</artifactId>
-			<scope>test</scope>
-			<classifier>tests</classifier>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>

@@ -36,7 +36,6 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
@@ -54,33 +53,14 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
-
-		<dependency>
-			<groupId>com.squareup</groupId>
-			<artifactId>protoparser</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.marshalling</groupId>
-			<artifactId>jboss-marshalling-river</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.threads</groupId>
-			<artifactId>jboss-threads</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
-
 </project>

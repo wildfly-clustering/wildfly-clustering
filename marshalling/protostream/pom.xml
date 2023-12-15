@@ -51,26 +51,14 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-			<scope>test</scope>
-			<classifier>tests</classifier>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
 
 		<dependency>
-			<groupId>com.squareup</groupId>
-			<artifactId>protoparser</artifactId>
+			<groupId>org.kohsuke.metainf-services</groupId>
+			<artifactId>metainf-services</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

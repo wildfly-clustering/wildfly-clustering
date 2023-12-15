@@ -19,7 +19,7 @@ import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 public enum JavaTesterFactory implements MarshallingTesterFactory, Supplier<ByteBufferMarshaller> {
 	INSTANCE;
 
-	private final ByteBufferMarshaller marshaller = new JavaByteBufferMarshaller();
+	private final ByteBufferMarshaller marshaller = new JavaByteBufferMarshaller(Thread.currentThread().getContextClassLoader());
 
 	@Override
 	public <T> MarshallingTester<T> createTester() {

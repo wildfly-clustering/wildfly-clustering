@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.infinispan.protostream.FileDescriptorSource;
 
@@ -37,7 +38,7 @@ class Reflect {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public List<T> run() {
-				return ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).toList();
+				return ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).collect(Collectors.toList());
 			}
 		});
 	}
