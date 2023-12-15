@@ -114,6 +114,14 @@
 					<configLocation>checkstyle.xml</configLocation>
 					<logViolationsToConsole>true</logViolationsToConsole>
 				</configuration>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

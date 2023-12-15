@@ -33,15 +33,15 @@ public interface ImmutableSessionAttributes {
 	 * @return an unmodifiable map of attributes implementing the specified class
 	 */
 	default <T> Map<String, T> getAttributes(Class<T> targetClass) {
-        Set<String> names = this.getAttributeNames();
-        if (names.isEmpty()) return Map.of();
-        Map<String, T> result = new TreeMap<>();
-        for (String name : names) {
-            Object attribute = this.getAttribute(name);
-            if (targetClass.isInstance(attribute)) {
-                result.put(name, targetClass.cast(attribute));
-            }
-        }
-        return Collections.unmodifiableMap(result);
+		Set<String> names = this.getAttributeNames();
+		if (names.isEmpty()) return Map.of();
+		Map<String, T> result = new TreeMap<>();
+		for (String name : names) {
+			Object attribute = this.getAttribute(name);
+			if (targetClass.isInstance(attribute)) {
+				result.put(name, targetClass.cast(attribute));
+			}
+		}
+		return Collections.unmodifiableMap(result);
 	}
 }
