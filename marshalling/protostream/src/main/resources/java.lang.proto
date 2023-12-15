@@ -6,8 +6,11 @@ package java.lang;
  * @TypeId(1)
  */
 message Class {
-	optional	string	name	= 1;
-	optional	bytes	module	= 2;
+	optional	Class	any	= 1;
+	optional	uint32	id	= 2;
+	optional	string	name	= 3;
+	optional	uint32	field	= 4;
+	optional	string	module	= 5;
 }
 
 /**

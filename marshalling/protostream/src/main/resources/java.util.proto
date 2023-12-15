@@ -1,6 +1,7 @@
 package java.util;
 
 import "java.lang.proto";
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 // IDs: 10 - 59
 
@@ -42,22 +43,22 @@ message EmptySet {
  * @TypeId(15)
  */
 message SingletonList {
-	optional	bytes	value	= 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
 }
 
 /**
  * @TypeId(16)
  */
 message SingletonMap {
-	optional	bytes	key	= 1;
-	optional	bytes	value	= 2;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
  * @TypeId(17)
  */
 message SingletonSet {
-	optional	bytes	value	= 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
 }
 
 // Synchronized collections
@@ -66,51 +67,51 @@ message SingletonSet {
  * @TypeId(20)
  */
 message SynchronizedCollection {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 /**
  * @TypeId(21)
  */
 message SynchronizedList {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 /**
  * @TypeId(22)
  */
 message SynchronizedMap {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 message SynchronizedNavigableMap {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 message SynchronizedNavigableSet {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 /**
  * @TypeId(23)
  */
 message SynchronizedRandomAccessList {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 /**
  * @TypeId(24)
  */
 message SynchronizedSet {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 message SynchronizedSortedMap {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 message SynchronizedSortedSet {
-	optional	bytes	value	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 // Unmodifiable collections
@@ -119,51 +120,51 @@ message SynchronizedSortedSet {
  * @TypeId(25)
  */
 message UnmodifiableCollection {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 /**
  * @TypeId(26)
  */
 message UnmodifiableList {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 /**
  * @TypeId(27)
  */
 message UnmodifiableMap {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 message UnmodifiableNavigableMap {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 message UnmodifiableNavigableSet {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 /**
  * @TypeId(28)
  */
 message UnmodifiableRandomAccessList {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 /**
  * @TypeId(29)
  */
 message UnmodifiableSet {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 message UnmodifiableSortedMap {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 message UnmodifiableSortedSet {
-	optional	bytes	collection	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 // Collections
@@ -172,14 +173,14 @@ message UnmodifiableSortedSet {
  * @TypeId(30)
  */
 message ArrayDeque {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
  * @TypeId(31)
  */
 message ArrayList {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
@@ -224,9 +225,9 @@ message Date {
 message EnumMap {
 	optional	java.lang.Class	enumClass	= 1;
 	optional	java.lang.Class	complementClass	= 2;
-	optional	bytes	bits	= 3;
+	optional	BitSet	bits	= 3;
 	repeated	uint32	element	= 4;
-	repeated	bytes	value	= 5;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 5;
 }
 
 /**
@@ -235,7 +236,7 @@ message EnumMap {
 message EnumSet {
 	optional	java.lang.Class	enumClass	= 1;
 	optional	java.lang.Class	complementClass	= 2;
-	optional	bytes	bits	= 3;
+	optional	BitSet	bits	= 3;
 	repeated	uint32	element	= 4;
 }
 
@@ -243,23 +244,23 @@ message EnumSet {
  * @TypeId(38)
  */
 message HashMap {
-	repeated	bytes	key	= 1;
-	repeated	bytes	value	= 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
  * @TypeId(39)
  */
 message HashSet {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
  * @TypeId(40)
  */
 message LinkedHashMap {
-	repeated	bytes	key	= 1;
-	repeated	bytes	value	= 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 	optional	bool	accessOrder	= 3;
 }
 
@@ -267,14 +268,14 @@ message LinkedHashMap {
  * @TypeId(41)
  */
 message LinkedHashSet {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
  * @TypeId(42)
  */
 message LinkedList {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
@@ -292,16 +293,16 @@ message Locale {
  * @TypeId(48)
  */
 message SimpleEntry {
-	optional	bytes	key	= 1;
-	optional	bytes	value	= 2;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
  * @TypeId(49)
  */
 message SimpleImmutableEntry {
-	optional	bytes	key	= 1;
-	optional	bytes	value	= 2;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
@@ -315,19 +316,19 @@ message TimeZone {
  * @TypeId(51)
  */
 message TreeMap {
-	repeated	bytes	key	= 1;
-	repeated	bytes	value	= 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 	optional	bool	reverse	= 3;
-	optional	bytes	comparator	= 4;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 4;
 }
 
 /**
  * @TypeId(52)
  */
 message TreeSet {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 	optional	bool	reverse	= 2;
-	optional	bytes	comparator	= 3;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 3;
 }
 
 /**
@@ -344,42 +345,42 @@ message UUID {
  * @TypeId(54)
  */
 message List12 {
-	repeated	bytes	element	 = 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	 = 1;
 }
 
 /**
  * @TypeId(55)
  */
 message ListN {
-	repeated	bytes	element	 = 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	 = 1;
 }
 
 /**
  * @TypeId(56)
  */
 message Map1 {
-	optional	bytes	key	 = 1;
-	optional	bytes	value	 = 2;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	key	 = 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 2;
 }
 
 /**
  * @TypeId(57)
  */
 message MapN {
-	repeated	bytes	key	 = 1;
-	repeated	bytes	value	 = 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	 = 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	 = 2;
 }
 
 /**
  * @TypeId(58)
  */
 message Set12 {
-	repeated	bytes	element	 = 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	 = 1;
 }
 
 /**
  * @TypeId(59)
  */
 message SetN {
-	repeated	bytes	element	 = 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	 = 1;
 }

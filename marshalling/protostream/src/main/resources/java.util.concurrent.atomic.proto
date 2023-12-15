@@ -1,5 +1,7 @@
 package java.util.concurrent.atomic;
 
+import "org.wildfly.clustering.marshalling.protostream.proto";
+
 // IDs: 80 - 89
 
 /**
@@ -27,5 +29,5 @@ message AtomicLong {
  * @TypeId(83)
  */
 message AtomicReference {
-	optional	bytes	value	= 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
 }

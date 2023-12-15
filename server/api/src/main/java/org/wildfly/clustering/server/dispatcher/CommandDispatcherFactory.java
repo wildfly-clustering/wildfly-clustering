@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
+import java.util.Optional;
+
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 
@@ -30,7 +32,7 @@ public interface CommandDispatcherFactory<M extends GroupMember> {
 	 * @return a new command dispatcher
 	 */
 	default <C> CommandDispatcher<M, C> createCommandDispatcher(Object id, C context) {
-		return this.createCommandDispatcher(id, context, Thread.currentThread().getContextClassLoader());
+		return this.createCommandDispatcher(id, context, Optional.ofNullable(Thread.currentThread().getContextClassLoader()).orElseGet(ClassLoader::getSystemClassLoader));
 	}
 
 	/**

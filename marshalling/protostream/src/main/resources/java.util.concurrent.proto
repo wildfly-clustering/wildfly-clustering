@@ -1,6 +1,7 @@
 package java.util.concurrent;
 
 import "java.util.proto";
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 // IDs: 60 - 79
 
@@ -8,62 +9,62 @@ import "java.util.proto";
  * @TypeId(60)
  */
 message ConcurrentHashMap {
-	repeated	bytes	key	= 1;
-	repeated	bytes	value	= 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
  * @TypeId(61)
  */
 message KeySetView {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
  * @TypeId(62)
  */
 message ConcurrentLinkedDeque {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
  * @TypeId(63)
  */
 message ConcurrentLinkedQueue {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
  * @TypeId(64)
  */
 message ConcurrentSkipListMap {
-	repeated	bytes	key	= 1;
-	repeated	bytes	value	= 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 	optional	bool	reverse	= 3;
-	optional	bytes	comparator	= 4;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 4;
 }
 
 /**
  * @TypeId(65)
  */
 message ConcurrentSkipListSet {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 	optional	bool	reverse	= 2;
-	optional	bytes	comparator	= 3;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 3;
 }
 
 /**
  * @TypeId(66)
  */
 message	CopyOnWriteArrayList {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**
  * @TypeId(67)
  */
 message	CopyOnWriteArraySet {
-	repeated	bytes	element	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
 }
 
 /**

@@ -1,6 +1,7 @@
 package org.wildfly.clustering.cache.function;
 
 import "java.util.proto";
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 // IDs: 160 - 169
 
@@ -15,19 +16,19 @@ message MapComputeFunction {
  * @TypeId(161)
  */
 message SetAddFunction {
-	repeated	bytes	value	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
 }
 
 /**
  * @TypeId(162)
  */
 message SetRemoveFunction {
-	repeated	bytes	value	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
 }
 
 /**
  * @TypeId(163)
  */
 message RemappingFunction {
-	optional	bytes	operand	= 1;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	operand	= 1;
 }
