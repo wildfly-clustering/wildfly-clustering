@@ -20,7 +20,7 @@ public class TypedArrayMarshaller implements FieldMarshaller<Object> {
 
 	private final ScalarMarshaller<Class<?>> componentType;
 
-	public TypedArrayMarshaller(ScalarMarshaller<Class<?>> componentType) {
+	TypedArrayMarshaller(ScalarMarshaller<Class<?>> componentType) {
 		this.componentType = componentType;
 	}
 

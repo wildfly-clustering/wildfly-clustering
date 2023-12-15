@@ -8,6 +8,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.OptionalInt;
 
 import org.infinispan.protostream.descriptors.WireType;
 
@@ -15,9 +16,9 @@ import org.infinispan.protostream.descriptors.WireType;
  * Enumeration of common scalar marshaller implementations.
  * @author Paul Ferraro
  */
-public enum Scalar implements ScalarMarshallerProvider {
+public enum Scalar implements ScalarMarshaller<Object> {
 
-	ANY(new ScalarMarshaller<Object>() {
+	ANY(new ScalarMarshaller<>() {
 		@Override
 		public Object readFrom(ProtoStreamReader reader) throws IOException {
 			return reader.readAny();
@@ -335,7 +336,35 @@ public enum Scalar implements ScalarMarshallerProvider {
 	}
 
 	@Override
-	public ScalarMarshaller<?> getMarshaller() {
-		return this.marshaller;
+	public Class<? extends Object> getJavaClass() {
+		return this.marshaller.getJavaClass();
+	}
+
+	@Override
+	public WireType getWireType() {
+		return this.marshaller.getWireType();
+	}
+
+	@Override
+	public Object readFrom(ProtoStreamReader reader) throws IOException {
+		return this.marshaller.readFrom(reader);
+	}
+
+	@Override
+	public void writeTo(ProtoStreamWriter writer, Object value) throws IOException {
+		this.cast(Object.class).writeTo(writer, value);
+	}
+
+	@Override
+	public OptionalInt size(ProtoStreamSizeOperation operation, Object value) {
+		return this.cast(Object.class).size(operation, value);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> ScalarMarshaller<T> cast(Class<T> type) {
+		if (!type.isAssignableFrom(this.getJavaClass())) {
+			throw new IllegalArgumentException(type.getName());
+		}
+		return (ScalarMarshaller<T>) this.marshaller;
 	}
 }

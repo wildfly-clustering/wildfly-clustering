@@ -5,12 +5,8 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.UncheckedIOException;
 import java.util.EnumSet;
 import java.util.List;
-
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
 
 /**
  * {@link SerializationContextInitializer} that registers a set of {@link SerializationContextInitializer} instances.
@@ -34,18 +30,6 @@ public class CompositeSerializationContextInitializer implements SerializationCo
 
 	public CompositeSerializationContextInitializer(Iterable<? extends SerializationContextInitializer> initializers) {
 		this.initializers = initializers;
-	}
-
-	@Deprecated
-	@Override
-	public String getProtoFileName() {
-		return null;
-	}
-
-	@Deprecated
-	@Override
-	public String getProtoFile() throws UncheckedIOException {
-		return null;
 	}
 
 	@Override

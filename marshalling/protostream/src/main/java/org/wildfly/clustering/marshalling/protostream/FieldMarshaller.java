@@ -14,7 +14,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * @author Paul Ferraro
  * @param <T> the type of this marshaller
  */
-public interface FieldMarshaller<T> extends Marshallable<T> {
+interface FieldMarshaller<T> extends Marshallable<T> {
 
 	/**
 	 * Returns the wire type of the scalar value written by this marshaller.

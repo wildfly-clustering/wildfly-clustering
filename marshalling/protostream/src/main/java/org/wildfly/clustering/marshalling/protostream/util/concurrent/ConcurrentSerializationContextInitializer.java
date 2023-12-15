@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.marshalling.protostream.util.concurrent;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -13,35 +16,44 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.util.CollectionMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.MapMarshaller;
+import org.wildfly.clustering.marshalling.protostream.util.SortedMapMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.SortedSetMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public enum ConcurrentMarshallerProvider implements ProtoStreamMarshallerProvider {
-	CONCURRENT_HASH_MAP(new ConcurrentMapMarshaller<>(ConcurrentHashMap::new)),
-	CONCURRENT_HASH_SET(new CollectionMarshaller<>(ConcurrentHashMap::newKeySet)),
-	CONCURRENT_LINKED_DEQUE(new CollectionMarshaller<>(ConcurrentLinkedDeque::new)),
-	CONCURRENT_LINKED_QUEUE(new CollectionMarshaller<>(ConcurrentLinkedQueue::new)),
-	CONCURRENT_SKIP_LIST_MAP(new ConcurrentSortedMapMarshaller<>(ConcurrentSkipListMap::new)),
-	CONCURRENT_SKIP_LIST_SET(new SortedSetMarshaller<>(ConcurrentSkipListSet::new)),
-	COPY_ON_WRITE_ARRAY_LIST(new CopyOnWriteCollectionMarshaller<>(CopyOnWriteArrayList::new)),
-	COPY_ON_WRITE_ARRAY_SET(new CopyOnWriteCollectionMarshaller<>(CopyOnWriteArraySet::new)),
-	TIME_UNIT(new EnumMarshaller<>(TimeUnit.class)),
-	;
-	private final ProtoStreamMarshaller<?> marshaller;
+public class ConcurrentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-	ConcurrentMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-		this.marshaller = marshaller;
+	public ConcurrentSerializationContextInitializer() {
+		super("java.util.concurrent.proto");
 	}
 
 	@Override
-	public ProtoStreamMarshaller<?> getMarshaller() {
-		return this.marshaller;
+	public void registerMarshallers(SerializationContext context) {
+		@SuppressWarnings("unchecked")
+		ProtoStreamMarshaller<Collection<Object>> collectionMarshaller = (ProtoStreamMarshaller<Collection<Object>>) (ProtoStreamMarshaller<?>) context.getMarshaller(LinkedList.class);
+
+		context.registerMarshaller(new MapMarshaller<>(ConcurrentHashMap::new));
+		context.registerMarshaller(new CollectionMarshaller<>(ConcurrentHashMap::newKeySet));
+		context.registerMarshaller(new CollectionMarshaller<>(ConcurrentLinkedDeque::new));
+		context.registerMarshaller(new CollectionMarshaller<>(ConcurrentLinkedQueue::new));
+		context.registerMarshaller(new SortedMapMarshaller<>(ConcurrentSkipListMap::new));
+		context.registerMarshaller(new SortedSetMarshaller<>(ConcurrentSkipListSet::new));
+		context.registerMarshaller(copyOnWriteMarshaller(collectionMarshaller, CopyOnWriteArrayList::new));
+		context.registerMarshaller(copyOnWriteMarshaller(collectionMarshaller, CopyOnWriteArraySet::new));
+		context.registerMarshaller(ProtoStreamMarshaller.of(TimeUnit.class));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T extends Collection<Object>> ProtoStreamMarshaller<T> copyOnWriteMarshaller(ProtoStreamMarshaller<Collection<Object>> sourceMarshaller, Function<Collection<Object>, T> factory) {
+		// Use bulk operation for copy-on-write collections
+		return sourceMarshaller.map((Class<T>) factory.apply(List.of()).getClass(), factory);
 	}
 }

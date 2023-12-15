@@ -7,14 +7,11 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufTagMarshaller;
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.config.Configuration;
 import org.infinispan.protostream.descriptors.Descriptor;
 import org.infinispan.protostream.descriptors.EnumDescriptor;
@@ -27,14 +24,9 @@ import org.infinispan.protostream.impl.SerializationContextImpl;
  * We have to use the decorator pattern since SerializationContextImpl is final.
  * @author Paul Ferraro
  */
-public class DefaultSerializationContext implements SerializationContext, Supplier<ImmutableSerializationContext> {
+public class DefaultSerializationContext implements SerializationContext {
 
-	private final SerializationContext context = new SerializationContextImpl(Configuration.builder().build());
-
-	@Override
-	public ImmutableSerializationContext get() {
-		return this.context;
-	}
+	private final org.infinispan.protostream.SerializationContext context = new SerializationContextImpl(Configuration.builder().build());
 
 	@Override
 	public Configuration getConfiguration() {
@@ -77,18 +69,19 @@ public class DefaultSerializationContext implements SerializationContext, Suppli
 	}
 
 	@Override
-	public <T> BaseMarshaller<T> getMarshaller(T object) {
-		return this.context.getMarshaller(object);
+	public <T> ProtoStreamMarshaller<T> getMarshaller(T object) {
+		return (ProtoStreamMarshaller<T>) this.context.getMarshaller(object);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> ProtoStreamMarshaller<T> getMarshaller(String fullTypeName) {
+		return (ProtoStreamMarshaller<T>) this.context.getMarshaller(fullTypeName);
 	}
 
 	@Override
-	public <T> BaseMarshaller<T> getMarshaller(String fullTypeName) {
-		return this.context.getMarshaller(fullTypeName);
-	}
-
-	@Override
-	public <T> BaseMarshaller<T> getMarshaller(Class<T> clazz) {
-		return this.context.getMarshaller(clazz);
+	public <T> ProtoStreamMarshaller<T> getMarshaller(Class<T> clazz) {
+		return (ProtoStreamMarshaller<T>) this.context.getMarshaller(clazz);
 	}
 
 	@Deprecated
@@ -129,8 +122,8 @@ public class DefaultSerializationContext implements SerializationContext, Suppli
 	}
 
 	@Override
-	public void registerMarshaller(BaseMarshaller<?> marshaller) {
-		this.context.registerMarshaller(this.adapt(marshaller));
+	public void registerMarshaller(ProtoStreamMarshaller<?> marshaller) {
+		this.context.registerMarshaller(marshaller);
 	}
 
 	@Override
@@ -141,7 +134,7 @@ public class DefaultSerializationContext implements SerializationContext, Suppli
 	@Deprecated
 	@Override
 	public void registerMarshallerProvider(MarshallerProvider provider) {
-		this.context.registerMarshallerProvider(this.adapt(provider));
+		this.context.registerMarshallerProvider(provider);
 	}
 
 	@Deprecated
@@ -151,74 +144,23 @@ public class DefaultSerializationContext implements SerializationContext, Suppli
 	}
 
 	@Override
-	public void registerMarshallerProvider(InstanceMarshallerProvider<?> provider) {
-		this.context.registerMarshallerProvider(this.adapt(provider));
+	public void registerMarshallerProvider(org.infinispan.protostream.SerializationContext.InstanceMarshallerProvider<?> provider) {
+		if (!(provider instanceof InstanceMarshallerProvider)) {
+			throw new IllegalArgumentException();
+		}
+		this.context.registerMarshallerProvider(provider);
 	}
 
 	@Override
-	public void unregisterMarshallerProvider(InstanceMarshallerProvider<?> provider) {
+	public void unregisterMarshallerProvider(org.infinispan.protostream.SerializationContext.InstanceMarshallerProvider<?> provider) {
+		if (!(provider instanceof InstanceMarshallerProvider)) {
+			throw new IllegalArgumentException();
+		}
 		this.context.unregisterMarshallerProvider(provider);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	<T> BaseMarshaller<T> adapt(BaseMarshaller<T> marshaller) {
-		if (marshaller instanceof ProtoStreamMarshaller) {
-			return marshaller;
-		}
-		if (marshaller instanceof ProtobufTagMarshaller) {
-			return new ProtoStreamMarshallerAdapter<>((ProtobufTagMarshaller<T>) marshaller);
-		}
-		if (marshaller instanceof org.infinispan.protostream.EnumMarshaller) {
-			return new EnumMarshallerAdapter<>((org.infinispan.protostream.EnumMarshaller) marshaller);
-		}
-		throw new IllegalArgumentException(marshaller.getTypeName());
-	}
-
-	private <T> InstanceMarshallerProvider<T> adapt(InstanceMarshallerProvider<T> provider) {
-		return new InstanceMarshallerProvider<>() {
-			@Override
-			public Class<T> getJavaClass() {
-				return provider.getJavaClass();
-			}
-
-			@Override
-			public Set<String> getTypeNames() {
-				return provider.getTypeNames();
-			}
-
-			@Override
-			public String getTypeName(T instance) {
-				return provider.getTypeName(instance);
-			}
-
-			@Override
-			public BaseMarshaller<T> getMarshaller(T instance) {
-				BaseMarshaller<T> marshaller = provider.getMarshaller(instance);
-				return (marshaller != null) ? DefaultSerializationContext.this.adapt(marshaller) : null;
-			}
-
-			@Override
-			public BaseMarshaller<T> getMarshaller(String typeName) {
-				BaseMarshaller<T> marshaller = provider.getMarshaller(typeName);
-				return (marshaller != null) ? DefaultSerializationContext.this.adapt(marshaller) : null;
-			}
-		};
-	}
-
-	@Deprecated
-	private MarshallerProvider adapt(MarshallerProvider provider) {
-		return new MarshallerProvider() {
-			@Override
-			public BaseMarshaller<?> getMarshaller(String typeName) {
-				BaseMarshaller<?> marshaller = provider.getMarshaller(typeName);
-				return (marshaller != null) ? DefaultSerializationContext.this.adapt(marshaller) : null;
-			}
-
-			@Override
-			public BaseMarshaller<?> getMarshaller(Class<?> javaClass) {
-				BaseMarshaller<?> marshaller = provider.getMarshaller(javaClass);
-				return (marshaller != null) ? DefaultSerializationContext.this.adapt(marshaller) : null;
-			}
-		};
+	@Override
+	public ImmutableSerializationContext getImmutableSerializationContext() {
+		return this.context;
 	}
 }

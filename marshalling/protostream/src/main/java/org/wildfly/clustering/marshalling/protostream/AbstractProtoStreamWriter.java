@@ -50,7 +50,7 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
 	private final int depth;
 	private final ProtoStreamWriterContext context;
 
-	protected AbstractProtoStreamWriter(WriteContext context, ProtoStreamWriterContext writerContext) {
+	AbstractProtoStreamWriter(WriteContext context, ProtoStreamWriterContext writerContext) {
 		super(context);
 		this.writer = context.getWriter();
 		this.depth = context.depth();

@@ -19,7 +19,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
 	private final int index;
 	private final int loaderIndex;
 
-	public LoadedClassField(ClassLoaderMarshaller loaderMarshaller, int index) {
+	LoadedClassField(ClassLoaderMarshaller loaderMarshaller, int index) {
 		this.loaderMarshaller = loaderMarshaller;
 		this.index = index;
 		this.loaderIndex = index + 1;

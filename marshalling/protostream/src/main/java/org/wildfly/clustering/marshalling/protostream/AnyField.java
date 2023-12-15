@@ -99,7 +99,7 @@ public enum AnyField implements Field<Object> {
 	DOUBLE_ARRAY(new PackedArrayMarshaller<>(Double.TYPE, Scalar.DOUBLE.cast(Double.class))),
 	CHAR_ARRAY(new PackedArrayMarshaller<>(Character.TYPE, Scalar.CHARACTER.cast(Character.class))),
 	ANY_ARRAY(new TypedArrayMarshaller(ScalarClass.ANY)),
-	PROXY(new FieldMarshaller<Object>() {
+	PROXY(new FieldMarshaller<>() {
 		@Override
 		public Object readFrom(ProtoStreamReader reader) throws IOException {
 			InvocationHandler handler = (InvocationHandler) Scalar.ANY.readFrom(reader);

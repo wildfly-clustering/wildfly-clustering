@@ -23,7 +23,7 @@ public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protost
 	private final Class<E> enumClass;
 	private final E[] values;
 
-	public EnumMarshaller(Class<E> enumClass) {
+	EnumMarshaller(Class<E> enumClass) {
 		this.enumClass = enumClass;
 		this.values = enumClass.getEnumConstants();
 	}

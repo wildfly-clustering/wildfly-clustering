@@ -27,7 +27,6 @@ public class AddressTestCase {
 
 	private static void test(Tester<Address> tester) throws IOException {
 		tester.test(UUID.randomUUID());
-		tester.test(new IpAddress(IpAddressMarshaller.DEFAULT_ADDRESS, IpAddressMarshaller.DEFAULT_PORT));
 		tester.test(new IpAddress(InetAddress.getLocalHost(), Short.MAX_VALUE));
 	}
 }

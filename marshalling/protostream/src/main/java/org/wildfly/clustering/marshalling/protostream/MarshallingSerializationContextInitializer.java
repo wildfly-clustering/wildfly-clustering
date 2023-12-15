@@ -8,18 +8,15 @@ package org.wildfly.clustering.marshalling.protostream;
 /**
  * @author Paul Ferraro
  */
-public enum MarshallingMarshallerProvider implements ProtoStreamMarshallerProvider {
-	BYTE_BUFFER_MARSHALLED_KEY(new ByteBufferMarshalledKeyMarshaller()),
-	BYTE_BUFFER_MARSHALLED_VALUE(new ByteBufferMarshalledValueMarshaller()),
-	;
-	private final ProtoStreamMarshaller<?> marshaller;
+public class MarshallingSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-	MarshallingMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-		this.marshaller = marshaller;
+	public MarshallingSerializationContextInitializer() {
+		super("org.wildfly.clustering.marshalling.proto");
 	}
 
 	@Override
-	public ProtoStreamMarshaller<?> getMarshaller() {
-		return this.marshaller;
+	public void registerMarshallers(SerializationContext context) {
+		context.registerMarshaller(ByteBufferMarshalledKeyMarshaller.INSTANCE);
+		context.registerMarshaller(ByteBufferMarshalledValueMarshaller.INSTANCE);
 	}
 }

@@ -5,15 +5,20 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.math.MathSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.net.NetSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.sql.SQLSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.time.TimeSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.util.UtilSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.util.concurrent.ConcurrentSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.AtomicSerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
@@ -70,12 +75,20 @@ public interface SerializationContextBuilder {
 	class DefaultSerializationContextBuilder implements SerializationContextBuilder {
 		private static final String PROTOSTREAM_BASE_PACKAGE_NAME = org.infinispan.protostream.BaseMarshaller.class.getPackage().getName();
 
-		private final DefaultSerializationContext context = new DefaultSerializationContext();
+		private final SerializationContext context = new DefaultSerializationContext();
 
 		DefaultSerializationContextBuilder(ClassLoaderMarshaller marshaller) {
 			// Load default schemas first, so they can be referenced by loader-specific schemas
 			this.register(new LangSerializationContextInitializer(marshaller));
-			this.register(EnumSet.allOf(DefaultSerializationContextInitializerProvider.class));
+			this.register(new AnySerializationContextInitializer());
+			this.register(new MathSerializationContextInitializer());
+			this.register(new NetSerializationContextInitializer());
+			this.register(new TimeSerializationContextInitializer());
+			this.register(new SQLSerializationContextInitializer());
+			this.register(new UtilSerializationContextInitializer());
+			this.register(new AtomicSerializationContextInitializer());
+			this.register(new ConcurrentSerializationContextInitializer());
+			this.register(new MarshallingSerializationContextInitializer());
 		}
 
 		@Override
@@ -87,51 +100,68 @@ public interface SerializationContextBuilder {
 
 		@Override
 		public SerializationContextBuilder load(ClassLoader loader) {
-			this.tryLoad(loader);
+			this.tryLoadAll(loader);
 			return this;
 		}
 
 		@Override
 		public SerializationContextBuilder require(ClassLoader loader) {
-			if (!this.tryLoad(loader)) {
+			if (!this.tryLoadAll(loader)) {
 				throw new NoSuchElementException();
 			}
 			return this;
 		}
 
-		private boolean tryLoad(ClassLoader loader) {
-			return this.tryRegister(Reflect.loadAll(SerializationContextInitializer.class, loader));
+		private boolean tryLoadAll(ClassLoader loader) {
+			boolean loaded = this.tryLoad(loader);
+			boolean loadedNative = this.tryLoadNative(loader);
+			return loaded || loadedNative;
 		}
 
-		private boolean tryRegister(Collection<SerializationContextInitializer> initializers) {
-			boolean registered = false;
-			Collection<SerializationContextInitializer> retries = new LinkedList<>();
-			int count = 0;
+		private boolean tryLoad(ClassLoader loader) {
+			List<SerializationContextInitializer> loaded = Reflect.loadAll(SerializationContextInitializer.class, loader);
+			if (loaded.isEmpty()) return false;
+
+			List<SerializationContextInitializer> unregistered = new LinkedList<>(loaded);
 			DescriptorParserException exception = null;
-			for (SerializationContextInitializer initializer : initializers) {
-				// Do not load initializers from protostream-types
-				if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
-					count += 1;
+			while (!unregistered.isEmpty()) {
+				int size = unregistered.size();
+				Iterator<SerializationContextInitializer> remaining = unregistered.iterator();
+				while (remaining.hasNext()) {
+					SerializationContextInitializer initializer = remaining.next();
 					try {
-						this.register(initializer);
-						registered = true;
+						initializer.registerSchema(this.context);
+						initializer.registerMarshallers(this.context);
+						remaining.remove();
 					} catch (DescriptorParserException e) {
+						// Descriptor might fail to parse due to ordering issues
+						// If so, retry this next iteration
 						exception = e;
-						// Descriptor might fail to parse due to dependency ordering issues
-						retries.add(initializer);
 					}
 				}
+				// If we have made no progress give up
+				if ((exception != null) && unregistered.size() == size) {
+					throw exception;
+				}
 			}
-			if ((exception != null) && (retries.size() == count)) {
-				throw exception;
+			return true;
+		}
+
+		private boolean tryLoadNative(ClassLoader loader) {
+			boolean registered = false;
+			for (org.infinispan.protostream.SerializationContextInitializer initializer : Reflect.loadAll(org.infinispan.protostream.SerializationContextInitializer.class, loader)) {
+				if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
+					initializer.registerSchema(this.context);
+					initializer.registerMarshallers(this.context);
+					registered = true;
+				}
 			}
-			// Retry any failed initializers
-			return retries.isEmpty() ? registered : this.tryRegister(retries) || registered;
+			return registered;
 		}
 
 		@Override
 		public ImmutableSerializationContext build() {
-			return this.context.get();
+			return this.context.getImmutableSerializationContext();
 		}
 	}
 }

@@ -5,10 +5,10 @@
 
 package org.wildfly.clustering.session.infinispan.embedded.metadata;
 
-import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
-import org.wildfly.clustering.session.cache.SessionKeyMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.session.cache.IdentifierMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -17,7 +17,7 @@ public class SessionMetaDataSerializationContextInitializer extends AbstractSeri
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new SessionKeyMarshaller<>(SessionMetaDataKey.class, SessionMetaDataKey::new));
-		context.registerMarshaller(new EnumMarshaller<>(SessionMetaDataKeyFilter.class));
+		context.registerMarshaller(IdentifierMarshaller.getKeyMarshaller(SessionMetaDataKey::new));
+		context.registerMarshaller(ProtoStreamMarshaller.of(SessionMetaDataKeyFilter.class));
 	}
 }

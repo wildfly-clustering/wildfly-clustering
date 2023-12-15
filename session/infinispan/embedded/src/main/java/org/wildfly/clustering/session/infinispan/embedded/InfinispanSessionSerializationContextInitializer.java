@@ -7,9 +7,9 @@ package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.util.List;
 
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.CompositeSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributesSerializationContextInitializer;
 import org.wildfly.clustering.session.cache.metadata.coarse.CoarseSessionMetaDataSerializationContextInitializer;
 import org.wildfly.clustering.session.cache.user.UserSerializationContextInitializer;

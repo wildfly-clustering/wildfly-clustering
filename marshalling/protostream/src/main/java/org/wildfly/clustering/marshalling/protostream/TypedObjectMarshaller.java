@@ -17,7 +17,7 @@ public class TypedObjectMarshaller implements FieldMarshaller<Object> {
 
 	private final ScalarMarshaller<Class<?>> type;
 
-	public TypedObjectMarshaller(ScalarMarshaller<Class<?>> typeValue) {
+	TypedObjectMarshaller(ScalarMarshaller<Class<?>> typeValue) {
 		this.type = typeValue;
 	}
 

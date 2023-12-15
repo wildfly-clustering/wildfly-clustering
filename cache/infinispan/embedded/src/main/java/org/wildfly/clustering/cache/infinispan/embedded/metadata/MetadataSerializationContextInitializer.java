@@ -9,8 +9,8 @@ import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.EmbeddedMetadata.EmbeddedExpirableMetadata;
 import org.infinispan.metadata.EmbeddedMetadata.EmbeddedLifespanExpirableMetadata;
 import org.infinispan.metadata.EmbeddedMetadata.EmbeddedMaxIdleExpirableMetadata;
-import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
  * @author Paul Ferraro

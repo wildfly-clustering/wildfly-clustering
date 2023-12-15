@@ -22,7 +22,7 @@ public class PackedArrayMarshaller<T> implements ScalarMarshaller<Object> {
 	private final ScalarMarshaller<T> element;
 	private final Class<? extends Object> arrayClass;
 
-	public PackedArrayMarshaller(Class<T> componentType, ScalarMarshaller<T> element) {
+	PackedArrayMarshaller(Class<T> componentType, ScalarMarshaller<T> element) {
 		this.componentType = componentType;
 		this.element = element;
 		this.arrayClass = Array.newInstance(this.componentType, 0).getClass();

@@ -165,7 +165,7 @@ public class NativeProtoStreamTestCase {
 		}
 	}
 
-	@AutoProtoSchemaBuilder(includeClasses = { Sex.class, NameFactory.class, Employee.class }, service = false)
+	@AutoProtoSchemaBuilder(includeClasses = { Sex.class, NameFactory.class, Employee.class }, service = true)
 	static interface EmployeeInitializer extends SerializationContextInitializer {
 	}
 }

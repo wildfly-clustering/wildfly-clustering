@@ -13,14 +13,12 @@ import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.common.function.ExceptionPredicate;
 
 /**
  * Marshaller for {@link BigDecimal}.
  * @author Paul Ferraro
  */
-public enum BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal>, ExceptionPredicate<BigInteger, IOException> {
-	INSTANCE;
+public class BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
 
 	private static final int UNSCALED_VALUE_INDEX = 1;
 	private static final int SCALE_INDEX = 2;
@@ -50,7 +48,7 @@ public enum BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal>, E
 	@Override
 	public void writeTo(ProtoStreamWriter writer, BigDecimal value) throws IOException {
 		BigInteger unscaledValue = value.unscaledValue();
-		if (!this.test(unscaledValue)) {
+		if (!unscaledValue.equals(BigInteger.ZERO)) {
 			writer.writeBytes(UNSCALED_VALUE_INDEX, unscaledValue.toByteArray());
 		}
 		int scale = value.scale();
@@ -62,10 +60,5 @@ public enum BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal>, E
 	@Override
 	public Class<? extends BigDecimal> getJavaClass() {
 		return BigDecimal.class;
-	}
-
-	@Override
-	public boolean test(BigInteger value) {
-		return value.signum() == 0;
 	}
 }

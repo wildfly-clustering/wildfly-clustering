@@ -20,7 +20,7 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E
 
 	private final ScalarMarshaller<Class<?>> type;
 
-	public TypedEnumMarshaller(ScalarMarshaller<Class<?>> type) {
+	TypedEnumMarshaller(ScalarMarshaller<Class<?>> type) {
 		this.type = type;
 	}
 
