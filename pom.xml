@@ -14,7 +14,7 @@
 
 	<groupId>org.wildfly.clustering</groupId>
 	<artifactId>wildfly-clustering</artifactId>
-	<version>1.0.0.Beta1</version>
+	<version>1.0.0.Beta2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering</name>
@@ -23,7 +23,7 @@
 		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering.git</connection>
 		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering.git</developerConnection>
 		<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
-		<tag>1.0.0.Beta1</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<properties>
