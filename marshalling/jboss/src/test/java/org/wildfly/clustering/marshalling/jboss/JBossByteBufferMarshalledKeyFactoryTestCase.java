@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshalledKeyFactoryTestCase
 public class JBossByteBufferMarshalledKeyFactoryTestCase extends ByteBufferMarshalledKeyFactoryTestCase {
 
 	public JBossByteBufferMarshalledKeyFactoryTestCase() {
-		super(TestJBossByteBufferMarshaller.INSTANCE);
+		super(JBossTesterFactory.INSTANCE.get());
 	}
 }

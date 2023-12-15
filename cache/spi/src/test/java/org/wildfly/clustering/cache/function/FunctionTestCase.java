@@ -8,12 +8,16 @@ package org.wildfly.clustering.cache.function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
  * @author Paul Ferraro
@@ -97,5 +101,18 @@ public class FunctionTestCase {
 
 		Map<String, String> result7 = new MapComputeFunction<>(Collections.<String, String>singletonMap("bar", null)).apply(null, result6);
 		assertNull(result7);
+	}
+
+	@Test
+	public void marshalling() throws IOException {
+		MarshallingTesterFactory factory = new ProtoStreamTesterFactory();
+		factory.createTester().test(new SetAddFunction<>(List.of("foo", "bar")));
+		factory.createTester().test(new SetRemoveFunction<>(List.of("foo", "bar")));
+		factory.createTester().test(new MapPutFunction<>("foo", "bar"));
+		factory.createTester().test(new MapRemoveFunction<>("foo"));
+		Map<String, String> values = new TreeMap<>();
+		values.put("foo", "bar");
+		values.put("baz", null);
+		factory.createTester().test(new MapComputeFunction<>(values));
 	}
 }

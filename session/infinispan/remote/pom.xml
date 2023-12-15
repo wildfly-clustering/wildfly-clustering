@@ -34,10 +34,6 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-server-local</artifactId>
 		</dependency>
 		<dependency>
@@ -46,19 +42,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.github.ben-manes.caffeine</groupId>
-			<artifactId>caffeine</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly.common</groupId>
-			<artifactId>wildfly-common</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 			<scope>test</scope>
@@ -72,24 +55,14 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
-
-		<!-- External test dependencies -->
-		<dependency>
-			<groupId>com.squareup</groupId>
-			<artifactId>protoparser</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
-
 </project>

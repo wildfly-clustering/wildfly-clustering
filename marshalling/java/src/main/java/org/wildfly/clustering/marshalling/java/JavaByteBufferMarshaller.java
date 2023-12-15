@@ -11,8 +11,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.Serializer;
@@ -24,8 +22,8 @@ import org.wildfly.clustering.marshalling.Serializer;
 public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
 	private final Serializer<ClassLoader> classLoaderSerializer;
 
-	public JavaByteBufferMarshaller() {
-		this(Serializer.of(AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> Thread.currentThread().getContextClassLoader())));
+	public JavaByteBufferMarshaller(ClassLoader loader) {
+		this(Serializer.of(loader));
 	}
 
 	public JavaByteBufferMarshaller(Serializer<ClassLoader> classLoaderSerializer) {

@@ -32,10 +32,6 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-server-spi</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -54,22 +50,6 @@
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
-		</dependency>
-
-		<dependency>
-			<groupId>com.squareup</groupId>
-			<artifactId>protoparser</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.infinispan.protostream</groupId>
-			<artifactId>protostream-processor</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.marshalling</groupId>
-			<artifactId>jboss-marshalling-river</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

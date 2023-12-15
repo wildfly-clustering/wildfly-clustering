@@ -51,7 +51,7 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
 			case COMPLEMENT_CLASS_INDEX:
 				return builder.setComplement(true).setEnumClass(reader.readObject(Class.class));
 			case BITS_INDEX:
-				return builder.setBits(BitSet.valueOf(reader.readByteArray()));
+				return builder.setBits(reader.readObject(BitSet.class));
 			case ELEMENT_INDEX:
 				return builder.add(reader.readUInt32());
 			default:
@@ -77,7 +77,7 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
 			for (int i = 0; i < values.length; ++i) {
 				bits.set(i, targetSet.contains(values[i]));
 			}
-			writer.writeBytes(BITS_INDEX, bits.toByteArray());
+			writer.writeObject(BITS_INDEX, bits);
 		} else {
 			for (E value : targetSet) {
 				writer.writeUInt32(ELEMENT_INDEX, value.ordinal());

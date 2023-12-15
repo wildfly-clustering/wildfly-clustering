@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -16,8 +15,9 @@ import java.util.function.Consumer;
  */
 class Reflect {
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> void loadAll(Class<T> targetClass, Consumer<T> consumer) {
-		AccessController.doPrivileged(new PrivilegedAction<>() {
+		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Void run() {
 				for (T provider : ServiceLoader.load(targetClass, targetClass.getClassLoader())) {
@@ -29,7 +29,8 @@ class Reflect {
 	}
 
 	static <T> void loadSingle(Class<T> targetClass, ClassLoader loader, Consumer<T> consumer) {
-		Optional<T> service = AccessController.doPrivileged(new PrivilegedAction<>() {
+		@SuppressWarnings({ "deprecation", "removal" })
+		Optional<T> service = java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Optional<T> run() {
 				return ServiceLoader.load(targetClass, loader).findFirst();
@@ -38,9 +39,10 @@ class Reflect {
 		service.ifPresent(consumer);
 	}
 
+	@SuppressWarnings({ "deprecation", "removal" })
 	static ClassLoader setThreadContextClassLoader(ClassLoader loader) {
 		Thread thread = Thread.currentThread();
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
+		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
 				ClassLoader currentLoader = thread.getContextClassLoader();
