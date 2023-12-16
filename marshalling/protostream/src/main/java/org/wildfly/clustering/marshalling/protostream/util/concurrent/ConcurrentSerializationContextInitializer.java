@@ -54,6 +54,6 @@ public class ConcurrentSerializationContextInitializer extends AbstractSerializa
 	@SuppressWarnings("unchecked")
 	private static <T extends Collection<Object>> ProtoStreamMarshaller<T> copyOnWriteMarshaller(ProtoStreamMarshaller<Collection<Object>> sourceMarshaller, Function<Collection<Object>, T> factory) {
 		// Use bulk operation for copy-on-write collections
-		return sourceMarshaller.map((Class<T>) factory.apply(List.of()).getClass(), factory);
+		return sourceMarshaller.wrap((Class<T>) factory.apply(List.of()).getClass(), factory);
 	}
 }

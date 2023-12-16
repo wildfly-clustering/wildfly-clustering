@@ -57,12 +57,22 @@ public interface FieldSetMarshaller<T, V> extends FieldReadable<V>, Writable<T> 
 		}
 	}
 
+	/**
+	 * Creates a marshaller that reads and writes only the fields of this field set.
+	 * @return a new marshaller
+	 */
 	@SuppressWarnings("unchecked")
 	default ProtoStreamMarshaller<T> asMarshaller() {
-		return this.asMarshaller((Class<T>) FieldSetMarshaller.this.build(FieldSetMarshaller.this.createInitialValue()).getClass());
+		return this.asMarshaller((Class<T>) this.build(this.createInitialValue()).getClass());
 	}
 
-	default ProtoStreamMarshaller<T> asMarshaller(Class<? extends T> targetClass) {
+	/**
+	 * Creates a marshaller that reads and writes only the fields of this field set.
+	 * @param targetClass the marshaller type
+	 * @return a new marshaller
+	 */
+	default ProtoStreamMarshaller<T> asMarshaller(Class<T> targetClass) {
+		FieldSetMarshaller<T, V> marshaller = this;
 		return new ProtoStreamMarshaller<>() {
 			@Override
 			public Class<? extends T> getJavaClass() {
@@ -71,8 +81,8 @@ public interface FieldSetMarshaller<T, V> extends FieldReadable<V>, Writable<T> 
 
 			@Override
 			public T readFrom(ProtoStreamReader reader) throws IOException {
-				FieldSetReader<V> valueReader = reader.createFieldSetReader(FieldSetMarshaller.this, 1);
-				V value = FieldSetMarshaller.this.createInitialValue();
+				FieldSetReader<V> valueReader = reader.createFieldSetReader(marshaller, 1);
+				V value = marshaller.createInitialValue();
 				while (!reader.isAtEnd()) {
 					int tag = reader.readTag();
 					int index = WireType.getTagFieldNumber(tag);
@@ -82,12 +92,12 @@ public interface FieldSetMarshaller<T, V> extends FieldReadable<V>, Writable<T> 
 						reader.skipField(tag);
 					}
 				}
-				return FieldSetMarshaller.this.build(value);
+				return marshaller.build(value);
 			}
 
 			@Override
 			public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
-				writer.createFieldSetWriter(FieldSetMarshaller.this, 1).writeFields(value);
+				writer.createFieldSetWriter(marshaller, 1).writeFields(value);
 			}
 		};
 	}

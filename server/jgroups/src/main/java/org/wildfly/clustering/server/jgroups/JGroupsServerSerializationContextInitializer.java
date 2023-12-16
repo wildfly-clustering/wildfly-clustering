@@ -29,19 +29,19 @@ public class JGroupsServerSerializationContextInitializer extends CompositeSeria
 				new AbstractSerializationContextInitializer("org.jgroups.stack.proto", JGroupsServerSerializationContextInitializer.class) {
 					@Override
 					public void registerMarshallers(SerializationContext context) {
-						context.registerMarshaller(context.getMarshaller(InetSocketAddress.class).map(IpAddress.class, address -> new InetSocketAddress(address.getIpAddress(), address.getPort()), IpAddress::new));
+						context.registerMarshaller(context.getMarshaller(InetSocketAddress.class).wrap(IpAddress.class, address -> new InetSocketAddress(address.getIpAddress(), address.getPort()), IpAddress::new));
 					}
 				},
 				new AbstractSerializationContextInitializer("org.jgroups.util.proto", JGroupsServerSerializationContextInitializer.class) {
 					@Override
 					public void registerMarshallers(SerializationContext context) {
-						context.registerMarshaller(context.getMarshaller(java.util.UUID.class).map(UUID.class, uuid -> new java.util.UUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits()), uuid -> new UUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits())));
+						context.registerMarshaller(context.getMarshaller(java.util.UUID.class).wrap(UUID.class, uuid -> new java.util.UUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits()), uuid -> new UUID(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits())));
 					}
 				},
 				new AbstractSerializationContextInitializer() {
 					@Override
 					public void registerMarshallers(SerializationContext context) {
-						context.registerMarshaller(AddressMarshaller.INSTANCE.asMarshaller(Address.class).map(JChannelGroupMember.class, ChannelGroupMember::getAddress, JChannelGroupMember::new));
+						context.registerMarshaller(AddressMarshaller.INSTANCE.asMarshaller(Address.class).wrap(JChannelGroupMember.class, ChannelGroupMember::getAddress, JChannelGroupMember::new));
 					}
 				}));
 	}

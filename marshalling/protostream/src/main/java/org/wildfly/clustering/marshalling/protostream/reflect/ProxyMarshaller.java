@@ -23,7 +23,7 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
 public class ProxyMarshaller<T> implements ProtoStreamMarshaller<T> {
 	private final ProtoStreamMarshaller<T> marshaller;
 
-	public ProxyMarshaller(Class<? extends T> proxyClass) {
+	public ProxyMarshaller(Class<T> proxyClass) {
 		this.marshaller = Scalar.ANY.toMarshaller(proxyClass, new Function<>() {
 			@Override
 			public Object apply(T object) {

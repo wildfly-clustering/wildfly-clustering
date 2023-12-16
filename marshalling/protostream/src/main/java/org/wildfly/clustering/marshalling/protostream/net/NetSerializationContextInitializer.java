@@ -32,7 +32,7 @@ public class NetSerializationContextInitializer extends AbstractSerializationCon
 		context.registerMarshaller(new InetSocketAddressMarshaller());
 		ProtoStreamMarshaller<URI> uriMarshaller = Scalar.STRING.cast(String.class).toMarshaller(java.net.URI.class, java.net.URI::toString, java.net.URI::create);
 		context.registerMarshaller(uriMarshaller);
-		context.registerMarshaller(uriMarshaller.map(URL.class, new Function<>() {
+		context.registerMarshaller(uriMarshaller.wrap(URL.class, new Function<>() {
 			@Override
 			public URI apply(URL url) {
 				try {

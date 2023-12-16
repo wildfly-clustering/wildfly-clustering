@@ -33,7 +33,7 @@ public class TimeSerializationContextInitializer extends AbstractSerializationCo
 		ProtoStreamMarshaller<Duration> durationMarshaller = DurationMarshaller.INSTANCE.asMarshaller();
 		context.registerMarshaller(durationMarshaller);
 		// Marshall as duration since epoch
-		context.registerMarshaller(durationMarshaller.map(Instant.class, instant -> Duration.ofSeconds(instant.getEpochSecond(), instant.getNano()), duration -> Instant.ofEpochSecond(duration.getSeconds(), duration.getNano())));
+		context.registerMarshaller(durationMarshaller.wrap(Instant.class, instant -> Duration.ofSeconds(instant.getEpochSecond(), instant.getNano()), duration -> Instant.ofEpochSecond(duration.getSeconds(), duration.getNano())));
 		context.registerMarshaller(LocalDateMarshaller.INSTANCE.asMarshaller());
 		context.registerMarshaller(new LocalDateTimeMarshaller());
 		context.registerMarshaller(LocalTimeMarshaller.INSTANCE.asMarshaller());
@@ -44,7 +44,7 @@ public class TimeSerializationContextInitializer extends AbstractSerializationCo
 		context.registerMarshaller(new PeriodMarshaller());
 		context.registerMarshaller(YearMarshaller.INSTANCE.asMarshaller());
 		context.registerMarshaller(new YearMonthMarshaller());
-		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(ZoneId.class, Functions.constantSupplier(ZoneOffset.UTC), ZoneId::getId, ZoneId::of));
+		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(ZoneId.class, ZoneId::getId, Functions.constantSupplier(ZoneOffset.UTC), ZoneId::of));
 		context.registerMarshaller(ZoneOffsetMarshaller.INSTANCE.asMarshaller());
 		context.registerMarshaller(new ZonedDateTimeMarshaller());
 	}

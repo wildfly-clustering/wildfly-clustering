@@ -36,11 +36,27 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 		this.writeTo(new DefaultProtoStreamWriter(context), value);
 	}
 
-	default <V extends T> ProtoStreamMarshaller<V> map(Class<V> targetClass, Function<T, V> factory) {
-		return map(targetClass, Functions.cast(Function.identity()), factory);
+	/**
+	 * Returns a new marshaller instance for a decorator of the type handled by this marshaller, created from the specified factory.
+	 * @param <V> the decorator type
+	 * @param targetClass the decorator instance type of the new marshaller
+	 * @param wrapper a function for creating the decorator from the value read by this marshaller.\
+	 * @return a new marshaller
+	 */
+	default <V extends T> ProtoStreamMarshaller<V> wrap(Class<V> targetClass, Function<T, V> wrapper) {
+		return wrap(targetClass, Functions.cast(Function.identity()), wrapper);
 	}
 
-	default <V> ProtoStreamMarshaller<V> map(Class<V> targetClass, Function<V, T> function, Function<T, V> factory) {
+	/**
+	 * Returns a new marshaller instance for a wrapper, using the specified wrapper and unwrapper functions.
+	 * @param <V> the wrapper type
+	 * @param targetClass the target class of the new marshaller
+	 * @param unwrapper a function exposing the value of this marshalller from its wrapper
+	 * @param wrapper a function creating the wrapped instance from the value read by this marshaller.
+	 * @return a new marshaller
+	 */
+	default <V> ProtoStreamMarshaller<V> wrap(Class<V> targetClass, Function<V, T> unwrapper, Function<T, V> wrapper) {
+		ProtoStreamMarshaller<T> marshaller = this;
 		return new ProtoStreamMarshaller<>() {
 			@Override
 			public Class<? extends V> getJavaClass() {
@@ -49,20 +65,32 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 
 			@Override
 			public V readFrom(ProtoStreamReader reader) throws IOException {
-				return factory.apply(ProtoStreamMarshaller.this.readFrom(reader));
+				return wrapper.apply(marshaller.readFrom(reader));
 			}
 
 			@Override
 			public void writeTo(ProtoStreamWriter writer, V value) throws IOException {
-				ProtoStreamMarshaller.this.writeTo(writer, function.apply(value));
+				marshaller.writeTo(writer, unwrapper.apply(value));
 			}
 		};
 	}
 
+	/**
+	 * Creates a trivial marshaller for a constant value.
+	 * @param <T> the marshaller type
+	 * @param value a constant value
+	 * @return a new marshaller
+	 */
 	static <T> ProtoStreamMarshaller<T> of(T value) {
 		return of(Functions.constantSupplier(value));
 	}
 
+	/**
+	 * Creates a trivial marshaller for a constant value.
+	 * @param <T> the marshaller type
+	 * @param factory a supplier of the constant value
+	 * @return a new marshaller
+	 */
 	static <T> ProtoStreamMarshaller<T> of(Supplier<T> factory) {
 		return new ProtoStreamMarshaller<>() {
 			@SuppressWarnings("unchecked")
@@ -83,6 +111,12 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 		};
 	}
 
+	/**
+	 * Creates a marshaller for an enum.
+	 * @param <E> the marshaller type
+	 * @param enumClass the enum type
+	 * @return a new marshaller
+	 */
 	static <E extends Enum<E>> ProtoStreamMarshaller<E> of(Class<E> enumClass) {
 		return new EnumMarshaller<>(enumClass);
 	}

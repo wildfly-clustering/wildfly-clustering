@@ -37,13 +37,13 @@ public class InfinispanServerSerializationContextInitializer extends CompositeSe
 				new AbstractSerializationContextInitializer("org.infinispan.remoting.transport.jgroups.proto", InfinispanServerSerializationContextInitializer.class) {
 					@Override
 					public void registerMarshallers(SerializationContext context) {
-						context.registerMarshaller(AddressMarshaller.INSTANCE.asMarshaller(Address.class).map(JGroupsAddress.class, JGroupsAddress::getJGroupsAddress, JGroupsAddress::new));
+						context.registerMarshaller(AddressMarshaller.INSTANCE.asMarshaller(Address.class).wrap(JGroupsAddress.class, JGroupsAddress::getJGroupsAddress, JGroupsAddress::new));
 					}
 				},
 				new AbstractSerializationContextInitializer() {
 					@Override
 					public void registerMarshallers(SerializationContext context) {
-						context.registerMarshaller(context.getMarshaller(JGroupsAddress.class).map(EmbeddedCacheManagerGroupMember.class, EmbeddedCacheManagerGroupMember::getAddress, EmbeddedCacheManagerGroupMember::new));
+						context.registerMarshaller(context.getMarshaller(JGroupsAddress.class).wrap(EmbeddedCacheManagerGroupMember.class, EmbeddedCacheManagerGroupMember::getAddress, EmbeddedCacheManagerGroupMember::new));
 						context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(LocalEmbeddedCacheManagerGroupMember.class, LocalEmbeddedCacheManagerGroupMember::getName, LocalEmbeddedCacheManagerGroupMember::new));
 					}
 				}));
