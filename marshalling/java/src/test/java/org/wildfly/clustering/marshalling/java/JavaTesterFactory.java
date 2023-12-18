@@ -6,7 +6,6 @@
 package org.wildfly.clustering.marshalling.java;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.ByteBufferTestMarshaller;
@@ -16,7 +15,7 @@ import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 /**
  * @author Paul Ferraro
  */
-public enum JavaTesterFactory implements MarshallingTesterFactory, Supplier<ByteBufferMarshaller> {
+public enum JavaTesterFactory implements MarshallingTesterFactory {
 	INSTANCE;
 
 	private final ByteBufferMarshaller marshaller = new JavaByteBufferMarshaller(ClassLoader.getSystemClassLoader());
@@ -27,7 +26,7 @@ public enum JavaTesterFactory implements MarshallingTesterFactory, Supplier<Byte
 	}
 
 	@Override
-	public ByteBufferMarshaller get() {
+	public ByteBufferMarshaller getMarshaller() {
 		return this.marshaller;
 	}
 }

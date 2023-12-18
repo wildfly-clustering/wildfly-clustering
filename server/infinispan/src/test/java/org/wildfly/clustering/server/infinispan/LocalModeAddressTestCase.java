@@ -24,7 +24,7 @@ public class LocalModeAddressTestCase {
 	public void test() throws IOException {
 		test(new FormatterTester<>(new LocalAddressSerializer.LocalAddressFormatter()));
 		test(new KeyMapperTester<>(new KeyMapper()));
-		test(new ProtoStreamTesterFactory().createTester());
+		test(ProtoStreamTesterFactory.INSTANCE.createTester());
 	}
 
 	private static void test(Tester<Address> tester) throws IOException {

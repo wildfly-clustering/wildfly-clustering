@@ -26,8 +26,8 @@ public class SQLSerializationContextInitializer extends AbstractSerializationCon
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(context.getMarshaller(LocalDate.class).map(Date.class, Date::toLocalDate, Date::valueOf));
-		context.registerMarshaller(context.getMarshaller(LocalTime.class).map(Time.class, Time::toLocalTime, Time::valueOf));
-		context.registerMarshaller(context.getMarshaller(LocalDateTime.class).map(Timestamp.class, Timestamp::toLocalDateTime, Timestamp::valueOf));
+		context.registerMarshaller(context.getMarshaller(LocalDate.class).wrap(Date.class, Date::toLocalDate, Date::valueOf));
+		context.registerMarshaller(context.getMarshaller(LocalTime.class).wrap(Time.class, Time::toLocalTime, Time::valueOf));
+		context.registerMarshaller(context.getMarshaller(LocalDateTime.class).wrap(Timestamp.class, Timestamp::toLocalDateTime, Timestamp::valueOf));
 	}
 }

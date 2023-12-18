@@ -22,7 +22,7 @@ public class AddressTestCase {
 
 	@Test
 	public void test() throws IOException {
-		test(new ProtoStreamTesterFactory().createTester());
+		test(ProtoStreamTesterFactory.INSTANCE.createTester());
 	}
 
 	private static void test(Tester<Address> tester) throws IOException {

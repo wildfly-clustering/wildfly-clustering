@@ -21,14 +21,14 @@ public class OffsetMarshallerTestCase {
 
 	@Test
 	public void duration() throws IOException {
-		MarshallingTester<Offset<Duration>> tester = new ProtoStreamTesterFactory().createTester();
+		MarshallingTester<Offset<Duration>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
 
 		tester.test(Offset.forDuration(Duration.ofSeconds(1)));
 	}
 
 	@Test
 	public void instant() throws IOException {
-		MarshallingTester<Offset<Instant>> tester = new ProtoStreamTesterFactory().createTester();
+		MarshallingTester<Offset<Instant>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
 
 		tester.test(Offset.forInstant(Duration.ofSeconds(1)));
 	}

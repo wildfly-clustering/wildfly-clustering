@@ -14,6 +14,6 @@ import org.wildfly.clustering.marshalling.AbstractSQLTestCase;
 public class ProtoStreamSQLTestCase extends AbstractSQLTestCase {
 
 	public ProtoStreamSQLTestCase() {
-		super(new ProtoStreamTesterFactory());
+		super(ProtoStreamTesterFactory.INSTANCE);
 	}
 }

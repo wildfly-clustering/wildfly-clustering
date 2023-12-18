@@ -24,7 +24,7 @@ public class LocalEmbeddedCacheManagerGroupMemberTestCase {
 	public void test() throws IOException {
 		this.test(new FormatterTester<>(new LocalEmbeddedCacheManagerGroupMemberFormatter()));
 		this.test(JBossTesterFactory.INSTANCE.createTester());
-		this.test(new ProtoStreamTesterFactory().createTester());
+		this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
 	}
 
 	public void test(Tester<LocalEmbeddedCacheManagerGroupMember> tester) throws IOException {

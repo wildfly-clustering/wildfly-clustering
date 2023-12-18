@@ -21,7 +21,7 @@ public class SessionAttributesKeyTestCase {
 
 	@Test
 	public void test() throws IOException {
-		test(new ProtoStreamTesterFactory().createTester());
+		test(ProtoStreamTesterFactory.INSTANCE.createTester());
 		test(new FormatterTester<>(new SessionAttributesKeyFormatter()));
 	}
 

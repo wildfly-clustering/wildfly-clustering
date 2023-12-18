@@ -14,6 +14,6 @@ import org.wildfly.clustering.marshalling.AbstractLangTestCase;
 public class ProtoStreamLangTestCase extends AbstractLangTestCase {
 
 	public ProtoStreamLangTestCase() {
-		super(new ProtoStreamTesterFactory());
+		super(ProtoStreamTesterFactory.INSTANCE);
 	}
 }

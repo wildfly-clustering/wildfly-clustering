@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.AbstractMathTestCase;
 public class ProtoStreamMathTestCase extends AbstractMathTestCase {
 
 	public ProtoStreamMathTestCase() {
-		super(new ProtoStreamTesterFactory());
+		super(ProtoStreamTesterFactory.INSTANCE);
 	}
 }

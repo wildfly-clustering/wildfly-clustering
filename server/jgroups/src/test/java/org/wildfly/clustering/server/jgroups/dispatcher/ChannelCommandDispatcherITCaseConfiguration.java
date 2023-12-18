@@ -19,7 +19,6 @@ import org.wildfly.clustering.server.jgroups.JChannelFactory;
  * @author Paul Ferraro
  */
 public class ChannelCommandDispatcherITCaseConfiguration implements CommandDispatcherITCaseConfiguration<ChannelGroupMember>, JChannelCommandDispatcherFactoryConfiguration {
-	static final ByteBufferMarshaller MARSHALLER = new ProtoStreamTesterFactory().get();
 
 	private final JChannel channel;
 	private final ChannelCommandDispatcherFactory factory;
@@ -47,12 +46,12 @@ public class ChannelCommandDispatcherITCaseConfiguration implements CommandDispa
 
 	@Override
 	public ByteBufferMarshaller getMarshaller() {
-		return MARSHALLER;
+		return ProtoStreamTesterFactory.INSTANCE.getMarshaller();
 	}
 
 	@Override
 	public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
-		return loader -> MARSHALLER;
+		return loader -> ProtoStreamTesterFactory.INSTANCE.getMarshaller();
 	}
 
 	@Override

@@ -57,10 +57,10 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 
 		context.registerMarshaller(new CollectionMarshaller<>(ArrayDeque::new));
 		context.registerMarshaller(new CollectionMarshaller<>(ArrayList::new));
-		context.registerMarshaller(Scalar.BYTE_ARRAY.cast(byte[].class).wrap(BitSet.class, BitSet::new, BitSet::isEmpty, BitSet::toByteArray, BitSet::valueOf));
+		context.registerMarshaller(Scalar.BYTE_ARRAY.cast(byte[].class).toMarshaller(BitSet.class, BitSet::isEmpty, BitSet::toByteArray, BitSet::new, BitSet::valueOf));
 		context.registerMarshaller(new CalendarMarshaller());
 		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(Currency.class, Currency::getCurrencyCode, Currency::getInstance));
-		context.registerMarshaller(context.getMarshaller(Instant.class).map(Date.class, Date::toInstant, Date::from));
+		context.registerMarshaller(context.getMarshaller(Instant.class).wrap(Date.class, Date::toInstant, Date::from));
 		context.registerMarshaller(new EnumMapMarshaller<>());
 		context.registerMarshaller(new EnumSetFieldSetMarshaller<Thread.State>().asMarshaller((Class<EnumSet<Thread.State>>) (Class<?>) EnumSet.class));
 		context.registerMarshaller(hashMapMarshaller);
@@ -69,7 +69,7 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 		context.registerMarshaller(new CollectionMarshaller<>(LinkedHashSet::new));
 		context.registerMarshaller(linkedListMarshaller);
 		context.registerMarshaller(new LocaleMarshaller());
-		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(TimeZone.class, Functions.constantSupplier(TimeZone.getTimeZone(ZoneOffset.UTC)), TimeZone::getID, TimeZone::getTimeZone));
+		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(TimeZone.class, TimeZone::getID, Functions.constantSupplier(TimeZone.getTimeZone(ZoneOffset.UTC)), TimeZone::getTimeZone));
 		context.registerMarshaller(new SortedMapMarshaller<>(TreeMap::new));
 		context.registerMarshaller(new SortedSetMarshaller<>(TreeSet::new));
 		context.registerMarshaller(UUIDMarshaller.INSTANCE.asMarshaller());
@@ -88,7 +88,7 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 
 		// Singleton collections
 		context.registerMarshaller(Scalar.ANY.toMarshaller(Collections.singletonList(null).getClass().asSubclass(List.class), list -> list.get(0), Collections::singletonList));
-		context.registerMarshaller(new MapEntryMarshaller<>(Function.identity()).map((Class<Map<Object, Object>>) Collections.singletonMap(null, null).getClass().asSubclass(Map.class), map -> new AbstractMap.SimpleEntry<>(map.entrySet().iterator().next()), entry -> Collections.singletonMap(entry.getKey(), entry.getValue())));
+		context.registerMarshaller(new MapEntryMarshaller<>(Function.identity()).wrap((Class<Map<Object, Object>>) Collections.singletonMap(null, null).getClass().asSubclass(Map.class), map -> new AbstractMap.SimpleEntry<>(map.entrySet().iterator().next()), entry -> Collections.singletonMap(entry.getKey(), entry.getValue())));
 		context.registerMarshaller(Scalar.ANY.toMarshaller(Collections.singleton(null).getClass().asSubclass(Set.class), set -> set.iterator().next(), Collections::singleton));
 
 		// Synchronized collection wrappers
@@ -123,12 +123,12 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 	}
 
 	private static <T extends Collection<Object>> ProtoStreamMarshaller<T> unmodifiableCollectionMarshaller(ProtoStreamMarshaller<Collection<Object>> collectionMarshaller, Class<T> targetClass, Function<Object[], T> factory) {
-		return collectionMarshaller.map(targetClass, collection -> factory.apply(collection.toArray()));
+		return collectionMarshaller.wrap(targetClass, collection -> factory.apply(collection.toArray()));
 	}
 
 	private static <T extends Map<Object, Object>> ProtoStreamMarshaller<T> unmodifiableMapMarshaller(ProtoStreamMarshaller<Map<Object, Object>> mapMarshaller, Class<T> targetClass, Function<Map.Entry<? extends Object, ? extends Object>[], T> factory) {
 		@SuppressWarnings("unchecked")
 		Map.Entry<Object, Object>[] entries = new Map.Entry[0];
-		return mapMarshaller.map(targetClass, map -> factory.apply(map.entrySet().toArray(entries)));
+		return mapMarshaller.wrap(targetClass, map -> factory.apply(map.entrySet().toArray(entries)));
 	}
 }

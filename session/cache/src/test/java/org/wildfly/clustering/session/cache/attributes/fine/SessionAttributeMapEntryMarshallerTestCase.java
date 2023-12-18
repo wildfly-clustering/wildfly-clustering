@@ -24,7 +24,7 @@ public class SessionAttributeMapEntryMarshallerTestCase {
 	@Test
 	public void test() throws IOException {
 		ProtoStreamTesterFactory factory = new ProtoStreamTesterFactory(List.of(new FineSessionAttributesSerializationContextInitializer()));
-		ByteBufferMarshaller marshaller = factory.get();
+		ByteBufferMarshaller marshaller = factory.getMarshaller();
 		ByteBufferMarshalledValue<UUID> value = new ByteBufferMarshalledValue<>(UUID.randomUUID(), marshaller);
 		MarshallingTester<SessionAttributeMapEntry<ByteBufferMarshalledValue<UUID>>> tester = factory.createTester();
 		tester.test(new SessionAttributeMapEntry<>("foo", value));

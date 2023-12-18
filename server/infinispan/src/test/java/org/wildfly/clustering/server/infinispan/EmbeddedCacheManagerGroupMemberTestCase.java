@@ -27,7 +27,7 @@ public class EmbeddedCacheManagerGroupMemberTestCase {
 	public void test() throws IOException {
 		this.test(new FormatterTester<>(new EmbeddedCacheManagerGroupMemberSerializer.AddressGroupMemberFormatter()));
 		this.test(JBossTesterFactory.INSTANCE.createTester());
-		this.test(new ProtoStreamTesterFactory().createTester());
+		this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
 	}
 
 	public void test(Tester<EmbeddedCacheManagerGroupMember> tester) throws IOException {

@@ -20,8 +20,7 @@ public class SessionMetaDataKeyTestCase {
 
 	@Test
 	public void test() throws IOException {
-		ProtoStreamTesterFactory factory = new ProtoStreamTesterFactory();
-		factory.createTester().test(new SessionAccessMetaDataKey("test"));
-		factory.createTester().test(new SessionCreationMetaDataKey("test"));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SessionAccessMetaDataKey("test"));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SessionCreationMetaDataKey("test"));
 	}
 }

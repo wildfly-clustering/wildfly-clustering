@@ -105,7 +105,7 @@ public class FunctionTestCase {
 
 	@Test
 	public void marshalling() throws IOException {
-		MarshallingTesterFactory factory = new ProtoStreamTesterFactory();
+		MarshallingTesterFactory factory = ProtoStreamTesterFactory.INSTANCE;
 		factory.createTester().test(new SetAddFunction<>(List.of("foo", "bar")));
 		factory.createTester().test(new SetRemoveFunction<>(List.of("foo", "bar")));
 		factory.createTester().test(new MapPutFunction<>("foo", "bar"));

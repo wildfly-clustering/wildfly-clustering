@@ -26,7 +26,7 @@ public class MathSerializationContextInitializer extends AbstractSerializationCo
 	@Override
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(new BigDecimalMarshaller());
-		context.registerMarshaller(Scalar.BYTE_ARRAY.cast(byte[].class).toMarshaller(BigInteger.class, Functions.constantSupplier(BigInteger.ZERO), BigInteger::toByteArray, BigInteger::new));
+		context.registerMarshaller(Scalar.BYTE_ARRAY.cast(byte[].class).toMarshaller(BigInteger.class, BigInteger::toByteArray, Functions.constantSupplier(BigInteger.ZERO), BigInteger::new));
 		context.registerMarshaller(new MathContextMarshaller());
 		context.registerMarshaller(ProtoStreamMarshaller.of(RoundingMode.class));
 	}

@@ -27,7 +27,7 @@ public class NativeProtoStreamTestCase {
 
 	@Test
 	public void test() throws IOException {
-		MarshallingTesterFactory factory = new ProtoStreamTesterFactory();
+		MarshallingTesterFactory factory = ProtoStreamTesterFactory.INSTANCE;
 		factory.createTester(Sex.class).test();
 
 		Employee head = new Employee(1, new Name("Allegra", "Coleman"), Sex.FEMALE, null);

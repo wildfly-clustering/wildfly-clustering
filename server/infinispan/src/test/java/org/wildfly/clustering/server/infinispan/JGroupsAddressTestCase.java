@@ -27,7 +27,7 @@ public class JGroupsAddressTestCase {
 	public void test() throws IOException {
 		test(new FormatterTester<>(new JGroupsAddressFormatter()));
 		test(new KeyMapperTester<>(new KeyMapper()));
-		test(new ProtoStreamTesterFactory().createTester());
+		test(ProtoStreamTesterFactory.INSTANCE.createTester());
 	}
 
 	private void test(Tester<JGroupsAddress> tester) throws IOException {
