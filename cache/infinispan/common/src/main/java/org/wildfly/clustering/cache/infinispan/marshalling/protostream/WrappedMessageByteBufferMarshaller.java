@@ -30,7 +30,6 @@ public class WrappedMessageByteBufferMarshaller implements ByteBufferMarshaller 
 		this(createSerializationContext(loader));
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	private static ImmutableSerializationContext createSerializationContext(ClassLoader loader) {
 		SerializationContext context = ProtobufUtil.newSerializationContext();
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {

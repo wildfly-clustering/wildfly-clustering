@@ -27,7 +27,6 @@ import org.wildfly.clustering.session.IdentifierMarshallerProvider;
 public enum IdentifierMarshaller implements ScalarMarshaller<String> {
 	INSTANCE;
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	private final Marshaller<String, ByteBuffer> marshaller = java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
 		public Marshaller<String, ByteBuffer> run() {

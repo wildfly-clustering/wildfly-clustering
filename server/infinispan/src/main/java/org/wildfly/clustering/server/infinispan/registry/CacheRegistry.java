@@ -271,7 +271,6 @@ public class CacheRegistry<K, V> implements Registry<K, V, CacheContainerGroupMe
 		}
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	private void shutdown(ExecutorService executor) {
 		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
 		try {

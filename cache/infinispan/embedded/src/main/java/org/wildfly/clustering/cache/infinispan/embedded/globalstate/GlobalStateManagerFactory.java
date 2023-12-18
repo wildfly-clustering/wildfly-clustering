@@ -20,7 +20,6 @@ import org.infinispan.globalstate.impl.GlobalStateManagerImpl;
 @DefaultFactoryFor(classes = GlobalStateManager.class)
 @Scope(Scopes.GLOBAL)
 public class GlobalStateManagerFactory extends AbstractComponentFactory implements AutoInstantiableFactory {
-	@SuppressWarnings("removal")
 	@Override
 	public Object construct(String componentName) {
 		return (System.getSecurityManager() != null) ? new PrivilegedGlobalStateManager() : new GlobalStateManagerImpl();

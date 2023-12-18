@@ -16,7 +16,6 @@ import java.util.List;
  */
 class Reflect {
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static Field findField(Class<?> sourceClass, Class<?> fieldType) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -57,7 +56,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T getValue(Object source, Field field, Class<T> fieldType) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override

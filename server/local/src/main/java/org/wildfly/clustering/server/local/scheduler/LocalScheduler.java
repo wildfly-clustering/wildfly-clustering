@@ -76,7 +76,6 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 		return this.entries.stream().map(Map.Entry::getKey);
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	@Override
 	public void close() {
 		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(this.executor));
