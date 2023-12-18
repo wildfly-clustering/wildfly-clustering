@@ -15,6 +15,6 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactoryTestCa
 public class JavaByteBufferMarshalledValueFactoryTestCase  extends ByteBufferMarshalledValueFactoryTestCase {
 
 	public JavaByteBufferMarshalledValueFactoryTestCase() {
-		super(JavaTesterFactory.INSTANCE.get());
+		super(JavaTesterFactory.INSTANCE.getMarshaller());
 	}
 }

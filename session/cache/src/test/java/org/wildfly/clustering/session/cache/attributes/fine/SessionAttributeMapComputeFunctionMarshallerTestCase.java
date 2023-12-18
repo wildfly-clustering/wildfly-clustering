@@ -25,7 +25,7 @@ public class SessionAttributeMapComputeFunctionMarshallerTestCase {
 	@Test
 	public void test() throws IOException {
 		ProtoStreamTesterFactory factory = new ProtoStreamTesterFactory(List.of(new FineSessionAttributesSerializationContextInitializer()));
-		ByteBufferMarshaller marshaller = factory.get();
+		ByteBufferMarshaller marshaller = factory.getMarshaller();
 		Map<String, ByteBufferMarshalledValue<UUID>> map = new TreeMap<>();
 		map.put("foo", new ByteBufferMarshalledValue<>(UUID.randomUUID(), marshaller));
 		map.put("bar", new ByteBufferMarshalledValue<>(UUID.randomUUID(), marshaller));

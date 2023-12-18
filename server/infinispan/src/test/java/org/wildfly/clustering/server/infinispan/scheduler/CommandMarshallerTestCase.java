@@ -9,7 +9,6 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
@@ -19,11 +18,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class CommandMarshallerTestCase {
 
-	private final MarshallingTesterFactory factory = new ProtoStreamTesterFactory();
-
 	@Test
 	public void testScheduleWithLocalMetaDataCommand() throws IOException {
-		Tester<ScheduleWithTransientMetaDataCommand<String, String>> tester = this.factory.createTester();
+		Tester<ScheduleWithTransientMetaDataCommand<String, String>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
 
 		tester.test(new ScheduleWithTransientMetaDataCommand<>("foo"), this::assertEquals);
 		tester.test(new ScheduleWithTransientMetaDataCommand<>("foo", "bar"), this::assertEquals);
@@ -36,7 +33,7 @@ public class CommandMarshallerTestCase {
 
 	@Test
 	public void testCancelCommand() throws IOException {
-		Tester<CancelCommand<String, Object>> tester = this.factory.createTester();
+		Tester<CancelCommand<String, Object>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
 
 		tester.test(new CancelCommand<>("foo"), this::assertEquals);
 	}
@@ -47,7 +44,7 @@ public class CommandMarshallerTestCase {
 
 	@Test
 	public void testScheduleWithMetaDataCommand() throws IOException {
-		Tester<ScheduleWithMetaDataCommand<String, String>> tester = this.factory.createTester();
+		Tester<ScheduleWithMetaDataCommand<String, String>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
 
 		tester.test(new ScheduleWithMetaDataCommand<>("foo", "bar"), this::assertEquals);
 	}

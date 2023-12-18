@@ -25,7 +25,7 @@ public class ChannelGroupMemberTestCase {
 	public void test() throws IOException {
 		test(JavaTesterFactory.INSTANCE.createTester());
 		test(JBossTesterFactory.INSTANCE.createTester());
-		test(new ProtoStreamTesterFactory().createTester());
+		test(ProtoStreamTesterFactory.INSTANCE.createTester());
 	}
 
 	private static void test(Tester<ChannelGroupMember> tester) throws IOException {

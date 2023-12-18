@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactoryTestCa
 public class ProtoStreamByteBufferMarshalledValueFactoryTestCase extends ByteBufferMarshalledValueFactoryTestCase {
 
 	public ProtoStreamByteBufferMarshalledValueFactoryTestCase() {
-		super(new ProtoStreamTesterFactory().get());
+		super(ProtoStreamTesterFactory.INSTANCE.getMarshaller());
 	}
 }

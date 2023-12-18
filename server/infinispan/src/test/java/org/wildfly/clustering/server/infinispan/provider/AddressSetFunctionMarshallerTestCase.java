@@ -23,7 +23,7 @@ public class AddressSetFunctionMarshallerTestCase {
 
 	@Test
 	public void test() throws IOException {
-		Tester<CollectionFunction<Address, Set<Address>>> tester = new ProtoStreamTesterFactory().createTester();
+		Tester<CollectionFunction<Address, Set<Address>>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
 
 		Address address = new JGroupsAddress(UUID.randomUUID());
 		tester.test(new AddressSetAddFunction(address));

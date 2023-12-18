@@ -15,6 +15,6 @@ public class SessionAttributesKeyTestCase {
 
 	@Test
 	public void test() throws IOException {
-		new ProtoStreamTesterFactory().createTester().test(new SessionAttributesKey("test"));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SessionAttributesKey("test"));
 	}
 }

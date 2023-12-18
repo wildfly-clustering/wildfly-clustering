@@ -23,7 +23,7 @@ public class SimpleExpirationMetaDataMarshallerTestCase {
 
 	@Test
 	public void test() throws IOException {
-		Tester<ExpirationMetaData> tester = new ProtoStreamTesterFactory().createTester();
+		Tester<ExpirationMetaData> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
 
 		tester.test(new SimpleExpirationMetaData(Duration.ofMinutes(30), Instant.EPOCH), this::assertEquals);
 		tester.test(new SimpleExpirationMetaData(Duration.ofSeconds(600), Instant.now()), this::assertEquals);
