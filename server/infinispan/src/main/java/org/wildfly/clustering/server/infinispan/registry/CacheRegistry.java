@@ -61,7 +61,7 @@ import org.wildfly.common.function.ExceptionRunnable;
  * @param <V> value type
  */
 @Listener(observation = Observation.POST)
-public class CacheRegistry<K, V> implements Registry<K, V, CacheContainerGroupMember>, ExceptionRunnable<CacheException>, Function<RegistryListener<K, V>, ExecutorService> {
+public class CacheRegistry<K, V> implements Registry<CacheContainerGroupMember, K, V>, ExceptionRunnable<CacheException> {
 	private static final Logger LOGGER = Logger.getLogger(CacheRegistry.class);
 
 	private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
@@ -71,6 +71,7 @@ public class CacheRegistry<K, V> implements Registry<K, V, CacheContainerGroupMe
 	private final Runnable closeTask;
 	private final Map.Entry<K, V> entry;
 	private final Executor executor;
+	private final Function<RegistryListener<K, V>, ExecutorService> executorServiceFactory = listener -> new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD);
 
 	public CacheRegistry(CacheRegistryConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
 		this.cache = config.getCache();
@@ -112,13 +113,8 @@ public class CacheRegistry<K, V> implements Registry<K, V, CacheContainerGroupMe
 
 	@Override
 	public Registration register(RegistryListener<K, V> listener) {
-		this.listeners.computeIfAbsent(listener, this);
+		this.listeners.computeIfAbsent(listener, this.executorServiceFactory);
 		return () -> this.unregister(listener);
-	}
-
-	@Override
-	public ExecutorService apply(RegistryListener<K, V> listener) {
-		return new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD);
 	}
 
 	private void unregister(RegistryListener<K, V> listener) {

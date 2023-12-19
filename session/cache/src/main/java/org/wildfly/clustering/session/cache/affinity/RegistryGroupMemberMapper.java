@@ -17,10 +17,10 @@ import org.wildfly.clustering.server.registry.Registry;
  */
 public class RegistryGroupMemberMapper<M extends GroupMember> implements Function<M, String> {
 
-	private final Registry<String, Void, M> registry;
+	private final Registry<M, String, Void> registry;
 	private final String localKey;
 
-	RegistryGroupMemberMapper(Registry<String, Void, M> registry) {
+	RegistryGroupMemberMapper(Registry<M, String, Void> registry) {
 		this.registry = registry;
 		this.localKey = registry.getEntry(registry.getGroup().getLocalMember()).getKey();
 	}
