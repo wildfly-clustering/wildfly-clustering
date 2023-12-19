@@ -91,7 +91,6 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 		this.listeners.clear();
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	private void shutdown(ExecutorService executor) {
 		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
 		try {

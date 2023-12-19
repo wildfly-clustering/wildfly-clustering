@@ -72,7 +72,6 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 		}
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	private void shutdown(ExecutorService executor) {
 		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
 		try {

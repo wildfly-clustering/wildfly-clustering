@@ -15,7 +15,6 @@ import java.util.function.Consumer;
  */
 class Reflect {
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> void loadAll(Class<T> targetClass, Consumer<T> consumer) {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -29,7 +28,6 @@ class Reflect {
 	}
 
 	static <T> void loadSingle(Class<T> targetClass, ClassLoader loader, Consumer<T> consumer) {
-		@SuppressWarnings({ "deprecation", "removal" })
 		Optional<T> service = java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Optional<T> run() {
@@ -39,7 +37,6 @@ class Reflect {
 		service.ifPresent(consumer);
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static ClassLoader setThreadContextClassLoader(ClassLoader loader) {
 		Thread thread = Thread.currentThread();
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {

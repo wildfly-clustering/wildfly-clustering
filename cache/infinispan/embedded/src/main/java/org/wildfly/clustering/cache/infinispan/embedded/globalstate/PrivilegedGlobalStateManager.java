@@ -19,7 +19,6 @@ import org.infinispan.globalstate.impl.GlobalStateManagerImpl;
  */
 @Scope(Scopes.GLOBAL)
 public class PrivilegedGlobalStateManager extends GlobalStateManagerImpl {
-	@SuppressWarnings({ "removal", "deprecation" })
 	@Override
 	public void start() {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
@@ -31,7 +30,6 @@ public class PrivilegedGlobalStateManager extends GlobalStateManagerImpl {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	@Override
 	public void stop() {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
@@ -43,7 +41,6 @@ public class PrivilegedGlobalStateManager extends GlobalStateManagerImpl {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	@Override
 	public void writeGlobalState() {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
@@ -55,7 +52,6 @@ public class PrivilegedGlobalStateManager extends GlobalStateManagerImpl {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	@Override
 	public void writeScopedState(ScopedPersistentState state) {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
@@ -67,7 +63,6 @@ public class PrivilegedGlobalStateManager extends GlobalStateManagerImpl {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	@Override
 	public void deleteScopedState(String scope) {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
@@ -79,7 +74,6 @@ public class PrivilegedGlobalStateManager extends GlobalStateManagerImpl {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	@Override
 	public Optional<ScopedPersistentState> readScopedState(String scope) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {

@@ -41,7 +41,6 @@ public enum InetAddressMarshaller implements FieldSetMarshaller.Simple<InetAddre
 		return FIELDS;
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	@Override
 	public InetAddress readFrom(ProtoStreamReader reader, int index, WireType type, InetAddress address) throws IOException {
 		switch (index) {

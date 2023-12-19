@@ -18,7 +18,6 @@ import org.jboss.threads.JBossThreadFactory;
  */
 class Reflect {
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static ClassLoader getClassLoader(Class<?> targetClass) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -28,7 +27,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static ThreadFactory createThreadFactory(Supplier<ThreadGroup> group) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -38,7 +36,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static ClassLoader getContextClassLoader(Thread thread) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -48,7 +45,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static ClassLoader setContextClassLoader(Thread thread, ClassLoader loader) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -60,7 +56,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static <T> void load(Class<T> targetClass, Consumer<T> consumer) {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override

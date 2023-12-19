@@ -21,7 +21,6 @@ import java.util.List;
  */
 final class Reflect {
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static Field findField(Class<?> sourceClass, Class<?> fieldType) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<Field>() {
 			@Override
@@ -62,7 +61,6 @@ final class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static Method findMethod(Class<?> sourceClass, Class<?> returnType) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<Method>() {
 			@Override
@@ -91,7 +89,6 @@ final class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static Method findMethod(Class<?> sourceClass, String methodName) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<Method>() {
 			@Override
@@ -107,7 +104,6 @@ final class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> Constructor<T> getConstructor(Class<T> sourceClass, Class<?>... parameterTypes) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<Constructor<T>>() {
 			@Override
@@ -123,7 +119,6 @@ final class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
@@ -141,7 +136,6 @@ final class Reflect {
 		return getValue(source, field, Object.class);
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T getValue(Object source, Field field, Class<T> fieldType) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
@@ -173,7 +167,6 @@ final class Reflect {
 		return invoke(source, method, Object.class);
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T invoke(Object source, Method method, Class<T> returnClass) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
@@ -186,20 +179,4 @@ final class Reflect {
 			}
 		});
 	}
-/*
-	static Object invoke(Object source, String methodName) {
-		return invoke(source, methodName, Object.class);
-	}
-
-	@SuppressWarnings({ "deprecation", "removal" })
-	static <T> T invoke(Object source, String methodName, Class<T> returnType) {
-		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
-			@Override
-			public T run() {
-				Method method = findMethod(source.getClass(), methodName);
-				return invoke(source, method, returnType);
-			}
-		});
-	}
-*/
 }

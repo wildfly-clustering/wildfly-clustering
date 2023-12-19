@@ -59,7 +59,6 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 		this.blocking = this.cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	@Override
 	public ListenerRegistration register() {
 		this.cache.addListener(this);

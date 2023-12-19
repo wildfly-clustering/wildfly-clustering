@@ -23,7 +23,6 @@ import org.infinispan.protostream.FileDescriptorSource;
  */
 class Reflect {
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static ClassLoader getClassLoader(Class<?> targetClass) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -33,7 +32,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static <T> List<T> loadAll(Class<T> targetClass, ClassLoader loader) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -43,7 +41,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static <T> Optional<T> loadFirst(Class<T> targetClass, ClassLoader loader) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -53,7 +50,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "removal", "deprecation" })
 	static FileDescriptorSource loadSchemas(String resourceName, ClassLoader loader) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
@@ -67,7 +63,6 @@ class Reflect {
 		});
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static Method findMethod(Class<?> sourceClass, String methodName) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<Method>() {
 			@Override
@@ -87,7 +82,6 @@ class Reflect {
 		return invoke(source, method, Object.class);
 	}
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	static <T> T invoke(Object source, Method method, Class<T> returnClass) {
 		return java.security.AccessController.doPrivileged(new PrivilegedAction<T>() {
 			@Override
