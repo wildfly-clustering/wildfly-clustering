@@ -18,7 +18,7 @@ import org.wildfly.clustering.server.registry.RegistryListener;
 /**
  * @author Paul Ferraro
  */
-public class LocalRegistry<K, V> implements Registry<K, V, LocalGroupMember>, Function<Map.Entry<K, V>, Map<K, V>> {
+public class LocalRegistry<K, V> implements Registry<LocalGroupMember, K, V>, Function<Map.Entry<K, V>, Map<K, V>> {
 
 	private final LocalGroup group;
 	private final Runnable closeTask;

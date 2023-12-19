@@ -19,7 +19,7 @@ import org.wildfly.clustering.server.Registration;
  * @param <V> the type of the registry entry value
  * @author Paul Ferraro
  */
-public interface Registry<K, V, M extends GroupMember> extends Registrar<RegistryListener<K, V>>, Registration {
+public interface Registry<M extends GroupMember, K, V> extends Registrar<RegistryListener<K, V>>, Registration {
 
 	/**
 	 * Returns the group associated with this factory.
