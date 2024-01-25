@@ -48,7 +48,7 @@
 		<version.org.jgroups>5.2.19.Final</version.org.jgroups>
 		<version.org.junit>5.10.1</version.org.junit>
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
-		<version.org.mockito>5.8.0</version.org.mockito>
+		<version.org.mockito>5.10.0</version.org.mockito>
 		<version.org.wildfly.common>1.7.0.Final</version.org.wildfly.common>
 	</properties>
 
