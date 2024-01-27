@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.session.infinispan;
+package org.wildfly.clustering.session.infinispan.embedded;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.persistence.KeyMapperTester;
-import org.wildfly.clustering.session.infinispan.embedded.KeyMapper;
 import org.wildfly.clustering.session.infinispan.embedded.attributes.SessionAttributesKey;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
 import org.wildfly.clustering.session.infinispan.embedded.user.UserContextKey;

@@ -3,13 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.web.hotrod.session.attributes;
+package org.wildfly.clustering.session.infinispan.remote.attributes;
 
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.session.infinispan.remote.attributes.SessionAttributesKey;
 
 public class SessionAttributesKeyTestCase {
 

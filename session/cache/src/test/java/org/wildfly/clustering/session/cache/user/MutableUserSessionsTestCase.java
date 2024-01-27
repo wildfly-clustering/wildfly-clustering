@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.clustering.session.cache.user.coarse;
+package org.wildfly.clustering.session.cache.user;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,10 +13,13 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.CacheEntryMutator;
-import org.wildfly.clustering.session.cache.user.MutableUserSessions;
 import org.wildfly.clustering.session.user.UserSessions;
 
-public class CoarseSessionsTestCase {
+/**
+ * Unit test for {@link MutableUserSessions}.
+ * @author Paul Ferraro
+ */
+public class MutableUserSessionsTestCase {
 	private CacheEntryMutator mutator = mock(CacheEntryMutator.class);
 	private Map<String, String> map = mock(Map.class);
 	private UserSessions<String, String> sessions = new MutableUserSessions<>(this.map, this.mutator);

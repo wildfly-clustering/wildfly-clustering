@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.session.infinispan;
+package org.wildfly.clustering.session.infinispan.remote;
 
 import java.nio.ByteBuffer;
 

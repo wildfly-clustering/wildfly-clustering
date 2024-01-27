@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.clustering.session.infinispan.attributes;
+package org.wildfly.clustering.session.infinispan.embedded.attributes;
 
 import java.io.IOException;
 
@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.FormatterTester;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.session.infinispan.embedded.attributes.SessionAttributesKey;
-import org.wildfly.clustering.session.infinispan.embedded.attributes.SessionAttributesKeyFormatter;
 
 /**
  * Unit test for {@link SessionAttributesKey}.

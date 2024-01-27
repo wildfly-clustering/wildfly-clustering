@@ -3,14 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.web.hotrod.session.metadata;
+package org.wildfly.clustering.session.infinispan.remote.metadata;
 
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.session.infinispan.remote.metadata.SessionAccessMetaDataKey;
-import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreationMetaDataKey;
 
 /**
  * Unit test for {@link SessionAccessMetaDataKeyResolver}.

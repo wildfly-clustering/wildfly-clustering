@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.web.hotrod;
+package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.nio.ByteBuffer;
 

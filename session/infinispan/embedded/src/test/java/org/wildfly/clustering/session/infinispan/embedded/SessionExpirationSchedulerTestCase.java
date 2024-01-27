@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.clustering.session.infinispan;
+package org.wildfly.clustering.session.infinispan.embedded;
 
 import static org.mockito.Mockito.*;
 
@@ -18,7 +18,6 @@ import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
-import org.wildfly.clustering.session.infinispan.embedded.SessionExpirationScheduler;
 
 /**
  * Unit test for {@link SessionExpirationScheduler}.

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.session.infinispan.user.coarse;
+package org.wildfly.clustering.session.infinispan.embedded.user;
 
 import java.io.IOException;
 
@@ -11,14 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.FormatterTester;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.session.infinispan.embedded.user.UserSessionsKey;
-import org.wildfly.clustering.session.infinispan.embedded.user.UserSessionsKeyFormatter;
 
 /**
  * Unit test for {@link UserSessionsKey}.
  * @author Paul Ferraro
  */
-public class CoarseSessionsKeyTestCase {
+public class UserSessionsKeyTestCase {
 
 	@Test
 	public void test() throws IOException {

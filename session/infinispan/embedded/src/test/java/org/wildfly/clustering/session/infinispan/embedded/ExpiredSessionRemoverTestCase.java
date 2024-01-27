@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.clustering.session.infinispan;
+package org.wildfly.clustering.session.infinispan.embedded;
 
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
@@ -21,7 +21,6 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
-import org.wildfly.clustering.session.infinispan.embedded.ExpiredSessionRemover;
 
 
 /**
