@@ -16,12 +16,6 @@
 	<packaging>jar</packaging>
 
 	<name>WildFly Clustering: ProtoStream support</name>
-	<description>
-		Adapts implementations of wildfly-clustering-marshalling-api to
-		ProtoStream.
-		Also contains wildfly-clustering-marshalling-spi implementations using
-		ProtoStream.
-	</description>
 
 	<dependencies>
 		<dependency>
