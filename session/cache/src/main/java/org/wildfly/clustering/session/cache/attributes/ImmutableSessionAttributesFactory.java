@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.session.cache.attributes;
 
-import java.util.concurrent.CompletionStage;
-
 import org.wildfly.clustering.cache.Locator;
 import org.wildfly.clustering.session.ImmutableSessionAttributes;
 
@@ -17,8 +15,4 @@ import org.wildfly.clustering.session.ImmutableSessionAttributes;
  */
 public interface ImmutableSessionAttributesFactory<V> extends Locator<String, V> {
 	ImmutableSessionAttributes createImmutableSessionAttributes(String id, V value);
-
-	default CompletionStage<ImmutableSessionAttributes> createImmutableSessionAttributes(String id, CompletionStage<V> value) {
-		return value.thenApply(v -> (v != null) ? this.createImmutableSessionAttributes(id, v) : null);
-	}
 }
