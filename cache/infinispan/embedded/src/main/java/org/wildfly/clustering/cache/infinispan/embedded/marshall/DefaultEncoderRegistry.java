@@ -22,7 +22,7 @@ import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 
 /**
- * Customer {@link EncoderRegistry} that supports transcoder removal.
+ * Custom {@link EncoderRegistry} that supports transcoder removal.
  * @author Paul Ferraro
  */
 @Scope(Scopes.GLOBAL)

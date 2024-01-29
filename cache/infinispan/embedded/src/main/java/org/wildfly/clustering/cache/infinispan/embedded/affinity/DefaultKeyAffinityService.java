@@ -81,7 +81,6 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 	 * @param cache the target cache
 	 * @param generator a key generator
 	 */
-	@SuppressWarnings("deprecation")
 	DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyGenerator<? extends K> generator, Predicate<Address> filter) {
 		this(cache, generator, filter, cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class).asExecutor(DefaultKeyAffinityService.class.getSimpleName()), CURRENT_CONSISTENT_HASH, KEY_DISTRIBUTION_FACTORY);
 	}

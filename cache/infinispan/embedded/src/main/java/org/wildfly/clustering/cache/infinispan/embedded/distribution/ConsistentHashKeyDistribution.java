@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
+import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.common.function.Functions;
 
@@ -20,7 +20,7 @@ import org.wildfly.common.function.Functions;
  */
 public class ConsistentHashKeyDistribution implements KeyDistribution {
 
-	private final KeyPartitioner partitioner;
+	private final DistributionManager distribution;
 	private final Supplier<ConsistentHash> hash;
 
 	ConsistentHashKeyDistribution(Cache<?, ?> cache) {
@@ -31,25 +31,24 @@ public class ConsistentHashKeyDistribution implements KeyDistribution {
 		this(cache, Functions.constantSupplier(hash));
 	}
 
-	@SuppressWarnings("deprecation")
 	private ConsistentHashKeyDistribution(Cache<?, ?> cache, Supplier<ConsistentHash> hash) {
-		this(cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class), hash);
+		this(cache.getAdvancedCache().getDistributionManager(), hash);
 	}
 
-	ConsistentHashKeyDistribution(KeyPartitioner partitioner, Supplier<ConsistentHash> hash) {
-		this.partitioner = partitioner;
+	ConsistentHashKeyDistribution(DistributionManager distribution, Supplier<ConsistentHash> hash) {
+		this.distribution = distribution;
 		this.hash = hash;
 	}
 
 	@Override
 	public Address getPrimaryOwner(Object key) {
-		int segment = this.partitioner.getSegment(key);
+		int segment = this.distribution.getCacheTopology().getSegment(key);
 		return this.hash.get().locatePrimaryOwnerForSegment(segment);
 	}
 
 	@Override
 	public List<Address> getOwners(Object key) {
-		int segment = this.partitioner.getSegment(key);
+		int segment = this.distribution.getCacheTopology().getSegment(key);
 		return this.hash.get().locateOwnersForSegment(segment);
 	}
 }
