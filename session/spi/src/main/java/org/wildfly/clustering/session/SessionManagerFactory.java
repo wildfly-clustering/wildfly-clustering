@@ -21,5 +21,5 @@ public interface SessionManagerFactory<DC, SC, B extends Batch> extends Registra
 	 * @param idFactory a session identifier factory
 	 * @return a new session manager
 	 */
-	SessionManager<SC, B> createSessionManager(SessionManagerConfiguration<DC, B> configuration);
+	SessionManager<SC, B> createSessionManager(SessionManagerConfiguration<DC> configuration);
 }

@@ -32,7 +32,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> extends AbstractSessionManager
 	private volatile Registration expirationListenerRegistration;
 
 	public HotRodSessionManager(HotRodSessionManagerConfiguration<SC> configuration, SessionFactory<SC, MV, AV, LC> factory) {
-		super(configuration, factory, Functions.discardingConsumer());
+		super(configuration, configuration, factory, Functions.discardingConsumer());
 		this.expirationListenerRegistrar = configuration.getExpirationListenerRegistrar();
 		this.expirationListener = configuration.getExpirationListener();
 		this.batcher = configuration.getBatcher();

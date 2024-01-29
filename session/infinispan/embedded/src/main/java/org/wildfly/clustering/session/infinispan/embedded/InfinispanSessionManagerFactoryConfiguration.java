@@ -18,6 +18,7 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
  * @param <DC> the ServletContext specification type
  * @param <AL> the HttpSessionAttributeListener specification type
  * @param <SC> the local context type
+ * @param <GM> the group member type
  * @author Paul Ferraro
  */
 public interface InfinispanSessionManagerFactoryConfiguration<S, DC, AL, SC, GM extends GroupMember<Address>> extends SessionManagerFactoryConfiguration<S, DC, AL, SC, TransactionBatch>, EmbeddedCacheConfiguration {
