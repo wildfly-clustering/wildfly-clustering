@@ -14,6 +14,6 @@ import org.wildfly.clustering.server.jgroups.dispatcher.CommandDispatcherITCase;
 public class CacheContainerCommandDispatcherITCase extends CommandDispatcherITCase<CacheContainerGroupMember> {
 
 	public CacheContainerCommandDispatcherITCase() {
-		super(CacheContainerCommandDispatcherITCaseConfiguration::new);
+		super(CacheContainerCommandDispatcherFactoryProvider::new);
 	}
 }

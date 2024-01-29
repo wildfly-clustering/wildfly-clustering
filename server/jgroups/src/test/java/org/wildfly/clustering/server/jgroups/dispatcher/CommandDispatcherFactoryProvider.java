@@ -11,7 +11,7 @@ import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 /**
  * @author Paul Ferraro
  */
-public interface CommandDispatcherITCaseConfiguration<M extends GroupMember> extends AutoCloseable {
+public interface CommandDispatcherFactoryProvider<M extends GroupMember> extends AutoCloseable {
 
 	CommandDispatcherFactory<M> getCommandDispatcherFactory();
 }

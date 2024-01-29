@@ -18,12 +18,12 @@ import org.wildfly.clustering.server.jgroups.JChannelFactory;
 /**
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherITCaseConfiguration implements CommandDispatcherITCaseConfiguration<ChannelGroupMember>, JChannelCommandDispatcherFactoryConfiguration {
+public class ChannelCommandDispatcherFactoryProvider implements CommandDispatcherFactoryProvider<ChannelGroupMember>, JChannelCommandDispatcherFactoryConfiguration {
 
 	private final JChannel channel;
 	private final ChannelCommandDispatcherFactory factory;
 
-	public ChannelCommandDispatcherITCaseConfiguration(String clusterName, String memberName) throws Exception {
+	public ChannelCommandDispatcherFactoryProvider(String clusterName, String memberName) throws Exception {
 		this.channel = JChannelFactory.INSTANCE.apply(memberName);
 		this.channel.connect(clusterName);
 		this.factory = new JChannelCommandDispatcherFactory(this);

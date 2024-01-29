@@ -12,12 +12,12 @@ import org.wildfly.clustering.server.group.Group;
 /**
  * @author Paul Ferraro
  */
-public class JChannelGroupITCaseConfiguration implements GroupITCaseConfiguration<Address, ChannelGroupMember> {
+public class JChannelGroupProvider implements GroupProvider<Address, ChannelGroupMember> {
 
 	private final JChannel channel;
 	private final ChannelGroup group;
 
-	public JChannelGroupITCaseConfiguration(String clusterName, String memberName) throws Exception {
+	public JChannelGroupProvider(String clusterName, String memberName) throws Exception {
 		this.channel = JChannelFactory.INSTANCE.apply(memberName);
 		this.channel.connect(clusterName);
 		this.group = new JChannelGroup(this.channel);

@@ -13,6 +13,6 @@ import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 public class ChannelCommandDispatcherITCase extends CommandDispatcherITCase<ChannelGroupMember> {
 
 	public ChannelCommandDispatcherITCase() {
-		super(ChannelCommandDispatcherITCaseConfiguration::new);
+		super(ChannelCommandDispatcherFactoryProvider::new);
 	}
 }

@@ -13,31 +13,31 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerFactory;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 import org.wildfly.clustering.server.jgroups.ForkChannelFactory;
-import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcherITCaseConfiguration;
-import org.wildfly.clustering.server.jgroups.dispatcher.CommandDispatcherITCaseConfiguration;
+import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcherFactoryProvider;
+import org.wildfly.clustering.server.jgroups.dispatcher.CommandDispatcherFactoryProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheContainerCommandDispatcherITCaseConfiguration implements CommandDispatcherITCaseConfiguration<CacheContainerGroupMember> {
+public class CacheContainerCommandDispatcherFactoryProvider implements CommandDispatcherFactoryProvider<CacheContainerGroupMember> {
 	private static final String CONTAINER_NAME = "container";
 
-	private final ChannelCommandDispatcherITCaseConfiguration config;
+	private final ChannelCommandDispatcherFactoryProvider config;
 	private final EmbeddedCacheManager manager;
 	private final CommandDispatcherFactory<CacheContainerGroupMember> factory;
 
-	public CacheContainerCommandDispatcherITCaseConfiguration(String clusterName, String memberName) throws Exception {
-		this.config = new ChannelCommandDispatcherITCaseConfiguration(clusterName, memberName);
-		this.manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(this.config.getChannel()), clusterName, memberName).apply(CONTAINER_NAME);
+	public CacheContainerCommandDispatcherFactoryProvider(String clusterName, String memberName) throws Exception {
+		this.config = new ChannelCommandDispatcherFactoryProvider(clusterName, memberName);
+		this.manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(this.config.getChannel()), clusterName, memberName).apply(CONTAINER_NAME, EmbeddedCacheManagerCommandDispatcherFactory.class.getClassLoader());
 		this.factory = new EmbeddedCacheManagerCommandDispatcherFactory<>(new ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration() {
 			@Override
 			public EmbeddedCacheManager getCacheContainer() {
-				return CacheContainerCommandDispatcherITCaseConfiguration.this.manager;
+				return CacheContainerCommandDispatcherFactoryProvider.this.manager;
 			}
 			
 			@Override
 			public GroupCommandDispatcherFactory<Address, ChannelGroupMember> getCommandDispatcherFactory() {
-				return CacheContainerCommandDispatcherITCaseConfiguration.this.config.getCommandDispatcherFactory();
+				return CacheContainerCommandDispatcherFactoryProvider.this.config.getCommandDispatcherFactory();
 			}
 		});
 	}

@@ -12,7 +12,7 @@ import org.wildfly.clustering.server.group.GroupMember;
 /**
  * @author Paul Ferraro
  */
-public interface GroupITCaseConfiguration<A extends Comparable<A>, M extends GroupMember<A>> extends AutoCloseable {
+public interface GroupProvider<A extends Comparable<A>, M extends GroupMember<A>> extends AutoCloseable {
 
 	JChannel getChannel();
 
