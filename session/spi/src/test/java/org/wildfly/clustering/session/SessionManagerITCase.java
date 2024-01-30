@@ -31,7 +31,7 @@ import org.wildfly.common.function.ExceptionBiFunction;
 import org.wildfly.common.function.Functions;
 
 /**
- * Session manager integration test.
+ * Session manager integration tests.
  * @author Paul Ferraro
  */
 public abstract class SessionManagerITCase<B extends Batch, P extends SessionManagerParameters> {
@@ -260,10 +260,6 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		}
 	}
 
-	private void verifySessionContext(Session<AtomicReference<String>> session, String previousContext, String currentContext) {
-		assertEquals(previousContext, session.getContext().getAndSet(currentContext));
-	}
-
 	private void verifySessionMetaData(Session<AtomicReference<String>> session) {
 		assertTrue(session.isValid());
 		assertFalse(session.getMetaData().isImmortal());
@@ -285,14 +281,14 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 
 	private void updateSessionAttributes(Session<AtomicReference<String>> session, Map<String, Map.Entry<Object, Object>> attributes) {
 		for (Map.Entry<String, Map.Entry<Object, Object>> entry : attributes.entrySet()) {
-			Map.Entry<Object, Object> values = entry.getValue();
-			assertEquals(values.getKey(), session.getAttributes().setAttribute(entry.getKey(), values.getValue()));
-		}
-	}
-
-	private void removeSessionAttributes(Session<AtomicReference<String>> session, Map<String, Object> attributes) {
-		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-			assertEquals(entry.getValue(), session.getAttributes().removeAttribute(entry.getKey()));
+			String name = entry.getKey();
+			Object expected = entry.getValue().getKey();
+			Object value = entry.getValue().getValue();
+			if (value != null) {
+				assertEquals(expected, session.getAttributes().setAttribute(name, value));
+			} else {
+				assertEquals(expected, session.getAttributes().removeAttribute(name));
+			}
 		}
 	}
 
