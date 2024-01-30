@@ -100,7 +100,7 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 
 			@Override
 			public int getExpirationThreadPoolSize() {
-				return 16;
+				return 1;
 			}
 		};
 		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration);

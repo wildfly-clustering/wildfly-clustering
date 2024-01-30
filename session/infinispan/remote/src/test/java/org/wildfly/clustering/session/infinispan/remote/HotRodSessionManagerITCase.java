@@ -85,6 +85,12 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 
 	@ParameterizedTest
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
+	public void concurrent(HotRodSessionManagerParameters parameters) throws Exception {
+		super.concurrent(parameters);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void expiration(HotRodSessionManagerParameters parameters) throws Exception {
 		super.expiration(parameters);
 	}

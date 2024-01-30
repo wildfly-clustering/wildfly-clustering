@@ -72,6 +72,12 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
+	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
+		super.concurrent(parameters);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.expiration(parameters);
 	}
