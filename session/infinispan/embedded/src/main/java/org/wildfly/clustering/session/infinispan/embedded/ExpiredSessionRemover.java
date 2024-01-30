@@ -5,6 +5,7 @@
 package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.util.Collection;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -50,8 +51,12 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Predicate<String>,
 						listener.accept(session);
 					}
 				}
-				this.factory.remove(id);
-				return true;
+				try {
+					this.factory.remove(id);
+					return true;
+				} catch (CancellationException e) {
+					return false;
+				}
 			}
 			LOGGER.tracef("Session %s is not yet expired.", id);
 		} else {
