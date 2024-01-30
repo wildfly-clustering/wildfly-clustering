@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -71,7 +70,6 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 		super.basic(parameters);
 	}
 
-	@Disabled
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {

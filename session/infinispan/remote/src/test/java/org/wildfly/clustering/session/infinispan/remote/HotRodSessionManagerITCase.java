@@ -13,7 +13,6 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -84,7 +83,6 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 		super.basic(parameters);
 	}
 
-	@Disabled
 	@ParameterizedTest
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void expiration(HotRodSessionManagerParameters parameters) throws Exception {

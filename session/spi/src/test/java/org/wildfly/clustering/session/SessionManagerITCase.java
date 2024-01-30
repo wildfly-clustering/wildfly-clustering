@@ -11,10 +11,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.Map;
-import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,10 +42,9 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 	}
 
 	protected void basic(P parameters) throws Exception {
-		BlockingQueue<ImmutableSession> expiredSessions1 = new LinkedBlockingQueue<>();
-		BlockingQueue<ImmutableSession> expiredSessions2 = new LinkedBlockingQueue<>();
-		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions1, DEPLOYMENT_CONTEXT);
-		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions2, DEPLOYMENT_CONTEXT);
+		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
+		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
+		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		try (SessionManagerFactoryProvider<String, B> provider1 = this.factory.apply(parameters, "member1")) {
 			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY, CONTAINER_FACADE_PROVIDER)) {
 				SessionManager<AtomicReference<String>, B> manager1 = factory1.createSessionManager(managerConfig1);
@@ -78,8 +75,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 						this.verifyNoSession(manager1, sessionId);
 						this.verifyNoSession(manager2, sessionId);
 
-						assertTrue(expiredSessions1.isEmpty());
-						assertTrue(expiredSessions2.isEmpty());
+						assertTrue(expiredSessions.isEmpty());
 
 						manager2.stop();
 					}
@@ -90,10 +86,9 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 	}
 
 	protected void expiration(P parameters) throws Exception {
-		BlockingQueue<ImmutableSession> expiredSessions1 = new LinkedBlockingQueue<>();
-		BlockingQueue<ImmutableSession> expiredSessions2 = new LinkedBlockingQueue<>();
-		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions1, DEPLOYMENT_CONTEXT);
-		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions2, DEPLOYMENT_CONTEXT);
+		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
+		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
+		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		try (SessionManagerFactoryProvider<String, B> provider1 = this.factory.apply(parameters, "member1")) {
 			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY, CONTAINER_FACADE_PROVIDER)) {
 				SessionManager<AtomicReference<String>, B> manager1 = factory1.createSessionManager(managerConfig1);
@@ -117,35 +112,22 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 							session.getMetaData().setTimeout(Duration.ofMillis(1));
 						});
 
-						Queue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
-						CompletableFuture<Void> expiredSession1 = CompletableFuture.runAsync(() -> {
-							try {
-								expiredSessions.add(expiredSessions1.poll(60, TimeUnit.SECONDS));
-							} catch (InterruptedException e) {
-								Thread.currentThread().interrupt();
-							}
-						});
-						CompletableFuture<Void> expiredSession2 = CompletableFuture.runAsync(() -> {
-							try {
-								expiredSessions.add(expiredSessions2.poll(60, TimeUnit.SECONDS));
-							} catch (InterruptedException e) {
-								Thread.currentThread().interrupt();
-							}
-						});
-						CompletableFuture.anyOf(expiredSession1, expiredSession2).join();
+						try {
+							ImmutableSession expiredSession = expiredSessions.poll(60, TimeUnit.SECONDS);
+							assertEquals(sessionId, expiredSession.getId());
+							assertFalse(expiredSession.isValid());
+							assertFalse(expiredSession.getMetaData().isNew());
+							assertTrue(expiredSession.getMetaData().isExpired());
+							assertFalse(expiredSession.getMetaData().isImmortal());
+							this.verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
+
+							assertEquals(0, expiredSessions.size(), expiredSessions.toString());
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						}
 
 						this.verifyNoSession(manager1, sessionId);
 						this.verifyNoSession(manager2, sessionId);
-
-						assertEquals(1, expiredSessions.size(), expiredSessions.toString());
-
-						ImmutableSession expiredSession = expiredSessions.remove();
-						assertEquals(sessionId, expiredSession.getId());
-						assertFalse(expiredSession.isValid());
-						assertFalse(expiredSession.getMetaData().isNew());
-						assertTrue(expiredSession.getMetaData().isExpired());
-						assertFalse(expiredSession.getMetaData().isImmortal());
-						this.verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
 
 						manager2.stop();
 					}
