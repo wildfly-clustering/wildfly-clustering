@@ -17,15 +17,15 @@ import org.wildfly.clustering.session.SessionManagerConfiguration;
 
 /**
  * Configuration for an {@link InfinispanSessionManager}.
- * @param <SC> the ServletContext specification type
- * @param <LC> the local context type
+ * @param <DC> the deployment context type
+ * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionManagerConfiguration<SC, LC> extends SessionManagerConfiguration<SC, TransactionBatch>, EmbeddedCacheConfiguration {
+public interface InfinispanSessionManagerConfiguration<DC, SC> extends SessionManagerConfiguration<DC>, EmbeddedCacheConfiguration {
 
 	Scheduler<String, ExpirationMetaData> getExpirationScheduler();
 	Runnable getStartTask();
-	Registrar<SessionManager<LC, TransactionBatch>> getRegistrar();
+	Registrar<SessionManager<SC, TransactionBatch>> getRegistrar();
 
 	@Override
 	IdentifierFactory<String> getIdentifierFactory();

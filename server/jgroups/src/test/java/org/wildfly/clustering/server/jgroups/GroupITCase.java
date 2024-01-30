@@ -46,21 +46,21 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 	private static final Duration VIEW_CHANGE_DURATION = Duration.ofSeconds(20);
 	private static final Duration SPLIT_MERGE_DURATION = Duration.ofSeconds(120);
 
-	private final ExceptionBiFunction<String, String, GroupITCaseConfiguration<A, M>, Exception> factory;
+	private final ExceptionBiFunction<String, String, GroupProvider<A, M>, Exception> factory;
 	private final Function<A, Address> mapper;
 
-	protected GroupITCase(ExceptionBiFunction<String, String, GroupITCaseConfiguration<A, M>, Exception> factory, Function<A, Address> mapper) {
+	protected GroupITCase(ExceptionBiFunction<String, String, GroupProvider<A, M>, Exception> factory, Function<A, Address> mapper) {
 		this.factory = factory;
 		this.mapper = mapper;
 	}
 
 	@Test
 	public void test() throws Exception {
-		try (GroupITCaseConfiguration<A, M> config1 = this.factory.apply(CLUSTER_NAME, MEMBER_NAMES[0])) {
-			Group<A, M> group1 = config1.getGroup();
-			JChannel channel1 = config1.getChannel();
+		try (GroupProvider<A, M> provider1 = this.factory.apply(CLUSTER_NAME, MEMBER_NAMES[0])) {
+			Group<A, M> group1 = provider1.getGroup();
+			JChannel channel1 = provider1.getChannel();
 
-			assertSame(config1.getName(), group1.getName());
+			assertSame(provider1.getName(), group1.getName());
 			assertEquals(MEMBER_NAMES[0], group1.getLocalMember().getName());
 			assertFalse(group1.isSingleton());
 			this.validate(channel1, group1);
@@ -101,8 +101,8 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 				assertNull(splitEvent);
 				assertNull(mergeEvent);
 
-				try (GroupITCaseConfiguration<A, M> config2 = this.factory.apply(CLUSTER_NAME, MEMBER_NAMES[1])) {
-					JChannel channel2 = config2.getChannel();
+				try (GroupProvider<A, M> provider2 = this.factory.apply(CLUSTER_NAME, MEMBER_NAMES[1])) {
+					JChannel channel2 = provider2.getChannel();
 
 					// Verify cluster formation
 					assertEquals(channel1.getView(), channel2.getView());
@@ -124,9 +124,9 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 					assertEquals(previousMembership, updateEvent.getPreviousMembership());
 					assertEquals(currentMembership, updateEvent.getCurrentMembership());
 
-					Group<A, M> group2 = config2.getGroup();
+					Group<A, M> group2 = provider2.getGroup();
 
-					assertSame(config2.getName(), group2.getName());
+					assertSame(provider2.getName(), group2.getName());
 					assertEquals(MEMBER_NAMES[1], group2.getLocalMember().getName());
 					assertFalse(group2.isSingleton());
 
@@ -139,8 +139,8 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 					assertEquals(currentMembership.getCoordinator(), membership2.getCoordinator());
 					assertEquals(currentMembership.getMembers(), membership2.getMembers());
 
-					try (GroupITCaseConfiguration<A, M> config3 = this.factory.apply(CLUSTER_NAME, MEMBER_NAMES[2])) {
-						JChannel channel3 = config3.getChannel();
+					try (GroupProvider<A, M> provider3 = this.factory.apply(CLUSTER_NAME, MEMBER_NAMES[2])) {
+						JChannel channel3 = provider3.getChannel();
 
 						// Verify cluster formation
 						assertEquals(channel1.getView(), channel3.getView());
@@ -162,9 +162,9 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						assertEquals(previousMembership, updateEvent.getPreviousMembership());
 						assertEquals(currentMembership, updateEvent.getCurrentMembership());
 
-						Group<A, M> group3 = config3.getGroup();
+						Group<A, M> group3 = provider3.getGroup();
 
-						assertSame(config3.getName(), group3.getName());
+						assertSame(provider3.getName(), group3.getName());
 						assertEquals(MEMBER_NAMES[2], group3.getLocalMember().getName());
 						assertFalse(group3.isSingleton());
 

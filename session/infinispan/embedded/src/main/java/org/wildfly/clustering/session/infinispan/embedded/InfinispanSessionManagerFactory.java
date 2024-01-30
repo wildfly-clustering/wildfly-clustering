@@ -134,7 +134,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
 	}
 
 	@Override
-	public SessionManager<LC, TransactionBatch> createSessionManager(SessionManagerConfiguration<SC, TransactionBatch> configuration) {
+	public SessionManager<LC, TransactionBatch> createSessionManager(SessionManagerConfiguration<SC> configuration) {
 		IdentifierFactory<String> identifierFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), this.configuration.getCache());
 		Registrar<SessionManager<LC, TransactionBatch>> registrar = manager -> {
 			Registration contextRegistration = this.notifierFactory.register(Map.entry(configuration.getContext(), manager));
@@ -187,11 +187,11 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
 		this.factory.close();
 	}
 
-	private abstract static class AbstractInfinispanSessionManagerConfiguration<SC, LC> extends DelegatingSessionManagerConfiguration<SC, TransactionBatch> implements InfinispanSessionManagerConfiguration<SC, LC> {
+	private abstract static class AbstractInfinispanSessionManagerConfiguration<SC, LC> extends DelegatingSessionManagerConfiguration<SC> implements InfinispanSessionManagerConfiguration<SC, LC> {
 		private final EmbeddedCacheConfiguration configuration;
 		private final IdentifierFactory<String> identifierFactory;
 
-		AbstractInfinispanSessionManagerConfiguration(SessionManagerConfiguration<SC, TransactionBatch> managerConfiguration, IdentifierFactory<String> identifierFactory, EmbeddedCacheConfiguration configuration) {
+		AbstractInfinispanSessionManagerConfiguration(SessionManagerConfiguration<SC> managerConfiguration, IdentifierFactory<String> identifierFactory, EmbeddedCacheConfiguration configuration) {
 			super(managerConfiguration);
 			this.identifierFactory = identifierFactory;
 			this.configuration = configuration;

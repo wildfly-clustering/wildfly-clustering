@@ -54,7 +54,7 @@ public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionMan
 	private volatile Registration registration;
 
 	public InfinispanSessionManager(InfinispanSessionManagerConfiguration<DC, SC> configuration, SessionFactory<DC, MV, AV, SC> factory) {
-		super(configuration, factory, new Consumer<>() {
+		super(configuration, configuration, factory, new Consumer<>() {
 			@Override
 			public void accept(ImmutableSession session) {
 				if (session.isValid()) {

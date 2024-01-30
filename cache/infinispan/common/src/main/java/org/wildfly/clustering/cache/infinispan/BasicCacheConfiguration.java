@@ -9,6 +9,7 @@ import jakarta.transaction.TransactionManager;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.api.BasicCache;
+import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
@@ -17,7 +18,7 @@ import org.wildfly.clustering.cache.infinispan.batch.TransactionalBatcher;
 /**
  * @author Paul Ferraro
  */
-public interface BasicCacheConfiguration extends BasicCacheContainerConfiguration {
+public interface BasicCacheConfiguration extends CacheConfiguration<TransactionBatch>, BasicCacheContainerConfiguration {
 
 	<K, V> BasicCache<K, V> getCache();
 

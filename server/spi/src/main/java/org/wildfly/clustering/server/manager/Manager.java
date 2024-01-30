@@ -6,10 +6,17 @@
 package org.wildfly.clustering.server.manager;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.Batcher;
 
 /**
  * A manager of server-side state.
  * @author Paul Ferraro
  */
-public interface Manager<I, B extends Batch> extends ManagerConfiguration<I, B>, Restartable {
+public interface Manager<I, B extends Batch> extends ManagerConfiguration<I>, Restartable {
+
+	/**
+	 * Returns a batcher for use by users of this manager.
+	 * @return a batcher
+	 */
+	Batcher<B> getBatcher();
 }

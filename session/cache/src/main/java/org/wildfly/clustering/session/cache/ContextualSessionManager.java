@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -54,16 +55,20 @@ public class ContextualSessionManager<C, B extends Batch> implements SessionMana
 				return manager.createSessionAsync(id).thenApply(session -> new ContextualSessionRegistration<>(session, closeTask));
 			}
 		};
+		Function<Runnable, ContextualSession<C>> empty = closeTask -> {
+			closeTask.run();
+			return null;
+		};
 		this.sessionFinder = new BiFunction<>() {
 			@Override
 			public CompletionStage<ContextualSession<C>> apply(String id, Runnable closeTask) {
-				return manager.findSessionAsync(id).thenApply(session -> (session != null) ? new ContextualSessionRegistration<>(session, closeTask) : null);
+				return manager.findSessionAsync(id).thenApply(session -> (session != null) ? new ContextualSessionRegistration<>(session, closeTask) : empty.apply(closeTask));
 			}
 		};
 		this.sessionContext = contextFactory.createContext(Functions.discardingConsumer(), new Consumer<CompletionStage<ContextualSession<C>>>() {
 			@Override
 			public void accept(CompletionStage<ContextualSession<C>> future) {
-				future.thenAccept(Contextual::end);
+				future.thenAccept(session -> Optional.ofNullable(session).ifPresent(Contextual::end));
 			}
 		});
 	}

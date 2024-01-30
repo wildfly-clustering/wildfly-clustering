@@ -24,7 +24,6 @@ public interface EmbeddedCacheContainerConfiguration extends BasicCacheContainer
 		return this.getBlockingManager().asExecutor(this.getClass().getSimpleName());
 	}
 
-	@SuppressWarnings("deprecation")
 	default BlockingManager getBlockingManager() {
 		return this.getCacheContainer().getGlobalComponentRegistry().getComponent(BlockingManager.class);
 	}

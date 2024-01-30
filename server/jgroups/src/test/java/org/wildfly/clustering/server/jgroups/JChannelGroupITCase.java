@@ -16,6 +16,6 @@ import org.jgroups.Address;
 public class JChannelGroupITCase extends GroupITCase<Address, ChannelGroupMember> {
 
 	public JChannelGroupITCase() {
-		super(JChannelGroupITCaseConfiguration::new, Function.identity());
+		super(JChannelGroupProvider::new, Function.identity());
 	}
 }

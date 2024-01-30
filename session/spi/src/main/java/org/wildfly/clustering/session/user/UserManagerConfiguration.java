@@ -17,7 +17,7 @@ import org.wildfly.clustering.server.manager.ManagerConfiguration;
  * @param <T> the transient context type
  * @param <B> the batch type
  */
-public interface UserManagerConfiguration<T, B extends Batch> extends ManagerConfiguration<String, B> {
+public interface UserManagerConfiguration<T, B extends Batch> extends ManagerConfiguration<String> {
 	ByteBufferMarshaller getMarshaller();
 	Supplier<T> getTransientContextFactory();
 }

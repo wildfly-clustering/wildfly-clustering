@@ -52,7 +52,7 @@ public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManage
 	}
 
 	@Override
-	public SessionManager<LC, TransactionBatch> createSessionManager(SessionManagerConfiguration<SC, TransactionBatch> configuration) {
+	public SessionManager<LC, TransactionBatch> createSessionManager(SessionManagerConfiguration<SC> configuration) {
 		Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar = this.expirationListenerRegistrar;
 		HotRodSessionManagerConfiguration<SC> config = new AbstractHotRodSessionManagerConfiguration<>(configuration, this.configuration) {
 			@Override
@@ -83,10 +83,10 @@ public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManage
 		}
 	}
 
-	private abstract static class AbstractHotRodSessionManagerConfiguration<SC> extends DelegatingSessionManagerConfiguration<SC, TransactionBatch> implements HotRodSessionManagerConfiguration<SC> {
+	private abstract static class AbstractHotRodSessionManagerConfiguration<SC> extends DelegatingSessionManagerConfiguration<SC> implements HotRodSessionManagerConfiguration<SC> {
 		private final RemoteCacheConfiguration configuration;
 
-		AbstractHotRodSessionManagerConfiguration(SessionManagerConfiguration<SC, TransactionBatch> managerConfiguration, RemoteCacheConfiguration configuration) {
+		AbstractHotRodSessionManagerConfiguration(SessionManagerConfiguration<SC> managerConfiguration, RemoteCacheConfiguration configuration) {
 			super(managerConfiguration);
 			this.configuration = configuration;
 		}

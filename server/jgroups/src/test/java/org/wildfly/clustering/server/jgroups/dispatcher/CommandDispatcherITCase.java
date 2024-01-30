@@ -27,16 +27,16 @@ import org.wildfly.common.function.ExceptionBiFunction;
 public abstract class CommandDispatcherITCase<M extends GroupMember> {
 	private static final String CLUSTER_NAME = "cluster";
 
-	private final ExceptionBiFunction<String, String, CommandDispatcherITCaseConfiguration<M>, Exception> factory;
+	private final ExceptionBiFunction<String, String, CommandDispatcherFactoryProvider<M>, Exception> factory;
 
-	protected CommandDispatcherITCase(ExceptionBiFunction<String, String, CommandDispatcherITCaseConfiguration<M>, Exception> factory) {
+	protected CommandDispatcherITCase(ExceptionBiFunction<String, String, CommandDispatcherFactoryProvider<M>, Exception> factory) {
 		this.factory = factory;
 	}
 
 	@Test
 	public void test() throws Exception {
-		try (CommandDispatcherITCaseConfiguration<M> config1 = this.factory.apply(CLUSTER_NAME, "member1")) {
-			CommandDispatcherFactory<M> factory1 = config1.getCommandDispatcherFactory();
+		try (CommandDispatcherFactoryProvider<M> provider1 = this.factory.apply(CLUSTER_NAME, "member1")) {
+			CommandDispatcherFactory<M> factory1 = provider1.getCommandDispatcherFactory();
 			Group<M> group1 = factory1.getGroup();
 			UUID fooContext1 = UUID.randomUUID();
 
@@ -51,8 +51,8 @@ public abstract class CommandDispatcherITCase<M extends GroupMember> {
 
 				assertTrue(dispatcher1.dispatchToGroup(new IdentityCommand<>(), Set.of(group1.getLocalMember())).isEmpty());
 
-				try (CommandDispatcherITCaseConfiguration<M> config2 = this.factory.apply(CLUSTER_NAME, "member2")) {
-					CommandDispatcherFactory<M> factory2 = config2.getCommandDispatcherFactory();
+				try (CommandDispatcherFactoryProvider<M> provider2 = this.factory.apply(CLUSTER_NAME, "member2")) {
+					CommandDispatcherFactory<M> factory2 = provider2.getCommandDispatcherFactory();
 					Group<M> group2 = factory2.getGroup();
 					UUID fooContext2 = UUID.randomUUID();
 

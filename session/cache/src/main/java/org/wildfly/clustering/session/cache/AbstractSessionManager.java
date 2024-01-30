@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.jboss.logging.Logger;
+import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.server.expiration.Expiration;
@@ -34,10 +35,10 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC, B extends Batch> im
 	private final Batcher<B> batcher;
 	private final UnaryOperator<Session<SC>> wrapper;
 
-	protected AbstractSessionManager(SessionManagerConfiguration<DC, B> configuration, SessionFactory<DC, MV, AV, SC> factory, Consumer<ImmutableSession> closeTask) {
+	protected AbstractSessionManager(SessionManagerConfiguration<DC> configuration, CacheConfiguration<B> cacheConfiguration, SessionFactory<DC, MV, AV, SC> factory, Consumer<ImmutableSession> closeTask) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
-		this.batcher = configuration.getBatcher();
+		this.batcher = cacheConfiguration.getBatcher();
 		this.expiration = configuration;
 		this.expirationListener = configuration.getExpirationListener();
 		this.factory = factory;

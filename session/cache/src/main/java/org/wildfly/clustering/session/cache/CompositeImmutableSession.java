@@ -31,7 +31,7 @@ public class CompositeImmutableSession implements ImmutableSession {
 
 	@Override
 	public boolean isValid() {
-		return true;
+		return !this.metaData.isExpired();
 	}
 
 	@Override
@@ -42,5 +42,22 @@ public class CompositeImmutableSession implements ImmutableSession {
 	@Override
 	public ImmutableSessionMetaData getMetaData() {
 		return this.metaData;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.id.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (!(object instanceof ImmutableSession)) return false;
+		ImmutableSession session = (ImmutableSession) object;
+		return this.id.equals(session.getId());
+	}
+
+	@Override
+	public String toString() {
+		return this.id.toString();
 	}
 }

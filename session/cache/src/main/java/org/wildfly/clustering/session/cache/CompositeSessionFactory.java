@@ -8,9 +8,6 @@ package org.wildfly.clustering.session.cache;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
-import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
@@ -54,10 +51,5 @@ public class CompositeSessionFactory<DC, MV extends Contextual<SC>, AV, SC> exte
 		InvalidatableSessionMetaData metaData = this.metaDataFactory.createSessionMetaData(id, metaDataValue);
 		SessionAttributes attributes = this.attributesFactory.createSessionAttributes(id, attributesValue, metaData, context);
 		return new CompositeSession<>(id, metaData, attributes, metaDataValue.getContext(), this.contextFactory, this);
-	}
-
-	@Override
-	public ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, ImmutableSessionAttributes attributes) {
-		return new CompositeImmutableSession(id, metaData, attributes);
 	}
 }

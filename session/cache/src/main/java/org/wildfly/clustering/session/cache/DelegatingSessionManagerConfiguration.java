@@ -9,9 +9,6 @@ import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.cache.CacheProperties;
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 
@@ -20,11 +17,11 @@ import org.wildfly.clustering.session.SessionManagerConfiguration;
  * @author Paul Ferraro
  * @param <C> the servlet context type
  */
-public class DelegatingSessionManagerConfiguration<C, B extends Batch> implements SessionManagerConfiguration<C, B> {
+public class DelegatingSessionManagerConfiguration<C> implements SessionManagerConfiguration<C> {
 
-	private final SessionManagerConfiguration<C, B> configuration;
+	private final SessionManagerConfiguration<C> configuration;
 
-	public DelegatingSessionManagerConfiguration(SessionManagerConfiguration<C, B> configuration) {
+	public DelegatingSessionManagerConfiguration(SessionManagerConfiguration<C> configuration) {
 		this.configuration = configuration;
 	}
 
@@ -46,15 +43,5 @@ public class DelegatingSessionManagerConfiguration<C, B extends Batch> implement
 	@Override
 	public Supplier<String> getIdentifierFactory() {
 		return this.configuration.getIdentifierFactory();
-	}
-
-	@Override
-	public CacheProperties getCacheProperties() {
-		return this.configuration.getCacheProperties();
-	}
-
-	@Override
-	public Batcher<B> getBatcher() {
-		return this.configuration.getBatcher();
 	}
 }

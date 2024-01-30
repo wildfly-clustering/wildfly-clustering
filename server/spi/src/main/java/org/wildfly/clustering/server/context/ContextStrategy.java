@@ -6,6 +6,7 @@
 package org.wildfly.clustering.server.context;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
@@ -29,7 +30,7 @@ public enum ContextStrategy implements ContextFactory {
 				@Override
 				public V computeIfAbsent(K key, BiFunction<K, Runnable, V> factory) {
 					AtomicReference<V> reference = new AtomicReference<>();
-					V value = factory.apply(key, () -> stopTask.accept(reference.getPlain()));
+					V value = factory.apply(key, () -> Optional.ofNullable(reference.getPlain()).ifPresent(stopTask::accept));
 					if (value != null) {
 						startTask.accept(value);
 						reference.setPlain(value);
@@ -49,9 +50,7 @@ public enum ContextStrategy implements ContextFactory {
 			BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> addFunction = new BiFunction<>() {
 				@Override
 				public Map.Entry<Integer, AtomicReference<V>> apply(K id, Map.Entry<Integer, AtomicReference<V>> entry) {
-					int count = (entry != null) ? entry.getKey() + 1 : 0;
-					AtomicReference<V> reference = (entry != null) ? entry.getValue() : new AtomicReference<>();
-					return Map.entry(count, reference);
+					return (entry != null) ? Map.entry(entry.getKey() + 1, entry.getValue()) : Map.entry(0, new AtomicReference<>());
 				}
 			};
 			BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> removeFunction = new BiFunction<>() {
@@ -61,10 +60,7 @@ public enum ContextStrategy implements ContextFactory {
 					int count = (entry != null) ? entry.getKey() : 0;
 					AtomicReference<V> reference = (entry != null) ? entry.getValue() : null;
 					if (count == 0) {
-						V value = (reference != null) ? reference.getPlain() : null;
-						if (value != null) {
-							stopTask.accept(value);
-						}
+						Optional.ofNullable(reference).map(AtomicReference::getPlain).ifPresent(stopTask::accept);
 						// Returning null will remove the map entry
 						return null;
 					}

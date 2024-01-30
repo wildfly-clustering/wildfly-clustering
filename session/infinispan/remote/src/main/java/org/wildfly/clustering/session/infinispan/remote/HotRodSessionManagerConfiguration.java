@@ -19,7 +19,7 @@ import org.wildfly.clustering.session.SessionManagerConfiguration;
  * @param <C> the ServletContext specification type
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagerConfiguration<C> extends SessionManagerConfiguration<C, TransactionBatch>, RemoteCacheConfiguration {
+public interface HotRodSessionManagerConfiguration<C> extends SessionManagerConfiguration<C>, RemoteCacheConfiguration {
 	Registrar<Consumer<ImmutableSession>> getExpirationListenerRegistrar();
 
 	@Override

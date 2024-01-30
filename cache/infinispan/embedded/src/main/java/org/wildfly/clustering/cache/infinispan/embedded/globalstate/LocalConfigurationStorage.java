@@ -12,7 +12,6 @@ import java.util.concurrent.CompletionStage;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.api.CacheContainerAdmin;
-import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.util.DependencyGraph;
 
@@ -33,7 +32,7 @@ public class LocalConfigurationStorage extends org.infinispan.globalstate.impl.V
 			}
 			globalComponentRegistry.removeCache(name);
 			// Remove cache configuration and remove it from the computed cache name list
-			globalComponentRegistry.getComponent(ConfigurationManager.class).removeConfiguration(name);
+			this.configurationManager.removeConfiguration(name);
 			// Remove cache from dependency graph
 			globalComponentRegistry.getComponent(DependencyGraph.class, CACHE_DEPENDENCY_GRAPH).remove(name);
 			return null;
