@@ -26,13 +26,14 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> implements Function<ConfigurationBuilder, RemoteCacheContainer>, Consumer<OutputFrame> {
 
+	static final DockerImageName DOCKER_IMAGE = DockerImageName.parse(System.getProperty("infinispan.server.image", "quay.io/infinispan/server:" + Version.getMajorMinor()));
 	static final Logger LOGGER = Logger.getLogger(InfinispanServerContainer.class);
 	static final int DEFAULT_PORT = 11222;
 	static final String DEFAULT_USER = "admin";
 	static final String DEFAULT_PASSWORD = "changeme";
 
 	InfinispanServerContainer() {
-		super(DockerImageName.parse("quay.io/infinispan/server:" + Version.getMajorMinor()));
+		super(DOCKER_IMAGE);
 
 		this.setNetworkMode("host");
 		this.setHostAccessible(true);

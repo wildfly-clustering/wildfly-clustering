@@ -51,11 +51,6 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 						public RemoteCacheContainer createRemoteCacheContainer(ConfigurationBuilder builder) {
 							return CONTAINER.apply(builder);
 						}
-
-						@Override
-						public boolean isExpirationDeterministic() {
-							return false;
-						}
 					}));
 				}
 			}
@@ -81,6 +76,12 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void basic(HotRodSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
+	public void concurrent(HotRodSessionManagerParameters parameters) throws Exception {
+		super.concurrent(parameters);
 	}
 
 	@ParameterizedTest

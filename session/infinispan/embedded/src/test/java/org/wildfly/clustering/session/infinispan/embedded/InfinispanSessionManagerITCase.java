@@ -47,11 +47,6 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 							public TransactionMode getTransactionMode() {
 								return transactionMode;
 							}
-
-							@Override
-							public boolean isExpirationDeterministic() {
-								return true;
-							}
 						}));
 					}
 				}
@@ -68,6 +63,12 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void basic(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
+	}
+
+	@ParameterizedTest
+	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
+	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
+		super.concurrent(parameters);
 	}
 
 	@ParameterizedTest

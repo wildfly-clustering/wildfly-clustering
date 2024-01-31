@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
@@ -76,10 +77,9 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 			}
 		});
 		InfinispanSessionManagerFactoryConfiguration<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>, SC, CacheContainerGroupMember> managerFactoryConfiguration = new InfinispanSessionManagerFactoryConfiguration<>() {
-
 			@Override
-			public Integer getMaxActiveSessions() {
-				return 1;
+			public OptionalInt getMaxActiveSessions() {
+				return OptionalInt.of(1);
 			}
 
 			@Override

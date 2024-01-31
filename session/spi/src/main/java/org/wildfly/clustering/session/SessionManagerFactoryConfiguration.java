@@ -4,6 +4,7 @@
  */
 package org.wildfly.clustering.session;
 
+import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.CacheConfiguration;
@@ -23,7 +24,7 @@ import org.wildfly.clustering.session.container.ContainerFacadeProvider;
  */
 public interface SessionManagerFactoryConfiguration<S, DC, L, SC, B extends Batch> extends CacheConfiguration<B>, DeploymentConfiguration {
 
-	Integer getMaxActiveSessions();
+	OptionalInt getMaxActiveSessions();
 
 	ByteBufferMarshaller getMarshaller();
 
