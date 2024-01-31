@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.infinispan.remote;
 
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.RemoteCacheContainer;
@@ -51,6 +52,11 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 						public RemoteCacheContainer createRemoteCacheContainer(ConfigurationBuilder builder) {
 							return CONTAINER.apply(builder);
 						}
+
+						@Override
+						public String toString() {
+							return Map.of(SessionAttributePersistenceStrategy.class.getSimpleName(), strategy, NearCacheMode.class.getSimpleName(), nearCacheMode).toString();
+						}
 					}));
 				}
 			}
@@ -72,19 +78,19 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 		super(HotRodSessionManagerFactoryProvider::new);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{arguments}")
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void basic(HotRodSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{arguments}")
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void concurrent(HotRodSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{arguments}")
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void expiration(HotRodSessionManagerParameters parameters) throws Exception {
 		super.expiration(parameters);

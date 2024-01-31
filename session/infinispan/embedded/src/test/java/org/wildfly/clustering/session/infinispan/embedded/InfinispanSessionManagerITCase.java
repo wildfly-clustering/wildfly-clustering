@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.infinispan.configuration.cache.CacheMode;
@@ -47,6 +48,11 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 							public TransactionMode getTransactionMode() {
 								return transactionMode;
 							}
+
+							@Override
+							public String toString() {
+								return Map.of(SessionAttributePersistenceStrategy.class.getSimpleName(), strategy, CacheMode.class.getSimpleName(), cacheMode, TransactionMode.class.getSimpleName(), transactionMode).toString();
+							}
 						}));
 					}
 				}
@@ -59,19 +65,19 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 		super(InfinispanSessionManagerFactoryProvider::new);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{arguments}")
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void basic(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{arguments}")
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{arguments}")
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.expiration(parameters);
