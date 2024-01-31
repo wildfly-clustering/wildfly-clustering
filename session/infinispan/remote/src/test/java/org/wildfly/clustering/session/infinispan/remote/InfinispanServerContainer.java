@@ -6,7 +6,6 @@
 package org.wildfly.clustering.session.infinispan.remote;
 
 import java.time.Duration;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -22,37 +21,33 @@ import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-import com.github.dockerjava.api.model.Info;
-
 /**
  * @author Paul Ferraro
  */
 public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> implements Function<ConfigurationBuilder, RemoteCacheContainer>, Consumer<OutputFrame> {
 
+	static final Logger LOGGER = Logger.getLogger(InfinispanServerContainer.class);
+
 	static final DockerImageName DOCKER_IMAGE = DockerImageName.parse(System.getProperty("infinispan.server.image", "quay.io/infinispan/server:" + Version.getMajorMinor()));
-	static final Integer HOTROD_PORT = Integer.valueOf(System.getProperty("infinispan.server.port", "11222"));
+	static final int HOTROD_PORT = Integer.parseInt(System.getProperty("infinispan.server.port", "11222"));
 	static final String USERNAME = System.getProperty("infinispan.server.username", "admin");
 	static final String PASSWORD = System.getProperty("infinispan.server.password", "changeme");
-	static final Logger LOGGER = Logger.getLogger(InfinispanServerContainer.class);
-	static final Set<String> OS_TYPES_SUPPORTING_HOST_NETWORK_MODE = Set.of("linux");
+
+	static final String NETWORK_MODE = System.getProperty("docker.network.mode", "bridge");
 	static final String HOST_NETWORK_MODE = "host";
 
 	InfinispanServerContainer() {
 		super(DOCKER_IMAGE);
 
-		Info info = this.dockerClient.infoCmd().exec();
-		// Use host networking, if possible
-		if (OS_TYPES_SUPPORTING_HOST_NETWORK_MODE.contains(info.getOsType())) {
-			this.setNetworkMode(HOST_NETWORK_MODE);
-		} else {
+		this.setNetworkMode(NETWORK_MODE);
+		if (!this.getNetworkMode().equals(HOST_NETWORK_MODE)) {
 			this.setExposedPorts(java.util.List.of(HOTROD_PORT));
 		}
 		this.setHostAccessible(true);
 		this.withLogConsumer(this);
 		// Wait for server started log message
 		this.setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*\\QISPN080001\\E.*").withTimes(1).withStartupTimeout(Duration.ofMinutes(2)));
-		this.withEnv("USER", USERNAME);
-		this.withEnv("PASS", PASSWORD);
+		this.withEnv("USER", USERNAME).withEnv("PASS", PASSWORD);
 	}
 
 	@Override
@@ -63,8 +58,10 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 
 	@Override
 	public RemoteCacheContainer apply(ConfigurationBuilder builder) {
-		int port = this.getNetworkMode().equals(HOST_NETWORK_MODE) ? HOTROD_PORT : this.getMappedPort(HOTROD_PORT);
-		builder.addServer().host(this.getHost()).port(port).security().authentication()
+		String host = this.getHost();
+		int port = !this.getNetworkMode().equals(HOST_NETWORK_MODE) ? this.getMappedPort(HOTROD_PORT) : HOTROD_PORT;
+		LOGGER.infof("Creating HotRod client connecting to %s:%d", host, port);
+		builder.addServer().host(host).port(port).security().authentication()
 			.username(this.getEnvMap().get("USER"))
 			.password(this.getEnvMap().get("PASS"))
 			;
