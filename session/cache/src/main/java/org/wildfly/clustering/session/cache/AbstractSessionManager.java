@@ -57,11 +57,13 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC, B extends Batch> im
 
 	@Override
 	public CompletionStage<Session<SC>> createSessionAsync(String id) {
+		this.logger.tracef("Creating session %s", id);
 		return this.factory.createValueAsync(id, this.expiration.getTimeout()).thenApply(entry -> this.wrapper.apply(this.factory.createSession(id, entry, this.context)));
 	}
 
 	@Override
 	public CompletionStage<Session<SC>> findSessionAsync(String id) {
+		this.logger.tracef("Locating session %s", id);
 		return this.factory.findValueAsync(id).thenApply(entry -> {
 			if (entry == null) {
 				this.logger.tracef("Session %s not found", id);

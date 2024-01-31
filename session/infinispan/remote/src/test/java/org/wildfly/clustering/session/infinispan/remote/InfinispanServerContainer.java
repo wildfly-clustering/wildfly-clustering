@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.infinispan.remote;
 
 import java.time.Duration;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -21,38 +22,49 @@ import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
+import com.github.dockerjava.api.model.Info;
+
 /**
  * @author Paul Ferraro
  */
 public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> implements Function<ConfigurationBuilder, RemoteCacheContainer>, Consumer<OutputFrame> {
 
 	static final DockerImageName DOCKER_IMAGE = DockerImageName.parse(System.getProperty("infinispan.server.image", "quay.io/infinispan/server:" + Version.getMajorMinor()));
+	static final Integer HOTROD_PORT = Integer.valueOf(System.getProperty("infinispan.server.port", "11222"));
+	static final String USERNAME = System.getProperty("infinispan.server.username", "admin");
+	static final String PASSWORD = System.getProperty("infinispan.server.password", "changeme");
 	static final Logger LOGGER = Logger.getLogger(InfinispanServerContainer.class);
-	static final int DEFAULT_PORT = 11222;
-	static final String DEFAULT_USER = "admin";
-	static final String DEFAULT_PASSWORD = "changeme";
+	static final Set<String> OS_TYPES_SUPPORTING_HOST_NETWORK_MODE = Set.of("linux");
+	static final String HOST_NETWORK_MODE = "host";
 
 	InfinispanServerContainer() {
 		super(DOCKER_IMAGE);
 
-		this.setNetworkMode("host");
+		Info info = this.dockerClient.infoCmd().exec();
+		// Use host networking, if possible
+		if (OS_TYPES_SUPPORTING_HOST_NETWORK_MODE.contains(info.getOsType())) {
+			this.setNetworkMode(HOST_NETWORK_MODE);
+		} else {
+			this.setExposedPorts(java.util.List.of(HOTROD_PORT));
+		}
 		this.setHostAccessible(true);
 		this.withLogConsumer(this);
 		// Wait for server started log message
 		this.setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*\\QISPN080001\\E.*").withTimes(1).withStartupTimeout(Duration.ofMinutes(2)));
-		this.withEnv("USER", DEFAULT_USER);
-		this.withEnv("PASS", DEFAULT_PASSWORD);
+		this.withEnv("USER", USERNAME);
+		this.withEnv("PASS", PASSWORD);
 	}
 
 	@Override
 	public void start() {
-		this.logger().info("Starting an Infinispan server container using [{}]", this.getDockerImageName());
+		LOGGER.infof("Starting Infinispan server container: %s", this.getDockerImageName());
 		super.start();
 	}
 
 	@Override
 	public RemoteCacheContainer apply(ConfigurationBuilder builder) {
-		builder.addServer().host(this.getHost()).port(DEFAULT_PORT).security().authentication()
+		int port = this.getNetworkMode().equals(HOST_NETWORK_MODE) ? HOTROD_PORT : this.getMappedPort(HOTROD_PORT);
+		builder.addServer().host(this.getHost()).port(port).security().authentication()
 			.username(this.getEnvMap().get("USER"))
 			.password(this.getEnvMap().get("PASS"))
 			;
