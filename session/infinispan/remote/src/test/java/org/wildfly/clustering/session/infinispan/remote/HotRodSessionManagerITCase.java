@@ -51,11 +51,6 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 						public RemoteCacheContainer createRemoteCacheContainer(ConfigurationBuilder builder) {
 							return CONTAINER.apply(builder);
 						}
-
-						@Override
-						public boolean isExpirationDeterministic() {
-							return false;
-						}
 					}));
 				}
 			}

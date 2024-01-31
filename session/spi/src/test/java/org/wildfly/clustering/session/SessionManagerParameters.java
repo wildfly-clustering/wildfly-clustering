@@ -16,6 +16,4 @@ public interface SessionManagerParameters {
 	}
 
 	SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy();
-
-	boolean isExpirationDeterministic();
 }

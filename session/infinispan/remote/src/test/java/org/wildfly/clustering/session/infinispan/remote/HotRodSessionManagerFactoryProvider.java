@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.infinispan.remote;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.DefaultTemplate;
@@ -54,8 +55,8 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 	public <SC> SessionManagerFactory<DC, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory, ContainerFacadeProvider<Entry<ImmutableSession, DC>, DC, PassivationListener<DC>> provider) {
 		HotRodSessionManagerFactoryConfiguration<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>, SC> managerFactoryConfiguration = new HotRodSessionManagerFactoryConfiguration<>() {
 			@Override
-			public Integer getMaxActiveSessions() {
-				return HotRodSessionManagerFactoryProvider.this.parameters.getNearCacheMode().enabled() ? Integer.valueOf(Short.MAX_VALUE) : null;
+			public OptionalInt getMaxActiveSessions() {
+				return HotRodSessionManagerFactoryProvider.this.parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
 			}
 
 			@Override

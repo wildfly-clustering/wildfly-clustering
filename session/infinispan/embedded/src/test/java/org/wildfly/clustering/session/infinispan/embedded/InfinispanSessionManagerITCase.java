@@ -47,11 +47,6 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 							public TransactionMode getTransactionMode() {
 								return transactionMode;
 							}
-
-							@Override
-							public boolean isExpirationDeterministic() {
-								return true;
-							}
 						}));
 					}
 				}
