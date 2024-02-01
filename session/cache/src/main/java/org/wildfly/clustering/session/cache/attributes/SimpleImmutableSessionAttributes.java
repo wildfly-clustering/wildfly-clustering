@@ -21,7 +21,7 @@ public class SimpleImmutableSessionAttributes implements ImmutableSessionAttribu
 	private final Map<String, Object> attributes;
 
 	public SimpleImmutableSessionAttributes(ImmutableSessionAttributes attributes) {
-		this(attributes.getAttributeNames().stream().collect(Collectors.toMap(Function.identity(), attributes::getAttribute)));
+		this(attributes.getAttributeNames().stream().collect(Collectors.toUnmodifiableMap(Function.identity(), attributes::getAttribute)));
 	}
 
 	public SimpleImmutableSessionAttributes(Map<String, Object> attributes) {
@@ -36,5 +36,10 @@ public class SimpleImmutableSessionAttributes implements ImmutableSessionAttribu
 	@Override
 	public Object getAttribute(String name) {
 		return this.attributes.get(name);
+	}
+
+	@Override
+	public String toString() {
+		return this.attributes.toString();
 	}
 }
