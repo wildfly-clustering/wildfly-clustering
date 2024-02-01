@@ -6,6 +6,8 @@
 package org.wildfly.clustering.session.infinispan.remote;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,8 +23,6 @@ import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.OutputFrame.OutputType;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
-
-import com.github.dockerjava.api.model.Info;
 
 /**
  * @author Paul Ferraro
@@ -40,12 +40,12 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 	InfinispanServerContainer() {
 		super(DOCKER_IMAGE);
 
-		Info info = this.dockerClient.infoCmd().exec();
 		// Use host networking, if possible
-		if (OS_TYPES_SUPPORTING_HOST_NETWORK_MODE.contains(info.getOsType())) {
+		String os = System.getProperty("os.name").trim().toLowerCase(Locale.ENGLISH);
+		if (OS_TYPES_SUPPORTING_HOST_NETWORK_MODE.stream().anyMatch(os::startsWith)) {
 			this.setNetworkMode(HOST_NETWORK_MODE);
 		} else {
-			this.setExposedPorts(java.util.List.of(HOTROD_PORT));
+			this.setExposedPorts(List.of(HOTROD_PORT));
 		}
 		this.setHostAccessible(true);
 		this.withLogConsumer(this);
@@ -63,7 +63,7 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 
 	@Override
 	public RemoteCacheContainer apply(ConfigurationBuilder builder) {
-		int port = this.getNetworkMode().equals(HOST_NETWORK_MODE) ? HOTROD_PORT : this.getMappedPort(HOTROD_PORT);
+		int port = (this.getNetworkMode() != null && this.getNetworkMode().equals(HOST_NETWORK_MODE)) ? HOTROD_PORT : this.getMappedPort(HOTROD_PORT);
 		builder.addServer().host(this.getHost()).port(port).security().authentication()
 			.username(this.getEnvMap().get("USER"))
 			.password(this.getEnvMap().get("PASS"))
