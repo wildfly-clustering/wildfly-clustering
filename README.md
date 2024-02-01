@@ -7,6 +7,53 @@
 WildFly clustering is a set of modules providing distributed services to application servers and applications.
 
 This project serves as upstream to the following projects:
-* WildFly
-* Tomcat (via wildfly-clustering-tomcat)
-* Spring Session (via wildfly-clustering-spring-session)
+* [WildFly](https://github.com/wildfly/wildfly)
+* Tomcat via [wildfly-clustering-tomcat](https://github.com/wildfly-clustering/wildfly-clustering-tomcat)
+* Spring Session via [wildfly-clustering-spring-session](https://github.com/wildfly-clustering/wildfly-clustering-tomcat)
+
+## Building
+
+### Prerequisites
+
+Building this project requires the following software:
+
+* JDK 11+
+* Maven 3.9+
+
+Additionally, the integration tests contained in this project require a Docker-API compatible container runtime.
+
+See: https://java.testcontainers.org/supported_docker_environment/
+
+#### Using rootless Podman
+
+For those using the latest version of Podman, you should be able to run the remote infinispan integration tests without root permissions.
+
+See: https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md
+
+### Build instructions
+
+1.	Clone this repository.
+
+		$ git clone git@github.com:wildfly-clustering/wildfly-clustering.git
+		$ cd wildfly-clustering
+
+1.	Build via maven.
+
+		$ mvn clean install
+
+#### Integration test execution options
+
+Since the integration tests take some time to execute, you can skip integration test execution via:
+
+		$ mvn clean install -DskipITs
+
+By default, the remote Infinispan integration tests launch docker using "bridge" network mode.
+If running a Linux distribution, and encounter issues with connectivity between you test client and the Infinispan server instance running in the container, try using "host" network mode via:
+
+		$ mvn clean install -Ddocker.network.mode=host
+
+By default, remote Infinispan integration tests will use the Infinispan server docker image published at `quay.io` corresponding to the `${version.org.infinispan}` version configured by this project's pom.
+You can override this to use an arbitrary Infinispan server docker image and user via system properties.
+e.g.
+
+		$ mvn clean install -Dinfinispan.server.image=quay.io/infinispan/server:14.0 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
