@@ -34,12 +34,12 @@ public class DefaultImmutableSessionMetaData implements ImmutableSessionMetaData
 
 	@Override
 	public Instant getLastAccessStartTime() {
-		return this.entry.getLastAccessStartTime().get();
+		return !this.isNew() ? this.entry.getLastAccessStartTime().get() : null;
 	}
 
 	@Override
 	public Instant getLastAccessEndTime() {
-		return this.entry.getLastAccessEndTime().get();
+		return !this.isNew() ? this.entry.getLastAccessEndTime().get() : null;
 	}
 
 	@Override

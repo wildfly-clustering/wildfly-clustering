@@ -40,11 +40,11 @@ public class CompositeImmutableSessionMetaData implements ImmutableSessionMetaDa
 
 	@Override
 	public Instant getLastAccessStartTime() {
-		return this.getCreationTime().plus(this.accessMetaData.getSinceCreationDuration());
+		return !this.isNew() ? this.getCreationTime().plus(this.accessMetaData.getSinceCreationDuration()) : null;
 	}
 
 	@Override
 	public Instant getLastAccessEndTime() {
-		return this.getLastAccessStartTime().plus(this.accessMetaData.getLastAccessDuration());
+		return !this.isNew() ? this.getLastAccessStartTime().plus(this.accessMetaData.getLastAccessDuration()) : null;
 	}
 }

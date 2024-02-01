@@ -29,14 +29,14 @@ public interface ImmutableSessionMetaData extends ExpirationMetaData {
 	Instant getCreationTime();
 
 	/**
-	 * Returns the start time of the last request to access this session.
-	 * @return the start time of the last request to access this session.
+	 * Returns the start time of the last request to access this session, or null if session was created during the current request.
+	 * @return the start time of the last request to access this session, or null if session was created during the current request.
 	 */
 	Instant getLastAccessStartTime();
 
 	/**
-	 * Returns the start time of the last request to access this session.
-	 * @return the start time of the last request to access this session.
+	 * Returns the end time of the last request to access this session, or null if session was created during the current request.
+	 * @return the end time of the last request to access this session, or null if session was created during the current request.
 	 */
 	Instant getLastAccessEndTime();
 
