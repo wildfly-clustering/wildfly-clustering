@@ -37,9 +37,9 @@ public class DefaultSessionAccessMetaDataEntry implements SessionAccessMetaDataE
 	}
 
 	@Override
-	public SessionAccessMetaDataEntry remap(SessionAccessMetaDataEntryOffsets delta) {
+	public SessionAccessMetaDataEntry remap(SessionAccessMetaDataEntryOffsets offsets) {
 		SessionAccessMetaDataEntry result = new DefaultSessionAccessMetaDataEntry();
-		result.setLastAccessDuration(delta.getSinceCreationOffset().apply(this.sinceCreation), delta.getLastAccessOffset().apply(this.lastAccess));
+		result.setLastAccessDuration(offsets.getSinceCreationOffset().apply(this.sinceCreation), offsets.getLastAccessOffset().apply(this.lastAccess));
 		return result;
 	}
 

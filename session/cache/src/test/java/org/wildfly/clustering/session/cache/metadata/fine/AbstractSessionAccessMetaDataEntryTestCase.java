@@ -6,11 +6,13 @@
 package org.wildfly.clustering.session.cache.metadata.fine;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.time.Duration;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.server.offset.Offset;
 
 /**
  * Abstract unit test for {@link SessionAccessMetaDataEntry} implementations.
@@ -21,8 +23,11 @@ public abstract class AbstractSessionAccessMetaDataEntryTestCase implements Cons
 	private final Duration originalSinceCreation =  Duration.ofMinutes(1);
 	private final Duration originalLastAccess = Duration.ofSeconds(1);
 
-	private final Duration updatedSinceCreation = Duration.ofMinutes(2);
-	private final Duration updatedLastAccess = Duration.ofSeconds(2);
+	private final Duration sinceCreationDelta = Duration.ofMinutes(1);
+	private final Duration lastAccessDelta = Duration.ofSeconds(1);
+
+	private final Duration updatedSinceCreation = this.originalSinceCreation.plus(this.sinceCreationDelta);
+	private final Duration updatedLastAccess = this.originalLastAccess.plus(this.lastAccessDelta);
 
 	@Test
 	public void test() {
@@ -37,6 +42,18 @@ public abstract class AbstractSessionAccessMetaDataEntryTestCase implements Cons
 
 		this.verifyOriginalState(entry);
 
+		// Verify remap
+		SessionAccessMetaDataEntryOffsets offsets = mock(SessionAccessMetaDataEntryOffsets.class);
+		doReturn(Offset.forDuration(this.sinceCreationDelta)).when(offsets).getSinceCreationOffset();
+		doReturn(Offset.forDuration(this.lastAccessDelta)).when(offsets).getLastAccessOffset();
+
+		SessionAccessMetaDataEntry remapped = entry.remap(offsets);
+
+		this.verifyUpdatedState(remapped);
+		// Verify that remap is side-effect free
+		this.verifyOriginalState(entry);
+
+		// Implementation-specific validation
 		this.accept(entry);
 	}
 
