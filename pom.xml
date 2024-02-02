@@ -31,25 +31,30 @@
 		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
 
+		<!-- Provided dependency versions -->
 		<version.jakarta.annotation>2.1.1</version.jakarta.annotation>
 		<version.jakarta.transaction>2.0.1</version.jakarta.transaction>
+		<version.net.jcip>1.0</version.net.jcip>
 
-		<version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
+		<!-- Compile dependency versions -->
 		<version.com.github.ben-manes.caffiene>3.1.8</version.com.github.ben-manes.caffiene>
-		<version.dev.failsafe>3.3.2</version.dev.failsafe>
-		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
-		<version.io.undertow>2.3.10.Final</version.io.undertow>
-		<version.org.apache.tomcat>10.1.18</version.org.apache.tomcat>
-		<version.org.infinispan>14.0.22.Final</version.org.infinispan>
+		<!--version.dev.failsafe>3.3.2</version.dev.failsafe-->
+		<version.org.infinispan>14.0.24.Final</version.org.infinispan>
 		<version.org.jboss.logging>3.5.3.Final</version.org.jboss.logging>
 		<version.org.jboss.marshalling>2.1.3.Final</version.org.jboss.marshalling>
 		<version.org.jboss.threads>3.5.1.Final</version.org.jboss.threads>
-		<version.org.jgroups>5.2.20.Final</version.org.jgroups>
-		<version.org.junit>5.10.1</version.org.junit>
+		<version.org.jgroups>5.2.21.Final</version.org.jgroups>
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
+		<version.org.wildfly.common>1.7.0.Final</version.org.wildfly.common>
+
+		<!-- Test dependency versions -->
+		<version.io.undertow>2.3.10.Final</version.io.undertow>
+		<version.org.apache.tomcat>10.1.18</version.org.apache.tomcat>
+		<version.org.junit>5.10.1</version.org.junit>
 		<version.org.mockito>5.10.0</version.org.mockito>
 		<version.org.testcontainers>1.19.4</version.org.testcontainers>
-		<version.org.wildfly.common>1.7.0.Final</version.org.wildfly.common>
+
+		<!-- Plugin dependency version overrides -->
 		<version.surefire>3.2.5</version.surefire>
 	</properties>
 
@@ -63,6 +68,7 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Provided dependencies -->
 			<dependency>
 				<groupId>jakarta.annotation</groupId>
 				<artifactId>jakarta.annotation-api</artifactId>
@@ -73,7 +79,13 @@
 				<artifactId>jakarta.transaction-api</artifactId>
 				<version>${version.jakarta.transaction}</version>
 			</dependency>
+			<dependency>
+				<groupId>net.jcip</groupId>
+				<artifactId>jcip-annotations</artifactId>
+				<version>${version.net.jcip}</version>
+			</dependency>
 
+			<!-- Project dependencies -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-cache-spi</artifactId>
@@ -160,6 +172,7 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<!-- Project test jar dependencies -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
@@ -215,36 +228,17 @@
 				<classifier>tests</classifier>
 			</dependency>
 
+			<!-- Compile dependencies -->
 			<dependency>
 				<groupId>com.github.ben-manes.caffeine</groupId>
 				<artifactId>caffeine</artifactId>
 				<version>${version.com.github.ben-manes.caffiene}</version>
 			</dependency>
-			<dependency>
-				<groupId>com.squareup</groupId>
-				<artifactId>protoparser</artifactId>
-				<version>${version.com.squareup.protoparser}</version>
-			</dependency>
-			<dependency>
+			<!--dependency>
 				<groupId>dev.failsafe</groupId>
 				<artifactId>failsafe</artifactId>
 				<version>${version.dev.failsafe}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.undertow</groupId>
-				<artifactId>undertow-core</artifactId>
-				<version>${version.io.undertow}</version>
-			</dependency>
-			<dependency>
-				<groupId>net.jcip</groupId>
-				<artifactId>jcip-annotations</artifactId>
-				<version>${version.net.jcip.annotations}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat</groupId>
-				<artifactId>tomcat-catalina</artifactId>
-				<version>${version.org.apache.tomcat}</version>
-			</dependency>
+			</dependency-->
 			<dependency>
 				<groupId>org.infinispan</groupId>
 				<artifactId>infinispan-bom</artifactId>
@@ -263,11 +257,6 @@
 				<version>${version.org.jboss.marshalling}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.marshalling</groupId>
-				<artifactId>jboss-marshalling-river</artifactId>
-				<version>${version.org.jboss.marshalling}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.threads</groupId>
 				<artifactId>jboss-threads</artifactId>
 				<version>${version.org.jboss.threads}</version>
@@ -278,16 +267,38 @@
 				<version>${version.org.jgroups}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.kohsuke.metainf-services</groupId>
+				<artifactId>metainf-services</artifactId>
+				<version>${version.org.kohsuke.metainf-services}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.common</groupId>
+				<artifactId>wildfly-common</artifactId>
+				<version>${version.org.wildfly.common}</version>
+			</dependency>
+
+			<!-- Test dependencies -->
+			<dependency>
+				<groupId>io.undertow</groupId>
+				<artifactId>undertow-core</artifactId>
+				<version>${version.io.undertow}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat</groupId>
+				<artifactId>tomcat-catalina</artifactId>
+				<version>${version.org.apache.tomcat}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.marshalling</groupId>
+				<artifactId>jboss-marshalling-river</artifactId>
+				<version>${version.org.jboss.marshalling}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.junit</groupId>
 				<artifactId>junit-bom</artifactId>
 				<version>${version.org.junit}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.kohsuke.metainf-services</groupId>
-				<artifactId>metainf-services</artifactId>
-				<version>${version.org.kohsuke.metainf-services}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
@@ -302,11 +313,6 @@
 				<version>${version.org.testcontainers}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.common</groupId>
-				<artifactId>wildfly-common</artifactId>
-				<version>${version.org.wildfly.common}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
