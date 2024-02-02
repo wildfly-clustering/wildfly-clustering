@@ -64,8 +64,10 @@ public class CoarseSessionAttributes extends SimpleImmutableSessionAttributes im
 	@Override
 	public Object getAttribute(String name) {
 		Object value = this.attributes.get(name);
-		if (!this.immutability.test(value)) {
-			this.dirty.set(true);
+		if (value != null) {
+			if (!this.immutability.test(value)) {
+				this.dirty.set(true);
+			}
 		}
 		return value;
 	}
