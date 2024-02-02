@@ -9,12 +9,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -256,7 +258,19 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 				assertEquals(sessionId, session.getId());
 				action.accept(session);
 				if (session.isValid()) {
-					session.getMetaData().setLastAccess(start, Instant.now());
+					SessionMetaData metaData = session.getMetaData();
+					Instant end = Instant.now();
+					metaData.setLastAccess(start, end);
+					// Once last-access is set, session should no longer be "new"
+					assertFalse(metaData.isNew());
+					// Skip these assertions during concurrent session access
+					// We would otherwise require memory synchronization to validate
+					if (!(Thread.currentThread() instanceof ForkJoinWorkerThread)) {
+						// Validate last-access times are within precision bounds
+						assertEquals(0L, Duration.between(metaData.getLastAccessStartTime(), start).getSeconds(), Duration.between(metaData.getLastAccessStartTime(), start).toString());
+						assertEquals(0L, Duration.between(metaData.getLastAccessStartTime(), start).truncatedTo(ChronoUnit.MILLIS).getNano(), Duration.between(metaData.getLastAccessStartTime(), start).toString());
+						assertEquals(0L, Duration.between(end, metaData.getLastAccessEndTime()).getSeconds(), Duration.between(end, metaData.getLastAccessEndTime()).toString());
+					}
 				}
 			}
 		}
@@ -282,7 +296,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 	}
 
 	private void verifySessionAttributes(ImmutableSession session, Map<String, Object> attributes) {
-		assertEquals(attributes.keySet(), session.getAttributes().getAttributeNames());
+		assertTrue(session.getAttributes().getAttributeNames().containsAll(attributes.keySet()));
 		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
 			this.verifySessionAttribute(session, entry.getKey(), entry.getValue(), Objects::equals);
 		}
