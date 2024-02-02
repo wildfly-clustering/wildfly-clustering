@@ -66,14 +66,16 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 						UUID bar = UUID.randomUUID();
 
 						this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
+
 						this.verifySession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
 						this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
 
-						UUID baz = UUID.randomUUID();
+						this.updateSession(manager1, sessionId, Map.of("foo", new AbstractMap.SimpleEntry<>(foo, null), "bar", Map.entry(bar, 0)));
 
-						this.updateSession(manager1, sessionId, Map.of("foo", new AbstractMap.SimpleEntry<>(foo, null), "bar", Map.entry(bar, baz)));
-						this.verifySession(manager1, sessionId, Map.of("bar", baz));
-						this.verifySession(manager2, sessionId, Map.of("bar", baz));
+						for (int i = 1; i <= 20; i += 2) {
+							this.updateSession(manager1, sessionId, Map.of("bar", Map.entry(i - 1, i)));
+							this.updateSession(manager2, sessionId, Map.of("bar", Map.entry(i, i + 1)));
+						}
 
 						this.invalidateSession(manager1, sessionId);
 
@@ -262,8 +264,21 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 
 	private void verifySessionMetaData(Session<AtomicReference<String>> session) {
 		assertTrue(session.isValid());
-		assertFalse(session.getMetaData().isImmortal());
-		assertFalse(session.getMetaData().isExpired());
+		SessionMetaData metaData = session.getMetaData();
+		assertFalse(metaData.isImmortal(), metaData.toString());
+		assertFalse(metaData.isExpired(), metaData.toString());
+		if (metaData.isNew()) {
+			assertNull(metaData.getLastAccessStartTime());
+			assertNull(metaData.getLastAccessEndTime());
+		} else {
+			assertNotNull(metaData.getLastAccessStartTime());
+			assertNotNull(metaData.getLastAccessEndTime());
+			// For the request following session creation, the last access time will precede the creation time, but this duration should be tiny
+			if (metaData.getLastAccessStartTime().isBefore(metaData.getCreationTime())) {
+				assertEquals(0, Duration.between(metaData.getLastAccessStartTime(), metaData.getCreationTime()).getSeconds(), metaData.toString());
+			}
+			assertTrue(metaData.getLastAccessStartTime().isBefore(metaData.getLastAccessEndTime()), metaData.toString());
+		}
 	}
 
 	private void verifySessionAttributes(ImmutableSession session, Map<String, Object> attributes) {
