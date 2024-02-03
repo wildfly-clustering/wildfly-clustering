@@ -43,6 +43,18 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-spi</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 			<scope>test</scope>
 		</dependency>
