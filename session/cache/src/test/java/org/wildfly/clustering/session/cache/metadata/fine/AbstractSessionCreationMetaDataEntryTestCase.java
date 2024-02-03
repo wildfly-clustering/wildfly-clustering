@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.server.offset.Offset;
 
 /**
  * Abstract unit test for {@link SessionCreationMetaDataEntry} implementations.
@@ -22,7 +23,9 @@ public abstract class AbstractSessionCreationMetaDataEntryTestCase implements Co
 	private final Instant created = Instant.now();
 	private final Duration originalTimeout = Duration.ofMinutes(20);
 
-	private final Duration updatedTimeout = Duration.ofMinutes(30);
+	private final Duration timeoutDelta = Duration.ofMinutes(10);
+
+	private final Duration updatedTimeout = this.originalTimeout.plus(this.timeoutDelta);
 
 	@Test
 	public void test() {
@@ -37,6 +40,15 @@ public abstract class AbstractSessionCreationMetaDataEntryTestCase implements Co
 		entry.setTimeout(this.originalTimeout);
 
 		this.verifyOriginalState(entry);
+
+		// Verify remap
+		SessionCreationMetaDataEntry<Object> remapped = entry.remap(() -> Offset.forDuration(this.timeoutDelta));
+
+		this.verifyUpdatedState(remapped);
+		// Verify that remap is side-effect free
+		this.verifyOriginalState(entry);
+
+		// Implementation-specific validation
 
 		this.accept(entry);
 	}

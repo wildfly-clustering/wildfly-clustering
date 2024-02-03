@@ -35,42 +35,30 @@ public class CoarseSessionAttributesTestCase {
 		reset(this.mutator, this.marshallability, this.immutability);
 	}
 
-	@Test
-	public void removeAttribute() {
-		Map<String, Object> values = new TreeMap<>();
-		UUID foo = UUID.randomUUID();
-		values.put("foo", foo);
-
-		@SuppressWarnings("resource")
-		SessionAttributes attributes = new CoarseSessionAttributes(values, this.mutator, this.marshallability, this.immutability, this.notifier);
+	private SessionAttributes createSessionAttributes(Map<String, Object> map) {
+		SessionAttributes attributes = new CoarseSessionAttributes(new TreeMap<>(map), this.mutator, this.marshallability, this.immutability, this.notifier);
 
 		verify(this.notifier).postActivate();
 
-		// Nothing removed
-		attributes.close();
+		return attributes;
+	}
 
-		verify(this.mutator, never()).mutate();
+	@Test
+	public void removeAttribute() {
+		UUID existing = UUID.randomUUID();
+		try (SessionAttributes attributes = this.createSessionAttributes(Map.of("existing", existing))) {
+			assertNull(attributes.removeAttribute("missing"));
+		}
+
+		// Nothing to mutate
+		verifyNoInteractions(this.mutator);
 		verify(this.notifier).prePassivate();
 		reset(this.notifier);
 
-		assertNull(attributes.removeAttribute("bar"));
-
-		// Nothing removed
-		attributes.close();
-
-		verify(this.mutator, never()).mutate();
-		verify(this.immutability, never()).test("bar");
-		verify(this.notifier).prePassivate();
-		reset(this.notifier);
-
-		assertSame(foo, attributes.removeAttribute("foo"));
-
-		assertFalse(values.containsKey("foo"));
-
-		verify(this.mutator, never()).mutate();
-		verify(this.immutability, never()).test("foo");
-
-		attributes.close();
+		try (SessionAttributes attributes = this.createSessionAttributes(Map.of("existing", existing))) {
+			assertNull(attributes.removeAttribute("missing"));
+			assertSame(existing, attributes.removeAttribute("existing"));
+		}
 
 		verify(this.mutator).mutate();
 		verify(this.notifier).prePassivate();
@@ -78,48 +66,52 @@ public class CoarseSessionAttributesTestCase {
 
 	@Test
 	public void setAttribute() {
-		Map<String, Object> values = new TreeMap<>();
-		UUID marshallable = UUID.randomUUID();
-		UUID nonMarshallable = UUID.randomUUID();
+		UUID existing = UUID.randomUUID();
+		UUID unmarshallable = UUID.randomUUID();
 
-		@SuppressWarnings("resource")
-		SessionAttributes attributes = new CoarseSessionAttributes(values, this.mutator, this.marshallability, this.immutability, this.notifier);
+		try (SessionAttributes attributes = this.createSessionAttributes(Map.of("existing", existing))) {
+			doReturn(false).when(this.marshallability).isMarshallable(unmarshallable);
 
-		verify(this.notifier).postActivate();
+			// Should be treated as a removal
+			assertNull(attributes.setAttribute("missing", null));
 
-		when(this.marshallability.isMarshallable(marshallable)).thenReturn(true);
-		when(this.marshallability.isMarshallable(nonMarshallable)).thenReturn(false);
+			// Verify unmarshallable attribute
+			assertThrows(IllegalArgumentException.class, () -> attributes.setAttribute("unmarshallable", unmarshallable));
+		}
 
-		assertThrows(IllegalArgumentException.class, () -> attributes.setAttribute("foo", nonMarshallable));
-
-		// Nothing changed
-		attributes.close();
-
-		verify(this.mutator, never()).mutate();
 		verify(this.notifier).prePassivate();
+		// Nothing should have require writing
+		verifyNoInteractions(this.mutator);
 		reset(this.notifier);
 
-		assertNull(attributes.setAttribute("foo", marshallable));
+		UUID removing = UUID.randomUUID();
+		UUID newIntermediate = UUID.randomUUID();
+		UUID newReplacement = UUID.randomUUID();
+		UUID existingIntermediate = UUID.randomUUID();
+		UUID existingReplacement = UUID.randomUUID();
+		try (SessionAttributes attributes = this.createSessionAttributes(Map.of("existing", existing, "removing", removing))) {
+			doReturn(true).when(this.marshallability).isMarshallable(newIntermediate);
+			doReturn(true).when(this.marshallability).isMarshallable(newReplacement);
+			doReturn(true).when(this.marshallability).isMarshallable(existingIntermediate);
+			doReturn(true).when(this.marshallability).isMarshallable(existingReplacement);
+			doReturn(false).when(this.marshallability).isMarshallable(unmarshallable);
 
-		assertTrue(values.containsKey("foo"));
+			// Verify unmarshallable attribute
+			assertThrows(IllegalArgumentException.class, () -> attributes.setAttribute("unmarshallable", unmarshallable));
 
-		verify(this.immutability, never()).test("foo");
+			// Test new attribute
+			assertNull(attributes.setAttribute("new", newIntermediate));
+			assertSame(newIntermediate, attributes.setAttribute("new", newReplacement));
+			// Test replaced attribute
+			assertSame(existing, attributes.setAttribute("existing", existingIntermediate));
+			assertSame(existingIntermediate, attributes.setAttribute("existing", existingReplacement));
 
-		attributes.close();
+			// Should be treated as a removal
+			assertSame(removing, attributes.setAttribute("removing", null));
+		}
 
-		verify(this.mutator).mutate();
 		verify(this.notifier).prePassivate();
-		reset(this.mutator, this.notifier);
-
-		assertSame(marshallable, attributes.setAttribute("foo", null));
-
-		verify(this.mutator, never()).mutate();
-		verify(this.immutability, never()).test("foo");
-
-		attributes.close();
-
 		verify(this.mutator).mutate();
-		verify(this.notifier).prePassivate();
 	}
 
 	@Test
@@ -137,42 +129,43 @@ public class CoarseSessionAttributesTestCase {
 			assertThrows(UnsupportedOperationException.class, () -> names.add("baz"));
 		}
 		// Read-only operations do not require mutation
-		verify(this.mutator, never()).mutate();
+		verifyNoInteractions(this.mutator);
 		verify(this.notifier).prePassivate();
 	}
 
 	@Test
 	public void getAttribute() {
-		UUID immutable = UUID.randomUUID();
 		UUID mutable = UUID.randomUUID();
-		Map<String, Object> values = Map.of("immutable", immutable, "mutable", mutable);
+		UUID immutable = UUID.randomUUID();
+		Map<String, Object> map = Map.of("mutable", mutable, "immutable", immutable);
 
-		@SuppressWarnings("resource")
-		SessionAttributes attributes = new CoarseSessionAttributes(values, this.mutator, this.marshallability, this.immutability, this.notifier);
+		doReturn(true).when(this.immutability).test(immutable);
+		doReturn(false).when(this.immutability).test(mutable);
 
-		when(this.immutability.test(null)).thenReturn(true);
-		when(this.immutability.test(immutable)).thenReturn(true);
-		when(this.immutability.test(mutable)).thenReturn(false);
+		// Verify read-only request
+		try (SessionAttributes attributes = this.createSessionAttributes(map)) {
+			// Verify non-existant attribute
+			assertNull(attributes.getAttribute("foo"));
 
-		assertSame(immutable, attributes.getAttribute("immutable"));
-		assertNull(attributes.getAttribute("foo"));
+			// Verify mutable/immutable attributes
+			assertSame(immutable, attributes.getAttribute("immutable"));
+		}
 
-		verify(this.mutator, never()).mutate();
-
-		attributes.close();
-
-		verify(this.mutator, never()).mutate();
 		verify(this.notifier).prePassivate();
+		verifyNoInteractions(this.mutator);
 		reset(this.notifier);
 
-		assertSame(mutable, attributes.getAttribute("mutable"));
+		try (SessionAttributes attributes = this.createSessionAttributes(map)) {
+			// Verify non-existant attribute
+			assertNull(attributes.getAttribute("baz"));
 
-		verify(this.mutator, never()).mutate();
+			// Verify mutable/immutable attributes
+			assertSame(immutable, attributes.getAttribute("immutable"));
+			assertSame(mutable, attributes.getAttribute("mutable"));
+		}
 
-		attributes.close();
-
-		// Mutable read triggers mutation on close
-		verify(this.mutator).mutate();
 		verify(this.notifier).prePassivate();
+		// Accessing mutable attribute should write
+		verify(this.mutator).mutate();
 	}
 }

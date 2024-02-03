@@ -29,7 +29,7 @@ public class MutableSessionMetaDataEntry implements SessionMetaDataEntry {
 
 	@Override
 	public boolean isNew() {
-		return this.entry.isNew();
+		return this.entry.isNew() && this.lastAccessStartTime.get() == this.lastAccessEndTime.get();
 	}
 
 	@Override

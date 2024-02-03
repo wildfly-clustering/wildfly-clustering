@@ -41,11 +41,15 @@ public class DefaultSessionMetaData extends DefaultImmutableSessionMetaData impl
 
 	@Override
 	public void setLastAccess(Instant startTime, Instant endTime) {
+		if (!endTime.isAfter(startTime)) {
+			throw new IllegalStateException();
+		}
 		// Retain millisecond precision
 		Instant normalizedStartTime = startTime.truncatedTo(ChronoUnit.MILLIS);
 		// Retain second precision for last access duration
-		Duration duration = Duration.between(startTime, endTime);
+		Duration duration = Duration.between(startTime, endTime.truncatedTo(ChronoUnit.MILLIS));
 		long seconds = duration.getSeconds();
+		// Round up
 		if (duration.getNano() > 0) {
 			seconds += 1;
 		}

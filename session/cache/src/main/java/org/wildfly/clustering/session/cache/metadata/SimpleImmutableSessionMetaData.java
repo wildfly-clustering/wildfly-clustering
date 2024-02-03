@@ -53,4 +53,9 @@ public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData 
 	public Duration getTimeout() {
 		return this.timeout;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("{ new = %s, creation-time = %s, last-access-start-time = %s, last-access-end-time = %s, timeout = %s }", this.newSession, this.creationTime, this.lastAccessStartTime, this.lastAccessEndTime, this.timeout);
+	}
 }

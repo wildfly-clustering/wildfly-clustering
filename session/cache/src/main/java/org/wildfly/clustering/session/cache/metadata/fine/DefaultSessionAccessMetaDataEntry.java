@@ -6,14 +6,14 @@
 package org.wildfly.clustering.session.cache.metadata.fine;
 
 import java.time.Duration;
+import java.util.Map;
 
 /**
  * @author Paul Ferraro
  */
 public class DefaultSessionAccessMetaDataEntry implements SessionAccessMetaDataEntry {
 
-	private volatile Duration sinceCreation = Duration.ZERO;
-	private volatile Duration lastAccess = Duration.ZERO;
+	private volatile Map.Entry<Duration, Duration> lastAccess = Map.entry(Duration.ZERO, Duration.ZERO);
 
 	@Override
 	public boolean isNew() {
@@ -22,32 +22,30 @@ public class DefaultSessionAccessMetaDataEntry implements SessionAccessMetaDataE
 
 	@Override
 	public Duration getSinceCreationDuration() {
-		return this.sinceCreation;
+		return this.lastAccess.getKey();
 	}
 
 	@Override
 	public Duration getLastAccessDuration() {
-		return this.lastAccess;
+		return this.lastAccess.getValue();
 	}
 
 	@Override
 	public void setLastAccessDuration(Duration sinceCreation, Duration lastAccess) {
-		this.sinceCreation = sinceCreation;
-		this.lastAccess = lastAccess;
+		this.lastAccess = Map.entry(sinceCreation, lastAccess);
 	}
 
 	@Override
-	public SessionAccessMetaDataEntry remap(SessionAccessMetaDataEntryOffsets delta) {
+	public SessionAccessMetaDataEntry remap(SessionAccessMetaDataEntryOffsets offsets) {
 		SessionAccessMetaDataEntry result = new DefaultSessionAccessMetaDataEntry();
-		result.setLastAccessDuration(delta.getSinceCreationOffset().apply(this.sinceCreation), delta.getLastAccessOffset().apply(this.lastAccess));
+		Map.Entry<Duration, Duration> lastAccess = this.lastAccess;
+		result.setLastAccessDuration(offsets.getSinceCreationOffset().apply(lastAccess.getKey()), offsets.getLastAccessOffset().apply(lastAccess.getValue()));
 		return result;
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append(" { ");
-		builder.append("since-creation = ").append(this.sinceCreation);
-		builder.append(", last-access = ").append(this.lastAccess);
-		return builder.append("}").toString();
+		Map.Entry<Duration, Duration> lastAccess = this.lastAccess;
+		return String.format("{ since-creation = %s, last-access = %s }", lastAccess.getKey(), lastAccess.getValue());
 	}
 }

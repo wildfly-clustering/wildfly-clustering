@@ -9,12 +9,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -66,14 +68,16 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 						UUID bar = UUID.randomUUID();
 
 						this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
+
 						this.verifySession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
 						this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
 
-						UUID baz = UUID.randomUUID();
+						this.updateSession(manager1, sessionId, Map.of("foo", new AbstractMap.SimpleEntry<>(foo, null), "bar", Map.entry(bar, 0)));
 
-						this.updateSession(manager1, sessionId, Map.of("foo", new AbstractMap.SimpleEntry<>(foo, null), "bar", Map.entry(bar, baz)));
-						this.verifySession(manager1, sessionId, Map.of("bar", baz));
-						this.verifySession(manager2, sessionId, Map.of("bar", baz));
+						for (int i = 1; i <= 20; i += 2) {
+							this.updateSession(manager1, sessionId, Map.of("bar", Map.entry(i - 1, i)));
+							this.updateSession(manager2, sessionId, Map.of("bar", Map.entry(i, i + 1)));
+						}
 
 						this.invalidateSession(manager1, sessionId);
 
@@ -254,7 +258,19 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 				assertEquals(sessionId, session.getId());
 				action.accept(session);
 				if (session.isValid()) {
-					session.getMetaData().setLastAccess(start, Instant.now());
+					SessionMetaData metaData = session.getMetaData();
+					Instant end = Instant.now();
+					metaData.setLastAccess(start, end);
+					// Once last-access is set, session should no longer be "new"
+					assertFalse(metaData.isNew());
+					// Skip these assertions during concurrent session access
+					// We would otherwise require memory synchronization to validate
+					if (!(Thread.currentThread() instanceof ForkJoinWorkerThread)) {
+						// Validate last-access times are within precision bounds
+						assertEquals(0L, Duration.between(metaData.getLastAccessStartTime(), start).getSeconds(), Duration.between(metaData.getLastAccessStartTime(), start).toString());
+						assertEquals(0L, Duration.between(metaData.getLastAccessStartTime(), start).truncatedTo(ChronoUnit.MILLIS).getNano(), Duration.between(metaData.getLastAccessStartTime(), start).toString());
+						assertEquals(0L, Duration.between(end, metaData.getLastAccessEndTime()).getSeconds(), Duration.between(end, metaData.getLastAccessEndTime()).toString());
+					}
 				}
 			}
 		}
@@ -262,12 +278,25 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 
 	private void verifySessionMetaData(Session<AtomicReference<String>> session) {
 		assertTrue(session.isValid());
-		assertFalse(session.getMetaData().isImmortal());
-		assertFalse(session.getMetaData().isExpired());
+		SessionMetaData metaData = session.getMetaData();
+		assertFalse(metaData.isImmortal(), metaData.toString());
+		assertFalse(metaData.isExpired(), metaData.toString());
+		if (metaData.isNew()) {
+			assertNull(metaData.getLastAccessStartTime());
+			assertNull(metaData.getLastAccessEndTime());
+		} else {
+			assertNotNull(metaData.getLastAccessStartTime());
+			assertNotNull(metaData.getLastAccessEndTime());
+			// For the request following session creation, the last access time will precede the creation time, but this duration should be tiny
+			if (metaData.getLastAccessStartTime().isBefore(metaData.getCreationTime())) {
+				assertEquals(0, Duration.between(metaData.getLastAccessStartTime(), metaData.getCreationTime()).getSeconds(), metaData.toString());
+			}
+			assertTrue(metaData.getLastAccessStartTime().isBefore(metaData.getLastAccessEndTime()), metaData.toString());
+		}
 	}
 
 	private void verifySessionAttributes(ImmutableSession session, Map<String, Object> attributes) {
-		assertEquals(attributes.keySet(), session.getAttributes().getAttributeNames());
+		assertTrue(session.getAttributes().getAttributeNames().containsAll(attributes.keySet()));
 		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
 			this.verifySessionAttribute(session, entry.getKey(), entry.getValue(), Objects::equals);
 		}

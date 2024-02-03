@@ -26,7 +26,7 @@ public class MutableSessionAccessMetaData implements SessionAccessMetaData {
 
 	@Override
 	public boolean isNew() {
-		return this.metaData.isNew();
+		return this.metaData.isNew() && this.lastAccess.get().isZero();
 	}
 
 	@Override

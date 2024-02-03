@@ -67,11 +67,11 @@ public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaData
 	}
 
 	@Override
-	public ContextualSessionMetaDataEntry<C> remap(SessionMetaDataEntryOffsets delta) {
+	public ContextualSessionMetaDataEntry<C> remap(SessionMetaDataEntryOffsets offsets) {
 		ContextualSessionMetaDataEntry<C> result = new DefaultSessionMetaDataEntry<>(this.getCreationTime());
-		result.setTimeout(delta.getTimeoutOffset().apply(this.timeout));
-		result.getLastAccessStartTime().set(delta.getLastAccessStartTimeOffset().apply(this.lastAccessStartTime.get()));
-		result.getLastAccessEndTime().set(delta.getLastAccessEndTimeOffset().apply(this.lastAccessEndTime.get()));
+		result.setTimeout(offsets.getTimeoutOffset().apply(this.timeout));
+		result.getLastAccessStartTime().set(offsets.getLastAccessStartTimeOffset().apply(this.lastAccessStartTime.get()));
+		result.getLastAccessEndTime().set(offsets.getLastAccessEndTimeOffset().apply(this.lastAccessEndTime.get()));
 		result.getContext().get(Functions.constantSupplier(this.context.get(Functions.constantSupplier(null))));
 		return result;
 	}

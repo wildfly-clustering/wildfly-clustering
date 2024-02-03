@@ -43,12 +43,16 @@ public class CompositeSessionMetaData extends CompositeImmutableSessionMetaData 
 
 	@Override
 	public void setLastAccess(Instant startTime, Instant endTime) {
+		if (!endTime.isAfter(startTime)) {
+			throw new IllegalStateException();
+		}
 		Instant creationTime = this.creationMetaData.getCreationTime();
 		// Retain millisecond precision
 		Instant normalizedStartTime = startTime.truncatedTo(ChronoUnit.MILLIS);
 		// Retain second precision for last access duration
-		Duration lastAccess = Duration.between(startTime, endTime);
+		Duration lastAccess = Duration.between(startTime, endTime.truncatedTo(ChronoUnit.MILLIS));
 		long seconds = lastAccess.getSeconds();
+		// Round up
 		if (lastAccess.getNano() > 0) {
 			seconds += 1;
 		}
