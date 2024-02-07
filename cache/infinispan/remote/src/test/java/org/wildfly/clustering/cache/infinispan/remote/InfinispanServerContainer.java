@@ -6,7 +6,6 @@
 package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.time.Duration;
-import java.util.function.Consumer;
 
 import org.infinispan.commons.util.Version;
 import org.jboss.logging.Logger;
@@ -22,7 +21,7 @@ import org.testcontainers.utility.DockerImageName;
  * Infinispan server test container.
  * @author Paul Ferraro
  */
-public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> implements Consumer<OutputFrame> {
+public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> {
 
 	static final Logger LOGGER = Logger.getLogger(InfinispanServerContainer.class);
 
@@ -52,7 +51,13 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 			this.setExposedPorts(java.util.List.of(this.port));
 		}
 		this.setHostAccessible(true);
-		this.withLogConsumer(this);
+		this.withLogConsumer(frame -> {
+			OutputFrame.OutputType type = frame.getType();
+			if (type != OutputType.END) {
+				String message = frame.getUtf8String().replaceAll("((\\r?\\n)|(\\r))$", "");
+				LOGGER.logf(type == OutputType.STDERR ? Level.ERROR : Level.INFO, message);
+			}
+		});
 		// Wait for server started log message
 		this.setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*\\QISPN080001\\E.*").withTimes(1).withStartupTimeout(Duration.ofMinutes(2)));
 		this.withEnv(USERNAME_ENV, context.getConfigurationParameter(HOTROD_USERNAME_PROPERTY).orElse(DEFAULT_HOTROD_USERNAME));
@@ -78,14 +83,5 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 
 	public String getPassword() {
 		return this.getEnvMap().get(PASSWORD_ENV);
-	}
-
-	@Override
-	public void accept(OutputFrame frame) {
-		OutputFrame.OutputType type = frame.getType();
-		if (type != OutputType.END) {
-			String message = frame.getUtf8String().replaceAll("((\\r?\\n)|(\\r))$", "");
-			LOGGER.logf(type == OutputType.STDERR ? Level.ERROR : Level.INFO, message);
-		}
 	}
 }
