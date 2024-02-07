@@ -7,14 +7,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.jboss</groupId>
-		<artifactId>jboss-parent</artifactId>
-		<version>43</version>
+		<groupId>org.wildfly.clustering</groupId>
+		<artifactId>wildfly-clustering-bom</artifactId>
+		<version>2.0.0.Beta1-SNAPSHOT</version>
+		<relativePath>bom</relativePath>
 	</parent>
 
-	<groupId>org.wildfly.clustering</groupId>
 	<artifactId>wildfly-clustering</artifactId>
-	<version>2.0.0.Beta1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering</name>
@@ -57,6 +56,7 @@
 	</properties>
 
 	<modules>
+		<module>bom</module>
 		<module>cache</module>
 		<module>context</module>
 		<module>marshalling</module>
@@ -78,161 +78,6 @@
 				<version>${version.net.jcip}</version>
 			</dependency>
 
-			<!-- Project dependencies -->
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-cache-infinispan-common</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-cache-spi</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-context</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-marshalling-java</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-server-api</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-server-infinispan</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-server-jgroups</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-server-local</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-server-spi</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-session-cache</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-session-jetty</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-session-spi</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<!-- Project test jar dependencies -->
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-cache-spi</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-marshalling-java</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-server-infinispan</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-server-jgroups</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-server-local</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-session-spi</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-
 			<!-- Compile dependencies -->
 			<!--dependency>
 				<groupId>dev.failsafe</groupId>
@@ -246,6 +91,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>wildfly-clustering-bom</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+
 			<dependency>
 				<groupId>org.jboss.logging</groupId>
 				<artifactId>jboss-logging</artifactId>
