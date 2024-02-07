@@ -7,7 +7,7 @@ package org.wildfly.clustering.marshalling.java;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
-import java.io.ObjectInput;
+import java.io.ObjectInputFilter;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -21,13 +21,15 @@ import org.wildfly.clustering.marshalling.Serializer;
  */
 public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
 	private final Serializer<ClassLoader> classLoaderSerializer;
+	private final ObjectInputFilter filter;
 
-	public JavaByteBufferMarshaller(ClassLoader loader) {
-		this(Serializer.of(loader));
+	public JavaByteBufferMarshaller(ClassLoader loader, ObjectInputFilter filter) {
+		this(Serializer.of(loader), filter);
 	}
 
-	public JavaByteBufferMarshaller(Serializer<ClassLoader> classLoaderSerializer) {
+	public JavaByteBufferMarshaller(Serializer<ClassLoader> classLoaderSerializer, ObjectInputFilter filter) {
 		this.classLoaderSerializer = classLoaderSerializer;
+		this.filter = filter;
 	}
 
 	@Override
@@ -37,7 +39,10 @@ public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
 
 	@Override
 	public Object readFrom(InputStream in) throws IOException {
-		try (ObjectInput input = new ObjectInputStream(in, this.classLoaderSerializer)) {
+		try (ObjectInputStream input = new ObjectInputStream(in, this.classLoaderSerializer)) {
+			if (this.filter != null) {
+				input.setObjectInputFilter(this.filter);
+			}
 			return input.readObject();
 		} catch (ClassNotFoundException e) {
 			InvalidClassException exception = new InvalidClassException(e.getMessage());
