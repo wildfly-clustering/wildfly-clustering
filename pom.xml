@@ -32,12 +32,10 @@
 		<maven.compiler.source>11</maven.compiler.source>
 
 		<!-- Provided dependency versions -->
-		<version.jakarta.annotation>2.1.1</version.jakarta.annotation>
 		<version.jakarta.transaction>2.0.1</version.jakarta.transaction>
 		<version.net.jcip>1.0</version.net.jcip>
 
 		<!-- Compile dependency versions -->
-		<version.com.github.ben-manes.caffiene>3.1.8</version.com.github.ben-manes.caffiene>
 		<!--version.dev.failsafe>3.3.2</version.dev.failsafe-->
 		<version.org.infinispan>14.0.24.Final</version.org.infinispan>
 		<version.org.jboss.logging>3.5.3.Final</version.org.jboss.logging>
@@ -69,11 +67,6 @@
 	<dependencyManagement>
 		<dependencies>
 			<!-- Provided dependencies -->
-			<dependency>
-				<groupId>jakarta.annotation</groupId>
-				<artifactId>jakarta.annotation-api</artifactId>
-				<version>${version.jakarta.annotation}</version>
-			</dependency>
 			<dependency>
 				<groupId>jakarta.transaction</groupId>
 				<artifactId>jakarta.transaction-api</artifactId>
@@ -241,11 +234,6 @@
 			</dependency>
 
 			<!-- Compile dependencies -->
-			<dependency>
-				<groupId>com.github.ben-manes.caffeine</groupId>
-				<artifactId>caffeine</artifactId>
-				<version>${version.com.github.ben-manes.caffiene}</version>
-			</dependency>
 			<!--dependency>
 				<groupId>dev.failsafe</groupId>
 				<artifactId>failsafe</artifactId>
