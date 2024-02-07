@@ -88,11 +88,6 @@
 			<!-- Project dependencies -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-cache-spi</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-cache-infinispan-common</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -104,6 +99,11 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>wildfly-clustering-cache-spi</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -176,6 +176,18 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+				<version>${project.version}</version>
+				<classifier>tests</classifier>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
+				<version>${project.version}</version>
+				<classifier>tests</classifier>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>wildfly-clustering-cache-spi</artifactId>
 				<version>${project.version}</version>
 				<classifier>tests</classifier>
 			</dependency>

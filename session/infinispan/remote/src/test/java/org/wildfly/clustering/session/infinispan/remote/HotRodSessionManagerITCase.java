@@ -9,17 +9,16 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.infinispan.client.hotrod.RemoteCacheContainer;
-import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
+import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerConfigurator;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerITCase;
 
@@ -29,7 +28,8 @@ import org.wildfly.clustering.session.SessionManagerITCase;
  */
 public class HotRodSessionManagerITCase extends SessionManagerITCase<TransactionBatch, HotRodSessionManagerParameters> {
 
-	static final InfinispanServerContainer CONTAINER = new InfinispanServerContainer();
+	@RegisterExtension
+	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();
 
 	static class HotRodSessionManagerArgumentsProvider implements ArgumentsProvider {
 		@Override
@@ -49,8 +49,8 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 						}
 
 						@Override
-						public RemoteCacheContainer createRemoteCacheContainer(ConfigurationBuilder builder) {
-							return CONTAINER.apply(builder);
+						public RemoteCacheContainerConfigurator getRemoteCacheContainerConfigurator() {
+							return INFINISPAN;
 						}
 
 						@Override
@@ -62,16 +62,6 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 			}
 			return builder.build();
 		}
-	}
-
-	@BeforeAll
-	public static void init() {
-		CONTAINER.start();
-	}
-
-	@AfterAll
-	public static void destroy() {
-		CONTAINER.stop();
 	}
 
 	HotRodSessionManagerITCase() {

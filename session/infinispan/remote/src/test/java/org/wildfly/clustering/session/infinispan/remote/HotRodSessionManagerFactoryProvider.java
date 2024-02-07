@@ -13,8 +13,10 @@ import java.util.function.Supplier;
 import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
+import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -45,7 +47,8 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 		this.deploymentName = String.format(DEPLOYMENT_NAME_PATTERN, parameters.getSessionAttributePersistenceStrategy().name(), parameters.getNearCacheMode().name());
 
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();
-		this.container = parameters.createRemoteCacheContainer(new ConfigurationBuilder().marshaller(new ProtoStreamMarshaller(ClassLoaderMarshaller.of(loader), builder -> builder.require(loader))).classLoader(loader));
+		Marshaller marshaller = new ProtoStreamMarshaller(ClassLoaderMarshaller.of(loader), builder -> builder.require(loader));
+		this.container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder().marshaller(marshaller).classLoader(loader)), false);
 		this.container.start();
 
 		container.getConfiguration().addRemoteCache(this.deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(parameters.getNearCacheMode()).transactionMode(TransactionMode.NONE).templateName(DefaultTemplate.LOCAL));
