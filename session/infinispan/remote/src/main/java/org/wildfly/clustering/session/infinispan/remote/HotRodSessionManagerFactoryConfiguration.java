@@ -16,7 +16,7 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, LC> extends SessionManagerFactoryConfiguration<S, SC, AL, LC, TransactionBatch>, HotRodSessionFactoryConfiguration {
+public interface HotRodSessionManagerFactoryConfiguration<S, SC, AL, LC> extends SessionManagerFactoryConfiguration<S, SC, AL, LC>, HotRodSessionFactoryConfiguration {
 
 	@Override
 	default Batcher<TransactionBatch> getBatcher() {

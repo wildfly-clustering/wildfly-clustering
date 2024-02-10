@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.session.cache.attributes;
 
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshalledValue;
@@ -23,7 +22,7 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
  */
 public abstract class MarshalledValueMarshallerSessionAttributesFactoryConfiguration<S, DC, L, V> extends MarshallerSessionAttributesFactoryConfiguration<S, DC, L, V, MarshalledValue<V, ByteBufferMarshaller>> {
 
-	protected <SC, B extends Batch> MarshalledValueMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, DC, L, SC, B> configuration) {
+	protected <SC> MarshalledValueMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, DC, L, SC> configuration) {
 		super(configuration, new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller())));
 	}
 }
