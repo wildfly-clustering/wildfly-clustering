@@ -7,8 +7,6 @@ package org.wildfly.clustering.session;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.cache.CacheConfiguration;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
 import org.wildfly.clustering.server.immutable.Immutability;
@@ -22,7 +20,7 @@ import org.wildfly.clustering.session.container.ContainerFacadeProvider;
  * @param <SC> the local context type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<S, DC, L, SC, B extends Batch> extends CacheConfiguration<B>, DeploymentConfiguration {
+public interface SessionManagerFactoryConfiguration<S, DC, L, SC> extends DeploymentConfiguration {
 
 	OptionalInt getMaxActiveSessions();
 
