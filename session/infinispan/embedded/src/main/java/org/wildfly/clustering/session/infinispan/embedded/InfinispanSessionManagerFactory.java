@@ -45,9 +45,9 @@ import org.wildfly.clustering.server.util.Invoker;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
+import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.cache.CompositeSessionFactory;
 import org.wildfly.clustering.session.cache.ContextualSessionManager;
-import org.wildfly.clustering.session.cache.DelegatingSessionManagerConfiguration;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.IdentityMarshallerSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
@@ -80,17 +80,17 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
 	private final ExpiredSessionRemover<SC, ?, ?, LC> remover;
 	private final SessionAttributeActivationNotifierFactory<S, SC, AL, LC, TransactionBatch> notifierFactory;
 
-	public <GM extends GroupMember<Address>> InfinispanSessionManagerFactory(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, LC, GM> config) {
-		this.configuration = config;
-		this.provider = config.getContainerFacadeProvider();
+	public <GM extends GroupMember<Address>> InfinispanSessionManagerFactory(SessionManagerFactoryConfiguration<S, SC, AL, LC> configuration, InfinispanSessionManagerFactoryConfiguration<GM> infinispan) {
+		this.configuration = infinispan;
+		this.provider = configuration.getContainerFacadeProvider();
 		this.notifierFactory = new SessionAttributeActivationNotifierFactory<>(this.provider);
-		CacheProperties properties = config.getCacheProperties();
-		SessionMetaDataFactory<ContextualSessionMetaDataEntry<LC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(config);
-		this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getSessionContextFactory());
+		CacheProperties properties = infinispan.getCacheProperties();
+		SessionMetaDataFactory<ContextualSessionMetaDataEntry<LC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(infinispan);
+		this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(configuration, infinispan), configuration.getSessionContextFactory());
 		this.remover = new ExpiredSessionRemover<>(this.factory);
-		Cache<? extends CacheKey<String>, ?> cache = config.getCache();
-		CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(config.getBatcher(), this.factory.getMetaDataFactory(), this.remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
-		GroupCommandDispatcherFactory<Address, GM> dispatcherFactory = config.getCommandDispatcherFactory();
+		Cache<? extends CacheKey<String>, ?> cache = infinispan.getCache();
+		CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(infinispan.getBatcher(), this.factory.getMetaDataFactory(), this.remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
+		GroupCommandDispatcherFactory<Address, GM> dispatcherFactory = infinispan.getCommandDispatcherFactory();
 		Group<Address, GM> group = dispatcherFactory.getGroup();
 		this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<String, ExpirationMetaData, GM>() {
 			@Override
@@ -144,11 +144,10 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
 				contextRegistration.close();
 			};
 		};
-		Scheduler<String, ExpirationMetaData> scheduler = this.scheduler;
-		InfinispanSessionManagerConfiguration<SC, LC> config = new AbstractInfinispanSessionManagerConfiguration<>(configuration, identifierFactory, this.configuration) {
+		InfinispanSessionManagerConfiguration<LC> infinispanConfiguration = new InfinispanSessionManagerConfiguration<>() {
 			@Override
 			public Scheduler<String, ExpirationMetaData> getExpirationScheduler() {
-				return scheduler;
+				return InfinispanSessionManagerFactory.this.scheduler;
 			}
 
 			@Override
@@ -160,18 +159,28 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
 			public Registrar<SessionManager<LC, TransactionBatch>> getRegistrar() {
 				return registrar;
 			}
+
+			@Override
+			public <K, V> Cache<K, V> getCache() {
+				return InfinispanSessionManagerFactory.this.configuration.getCache();
+			}
+
+			@Override
+			public IdentifierFactory<String> getIdentifierFactory() {
+				return identifierFactory;
+			}
 		};
-		return new ContextualSessionManager<>(new InfinispanSessionManager<>(config, this.factory), this.configuration.getCacheProperties().isTransactional() ? ContextStrategy.UNSHARED : ContextStrategy.SHARED);
+		return new ContextualSessionManager<>(new InfinispanSessionManager<>(configuration, infinispanConfiguration, this.factory), this.configuration.getCacheProperties().isTransactional() ? ContextStrategy.UNSHARED : ContextStrategy.SHARED);
 	}
 
-	private <GM extends GroupMember<Address>> SessionAttributesFactory<SC, ?> createSessionAttributesFactory(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, LC, GM> configuration) {
-		boolean marshalling = configuration.getCacheProperties().isMarshalling();
+	private <GM extends GroupMember<Address>> SessionAttributesFactory<SC, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<S, SC, AL, LC> configuration, InfinispanSessionManagerFactoryConfiguration<GM> infinispan) {
+		boolean marshalling = infinispan.getCacheProperties().isMarshalling();
 		switch (configuration.getAttributePersistenceStrategy()) {
 			case FINE: {
-				return marshalling ? new FineSessionAttributesFactory<>(new InfinispanMarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration, this.notifierFactory)) : new FineSessionAttributesFactory<>(new InfinispanIdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration, this.notifierFactory));
+				return marshalling ? new FineSessionAttributesFactory<>(new InfinispanMarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration, this.notifierFactory), infinispan) : new FineSessionAttributesFactory<>(new InfinispanIdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration, this.notifierFactory), infinispan);
 			}
 			case COARSE: {
-				return marshalling ? new CoarseSessionAttributesFactory<>(new InfinispanMarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration, this.notifierFactory)) : new CoarseSessionAttributesFactory<>(new InfinispanIdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration, this.notifierFactory));
+				return marshalling ? new CoarseSessionAttributesFactory<>(new InfinispanMarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration, this.notifierFactory), infinispan) : new CoarseSessionAttributesFactory<>(new InfinispanIdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration, this.notifierFactory), infinispan);
 			}
 			default: {
 				// Impossible
@@ -186,7 +195,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
 		this.scheduler.close();
 		this.factory.close();
 	}
-
+/*
 	private abstract static class AbstractInfinispanSessionManagerConfiguration<SC, LC> extends DelegatingSessionManagerConfiguration<SC> implements InfinispanSessionManagerConfiguration<SC, LC> {
 		private final EmbeddedCacheConfiguration configuration;
 		private final IdentifierFactory<String> identifierFactory;
@@ -207,46 +216,32 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
 			return this.configuration.getCache();
 		}
 	}
-
+*/
 	private static class InfinispanMarshalledValueMarshallerSessionAttributesFactoryConfiguration<S, SC, AL, V> extends MarshalledValueMarshallerSessionAttributesFactoryConfiguration<S, SC, AL, V> implements InfinispanSessionAttributesFactoryConfiguration<S, SC, AL, V, MarshalledValue<V, ByteBufferMarshaller>> {
-		private final EmbeddedCacheConfiguration configuration;
 		private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
 
-		<LC, GM extends GroupMember<Address>> InfinispanMarshalledValueMarshallerSessionAttributesFactoryConfiguration(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, LC, GM> configuration, Function<String, SessionAttributeActivationNotifier> notifierFactory) {
+		<LC> InfinispanMarshalledValueMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, SC, AL, LC> configuration, Function<String, SessionAttributeActivationNotifier> notifierFactory) {
 			super(configuration);
-			this.configuration = configuration;
 			this.notifierFactory = notifierFactory;
 		}
 
 		@Override
 		public Function<String, SessionAttributeActivationNotifier> getActivationNotifierFactory() {
 			return this.notifierFactory;
-		}
-
-		@Override
-		public <KK, VV> Cache<KK, VV> getCache() {
-			return this.configuration.getCache();
 		}
 	}
 
 	private static class InfinispanIdentityMarshallerSessionAttributesFactoryConfiguration<S, SC, AL, V> extends IdentityMarshallerSessionAttributesFactoryConfiguration<S, SC, AL, V> implements InfinispanSessionAttributesFactoryConfiguration<S, SC, AL, V, V> {
-		private final EmbeddedCacheConfiguration configuration;
 		private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
 
-		<LC, GM extends GroupMember<Address>> InfinispanIdentityMarshallerSessionAttributesFactoryConfiguration(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, LC, GM> configuration, Function<String, SessionAttributeActivationNotifier> notifierFactory) {
+		<LC> InfinispanIdentityMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, SC, AL, LC> configuration, Function<String, SessionAttributeActivationNotifier> notifierFactory) {
 			super(configuration);
-			this.configuration = configuration;
 			this.notifierFactory = notifierFactory;
 		}
 
 		@Override
 		public Function<String, SessionAttributeActivationNotifier> getActivationNotifierFactory() {
 			return this.notifierFactory;
-		}
-
-		@Override
-		public <KK, VV> Cache<KK, VV> getCache() {
-			return this.configuration.getCache();
 		}
 	}
 }

@@ -12,6 +12,7 @@ import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.common.function.Functions;
@@ -31,11 +32,11 @@ public class HotRodSessionManager<SC, MV, AV, LC> extends AbstractSessionManager
 
 	private volatile Registration expirationListenerRegistration;
 
-	public HotRodSessionManager(HotRodSessionManagerConfiguration<SC> configuration, SessionFactory<SC, MV, AV, LC> factory) {
-		super(configuration, configuration, factory, Functions.discardingConsumer());
-		this.expirationListenerRegistrar = configuration.getExpirationListenerRegistrar();
+	public HotRodSessionManager(SessionManagerConfiguration<SC> configuration, SessionFactory<SC, MV, AV, LC> factory, HotRodSessionManagerConfiguration hotrod) {
+		super(configuration, hotrod, factory, Functions.discardingConsumer());
+		this.expirationListenerRegistrar = hotrod.getExpirationListenerRegistrar();
 		this.expirationListener = configuration.getExpirationListener();
-		this.batcher = configuration.getBatcher();
+		this.batcher = hotrod.getBatcher();
 	}
 
 	@Override

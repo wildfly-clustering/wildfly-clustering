@@ -17,6 +17,7 @@ import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheMutatorFactory;
 import org.wildfly.clustering.marshalling.Marshallability;
 import org.wildfly.clustering.marshalling.Marshaller;
@@ -26,6 +27,7 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.coarse.ImmutableSessionActivationNotifier;
@@ -47,12 +49,12 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 	private final CacheEntryMutatorFactory<SessionAttributesKey, V> mutatorFactory;
 	private final SessionActivationListenerFacadeProvider<S, C, L> provider;
 
-	public CoarseSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration) {
-		this.cache = configuration.getCache();
-		this.ignoreReturnFlags = configuration.getIgnoreReturnFlags();
+	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration, RemoteCacheConfiguration hotrod) {
+		this.cache = hotrod.getCache();
+		this.ignoreReturnFlags = hotrod.getIgnoreReturnFlags();
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
-		this.properties = configuration.getCacheProperties();
+		this.properties = hotrod.getCacheProperties();
 		this.mutatorFactory = new RemoteCacheMutatorFactory<>(this.cache, this.ignoreReturnFlags);
 		this.provider = configuration.getSessionActivationListenerProvider();
 	}

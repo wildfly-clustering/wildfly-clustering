@@ -33,6 +33,7 @@ import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.PassivationListener;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
+import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactoryProvider;
 import org.wildfly.clustering.session.container.ContainerFacadeProvider;
 
@@ -76,7 +77,7 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 				return InfinispanSessionManagerFactoryProvider.this.dispatcherFactoryProvider.getCommandDispatcherFactory();
 			}
 		});
-		InfinispanSessionManagerFactoryConfiguration<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>, SC, CacheContainerGroupMember> managerFactoryConfiguration = new InfinispanSessionManagerFactoryConfiguration<>() {
+		SessionManagerFactoryConfiguration<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>, SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 			@Override
 			public OptionalInt getMaxActiveSessions() {
 				return OptionalInt.of(1);
@@ -116,7 +117,8 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 			public String getServerName() {
 				return SERVER_NAME;
 			}
-
+		};
+		InfinispanSessionManagerFactoryConfiguration<CacheContainerGroupMember> infinispan = new InfinispanSessionManagerFactoryConfiguration<>() {
 			@Override
 			public <K, V> Cache<K, V> getCache() {
 				return InfinispanSessionManagerFactoryProvider.this.manager.getCache(DEPLOYMENT_NAME);
@@ -127,7 +129,7 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 				return commandDispatcherFactory;
 			}
 		};
-		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration);
+		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, infinispan);
 	}
 
 	@Override
