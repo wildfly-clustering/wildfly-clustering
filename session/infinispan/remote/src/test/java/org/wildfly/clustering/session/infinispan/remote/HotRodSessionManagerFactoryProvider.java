@@ -27,6 +27,7 @@ import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.PassivationListener;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
+import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactoryProvider;
 import org.wildfly.clustering.session.container.ContainerFacadeProvider;
 
@@ -56,7 +57,7 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 
 	@Override
 	public <SC> SessionManagerFactory<DC, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory, ContainerFacadeProvider<Entry<ImmutableSession, DC>, DC, PassivationListener<DC>> provider) {
-		HotRodSessionManagerFactoryConfiguration<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>, SC> managerFactoryConfiguration = new HotRodSessionManagerFactoryConfiguration<>() {
+		SessionManagerFactoryConfiguration<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>, SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 			@Override
 			public OptionalInt getMaxActiveSessions() {
 				return HotRodSessionManagerFactoryProvider.this.parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
@@ -96,10 +97,11 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 			public String getServerName() {
 				return SERVER_NAME;
 			}
-
+		};
+		HotRodSessionFactoryConfiguration hotrod = new HotRodSessionFactoryConfiguration() {
 			@Override
-			public <K, V> RemoteCache<K, V> getCache() {
-				return HotRodSessionManagerFactoryProvider.this.container.getCache(this.getDeploymentName());
+			public <CK, CV> RemoteCache<CK, CV> getCache() {
+				return HotRodSessionManagerFactoryProvider.this.container.getCache(HotRodSessionManagerFactoryProvider.this.deploymentName);
 			}
 
 			@Override
@@ -107,7 +109,7 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 				return 1;
 			}
 		};
-		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration);
+		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, hotrod);
 	}
 
 	@Override

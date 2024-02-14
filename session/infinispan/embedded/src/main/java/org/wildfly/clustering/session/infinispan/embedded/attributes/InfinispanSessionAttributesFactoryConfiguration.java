@@ -7,8 +7,6 @@ package org.wildfly.clustering.session.infinispan.embedded.attributes;
 
 import java.util.function.Function;
 
-import org.wildfly.clustering.cache.CacheProperties;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 
@@ -20,12 +18,7 @@ import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActi
  * @param <MV> attributes serialized form type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionAttributesFactoryConfiguration<S, C, L, V, MV> extends SessionAttributesFactoryConfiguration<S, C, L, V, MV>, EmbeddedCacheConfiguration {
+public interface InfinispanSessionAttributesFactoryConfiguration<S, C, L, V, MV> extends SessionAttributesFactoryConfiguration<S, C, L, V, MV> {
 
 	Function<String, SessionAttributeActivationNotifier> getActivationNotifierFactory();
-
-	@Override
-	default CacheProperties getCacheProperties() {
-		return EmbeddedCacheConfiguration.super.getCacheProperties();
-	}
 }

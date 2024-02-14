@@ -28,6 +28,7 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionStatistics;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
@@ -53,22 +54,22 @@ public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionMan
 
 	private volatile Registration registration;
 
-	public InfinispanSessionManager(InfinispanSessionManagerConfiguration<DC, SC> configuration, SessionFactory<DC, MV, AV, SC> factory) {
-		super(configuration, configuration, factory, new Consumer<>() {
+	public InfinispanSessionManager(SessionManagerConfiguration<DC> configuration, InfinispanSessionManagerConfiguration<SC> infinispanConfiguration, SessionFactory<DC, MV, AV, SC> factory) {
+		super(configuration, infinispanConfiguration, factory, new Consumer<>() {
 			@Override
 			public void accept(ImmutableSession session) {
 				if (session.isValid()) {
-					configuration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
+					infinispanConfiguration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
 				}
 			}
 		});
-		this.cache = configuration.getCache();
-		this.properties = configuration.getCacheProperties();
-		this.identifierFactory = configuration.getIdentifierFactory();
-		this.batcher = configuration.getBatcher();
-		this.expirationScheduler = configuration.getExpirationScheduler();
-		this.registrar = configuration.getRegistrar();
-		this.startTask = configuration.getStartTask();
+		this.cache = infinispanConfiguration.getCache();
+		this.properties = infinispanConfiguration.getCacheProperties();
+		this.identifierFactory = infinispanConfiguration.getIdentifierFactory();
+		this.batcher = infinispanConfiguration.getBatcher();
+		this.expirationScheduler = infinispanConfiguration.getExpirationScheduler();
+		this.registrar = infinispanConfiguration.getRegistrar();
+		this.startTask = infinispanConfiguration.getStartTask();
 	}
 
 	@Override
