@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.server.context.ContextStrategy;
@@ -21,6 +20,7 @@ import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionMetaData;
 import org.wildfly.clustering.session.SessionStatistics;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 
 /**
  * Unit test for {@link ConcurrentSessionManager}.

@@ -85,17 +85,17 @@ public class EmbeddedCacheManagerFactory implements BiFunction<String, ClassLoad
 						public String getProtoFile() {
 							return null;
 						}
-	
+
 						@Deprecated
 						@Override
 						public String getProtoFileName() {
 							return null;
 						}
-	
+
 						@Override
 						public void registerMarshallers(SerializationContext context) {
 						}
-	
+
 						@Override
 						public void registerSchema(SerializationContext context) {
 						}

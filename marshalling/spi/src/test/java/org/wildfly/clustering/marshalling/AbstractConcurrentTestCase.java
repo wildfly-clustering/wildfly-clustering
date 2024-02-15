@@ -27,11 +27,10 @@ import org.wildfly.clustering.marshalling.test.TestComparator;
 
 /**
  * Generic tests for java.util.concurrent.* classes.
- * 
  * @author Paul Ferraro
  */
 public abstract class AbstractConcurrentTestCase {
-	private static final Map<Object, Object> BASIS = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object> toMap(i -> i, i -> Integer.toString(-i)));
+	private static final Map<Object, Object> BASIS = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(-i)));
 
 	private final MarshallingTesterFactory factory;
 

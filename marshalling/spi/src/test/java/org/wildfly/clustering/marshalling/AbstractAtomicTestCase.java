@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Generic tests for java.util.concurrent.atomic.* classes.
- * 
  * @author Paul Ferraro
  */
 public abstract class AbstractAtomicTestCase {

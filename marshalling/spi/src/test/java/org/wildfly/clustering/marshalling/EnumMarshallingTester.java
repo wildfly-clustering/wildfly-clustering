@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions;
 
 /**
  * Validates marshalling of an enum.
- * 
  * @author Paul Ferraro
  */
 public class EnumMarshallingTester<E extends Enum<E>> {

@@ -12,16 +12,16 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
-import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
-import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
-import org.wildfly.common.function.Functions;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
+import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
+import org.wildfly.common.function.Functions;
 
 /**
  * Unit test for {@link CompositeSessionFactory}.

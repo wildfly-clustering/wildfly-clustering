@@ -51,7 +51,6 @@ import org.wildfly.clustering.marshalling.test.TestComparator;
 
 /**
  * Generic tests for java.util.* classes.
- * 
  * @author Paul Ferraro
  */
 public abstract class AbstractUtilTestCase {

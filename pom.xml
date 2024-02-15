@@ -200,10 +200,22 @@
 				<configuration>
 					<configLocation>checkstyle.xml</configLocation>
 					<logViolationsToConsole>true</logViolationsToConsole>
+					<sourceDirectories>
+						<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+						<sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+					</sourceDirectories>
 				</configuration>
 				<executions>
 					<execution>
+						<id>check-sources</id>
 						<phase>process-sources</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>check-test-sources</id>
+						<phase>process-test-sources</phase>
 						<goals>
 							<goal>check</goal>
 						</goals>

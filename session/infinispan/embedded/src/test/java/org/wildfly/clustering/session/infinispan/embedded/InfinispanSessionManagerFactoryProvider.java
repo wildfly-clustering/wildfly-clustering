@@ -71,7 +71,7 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 			public EmbeddedCacheManager getCacheContainer() {
 				return InfinispanSessionManagerFactoryProvider.this.manager;
 			}
-			
+
 			@Override
 			public GroupCommandDispatcherFactory<org.jgroups.Address, ChannelGroupMember> getCommandDispatcherFactory() {
 				return InfinispanSessionManagerFactoryProvider.this.dispatcherFactoryProvider.getCommandDispatcherFactory();

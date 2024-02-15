@@ -11,15 +11,14 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import io.undertow.server.session.SecureRandomSessionIdGenerator;
+
 import org.apache.catalina.util.StandardSessionIdGenerator;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.Marshaller;
 
-import io.undertow.server.session.SecureRandomSessionIdGenerator;
-
 /**
  * Unit test for {@link StringIdentifierMarshaller}.
- *
  * @author Paul Ferraro
  */
 public class StringIdentifierSerializerTestCase {

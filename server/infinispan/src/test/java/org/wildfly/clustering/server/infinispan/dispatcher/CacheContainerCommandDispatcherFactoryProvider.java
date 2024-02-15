@@ -34,7 +34,7 @@ public class CacheContainerCommandDispatcherFactoryProvider implements CommandDi
 			public EmbeddedCacheManager getCacheContainer() {
 				return CacheContainerCommandDispatcherFactoryProvider.this.manager;
 			}
-			
+
 			@Override
 			public GroupCommandDispatcherFactory<Address, ChannelGroupMember> getCommandDispatcherFactory() {
 				return CacheContainerCommandDispatcherFactoryProvider.this.config.getCommandDispatcherFactory();

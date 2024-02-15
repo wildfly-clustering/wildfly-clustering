@@ -4,8 +4,8 @@
  */
 package org.wildfly.clustering.session.cache.user;
 
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.Map;
