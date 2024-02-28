@@ -7,7 +7,6 @@ package org.wildfly.clustering.marshalling.test;
 
 /**
  * A test enum with no values.
- * 
  * @author Paul Ferraro
  */
 public enum Empty {

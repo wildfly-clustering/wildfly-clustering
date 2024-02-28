@@ -15,9 +15,9 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
 
 /**
  * @author Paul Ferraro
@@ -54,7 +54,7 @@ public class ImmutableSessionActivationNotifierTestCase {
 		when(attributes.getAttribute("bar")).thenReturn(UUID.randomUUID());
 		when(attributes.getAttribute("listener1")).thenReturn(this.listener1);
 		when(attributes.getAttribute("listener2")).thenReturn(this.listener2);
-		
+
 		when(this.provider.asSessionActivationListener(any())).thenReturn(Optional.empty());
 		when(this.provider.asSessionActivationListener(this.listener1)).thenReturn(Optional.of(this.listener1));
 		when(this.provider.asSessionActivationListener(this.listener2)).thenReturn(Optional.of(this.listener2));

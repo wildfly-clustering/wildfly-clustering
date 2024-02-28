@@ -47,7 +47,7 @@ public class NativeProtoStreamTestCase {
 		}
 	}
 
-	static enum Sex {
+	enum Sex {
 		@ProtoEnumValue(0) MALE,
 		@ProtoEnumValue(1) FEMALE,
 		;
@@ -166,6 +166,6 @@ public class NativeProtoStreamTestCase {
 	}
 
 	@AutoProtoSchemaBuilder(includeClasses = { Sex.class, NameFactory.class, Employee.class }, service = true)
-	static interface EmployeeInitializer extends SerializationContextInitializer {
+	interface EmployeeInitializer extends SerializationContextInitializer {
 	}
 }

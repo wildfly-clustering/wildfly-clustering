@@ -13,7 +13,6 @@ import org.wildfly.clustering.server.jgroups.GroupITCase;
 
 /**
  * Integration test for JChannel-based group implementation.
- * 
  * @author Paul Ferraro
  */
 public class CacheContainerGroupITCase extends GroupITCase<Address, CacheContainerGroupMember> {

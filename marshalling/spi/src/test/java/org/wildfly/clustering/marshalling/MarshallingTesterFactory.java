@@ -9,7 +9,6 @@ import java.util.List;
 
 /**
  * Factory for creating marshalling testers.
- * 
  * @author Paul Ferraro
  */
 public interface MarshallingTesterFactory {

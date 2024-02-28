@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions;
 
 /**
  * Generic interface for various marshalling testers.
- * 
  * @author Paul Ferraro
  */
 public interface Tester<T> {
@@ -25,7 +24,6 @@ public interface Tester<T> {
 
 	/**
 	 * Same as {@link #test(Object)}, but additionally validates equality of hash code.
-	 * 
 	 * @param subject a test subject
 	 * @throws IOException if marshalling of the test subject fails
 	 */

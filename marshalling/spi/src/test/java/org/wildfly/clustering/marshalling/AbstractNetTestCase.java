@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Generic tests for java.net.* classes.
- * 
  * @author Paul Ferraro
  */
 public abstract class AbstractNetTestCase {

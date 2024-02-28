@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Generic tests for java.time.* classes.
- * 
  * @author Paul Ferraro
  */
 public abstract class AbstractTimeTestCase {

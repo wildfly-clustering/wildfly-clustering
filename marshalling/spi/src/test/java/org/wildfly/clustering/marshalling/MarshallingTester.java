@@ -14,7 +14,6 @@ import java.util.function.BiConsumer;
 
 /**
  * Validates correctness of the marshalling of an object.
- * 
  * @author Paul Ferraro
  */
 public class MarshallingTester<T> implements Tester<T> {
