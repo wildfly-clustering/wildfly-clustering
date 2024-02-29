@@ -103,11 +103,9 @@ public class ContextualSessionManagerTestCase {
 			session1.invalidate();
 
 			verify(expected1).invalidate();
-			verify(expected1).close();
-
-			Session<Void> session2 = subject.findSession(id);
-			assertNull(session2);
 		}
+
+		verify(expected1).close();
 	}
 
 	@SuppressWarnings("unchecked")

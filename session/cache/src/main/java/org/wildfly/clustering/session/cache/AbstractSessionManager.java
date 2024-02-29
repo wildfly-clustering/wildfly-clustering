@@ -35,14 +35,14 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC, B extends Batch> im
 	private final Batcher<B> batcher;
 	private final UnaryOperator<Session<SC>> wrapper;
 
-	protected AbstractSessionManager(SessionManagerConfiguration<DC> configuration, CacheConfiguration<B> cacheConfiguration, SessionFactory<DC, MV, AV, SC> factory, Consumer<ImmutableSession> closeTask) {
+	protected AbstractSessionManager(SessionManagerConfiguration<DC> configuration, CacheConfiguration<B> cacheConfiguration, SessionFactory<DC, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
 		this.batcher = cacheConfiguration.getBatcher();
 		this.expiration = configuration;
 		this.expirationListener = configuration.getExpirationListener();
 		this.factory = factory;
-		this.wrapper = session -> new ValidSession<>(session, closeTask);
+		this.wrapper = session -> new ManagedSession<>(this, session, sessionCloseTask);
 	}
 
 	@Override
