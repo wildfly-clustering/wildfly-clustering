@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.session;
+package org.wildfly.clustering.session.cache;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -11,28 +11,26 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.session.Session;
+import org.wildfly.clustering.session.SessionAttributes;
+import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.SessionMetaData;
 
 /**
- * Out-of-band session implementation, for use outside the context of a request.
+ * Detached session implementation, for use outside the context of a request.
  * @author Paul Ferraro
  * @param <C> the session context
  * @param <B> the batch type
  */
-public class OOBSession<C, B extends Batch> implements Session<C>, SessionMetaData, SessionAttributes {
+public class DetachedSession<C, B extends Batch> extends AbstractImmutableSession implements Session<C>, SessionMetaData, SessionAttributes {
 
 	private final SessionManager<C, B> manager;
-	private final String id;
 	private final C context;
 
-	public OOBSession(SessionManager<C, B> manager, String id, C context) {
+	public DetachedSession(SessionManager<C, B> manager, String id, C context) {
+		super(id);
 		this.manager = manager;
-		this.id = id;
 		this.context = context;
-	}
-
-	@Override
-	public String getId() {
-		return this.id;
 	}
 
 	@Override
@@ -52,18 +50,19 @@ public class OOBSession<C, B extends Batch> implements Session<C>, SessionMetaDa
 
 	@Override
 	public void close() {
-		// OOB session has no lifecycle
+		// A detached session has no lifecycle
 	}
 
 	@Override
 	public boolean isNew() {
+		// A detached session is never new
 		return false;
 	}
 
 	@Override
 	public boolean isValid() {
 		try (B batch = this.manager.getBatcher().createBatch()) {
-			return this.manager.findImmutableSession(this.id) != null;
+			return this.manager.findImmutableSession(this.getId()) != null;
 		}
 	}
 
@@ -172,6 +171,6 @@ public class OOBSession<C, B extends Batch> implements Session<C>, SessionMetaDa
 	}
 
 	private Session<C> getSession() {
-		return Optional.ofNullable(this.manager.findSession(this.id)).orElseThrow(IllegalStateException::new);
+		return Optional.ofNullable(this.manager.findSession(this.getId())).orElseThrow(IllegalStateException::new);
 	}
 }

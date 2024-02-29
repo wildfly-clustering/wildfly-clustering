@@ -6,6 +6,7 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.function.Supplier;
 
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.Remover;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.Session;
@@ -14,10 +15,11 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 
 /**
- * Generic session implementation - independent of cache mapping strategy.
+ * Generic session implementation composed of attributes and metadata.
  * @author Paul Ferraro
  */
 public class CompositeSession<C> extends CompositeImmutableSession implements Session<C> {
+	private static final Logger LOGGER = Logger.getLogger(CompositeSession.class);
 
 	private final InvalidatableSessionMetaData metaData;
 	private final SessionAttributes attributes;
@@ -47,6 +49,7 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 	@Override
 	public void invalidate() {
 		if (this.metaData.invalidate()) {
+			LOGGER.debugf("Invalidating session %s", this.getId());
 			this.remover.remove(this.getId());
 		}
 	}
@@ -59,6 +62,7 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 	@Override
 	public void close() {
 		if (this.metaData.isValid()) {
+			LOGGER.tracef("Closing session %s", this.getId());
 			this.attributes.close();
 			this.metaData.close();
 		}

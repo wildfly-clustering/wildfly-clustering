@@ -14,23 +14,17 @@ import org.wildfly.clustering.session.cache.metadata.SimpleImmutableSessionMetaD
  * An immutable "snapshot" of a session which can be accessed outside the scope of a transaction.
  * @author Paul Ferraro
  */
-public class SimpleImmutableSession implements ImmutableSession {
+public class SimpleImmutableSession extends AbstractImmutableSession {
 
-	private final String id;
 	private final boolean valid;
 	private final ImmutableSessionMetaData metaData;
 	private final ImmutableSessionAttributes attributes;
 
 	public SimpleImmutableSession(ImmutableSession session) {
-		this.id = session.getId();
+		super(session.getId());
 		this.valid = session.isValid();
 		this.metaData = new SimpleImmutableSessionMetaData(session.getMetaData());
 		this.attributes = new SimpleImmutableSessionAttributes(session.getAttributes());
-	}
-
-	@Override
-	public String getId() {
-		return this.id;
 	}
 
 	@Override

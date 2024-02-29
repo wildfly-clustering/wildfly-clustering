@@ -241,8 +241,8 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		this.requestSession(manager, sessionId, session -> {
 			session.invalidate();
 			assertFalse(session.isValid());
-			assertThrows(IllegalStateException.class, () -> session.getAttributes());
-			assertThrows(IllegalStateException.class, () -> session.getMetaData());
+			assertThrows(IllegalStateException.class, () -> session.getAttributes(), session.getClass().getName());
+			assertThrows(IllegalStateException.class, () -> session.getMetaData(), session.getClass().getName());
 		});
 	}
 
@@ -257,6 +257,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 				assertNotNull(session);
 				assertEquals(sessionId, session.getId());
 				action.accept(session);
+				// Post-request processing
 				if (session.isValid()) {
 					SessionMetaData metaData = session.getMetaData();
 					Instant end = Instant.now();

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.session;
+package org.wildfly.clustering.session.cache;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -17,17 +17,22 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.Batcher;
+import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.Session;
+import org.wildfly.clustering.session.SessionAttributes;
+import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.SessionMetaData;
 
 /**
- * Unit test for {@link OOBSession}.
+ * Unit test for {@link DetachedSession}.
  * @author Paul Ferraro
  */
-public class OOBSessionTestCase {
+public class DetachedSessionTestCase {
 	private final SessionManager<Object, Batch> manager = mock(SessionManager.class);
 	private final String id = UUID.randomUUID().toString();
 	private final Object localContext = new Object();
 
-	private final Session<Object> session = new OOBSession<>(this.manager, this.id, this.localContext);
+	private final Session<Object> session = new DetachedSession<>(this.manager, this.id, this.localContext);
 
 	@Test
 	public void getId() {

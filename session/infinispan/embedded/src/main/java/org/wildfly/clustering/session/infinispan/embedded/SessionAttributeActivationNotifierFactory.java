@@ -14,9 +14,9 @@ import java.util.function.Function;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
-import org.wildfly.clustering.session.OOBSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
 
@@ -74,7 +74,7 @@ public class SessionAttributeActivationNotifierFactory<S, SC, AL, LC, B extends 
 					for (Map.Entry<SC, SessionManager<LC, B>> entry : contexts.entrySet()) {
 						SC context = entry.getKey();
 						SessionManager<LC, B> manager = entry.getValue();
-						Session<LC> session = new OOBSession<>(manager, sessionId, null);
+						Session<LC> session = new DetachedSession<>(manager, sessionId, null);
 						notifier.apply(listener.get()).accept(provider.asSession(session, context));
 					}
 				}
