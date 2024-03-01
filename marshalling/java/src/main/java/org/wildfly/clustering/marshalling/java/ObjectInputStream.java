@@ -13,7 +13,7 @@ import java.lang.reflect.Proxy;
 import org.wildfly.clustering.marshalling.Serializer;
 
 /**
- * An {@link java.io.ObjectInputStream} that resolves classes using a given {@link ClassLoaderResolver}.
+ * An {@link java.io.ObjectInputStream} that resolves classes using a given {@link Serializer}.
  * @author Paul Ferraro
  */
 public class ObjectInputStream extends java.io.ObjectInputStream {
