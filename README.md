@@ -9,7 +9,7 @@ WildFly clustering is a set of modules providing distributed services to applica
 This project serves as upstream to the following projects:
 * [WildFly](https://github.com/wildfly/wildfly)
 * Tomcat via [wildfly-clustering-tomcat](https://github.com/wildfly-clustering/wildfly-clustering-tomcat)
-* Spring Session via [wildfly-clustering-spring-session](https://github.com/wildfly-clustering/wildfly-clustering-spring-session)
+* Spring via [wildfly-clustering-spring](https://github.com/wildfly-clustering/wildfly-clustering-spring)
 
 ## Building
 
