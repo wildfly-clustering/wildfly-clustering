@@ -25,7 +25,7 @@ import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.cache.MockContainerFacadeProvider;
+import org.wildfly.clustering.session.cache.MockSessionSpecificationProvider;
 import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
 
 /**
@@ -96,7 +96,7 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 				return HotRodSessionManagerFactoryProvider.this.container.getCache(HotRodSessionManagerFactoryProvider.this.deploymentName);
 			}
 		};
-		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, new MockContainerFacadeProvider<>(), hotrod);
+		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, new MockSessionSpecificationProvider<>(), hotrod);
 	}
 
 	@Override

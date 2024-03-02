@@ -14,7 +14,7 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 /**
  * @author Paul Ferraro
  */
-public class MockContainerFacadeProvider<C> implements SessionSpecificationProvider<Map.Entry<ImmutableSession, C>, C, PassivationListener<C>> {
+public class MockSessionSpecificationProvider<C> implements SessionSpecificationProvider<Map.Entry<ImmutableSession, C>, C, PassivationListener<C>> {
 
 	@Override
 	public Consumer<Map.Entry<ImmutableSession, C>> prePassivate(PassivationListener<C> listener) {
