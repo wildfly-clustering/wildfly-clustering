@@ -28,28 +28,26 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.HotRodSessionMe
 
 /**
  * Factory for creating session managers.
- * @param <S> the HttpSession specification type
- * @param <SC> the ServletContext specification type
- * @param <AL> the HttpSessionAttributeListener specification type
- * @param <LC> the local context type
+ * @param <DC> the deployment specification type
+ * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManagerFactory<SC, LC, TransactionBatch>, HotRodSessionManagerConfiguration {
+public class HotRodSessionManagerFactory<DC, SC> implements SessionManagerFactory<DC, SC, TransactionBatch>, HotRodSessionManagerConfiguration {
 
 	private final RemoteCacheConfiguration configuration;
 	private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
-	private final SessionFactory<SC, SessionMetaDataEntry<LC>, ?, LC> factory;
+	private final SessionFactory<DC, SessionMetaDataEntry<SC>, ?, SC> factory;
 
-	public HotRodSessionManagerFactory(SessionManagerFactoryConfiguration<S, SC, AL, LC> configuration, HotRodSessionFactoryConfiguration sessionFactoryConfiguration) {
+	public <S, L> HotRodSessionManagerFactory(SessionManagerFactoryConfiguration<S, DC, L, SC> configuration, HotRodSessionFactoryConfiguration sessionFactoryConfiguration) {
 		this.configuration = sessionFactoryConfiguration;
-		SessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(sessionFactoryConfiguration);
-		HotRodSessionFactory<SC, ?, LC> sessionFactory = new HotRodSessionFactory<>(sessionFactoryConfiguration, metaDataFactory, this.createSessionAttributesFactory(configuration, sessionFactoryConfiguration), configuration.getSessionContextFactory());
+		SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(sessionFactoryConfiguration);
+		HotRodSessionFactory<DC, ?, SC> sessionFactory = new HotRodSessionFactory<>(sessionFactoryConfiguration, metaDataFactory, this.createSessionAttributesFactory(configuration, sessionFactoryConfiguration), configuration.getSessionContextFactory());
 		this.factory = sessionFactory;
 		this.expirationListenerRegistrar = sessionFactory;
 	}
 
 	@Override
-	public SessionManager<LC, TransactionBatch> createSessionManager(SessionManagerConfiguration<SC> configuration) {
+	public SessionManager<SC, TransactionBatch> createSessionManager(SessionManagerConfiguration<DC> configuration) {
 		return new ContextualSessionManager<>(new HotRodSessionManager<>(configuration, this.factory, this), ContextStrategy.SHARED);
 	}
 
@@ -68,7 +66,7 @@ public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManage
 		return this.expirationListenerRegistrar;
 	}
 
-	private SessionAttributesFactory<SC, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<S, SC, AL, LC> configuration, RemoteCacheConfiguration hotrod) {
+	private <S, L> SessionAttributesFactory<DC, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<S, DC, L, SC> configuration, RemoteCacheConfiguration hotrod) {
 		switch (configuration.getAttributePersistenceStrategy()) {
 			case FINE: {
 				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), hotrod);

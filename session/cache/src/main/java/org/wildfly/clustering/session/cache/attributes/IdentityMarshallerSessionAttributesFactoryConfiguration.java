@@ -16,9 +16,9 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
  * @param <L> the HttpSessionAttributeListener specification type
  * @param <V> the attributes value type
  */
-public abstract class IdentityMarshallerSessionAttributesFactoryConfiguration<S, DC, L, V> extends MarshallerSessionAttributesFactoryConfiguration<S, DC, L, V, V> {
+public class IdentityMarshallerSessionAttributesFactoryConfiguration<S, DC, L, V> extends MarshallerSessionAttributesFactoryConfiguration<S, DC, L, V, V> {
 
-	protected <SC> IdentityMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, DC, L, SC> configuration) {
+	public <SC> IdentityMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, DC, L, SC> configuration) {
 		super(configuration, Marshaller.identity());
 	}
 }

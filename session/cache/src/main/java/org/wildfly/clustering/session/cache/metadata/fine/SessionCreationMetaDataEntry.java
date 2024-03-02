@@ -15,7 +15,7 @@ import org.wildfly.clustering.session.cache.Contextual;
 /**
  * A contextual session metadata entry.
  * @author Paul Ferraro
- * @param <C> the context type
+ * @param <C> the session context type
  */
 public interface SessionCreationMetaDataEntry<C> extends SessionCreationMetaData, Contextual<C>, Remappable<SessionCreationMetaDataEntry<C>, Supplier<Offset<Duration>>> {
 }

@@ -31,6 +31,7 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttributeActivationNotifier;
@@ -62,7 +63,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 	private final ListenerRegistration prePassivateListenerRegistration;
 	private final ListenerRegistration postActivateListenerRegistration;
 
-	public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration, EmbeddedCacheConfiguration infinispan) {
+	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration, Function<String, SessionAttributeActivationNotifier> notifierFactory, EmbeddedCacheConfiguration infinispan) {
 		this.cache = infinispan.getCache();
 		this.writeCache = infinispan.getWriteOnlyCache();
 		this.silentCache = infinispan.getSilentWriteCache();
@@ -71,7 +72,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 		this.properties = infinispan.getCacheProperties();
 		this.mutatorFactory = new EmbeddedCacheComputeMutatorFactory<>(this.cache, SessionAttributeMapComputeFunction::new);
 		this.provider = configuration.getSessionActivationListenerProvider();
-		this.notifierFactory = configuration.getActivationNotifierFactory();
+		this.notifierFactory = notifierFactory;
 		this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
 		this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateBlockingListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;
 		this.evictListenerRegistration = new PostPassivateBlockingListener<>(infinispan.getCache(), this::cascadeEvict).register(SessionMetaDataKey.class);

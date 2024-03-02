@@ -49,16 +49,16 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreation
  * @author Paul Ferraro
  * @param <MC> the marshalling context type
  * @param <AV> the session attribute entry type
- * @param <LC> the local context type
+ * @param <SC> the local context type
  */
 @ClientListener
-public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC, SessionMetaDataEntry<LC>, AV, LC> implements Registrar<Consumer<ImmutableSession>> {
+public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC, SessionMetaDataEntry<SC>, AV, SC> implements Registrar<Consumer<ImmutableSession>> {
 	private static final Logger LOGGER = Logger.getLogger(HotRodSessionFactory.class);
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(HotRodSessionFactory.class);
 
-	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache;
+	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache;
 	private final Flag[] forceReturnFlags;
-	private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory;
+	private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory;
 	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
 	private final Remover<String> attributesRemover;
 	private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
@@ -71,7 +71,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
 	 * @param attributesFactory
 	 * @param localContextFactory
 	 */
-	public HotRodSessionFactory(HotRodSessionFactoryConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<LC> localContextFactory) {
+	public HotRodSessionFactory(HotRodSessionFactoryConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> localContextFactory) {
 		super(metaDataFactory, attributesFactory, localContextFactory);
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
@@ -95,9 +95,9 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
 
 	@ClientCacheEntryExpired
 	public void expired(ClientCacheEntryExpiredEvent<SessionAccessMetaDataKey> event) {
-		RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache = this.creationMetaDataCache;
+		RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache = this.creationMetaDataCache;
 		Flag[] forceReturnFlags = this.forceReturnFlags;
-		ImmutableSessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory = this.metaDataFactory;
+		ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = this.metaDataFactory;
 		ImmutableSessionAttributesFactory<AV> attributesFactory = this.attributesFactory;
 		Remover<String> attributesRemover = this.attributesRemover;
 		Collection<Consumer<ImmutableSession>> listeners = this.listeners;
@@ -105,7 +105,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
 		Runnable task = new Runnable() {
 			@Override
 			public void run() {
-				SessionCreationMetaDataEntry<LC> creationMetaDataEntry = creationMetaDataCache.withFlags(forceReturnFlags).remove(new SessionCreationMetaDataKey(id));
+				SessionCreationMetaDataEntry<SC> creationMetaDataEntry = creationMetaDataCache.withFlags(forceReturnFlags).remove(new SessionCreationMetaDataKey(id));
 				if (creationMetaDataEntry != null) {
 					AV attributesValue = attributesFactory.findValue(id);
 					if (attributesValue != null) {
