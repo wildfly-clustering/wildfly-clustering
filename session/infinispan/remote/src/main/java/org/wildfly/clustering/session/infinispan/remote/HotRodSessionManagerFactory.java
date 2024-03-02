@@ -39,7 +39,7 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 	private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
 	private final SessionFactory<C, SessionMetaDataEntry<SC>, ?, SC> factory;
 
-	public <S, L> HotRodSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C, L> provider, HotRodSessionFactoryConfiguration sessionFactoryConfiguration) {
+	public <S, L> HotRodSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C, L> provider, RemoteCacheConfiguration sessionFactoryConfiguration) {
 		this.configuration = sessionFactoryConfiguration;
 		SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(sessionFactoryConfiguration);
 		HotRodSessionFactory<C, ?, SC> sessionFactory = new HotRodSessionFactory<>(sessionFactoryConfiguration, metaDataFactory, this.createSessionAttributesFactory(configuration, provider, sessionFactoryConfiguration), configuration.getSessionContextFactory());

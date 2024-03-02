@@ -17,6 +17,7 @@ import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
@@ -89,15 +90,10 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 				return SERVER_NAME;
 			}
 		};
-		HotRodSessionFactoryConfiguration hotrod = new HotRodSessionFactoryConfiguration() {
+		RemoteCacheConfiguration hotrod = new RemoteCacheConfiguration() {
 			@Override
 			public <CK, CV> RemoteCache<CK, CV> getCache() {
 				return HotRodSessionManagerFactoryProvider.this.container.getCache(HotRodSessionManagerFactoryProvider.this.deploymentName);
-			}
-
-			@Override
-			public int getExpirationThreadPoolSize() {
-				return 1;
 			}
 		};
 		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, new MockContainerFacadeProvider<>(), hotrod);

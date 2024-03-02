@@ -5,15 +5,11 @@
 
 package org.wildfly.clustering.session.infinispan.remote;
 
-import java.security.AccessController;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -24,8 +20,7 @@ import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.Remover;
-import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -54,7 +49,6 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreation
 @ClientListener
 public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC, SessionMetaDataEntry<SC>, AV, SC> implements Registrar<Consumer<ImmutableSession>> {
 	private static final Logger LOGGER = Logger.getLogger(HotRodSessionFactory.class);
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(HotRodSessionFactory.class);
 
 	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache;
 	private final Flag[] forceReturnFlags;
@@ -62,7 +56,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
 	private final Remover<String> attributesRemover;
 	private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
-	private final ExecutorService executor;
+	private final Executor executor;
 
 	/**
 	 * Constructs a new session factory
@@ -71,26 +65,20 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	 * @param attributesFactory
 	 * @param localContextFactory
 	 */
-	public HotRodSessionFactory(HotRodSessionFactoryConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> localContextFactory) {
+	public HotRodSessionFactory(RemoteCacheConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> localContextFactory) {
 		super(metaDataFactory, attributesFactory, localContextFactory);
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
 		this.attributesRemover = attributesFactory;
 		this.creationMetaDataCache = config.getCache();
 		this.forceReturnFlags = config.getForceReturnFlags();
-		this.executor = Executors.newFixedThreadPool(config.getExpirationThreadPoolSize(), THREAD_FACTORY);
+		this.executor = config.getExecutor();
 		this.creationMetaDataCache.addClientListener(this);
 	}
 
 	@Override
 	public void close() {
 		this.creationMetaDataCache.removeClientListener(this);
-		AccessController.doPrivileged(DefaultExecutorService.shutdown(this.executor));
-		try {
-			this.executor.awaitTermination(this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().transactionTimeout(), TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
 	}
 
 	@ClientCacheEntryExpired
@@ -128,7 +116,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 				}
 			}
 		};
-		this.executor.submit(task);
+		this.executor.execute(task);
 	}
 
 	@Override
