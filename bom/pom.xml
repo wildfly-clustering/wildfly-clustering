@@ -15,7 +15,7 @@
 
 	<groupId>org.wildfly.clustering</groupId>
 	<artifactId>wildfly-clustering-bom</artifactId>
-	<version>2.0.0.Final-SNAPSHOT</version>
+	<version>1.0.7.Final</version>
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering: BOM</name>
@@ -243,4 +243,8 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+  <scm>
+    <tag>1.0.7.Final</tag>
+  </scm>
 </project>
