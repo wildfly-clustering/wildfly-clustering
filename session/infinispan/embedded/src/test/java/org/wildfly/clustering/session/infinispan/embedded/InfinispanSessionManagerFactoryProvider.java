@@ -30,7 +30,7 @@ import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcher
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.cache.MockContainerFacadeProvider;
+import org.wildfly.clustering.session.cache.MockSessionSpecificationProvider;
 import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
 
 /**
@@ -120,7 +120,7 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 				return commandDispatcherFactory;
 			}
 		};
-		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, new MockContainerFacadeProvider<>(), infinispan);
+		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, new MockSessionSpecificationProvider<>(), infinispan);
 	}
 
 	@Override
