@@ -20,6 +20,18 @@ public class Functions {
 		// Hide
 	}
 
+	private static final Function<?, ?> NULL_FUNCTION = constantFunction(null);
+
+	/**
+	 * Returns a function that always returns a constant result, regardless of input.
+	 * @param <T> the function parameter type
+	 * @return a function that always returns the specified result
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T, R> Function<T, R> nullFunction() {
+		return (Function<T, R>) NULL_FUNCTION;
+	}
+
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
 	 * @param <T> the function parameter type
