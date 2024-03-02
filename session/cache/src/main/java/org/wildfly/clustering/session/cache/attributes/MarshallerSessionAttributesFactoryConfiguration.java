@@ -8,7 +8,6 @@ package org.wildfly.clustering.session.cache.attributes;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
 
 /**
  * Configuration for a factory for creating {@link SessionAttributes} objects, based on marshalled values.
@@ -19,15 +18,13 @@ import org.wildfly.clustering.session.container.SessionActivationListenerFacadeP
  * @param <V> the attributes value type
  * @param <MV> the serialized attributes value type
  */
-public abstract class MarshallerSessionAttributesFactoryConfiguration<S, DC, L, V, MV> implements SessionAttributesFactoryConfiguration<S, DC, L, V, MV> {
+public abstract class MarshallerSessionAttributesFactoryConfiguration<V, MV> implements SessionAttributesFactoryConfiguration<V, MV> {
 	private final Immutability immutability;
 	private final Marshaller<V, MV> marshaller;
-	private final SessionActivationListenerFacadeProvider<S, DC, L> provider;
 
-	protected <SC> MarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, DC, L, SC> configuration, Marshaller<V, MV> marshaller) {
+	protected <SC> MarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<SC> configuration, Marshaller<V, MV> marshaller) {
 		this.immutability = configuration.getImmutability();
 		this.marshaller = marshaller;
-		this.provider = configuration.getContainerFacadeProvider();
 	}
 
 	@Override
@@ -38,10 +35,5 @@ public abstract class MarshallerSessionAttributesFactoryConfiguration<S, DC, L, 
 	@Override
 	public Immutability getImmutability() {
 		return this.immutability;
-	}
-
-	@Override
-	public SessionActivationListenerFacadeProvider<S, DC, L> getSessionActivationListenerProvider() {
-		return this.provider;
 	}
 }

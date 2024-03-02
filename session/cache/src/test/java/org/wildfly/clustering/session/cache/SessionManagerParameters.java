@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.session;
+package org.wildfly.clustering.session.cache;
+
+import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 
 /**
  * Encapsulates the parameters of the session manager integration test.

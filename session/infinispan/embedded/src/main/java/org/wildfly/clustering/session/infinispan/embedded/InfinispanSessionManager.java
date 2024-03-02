@@ -36,13 +36,13 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
 
 /**
  * Generic session manager implementation - independent of cache mapping strategy.
- * @param <DC> the deployment context type
+ * @param <C> the session manager context type
  * @param <MV> the meta-data value type
  * @param <AV> the attributes value type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionManager<DC, MV, AV, SC, TransactionBatch> {
+public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC, TransactionBatch> {
 
 	private final Batcher<TransactionBatch> batcher;
 	private final Cache<Key<String>, ?> cache;
@@ -54,7 +54,7 @@ public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionMan
 
 	private volatile Registration registration;
 
-	public InfinispanSessionManager(SessionManagerConfiguration<DC> configuration, InfinispanSessionManagerConfiguration<SC> infinispanConfiguration, SessionFactory<DC, MV, AV, SC> factory) {
+	public InfinispanSessionManager(SessionManagerConfiguration<C> configuration, InfinispanSessionManagerConfiguration<SC> infinispanConfiguration, SessionFactory<C, MV, AV, SC> factory) {
 		super(configuration, infinispanConfiguration, factory, new Consumer<>() {
 			@Override
 			public void accept(ImmutableSession session) {

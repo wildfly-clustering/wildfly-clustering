@@ -13,29 +13,29 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * Triggers activation/passivation events for a single session attribute.
- * @param <S> the container-specific session facade type
- * @param <C> the session context type
- * @param <L> the container-specific session activation listener type
+ * @param <S> the session specification type
+ * @param <C> the session manager context specification type
+ * @param <L> the session activation listener specification type
  * @author Paul Ferraro
  */
 public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements SessionAttributeActivationNotifier {
 
 	private final Function<Supplier<L>, L> prePassivateListenerFactory;
 	private final Function<Supplier<L>, L> postActivateListenerFactory;
-	private final SessionActivationListenerFacadeProvider<S, C, L> provider;
+	private final SessionSpecificationProvider<S, C, L> provider;
 	private final Function<L, Consumer<S>> prePassivateNotifier;
 	private final Function<L, Consumer<S>> postActivateNotifier;
 	private final S session;
 	private final Map<Supplier<L>, L> listeners = new ConcurrentHashMap<>();
 
-	public ImmutableSessionAttributeActivationNotifier(SessionActivationListenerFacadeProvider<S, C, L> provider, ImmutableSession session, C context) {
+	public ImmutableSessionAttributeActivationNotifier(SessionSpecificationProvider<S, C, L> provider, ImmutableSession session, C context) {
 		this.provider = provider;
-		this.prePassivateNotifier = this.provider::prePassivateNotifier;
-		this.postActivateNotifier = this.provider::postActivateNotifier;
+		this.prePassivateNotifier = this.provider::prePassivate;
+		this.postActivateNotifier = this.provider::postActivate;
 		this.prePassivateListenerFactory = new SessionActivationListenerFactory<>(provider, true);
 		this.postActivateListenerFactory = new SessionActivationListenerFactory<>(provider, false);
 		this.session = provider.asSession(session, context);
@@ -65,7 +65,7 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 	@Override
 	public void close() {
 		for (L listener : this.listeners.values()) {
-			this.provider.prePassivateNotifier(listener).accept(this.session);
+			this.provider.prePassivate(listener).accept(this.session);
 		}
 		this.listeners.clear();
 	}
@@ -103,17 +103,17 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 	 * Factory for creating HttpSessionActivationListener values.
 	 */
 	private static class SessionActivationListenerFactory<S, C, L> implements Function<Supplier<L>, L> {
-		private final SessionActivationListenerFacadeProvider<S, C, L> provider;
+		private final SessionSpecificationProvider<S, C, L> provider;
 		private final boolean active;
 
-		SessionActivationListenerFactory(SessionActivationListenerFacadeProvider<S, C, L> provider, boolean active) {
+		SessionActivationListenerFactory(SessionSpecificationProvider<S, C, L> provider, boolean active) {
 			this.provider = provider;
 			this.active = active;
 		}
 
 		@Override
 		public L apply(Supplier<L> reference) {
-			SessionActivationListenerFacadeProvider<S, C, L> provider = this.provider;
+			SessionSpecificationProvider<S, C, L> provider = this.provider;
 			L listener = reference.get();
 			// Prevents redundant session activation events for a given listener.
 			AtomicBoolean active = new AtomicBoolean(this.active);
@@ -121,7 +121,7 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 				@Override
 				public void accept(S session) {
 					if (active.compareAndSet(true, false)) {
-						provider.prePassivateNotifier(listener).accept(session);
+						provider.prePassivate(listener).accept(session);
 					}
 				}
 			};
@@ -129,7 +129,7 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 				@Override
 				public void accept(S session) {
 					if (active.compareAndSet(false, true)) {
-						provider.postActivateNotifier(listener).accept(session);
+						provider.postActivate(listener).accept(session);
 					}
 				}
 			};

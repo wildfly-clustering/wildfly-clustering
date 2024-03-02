@@ -8,19 +8,19 @@
 
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
-		<artifactId>wildfly-clustering</artifactId>
+		<artifactId>wildfly-clustering-session-spec</artifactId>
 		<version>2.0.0.Final-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>wildfly-clustering-session</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>wildfly-clustering-session-spec-spi</artifactId>
+	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Session management modules</name>
+	<name>WildFly Clustering: Session specification SPI</name>
 
-	<modules>
-		<module>cache</module>
-		<module>infinispan</module>
-		<module>spec</module>
-		<module>spi</module>
-	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-session-spi</artifactId>
+		</dependency>
+	</dependencies>
 </project>

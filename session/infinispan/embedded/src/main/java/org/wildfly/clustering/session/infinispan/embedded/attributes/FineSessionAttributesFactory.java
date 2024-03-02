@@ -37,8 +37,8 @@ import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttribute
 import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapComputeFunction;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -57,13 +57,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 	private final Immutability immutability;
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, Map<String, V>> mutatorFactory;
-	private final SessionActivationListenerFacadeProvider<S, C, L> provider;
+	private final SessionSpecificationProvider<S, C, L> provider;
 	private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
 	private final ListenerRegistration evictListenerRegistration;
 	private final ListenerRegistration prePassivateListenerRegistration;
 	private final ListenerRegistration postActivateListenerRegistration;
 
-	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration, Function<String, SessionAttributeActivationNotifier> notifierFactory, EmbeddedCacheConfiguration infinispan) {
+	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, SessionSpecificationProvider<S, C, L> provider, Function<String, SessionAttributeActivationNotifier> notifierFactory, EmbeddedCacheConfiguration infinispan) {
 		this.cache = infinispan.getCache();
 		this.writeCache = infinispan.getWriteOnlyCache();
 		this.silentCache = infinispan.getSilentWriteCache();
@@ -71,7 +71,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 		this.immutability = configuration.getImmutability();
 		this.properties = infinispan.getCacheProperties();
 		this.mutatorFactory = new EmbeddedCacheComputeMutatorFactory<>(this.cache, SessionAttributeMapComputeFunction::new);
-		this.provider = configuration.getSessionActivationListenerProvider();
+		this.provider = provider;
 		this.notifierFactory = notifierFactory;
 		this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
 		this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateBlockingListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;

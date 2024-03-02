@@ -9,17 +9,16 @@ import org.wildfly.clustering.server.Registration;
 
 /**
  * A factory for creating a session manager.
- * @param <DC> the deployment context type
+ * @param <C> the session manager context type
  * @param <SC> the session context type
  * @param <B> the batch type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory<DC, SC, B extends Batch> extends Registration {
+public interface SessionManagerFactory<C, SC, B extends Batch> extends Registration {
 	/**
-	 * Create as session manager using the specified context and identifier factory.
-	 * @param context a session context
-	 * @param idFactory a session identifier factory
+	 * Create a session manager using the specified configuration.
+	 * @param configuration a session manager configuration
 	 * @return a new session manager
 	 */
-	SessionManager<SC, B> createSessionManager(SessionManagerConfiguration<DC> configuration);
+	SessionManager<SC, B> createSessionManager(SessionManagerConfiguration<C> configuration);
 }

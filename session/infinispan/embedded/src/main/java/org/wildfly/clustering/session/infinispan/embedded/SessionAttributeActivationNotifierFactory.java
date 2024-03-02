@@ -18,7 +18,7 @@ import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * Factory for creating a SessionAttributeActivationNotifier for a given session identifier.
@@ -33,14 +33,14 @@ import org.wildfly.clustering.session.container.SessionActivationListenerFacadeP
 public class SessionAttributeActivationNotifierFactory<S, DC, L, SC, B extends Batch> implements Function<String, SessionAttributeActivationNotifier>, Registrar<Map.Entry<DC, SessionManager<SC, B>>> {
 
 	private final Map<DC, SessionManager<SC, B>> contexts = new ConcurrentHashMap<>();
-	private final SessionActivationListenerFacadeProvider<S, DC, L> provider;
-	private final Function<L, Consumer<S>> prePassivateNotifier;
-	private final Function<L, Consumer<S>> postActivateNotifier;
+	private final SessionSpecificationProvider<S, DC, L> provider;
+	private final Function<L, Consumer<S>> prePassivateFactory;
+	private final Function<L, Consumer<S>> postActivateFactory;
 
-	public SessionAttributeActivationNotifierFactory(SessionActivationListenerFacadeProvider<S, DC, L> provider) {
+	public SessionAttributeActivationNotifierFactory(SessionSpecificationProvider<S, DC, L> provider) {
 		this.provider = provider;
-		this.prePassivateNotifier = provider::prePassivateNotifier;
-		this.postActivateNotifier = provider::postActivateNotifier;
+		this.prePassivateFactory = provider::prePassivate;
+		this.postActivateFactory = provider::postActivate;
 	}
 
 	@Override
@@ -53,9 +53,9 @@ public class SessionAttributeActivationNotifierFactory<S, DC, L, SC, B extends B
 	@Override
 	public SessionAttributeActivationNotifier apply(String sessionId) {
 		Map<DC, SessionManager<SC, B>> contexts = this.contexts;
-		SessionActivationListenerFacadeProvider<S, DC, L> provider = this.provider;
-		Function<L, Consumer<S>> prePassivateNotifier = this.prePassivateNotifier;
-		Function<L, Consumer<S>> postActivateNotifier = this.postActivateNotifier;
+		SessionSpecificationProvider<S, DC, L> provider = this.provider;
+		Function<L, Consumer<S>> prePassivateNotifier = this.prePassivateFactory;
+		Function<L, Consumer<S>> postActivateNotifier = this.postActivateFactory;
 
 		return new SessionAttributeActivationNotifier() {
 			@Override

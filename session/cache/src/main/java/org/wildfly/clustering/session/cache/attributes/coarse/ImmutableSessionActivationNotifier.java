@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionAttributes;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * Triggers activation/passivation events for all attributes of a session.
@@ -25,36 +25,36 @@ import org.wildfly.clustering.session.container.SessionActivationListenerFacadeP
  */
 public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActivationNotifier {
 
-	private final SessionActivationListenerFacadeProvider<S, C, L> provider;
+	private final SessionSpecificationProvider<S, C, L> provider;
 	private final ImmutableSession session;
 	private final C context;
 	private final AtomicBoolean active = new AtomicBoolean(false);
-	private final Function<L, Consumer<S>> prePassivateNotifier;
-	private final Function<L, Consumer<S>> postActivateNotifier;
+	private final Function<L, Consumer<S>> prePassivateFactory;
+	private final Function<L, Consumer<S>> postActivateFactory;
 
-	public ImmutableSessionActivationNotifier(SessionActivationListenerFacadeProvider<S, C, L> provider, ImmutableSession session, C context) {
+	public ImmutableSessionActivationNotifier(SessionSpecificationProvider<S, C, L> provider, ImmutableSession session, C context) {
 		this.provider = provider;
 		this.session = session;
 		this.context = context;
-		this.prePassivateNotifier = this.provider::prePassivateNotifier;
-		this.postActivateNotifier = this.provider::postActivateNotifier;
+		this.prePassivateFactory = this.provider::prePassivate;
+		this.postActivateFactory = this.provider::postActivate;
 	}
 
 	@Override
 	public void prePassivate() {
 		if (this.active.compareAndSet(true, false)) {
-			this.notify(this.prePassivateNotifier);
+			this.notify(this.prePassivateFactory);
 		}
 	}
 
 	@Override
 	public void postActivate() {
 		if (this.active.compareAndSet(false, true)) {
-			this.notify(this.postActivateNotifier);
+			this.notify(this.postActivateFactory);
 		}
 	}
 
-	private void notify(Function<L, Consumer<S>> notifierFactory) {
+	private void notify(Function<L, Consumer<S>> factory) {
 		ImmutableSessionAttributes attributes = this.session.getAttributes();
 		Set<String> attributeNames = attributes.getAttributeNames();
 		if (!attributeNames.isEmpty()) {
@@ -68,7 +68,7 @@ public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActiv
 			if (!listeners.isEmpty()) {
 				S session = this.provider.asSession(this.session, this.context);
 				for (L listener : listeners) {
-					notifierFactory.apply(listener).accept(session);
+					factory.apply(listener).accept(session);
 				}
 			}
 		}

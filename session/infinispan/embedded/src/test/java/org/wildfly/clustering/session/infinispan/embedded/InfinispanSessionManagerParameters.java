@@ -7,7 +7,7 @@ package org.wildfly.clustering.session.infinispan.embedded;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
-import org.wildfly.clustering.session.SessionManagerParameters;
+import org.wildfly.clustering.session.cache.SessionManagerParameters;
 
 /**
  * @author Paul Ferraro

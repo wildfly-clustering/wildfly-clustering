@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionAttributes;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * @author Paul Ferraro
@@ -30,7 +30,7 @@ public class ImmutableSessionActivationNotifierTestCase {
 	interface Listener {
 	}
 
-	private final SessionActivationListenerFacadeProvider<Session, Context, Listener> provider = mock(SessionActivationListenerFacadeProvider.class);
+	private final SessionSpecificationProvider<Session, Context, Listener> provider = mock(SessionSpecificationProvider.class);
 	private final ImmutableSession session = mock(ImmutableSession.class);
 	private final Context context = mock(Context.class);
 	private final Listener listener1 = mock(Listener.class);
@@ -66,10 +66,10 @@ public class ImmutableSessionActivationNotifierTestCase {
 		Consumer<Session> postActivateNotifier2 = mock(Consumer.class);
 
 		when(this.provider.asSession(same(this.session), same(this.context))).thenReturn(session);
-		when(this.provider.prePassivateNotifier(same(this.listener1))).thenReturn(prePassivateNotifier1);
-		when(this.provider.prePassivateNotifier(same(this.listener2))).thenReturn(prePassivateNotifier2);
-		when(this.provider.postActivateNotifier(same(this.listener1))).thenReturn(postActivateNotifier1);
-		when(this.provider.postActivateNotifier(same(this.listener2))).thenReturn(postActivateNotifier2);
+		when(this.provider.prePassivate(same(this.listener1))).thenReturn(prePassivateNotifier1);
+		when(this.provider.prePassivate(same(this.listener2))).thenReturn(prePassivateNotifier2);
+		when(this.provider.postActivate(same(this.listener1))).thenReturn(postActivateNotifier1);
+		when(this.provider.postActivate(same(this.listener2))).thenReturn(postActivateNotifier2);
 
 		// verify pre-passivate before post-activate is a no-op
 		this.notifier.prePassivate();
@@ -146,13 +146,13 @@ public class ImmutableSessionActivationNotifierTestCase {
 		Consumer<Session> notifier2 = mock(Consumer.class);
 
 		when(this.provider.asSession(same(this.session), same(this.context))).thenReturn(session);
-		when(this.provider.postActivateNotifier(same(this.listener1))).thenReturn(notifier1);
-		when(this.provider.postActivateNotifier(same(this.listener2))).thenReturn(notifier2);
+		when(this.provider.postActivate(same(this.listener1))).thenReturn(notifier1);
+		when(this.provider.postActivate(same(this.listener2))).thenReturn(notifier2);
 
 		this.notifier.postActivate();
 
-		verify(this.provider, never()).prePassivateNotifier(this.listener1);
-		verify(this.provider, never()).prePassivateNotifier(this.listener2);
+		verify(this.provider, never()).prePassivate(this.listener1);
+		verify(this.provider, never()).prePassivate(this.listener2);
 
 		verify(notifier1).accept(session);
 		verify(notifier2).accept(session);

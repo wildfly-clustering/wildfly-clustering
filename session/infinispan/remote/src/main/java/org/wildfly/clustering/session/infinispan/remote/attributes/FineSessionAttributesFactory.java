@@ -32,7 +32,7 @@ import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttribute
 import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapComputeFunction;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -50,16 +50,16 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 	private final Immutability immutability;
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, Map<String, V>> mutatorFactory;
-	private final SessionActivationListenerFacadeProvider<S, C, L> provider;
+	private final SessionSpecificationProvider<S, C, L> provider;
 
-	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration, RemoteCacheConfiguration hotrod) {
+	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, SessionSpecificationProvider<S, C, L> provider, RemoteCacheConfiguration hotrod) {
 		this.cache = hotrod.getCache();
 		this.ignoreReturnFlags = hotrod.getIgnoreReturnFlags();
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = hotrod.getCacheProperties();
 		this.mutatorFactory = new RemoteCacheComputeMutatorFactory<>(this.cache, this.ignoreReturnFlags, SessionAttributeMapComputeFunction::new);
-		this.provider = configuration.getSessionActivationListenerProvider();
+		this.provider = provider;
 	}
 
 	@Override

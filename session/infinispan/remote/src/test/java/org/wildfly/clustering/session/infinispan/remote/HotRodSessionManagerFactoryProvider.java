@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.remote;
 
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
@@ -23,13 +21,11 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.immutable.Immutability;
-import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.PassivationListener;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.SessionManagerFactoryProvider;
-import org.wildfly.clustering.session.container.ContainerFacadeProvider;
+import org.wildfly.clustering.session.cache.MockContainerFacadeProvider;
+import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
 
 /**
  * @author Paul Ferraro
@@ -56,8 +52,8 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 	}
 
 	@Override
-	public <SC> SessionManagerFactory<DC, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory, ContainerFacadeProvider<Entry<ImmutableSession, DC>, DC, PassivationListener<DC>> provider) {
-		SessionManagerFactoryConfiguration<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>, SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
+	public <SC> SessionManagerFactory<DC, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory) {
+		SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 			@Override
 			public OptionalInt getMaxActiveSessions() {
 				return HotRodSessionManagerFactoryProvider.this.parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
@@ -76,11 +72,6 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 			@Override
 			public Immutability getImmutability() {
 				return Immutability.getDefault();
-			}
-
-			@Override
-			public ContainerFacadeProvider<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>> getContainerFacadeProvider() {
-				return provider;
 			}
 
 			@Override
@@ -109,7 +100,7 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 				return 1;
 			}
 		};
-		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, hotrod);
+		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, new MockContainerFacadeProvider<>(), hotrod);
 	}
 
 	@Override

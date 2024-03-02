@@ -38,8 +38,8 @@ import org.wildfly.clustering.session.cache.attributes.coarse.CoarseSessionAttri
 import org.wildfly.clustering.session.cache.attributes.coarse.ImmutableSessionActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
-import org.wildfly.clustering.session.container.SessionActivationListenerFacadeProvider;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -56,13 +56,13 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 	private final CacheProperties properties;
 	private final Immutability immutability;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, V> mutatorFactory;
-	private final SessionActivationListenerFacadeProvider<S, C, L> provider;
+	private final SessionSpecificationProvider<S, C, L> provider;
 	private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
 	private final ListenerRegistration evictListenerRegistration;
 	private final ListenerRegistration prePassivateListenerRegistration;
 	private final ListenerRegistration postActivateListenerRegistration;
 
-	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration, Function<String, SessionAttributeActivationNotifier> notifierFactory, EmbeddedCacheConfiguration infinispan) {
+	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, SessionSpecificationProvider<S, C, L> provider, Function<String, SessionAttributeActivationNotifier> notifierFactory, EmbeddedCacheConfiguration infinispan) {
 		this.cache = infinispan.getCache();
 		this.writeCache = infinispan.getWriteOnlyCache();
 		this.silentCache = infinispan.getSilentWriteCache();
@@ -70,7 +70,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 		this.immutability = configuration.getImmutability();
 		this.properties = infinispan.getCacheProperties();
 		this.mutatorFactory = new EmbeddedCacheMutatorFactory<>(this.cache, this.properties);
-		this.provider = configuration.getSessionActivationListenerProvider();
+		this.provider = provider;
 		this.notifierFactory = notifierFactory;
 		this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
 		this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateBlockingListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;

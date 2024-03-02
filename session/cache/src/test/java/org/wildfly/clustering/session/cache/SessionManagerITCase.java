@@ -3,9 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.session;
+package org.wildfly.clustering.session.cache;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -28,7 +33,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.session.container.ContainerFacadeProvider;
+import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.Session;
+import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.SessionManagerConfiguration;
+import org.wildfly.clustering.session.SessionManagerFactory;
+import org.wildfly.clustering.session.SessionMetaData;
 import org.wildfly.common.function.ExceptionBiFunction;
 import org.wildfly.common.function.Functions;
 
@@ -40,7 +50,6 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 
 	private static final String DEPLOYMENT_CONTEXT = "deployment";
 	private static final Supplier<AtomicReference<String>> SESSION_CONTEXT_FACTORY = AtomicReference::new;
-	private static final ContainerFacadeProvider<Map.Entry<ImmutableSession, String>, String, PassivationListener<String>> CONTAINER_FACADE_PROVIDER = new MockContainerFacadeProvider<>();
 
 	private final ExceptionBiFunction<P, String, SessionManagerFactoryProvider<String, B>, Exception> factory;
 
@@ -53,11 +62,11 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		try (SessionManagerFactoryProvider<String, B> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY, CONTAINER_FACADE_PROVIDER)) {
+			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 				SessionManager<AtomicReference<String>, B> manager1 = factory1.createSessionManager(managerConfig1);
 				manager1.start();
 				try (SessionManagerFactoryProvider<String, B> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY, CONTAINER_FACADE_PROVIDER)) {
+					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
 
@@ -101,11 +110,11 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		try (SessionManagerFactoryProvider<String, B> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY, CONTAINER_FACADE_PROVIDER)) {
+			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 				SessionManager<AtomicReference<String>, B> manager1 = factory1.createSessionManager(managerConfig1);
 				manager1.start();
 				try (SessionManagerFactoryProvider<String, B> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY, CONTAINER_FACADE_PROVIDER)) {
+					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
 
@@ -152,11 +161,11 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		try (SessionManagerFactoryProvider<String, B> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY, CONTAINER_FACADE_PROVIDER)) {
+			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 				SessionManager<AtomicReference<String>, B> manager1 = factory1.createSessionManager(managerConfig1);
 				manager1.start();
 				try (SessionManagerFactoryProvider<String, B> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY, CONTAINER_FACADE_PROVIDER)) {
+					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
 

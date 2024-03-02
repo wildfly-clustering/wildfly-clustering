@@ -14,8 +14,8 @@ import org.wildfly.clustering.server.manager.ManagerConfiguration;
  */
 public interface SessionManagerConfiguration<C> extends ManagerConfiguration<String>, ExpirationConfiguration<ImmutableSession> {
 	/**
-	 * Returns the container-specific context of this session manager.
-	 * @return a container-specific session manager context
+	 * Returns the context of this session manager.
+	 * @return a session manager context
 	 */
 	C getContext();
 }

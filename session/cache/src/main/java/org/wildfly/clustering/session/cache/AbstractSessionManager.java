@@ -24,18 +24,18 @@ import org.wildfly.clustering.session.SessionStatistics;
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractSessionManager<DC, MV, AV, SC, B extends Batch> implements SessionManager<SC, B>, SessionStatistics {
+public abstract class AbstractSessionManager<C, MV, AV, SC, B extends Batch> implements SessionManager<SC, B>, SessionStatistics {
 	protected final Logger logger = Logger.getLogger(this.getClass());
 
-	private final SessionFactory<DC, MV, AV, SC> factory;
+	private final SessionFactory<C, MV, AV, SC> factory;
 	private final Consumer<ImmutableSession> expirationListener;
 	private final Expiration expiration;
 	private final Supplier<String> identifierFactory;
-	private final DC context;
+	private final C context;
 	private final Batcher<B> batcher;
 	private final UnaryOperator<Session<SC>> wrapper;
 
-	protected AbstractSessionManager(SessionManagerConfiguration<DC> configuration, CacheConfiguration<B> cacheConfiguration, SessionFactory<DC, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {
+	protected AbstractSessionManager(SessionManagerConfiguration<C> configuration, CacheConfiguration<B> cacheConfiguration, SessionFactory<C, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
 		this.batcher = cacheConfiguration.getBatcher();
