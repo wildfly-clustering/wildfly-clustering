@@ -20,7 +20,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-session-spi</artifactId>
+			<artifactId>wildfly-clustering-session-spec-spi</artifactId>
 		</dependency>
 
 		<dependency>

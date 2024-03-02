@@ -7,7 +7,7 @@ package org.wildfly.clustering.session.infinispan.remote;
 
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerConfigurator;
-import org.wildfly.clustering.session.SessionManagerParameters;
+import org.wildfly.clustering.session.cache.SessionManagerParameters;
 
 /**
  * @author Paul Ferraro

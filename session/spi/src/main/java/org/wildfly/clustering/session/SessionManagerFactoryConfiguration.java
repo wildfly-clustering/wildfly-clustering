@@ -10,17 +10,13 @@ import java.util.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
 import org.wildfly.clustering.server.immutable.Immutability;
-import org.wildfly.clustering.session.container.ContainerFacadeProvider;
 
 /**
  * Encapsulates the configuration of a session manager.
- * @param <S> the container-specific session facade type
- * @param <DC> the deployment context type
- * @param <L> the container-specific activation listener type
- * @param <SC> the local context type
+ * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<S, DC, L, SC> extends DeploymentConfiguration {
+public interface SessionManagerFactoryConfiguration<SC> extends DeploymentConfiguration {
 
 	OptionalInt getMaxActiveSessions();
 
@@ -29,8 +25,6 @@ public interface SessionManagerFactoryConfiguration<S, DC, L, SC> extends Deploy
 	Supplier<SC> getSessionContextFactory();
 
 	Immutability getImmutability();
-
-	ContainerFacadeProvider<S, DC, L> getContainerFacadeProvider();
 
 	SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
 }

@@ -20,9 +20,9 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
  * @param <V> the attributes value type
  * @param <MV> the serialized attributes value type
  */
-public class MarshalledValueMarshallerSessionAttributesFactoryConfiguration<S, DC, L, V> extends MarshallerSessionAttributesFactoryConfiguration<S, DC, L, V, MarshalledValue<V, ByteBufferMarshaller>> {
+public class MarshalledValueMarshallerSessionAttributesFactoryConfiguration<V> extends MarshallerSessionAttributesFactoryConfiguration<V, MarshalledValue<V, ByteBufferMarshaller>> {
 
-	public <SC> MarshalledValueMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<S, DC, L, SC> configuration) {
+	public <SC> MarshalledValueMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<SC> configuration) {
 		super(configuration, new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller())));
 	}
 }

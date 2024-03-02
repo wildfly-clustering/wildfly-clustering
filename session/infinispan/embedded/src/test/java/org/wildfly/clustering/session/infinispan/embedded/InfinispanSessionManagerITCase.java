@@ -18,7 +18,7 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
-import org.wildfly.clustering.session.SessionManagerITCase;
+import org.wildfly.clustering.session.cache.SessionManagerITCase;
 
 /**
  * Session manager integration test using an embedded Infinispan cache tested under a combination of settings.

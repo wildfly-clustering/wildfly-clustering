@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright The WildFly Authors
+	SPDX-License-Identifier: Apache-2.0
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.wildfly.clustering</groupId>
+		<artifactId>wildfly-clustering-session-spec</artifactId>
+		<version>2.0.0.Final-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>wildfly-clustering-session-spec-servlet</artifactId>
+	<packaging>pom</packaging>
+
+	<name>WildFly Clustering: Servlet Specification modules</name>
+
+	<modules>
+		<module>3.1</module>
+		<module>4.0</module>
+		<module>5.0</module>
+		<module>6.0</module>
+	</modules>
+
+</project>

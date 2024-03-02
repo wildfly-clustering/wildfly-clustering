@@ -20,7 +20,7 @@ import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerConfigurator;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
-import org.wildfly.clustering.session.SessionManagerITCase;
+import org.wildfly.clustering.session.cache.SessionManagerITCase;
 
 /**
  * Session manager integration test using an Infinispan server container.

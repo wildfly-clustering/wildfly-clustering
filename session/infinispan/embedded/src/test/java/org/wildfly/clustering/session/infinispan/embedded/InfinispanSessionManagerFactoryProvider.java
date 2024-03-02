@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.embedded;
 
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
@@ -29,13 +27,11 @@ import org.wildfly.clustering.server.infinispan.dispatcher.EmbeddedCacheManagerC
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 import org.wildfly.clustering.server.jgroups.ForkChannelFactory;
 import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcherFactoryProvider;
-import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.PassivationListener;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.SessionManagerFactoryProvider;
-import org.wildfly.clustering.session.container.ContainerFacadeProvider;
+import org.wildfly.clustering.session.cache.MockContainerFacadeProvider;
+import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
 
 /**
  * @author Paul Ferraro
@@ -65,7 +61,7 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 	}
 
 	@Override
-	public <SC> SessionManagerFactory<DC, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory, ContainerFacadeProvider<Entry<ImmutableSession, DC>, DC, PassivationListener<DC>> provider) {
+	public <SC> SessionManagerFactory<DC, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory) {
 		GroupCommandDispatcherFactory<Address, CacheContainerGroupMember> commandDispatcherFactory = new EmbeddedCacheManagerCommandDispatcherFactory<>(new ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration() {
 			@Override
 			public EmbeddedCacheManager getCacheContainer() {
@@ -77,7 +73,7 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 				return InfinispanSessionManagerFactoryProvider.this.dispatcherFactoryProvider.getCommandDispatcherFactory();
 			}
 		});
-		SessionManagerFactoryConfiguration<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>, SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
+		SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 			@Override
 			public OptionalInt getMaxActiveSessions() {
 				return OptionalInt.of(1);
@@ -96,11 +92,6 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 			@Override
 			public Immutability getImmutability() {
 				return Immutability.getDefault();
-			}
-
-			@Override
-			public ContainerFacadeProvider<Map.Entry<ImmutableSession, DC>, DC, PassivationListener<DC>> getContainerFacadeProvider() {
-				return provider;
 			}
 
 			@Override
@@ -129,7 +120,7 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 				return commandDispatcherFactory;
 			}
 		};
-		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, infinispan);
+		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, new MockContainerFacadeProvider<>(), infinispan);
 	}
 
 	@Override
