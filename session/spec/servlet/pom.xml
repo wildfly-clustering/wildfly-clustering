@@ -8,18 +8,20 @@
 
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
-		<artifactId>wildfly-clustering-session</artifactId>
+		<artifactId>wildfly-clustering-session-spec</artifactId>
 		<version>2.0.0.Final-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>wildfly-clustering-session-spec</artifactId>
+	<artifactId>wildfly-clustering-session-spec-servlet</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Session specification modules</name>
+	<name>WildFly Clustering: Servlet Specification modules</name>
 
 	<modules>
-		<module>servlet</module>
-		<module>spi</module>
+		<module>3.1</module>
+		<module>4.0</module>
+		<module>5.0</module>
+		<module>6.0</module>
 	</modules>
 
 </project>
