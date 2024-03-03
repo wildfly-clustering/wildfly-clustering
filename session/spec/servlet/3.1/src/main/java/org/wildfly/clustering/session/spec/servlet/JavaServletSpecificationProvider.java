@@ -20,7 +20,7 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 /**
  * @author Paul Ferraro
  */
-public enum JakartaServletSpecificationProvider implements SessionSpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> {
+public enum JavaServletSpecificationProvider implements SessionSpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> {
 	INSTANCE;
 
 	@Override
