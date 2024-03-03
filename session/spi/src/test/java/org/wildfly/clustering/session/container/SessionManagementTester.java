@@ -65,6 +65,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 			request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
 				assertEquals(HTTP_OK, response.statusCode());
 				assertFalse(response.headers().firstValue(SESSION_ID).isPresent());
+				assertFalse(response.headers().firstValueAsLong(IMMUTABLE).isPresent());
 				assertFalse(response.headers().firstValueAsLong(COUNTER).isPresent());
 			}).join();
 		}
