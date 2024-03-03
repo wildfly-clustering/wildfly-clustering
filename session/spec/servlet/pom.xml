@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-session-spec-servlet</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Servlet Specification modules</name>
+	<name>WildFly Clustering: Servlet specification modules</name>
 
 	<modules>
 		<module>3.1</module>
