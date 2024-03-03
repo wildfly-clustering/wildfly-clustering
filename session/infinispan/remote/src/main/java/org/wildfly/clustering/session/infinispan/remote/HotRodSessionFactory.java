@@ -40,7 +40,7 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionAccessMe
 import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreationMetaDataKey;
 
 /**
- * Factory for creating a {@link org.wildfly.clustering.web.session.Session} backed by a set of {@link RemoteCache} entries.
+ * Factory for creating a {@link org.wildfly.clustering.session.Session} backed by a set of {@link RemoteCache} entries.
  * @author Paul Ferraro
  * @param <MC> the marshalling context type
  * @param <AV> the session attribute entry type

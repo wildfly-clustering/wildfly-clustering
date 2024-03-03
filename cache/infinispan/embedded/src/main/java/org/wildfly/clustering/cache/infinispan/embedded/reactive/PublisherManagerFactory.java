@@ -10,7 +10,7 @@ import org.infinispan.reactive.publisher.impl.ClusterPublisherManager;
 import org.infinispan.reactive.publisher.impl.LocalPublisherManager;
 
 /**
- * Because we override Infinispan's KeyPartition for non-tx invalidation-caches, we need to make sure the {@link org.infinispan.factories.PublisherManagerFactory.LOCAL_CLUSTER_PUBLISHER} handles segmentation in the same way.
+ * Because we override Infinispan's KeyPartition for non-tx invalidation-caches, we need to make sure the {@link org.infinispan.factories.PublisherManagerFactory#LOCAL_CLUSTER_PUBLISHER} handles segmentation in the same way.
  * @author Paul Ferraro
  */
 @DefaultFactoryFor(classes = { LocalPublisherManager.class, ClusterPublisherManager.class }, names = org.infinispan.factories.PublisherManagerFactory.LOCAL_CLUSTER_PUBLISHER)

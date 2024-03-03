@@ -14,7 +14,7 @@ import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.reactive.publisher.impl.LocalClusterPublisherManagerImpl;
 
 /**
- * Overrides Infinispan's {@link org.infinispan.factories.PublisherManagerFactory.LOCAL_CLUSTER_PUBLISHER} to align its segmentation logic with this module's key partitioner for non-tx invalidation caches.
+ * Overrides Infinispan's {@link org.infinispan.factories.PublisherManagerFactory#LOCAL_CLUSTER_PUBLISHER} to align its segmentation logic with this module's key partitioner for non-tx invalidation caches.
  * @author Paul Ferraro
  */
 @Scope(Scopes.NAMED_CACHE)

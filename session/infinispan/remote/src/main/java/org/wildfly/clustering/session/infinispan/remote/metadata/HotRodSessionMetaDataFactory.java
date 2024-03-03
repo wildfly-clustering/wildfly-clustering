@@ -38,7 +38,7 @@ import org.wildfly.clustering.session.cache.metadata.fine.SessionMetaDataEntry;
 import org.wildfly.common.function.Functions;
 
 /**
- * Factory for creating {@link SessionMetaData} backed by a pair of {@link RemoteCache} entries.
+ * Factory for creating {@link org.wildfly.clustering.session.SessionMetaData} backed by a pair of {@link RemoteCache} entries.
  * @author Paul Ferraro
  * @param <C> the local context type
  */

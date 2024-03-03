@@ -28,10 +28,8 @@ public interface MarshallerProvider<T> {
 	}
 
 	/**
-	 * Returns a marshaller suitable for marshalling an object of the specified class
-	 * @param <T> the target class type
-	 * @param targetClass a target class
-	 * @return an optional marshaller of for the specified class
+	 * Returns a marshaller suitable for the provided class
+	 * @return a marshaller suitable for the provided class
 	 */
 	Marshaller<T, ByteBuffer> getMarshaller();
 }

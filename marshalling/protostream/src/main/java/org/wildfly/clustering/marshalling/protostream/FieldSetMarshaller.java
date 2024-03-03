@@ -19,7 +19,7 @@ import org.infinispan.protostream.descriptors.WireType;
 public interface FieldSetMarshaller<T, V> extends FieldReadable<V>, Writable<T> {
 
 	/**
-	 * Returns a builder for use with {@link #readField(ProtoStreamReader, Object)}.
+	 * Returns a builder for use with {@link #readFrom(ProtoStreamReader, int, WireType, Object)}.
 	 * May return a shared instance, if the builder type is immutable, or a new instance, if the builder is mutable.
 	 * @return a builder.
 	 */

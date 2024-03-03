@@ -871,17 +871,11 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 		return null;
 	}
 
-	/**
-	 * @throws NoSuchElementException {@inheritDoc}
-	 */
 	@Override
 	public E getFirst() {
 		return screenNullResult(peekFirst());
 	}
 
-	/**
-	 * @throws NoSuchElementException {@inheritDoc}
-	 */
 	@Override
 	public E getLast() {
 		return screenNullResult(peekLast());
@@ -911,17 +905,11 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 		return null;
 	}
 
-	/**
-	 * @throws NoSuchElementException {@inheritDoc}
-	 */
 	@Override
 	public E removeFirst() {
 		return screenNullResult(pollFirst());
 	}
 
-	/**
-	 * @throws NoSuchElementException {@inheritDoc}
-	 */
 	@Override
 	public E removeLast() {
 		return screenNullResult(pollLast());
@@ -1560,27 +1548,18 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 		initHeadTail(h, t);
 	}
 
-	/**
-	 * @throws NullPointerException {@inheritDoc}
-	 */
 	@Override
 	public boolean removeIf(Predicate<? super E> filter) {
 		Objects.requireNonNull(filter);
 		return bulkRemove(filter);
 	}
 
-	/**
-	 * @throws NullPointerException {@inheritDoc}
-	 */
 	@Override
 	public boolean removeAll(Collection<?> c) {
 		Objects.requireNonNull(c);
 		return bulkRemove(e -> c.contains(e));
 	}
 
-	/**
-	 * @throws NullPointerException {@inheritDoc}
-	 */
 	@Override
 	public boolean retainAll(Collection<?> c) {
 		Objects.requireNonNull(c);
@@ -1601,9 +1580,6 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 		return removed;
 	}
 
-	/**
-	 * @throws NullPointerException {@inheritDoc}
-	 */
 	@Override
 	public void forEach(Consumer<? super E> action) {
 		Objects.requireNonNull(action);

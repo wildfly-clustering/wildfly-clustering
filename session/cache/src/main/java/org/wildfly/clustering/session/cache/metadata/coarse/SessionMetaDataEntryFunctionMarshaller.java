@@ -17,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.server.offset.Offset;
 
 /**
- * ProtoStream marshaller for a {@link SimpleSessionMetaDataDelta}.
+ * ProtoStream marshaller for a {@link SessionMetaDataEntryFunction}.
  * @author Paul Ferraro
  */
 public class SessionMetaDataEntryFunctionMarshaller implements ProtoStreamMarshaller<SessionMetaDataEntryFunction<Object>> {

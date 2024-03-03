@@ -14,28 +14,29 @@ import java.util.Set;
  */
 public interface UserSessions<D, S> {
 	/**
-	 * Returns the set of web applications for which the current user is authenticated.
-	 * @return a set of web applications.
+	 * Returns the set of deployments for which the associated user is authenticated.
+	 * @return a set of deployment identifiers.
 	 */
 	Set<D> getDeployments();
 
 	/**
-	 * Returns the corresponding session identifier for the specified web application.
-	 * @param application
-	 * @return
+	 * Returns the corresponding session identifier for the specified deployment.
+	 * @param deployment a deployment identifier
+	 * @return the session identifier of the user for the specified deployment, or null, if no session exists for the associated user.
 	 */
 	S getSession(D deployment);
 
 	/**
-	 * Removes the specified web application from the set of authenticated web applications.
-	 * @param application
+	 * Removes the specified deployment from the set of deployments for which the associated user is authenticated.
+	 * @param deployment a deployment identifier
+	 * @return the session identifier of the user for the specified deployment, or null, if no session exists for the associated user.
 	 */
 	S removeSession(D deployment);
 
 	/**
-	 * Adds the specified web application and session identifier to the registry of authenticated web applications.
-	 * @param deployment a web application
-	 * @param session a session
+	 * Adds the specified deployment and session identifiers to the set of deployments for which the associated user is authenticated.
+	 * @param deployment a deployment identifier
+	 * @param session a session identifier
 	 * @return true, if the session was added, false it already exists
 	 */
 	boolean addSession(D deployment, S session);

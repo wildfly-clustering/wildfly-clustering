@@ -33,7 +33,7 @@ public abstract class AbstractNetTestCase {
 	@Test
 	public void testURL() throws IOException {
 		MarshallingTester<URL> tester = this.factory.createTester();
-		tester.test(new URL("http://wildfly.org/news/"));
+		tester.test(URI.create("http://wildfly.org/news/").toURL());
 	}
 
 	@Test

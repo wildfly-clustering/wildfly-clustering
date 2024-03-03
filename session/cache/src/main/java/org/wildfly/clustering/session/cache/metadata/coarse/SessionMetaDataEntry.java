@@ -23,7 +23,7 @@ public interface SessionMetaDataEntry extends ImmutableSessionMetaDataEntry {
 
 	/**
 	 * Sets the session timeout.
-	 * @param the session timeout
+	 * @param timeout the session timeout
 	 */
 	void setTimeout(Duration timeout);
 }

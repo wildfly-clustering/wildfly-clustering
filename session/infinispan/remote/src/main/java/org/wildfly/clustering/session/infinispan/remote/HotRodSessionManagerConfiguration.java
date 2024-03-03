@@ -12,7 +12,6 @@ import org.wildfly.clustering.session.ImmutableSession;
 
 /**
  * Configuration for an {@link HotRodSessionManager}.
- * @param <C> the ServletContext specification type
  * @author Paul Ferraro
  */
 public interface HotRodSessionManagerConfiguration extends RemoteCacheConfiguration {

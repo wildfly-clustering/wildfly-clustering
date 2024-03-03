@@ -27,7 +27,7 @@ import java.io.OutputStream;
 import org.wildfly.clustering.marshalling.Serializer;
 
 /**
- * An {@link java.io.ObjectInputStream} that annotates classes using a given {@link ClassLoaderResolver}.
+ * An {@link java.io.ObjectInputStream} that annotates classes using a given {@link Serializer}.
  * @author Paul Ferraro
  */
 public class ObjectOutputStream extends java.io.ObjectOutputStream {

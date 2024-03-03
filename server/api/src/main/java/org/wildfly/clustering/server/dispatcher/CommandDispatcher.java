@@ -44,7 +44,6 @@ public interface CommandDispatcher<M extends GroupMember, C> extends Registratio
 	 *
 	 * @param <R> the command execution return type
 	 * @param command the command to execute
-	 * @param excludedMembers the members to be excluded from group command execution
 	 * @return a completion stage per member of the group on which the command was executed
 	 * @throws IOException if the command could not be sent
 	 */
@@ -58,7 +57,7 @@ public interface CommandDispatcher<M extends GroupMember, C> extends Registratio
 	 *
 	 * @param <R> the command execution return type
 	 * @param command the command to execute
-	 * @param excludedMembers the members to be excluded from group command execution
+	 * @param excluding the members to be excluded from group command execution
 	 * @return a completion stage per member of the group on which the command was executed
 	 * @throws IOException if the command could not be sent
 	 */

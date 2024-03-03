@@ -25,6 +25,7 @@ public class Functions {
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
 	 * @param <T> the function parameter type
+	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
 	 */
 	@SuppressWarnings("unchecked")
@@ -35,6 +36,7 @@ public class Functions {
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
 	 * @param <T> the function parameter type
+	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
 	 */
 	public static <T, R> Function<T, R> constantFunction(R result) {
@@ -43,7 +45,7 @@ public class Functions {
 
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
-	 * @param <T> the function parameter type
+	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
 	 */
 	public static <R> IntFunction<R> constantIntFunction(R result) {
@@ -52,7 +54,7 @@ public class Functions {
 
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
-	 * @param <T> the function parameter type
+	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
 	 */
 	public static <R> LongFunction<R> constantLongFunction(R result) {
@@ -61,7 +63,7 @@ public class Functions {
 
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
-	 * @param <T> the function parameter type
+	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
 	 */
 	public static <R> DoubleFunction<R> constantDoubleFunction(R result) {

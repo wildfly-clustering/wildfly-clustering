@@ -20,7 +20,7 @@ import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.common.function.Functions;
 
 /**
- * A {@link Batcher} implementation based on Infinispan's {@link org.infinispan.batch.BatchContainer}, except that its transaction reference
+ * A {@link Batcher} implementation based on Infinispan's BatchContainer, except that its transaction reference
  * is stored within the returned Batch object instead of a ThreadLocal.  This also allows the user to call {@link Batch#close()} from a
  * different thread than the one that created the {@link Batch}.  In this case, however, the user must first resume the batch
  * via {@link #resumeBatch(TransactionBatch)}.
