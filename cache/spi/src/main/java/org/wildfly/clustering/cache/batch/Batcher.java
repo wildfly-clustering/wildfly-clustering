@@ -20,7 +20,7 @@ public interface Batcher<B extends Batch> {
 	 * @param batch an existing batch
 	 * @return the context of the resumed batch
 	 */
-	BatchContext resumeBatch(B batch);
+	BatchContext<B> resumeBatch(B batch);
 
 	/**
 	 * Suspends a batch.

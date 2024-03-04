@@ -42,6 +42,30 @@ public interface Batch extends AutoCloseable {
 	 */
 	State getState();
 
+	/**
+	 * Indicates whether or not this batch is active.
+	 * @return true, if this batch is active, false otherwise.
+	 */
+	default boolean isActive() {
+		return this.getState() == State.ACTIVE;
+	}
+
+	/**
+	 * Indicates whether or not this batch was discarded.
+	 * @return true, if this batch was discarded, false otherwise.
+	 */
+	default boolean isDiscarded() {
+		return this.getState() == State.DISCARDED;
+	}
+
+	/**
+	 * Indicates whether or not this batch was closed.
+	 * @return true, if this batch was closed, false otherwise.
+	 */
+	default boolean isClosed() {
+		return this.getState() == State.CLOSED;
+	}
+
 	@Override
 	void close();
 }
