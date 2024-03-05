@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Implementations for creating contexts.
@@ -20,7 +19,7 @@ import java.util.function.Function;
 public enum ContextStrategy implements ContextFactory {
 	/**
 	 * Creates an unshared context, where state is always "absent".
-	 * {@link Context#computeIfAbsent(Object, Function)} will always creates its value from the specified factory.
+	 * {@link Context#computeIfAbsent(Object, BiFunction)} will always creates its value from the specified factory.
 	 * Intended for use when some other mechanism already ensures mutually exclusive access to the requested state.
 	 */
 	UNSHARED() {
@@ -42,7 +41,7 @@ public enum ContextStrategy implements ContextFactory {
 	},
 	/**
 	 * Creates a context storing sharable references.
-	 * Concurrent {@link Context#computeIfAbsent(Object, Function)} invocations for the same key will reference the same state, until all references are closed.
+	 * Concurrent {@link Context#computeIfAbsent(Object, BiFunction)} invocations for the same key will reference the same state, until all references are closed.
 	 */
 	SHARED() {
 		@Override

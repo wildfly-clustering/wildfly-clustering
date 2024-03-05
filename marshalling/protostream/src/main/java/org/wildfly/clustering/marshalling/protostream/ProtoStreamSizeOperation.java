@@ -39,7 +39,7 @@ public interface ProtoStreamSizeOperation extends ProtoStreamOperation {
 
 	/**
 	 * Computes the marshalled size of the specified variable-width integer.
-	 * @param index a variable-width integer
+	 * @param value a variable-width integer
 	 * @return the marshalled size of the specified variable-width integer.
 	 */
 	default int varIntSize(int value) {

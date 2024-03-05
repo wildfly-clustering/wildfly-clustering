@@ -21,9 +21,6 @@ public interface Session<C> extends ImmutableSession, Registration {
 	 */
 	void invalidate();
 
-	@Override
-	SessionAttributes getAttributes();
-
 	/**
 	 * Returns the local context of this session.
 	 * The local context is *not* replicated to other nodes in the cluster.

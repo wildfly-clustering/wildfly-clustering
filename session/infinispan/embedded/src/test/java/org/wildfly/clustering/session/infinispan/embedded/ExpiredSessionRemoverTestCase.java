@@ -10,13 +10,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
@@ -35,7 +35,7 @@ public class ExpiredSessionRemoverTestCase {
 		SessionMetaDataFactory<UUID> metaDataFactory = mock(SessionMetaDataFactory.class);
 		SessionAttributesFactory<Object, UUID> attributesFactory = mock(SessionAttributesFactory.class);
 		Consumer<ImmutableSession> listener = mock(Consumer.class);
-		ImmutableSessionAttributes expiredAttributes = mock(ImmutableSessionAttributes.class);
+		Map<String, Object> expiredAttributes = mock(Map.class);
 		ImmutableSessionMetaData validMetaData = mock(ImmutableSessionMetaData.class);
 		ImmutableSessionMetaData expiredMetaData = mock(ImmutableSessionMetaData.class);
 		ImmutableSession expiredSession = mock(ImmutableSession.class);

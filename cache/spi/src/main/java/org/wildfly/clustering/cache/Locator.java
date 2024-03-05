@@ -39,7 +39,7 @@ public interface Locator<K, V> {
 
 	/**
 	 * Returns the value for the specified key, if possible without contention.
-	 * @param key a cache key
+	 * @param id a logical key
 	 * @return the value of the cache entry, or null if not found or unavailable.
 	 */
 	default V tryValue(K id) {
@@ -55,7 +55,7 @@ public interface Locator<K, V> {
 
 	/**
 	 * Returns the value for the specified key, if possible without contention.
-	 * @param key a cache key
+	 * @param id a logical key
 	 * @return the value of the cache entry, or null if not found or unavailable.
 	 */
 	default CompletionStage<V> tryValueAsync(K id) {

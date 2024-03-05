@@ -5,10 +5,10 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.SessionAttributes;
 import org.wildfly.clustering.session.SessionMetaData;
 import org.wildfly.common.function.Functions;
 
@@ -49,7 +49,7 @@ public class DecoratedSession<C> implements Session<C>, Supplier<Session<C>> {
 	}
 
 	@Override
-	public SessionAttributes getAttributes() {
+	public Map<String, Object> getAttributes() {
 		return this.reference.get().getAttributes();
 	}
 

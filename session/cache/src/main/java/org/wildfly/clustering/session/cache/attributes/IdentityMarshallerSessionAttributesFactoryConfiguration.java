@@ -11,9 +11,6 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 /**
  * Configuration for a factory for creating {@link SessionAttributes} objects, based on marshalled values.
  * @author Paul Ferraro
- * @param <S> the HttpSession specification type
- * @param <DC> the ServletContext specification type
- * @param <L> the HttpSessionAttributeListener specification type
  * @param <V> the attributes value type
  */
 public class IdentityMarshallerSessionAttributesFactoryConfiguration<V> extends MarshallerSessionAttributesFactoryConfiguration<V, V> {

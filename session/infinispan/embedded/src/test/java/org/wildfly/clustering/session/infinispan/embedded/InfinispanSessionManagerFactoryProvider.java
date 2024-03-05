@@ -36,7 +36,7 @@ import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManagerFactoryProvider<DC, TransactionBatch> {
+public class InfinispanSessionManagerFactoryProvider<C> implements SessionManagerFactoryProvider<C, TransactionBatch> {
 	private static final String CONTAINER_NAME = "container";
 	private static final String SERVER_NAME = "server";
 	private static final String DEPLOYMENT_NAME = "test.war";
@@ -61,7 +61,7 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 	}
 
 	@Override
-	public <SC> SessionManagerFactory<DC, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory) {
+	public <SC> SessionManagerFactory<C, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory) {
 		GroupCommandDispatcherFactory<Address, CacheContainerGroupMember> commandDispatcherFactory = new EmbeddedCacheManagerCommandDispatcherFactory<>(new ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration() {
 			@Override
 			public EmbeddedCacheManager getCacheContainer() {
@@ -120,7 +120,8 @@ public class InfinispanSessionManagerFactoryProvider<DC> implements SessionManag
 				return commandDispatcherFactory;
 			}
 		};
-		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, new MockSessionSpecificationProvider<>(), infinispan);
+		MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
+		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, provider, provider, infinispan);
 	}
 
 	@Override

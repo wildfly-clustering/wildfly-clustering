@@ -4,11 +4,14 @@
  */
 package org.wildfly.clustering.cache.infinispan.batch;
 
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import jakarta.transaction.InvalidTransactionException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
@@ -17,18 +20,15 @@ import jakarta.transaction.TransactionManager;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.Batcher;
-import org.wildfly.common.function.Functions;
 
 /**
- * A {@link Batcher} implementation based on Infinispan's {@link org.infinispan.batch.BatchContainer}, except that its transaction reference
+ * A {@link Batcher} implementation based on Infinispan's BatchContainer, except that its transaction reference
  * is stored within the returned Batch object instead of a ThreadLocal.  This also allows the user to call {@link Batch#close()} from a
  * different thread than the one that created the {@link Batch}.  In this case, however, the user must first resume the batch
  * via {@link #resumeBatch(TransactionBatch)}.
  * @author Paul Ferraro
  */
 public class TransactionalBatcher<E extends RuntimeException> implements Batcher<TransactionBatch> {
-
-	private static final BatchContext EMPTY_BATCH_CONTEXT = Functions::discardingConsumer;
 
 	private static final TransactionBatch NON_TX_BATCH = new TransactionBatch() {
 		@Override
@@ -55,6 +55,17 @@ public class TransactionalBatcher<E extends RuntimeException> implements Batcher
 		@Override
 		public TransactionBatch interpose() {
 			return this;
+		}
+	};
+
+	private static final BatchContext<TransactionBatch> NON_TX_BATCH_CONTEXT = new BatchContext<>() {
+		@Override
+		public TransactionBatch getBatch() {
+			return NON_TX_BATCH;
+		}
+
+		@Override
+		public void close() {
 		}
 	};
 
@@ -97,10 +108,14 @@ public class TransactionalBatcher<E extends RuntimeException> implements Batcher
 		if (this.tm == null) return NON_TX_BATCH;
 		TransactionBatch batch = getCurrentBatch();
 		try {
-			if ((batch != null) && (batch.getState() == Batch.State.ACTIVE)) {
+			if ((batch != null) && batch.isActive()) {
 				return batch.interpose();
 			}
-			this.tm.suspend();
+			Transaction suspendedTx = this.tm.suspend();
+			// Ensure there is no current transaction
+			if ((suspendedTx != null) && (suspendedTx.getStatus() != Status.STATUS_NO_TRANSACTION)) {
+				throw new IllegalStateException(suspendedTx.toString());
+			}
 			this.tm.begin();
 			Transaction tx = this.tm.getTransaction();
 			tx.registerSynchronization(CURRENT_BATCH_SYNCHRONIZATION);
@@ -113,44 +128,10 @@ public class TransactionalBatcher<E extends RuntimeException> implements Batcher
 	}
 
 	@Override
-	public BatchContext resumeBatch(TransactionBatch batch) {
-		TransactionBatch existingBatch = getCurrentBatch();
-		// Trivial case - nothing to suspend/resume
-		if (batch == existingBatch) return EMPTY_BATCH_CONTEXT;
-		Transaction tx = (batch != null) ? batch.getTransaction() : null;
-		// Non-tx case, just swap batch references
-		if ((batch == null) || (tx == null)) {
-			setCurrentBatch(batch);
-			return () -> setCurrentBatch(existingBatch);
-		}
-		try {
-			if (existingBatch != null) {
-				Transaction existingTx = this.tm.suspend();
-				if (existingBatch.getTransaction() != existingTx) {
-					throw new IllegalStateException();
-				}
-			}
-			this.tm.resume(tx);
-			setCurrentBatch(batch);
-			return () -> {
-				try {
-					this.tm.suspend();
-					if (existingBatch != null) {
-						try {
-							this.tm.resume(existingBatch.getTransaction());
-						} catch (InvalidTransactionException e) {
-							throw this.exceptionTransformer.apply(e);
-						}
-					}
-				} catch (SystemException e) {
-					throw this.exceptionTransformer.apply(e);
-				} finally {
-					setCurrentBatch(existingBatch);
-				}
-			};
-		} catch (SystemException | InvalidTransactionException e) {
-			throw this.exceptionTransformer.apply(e);
-		}
+	public BatchContext<TransactionBatch> resumeBatch(TransactionBatch batch) {
+		TransactionBatch suspendingBatch = getCurrentBatch();
+		TransactionBatch resumingBatch = Optional.ofNullable(batch).filter(Predicate.not(Batch::isClosed)).orElse(null);
+		return (suspendingBatch != resumingBatch) ? new TransactionalBatchContext(suspendingBatch, resumingBatch) : NON_TX_BATCH_CONTEXT;
 	}
 
 	@Override
@@ -169,6 +150,65 @@ public class TransactionalBatcher<E extends RuntimeException> implements Batcher
 				setCurrentBatch(null);
 			}
 		}
-		return batch;
+		return Optional.ofNullable(batch).filter(Predicate.not(Batch::isClosed)).orElse(NON_TX_BATCH);
+	}
+
+	private class TransactionalBatchContext implements BatchContext<TransactionBatch> {
+		private final TransactionManager tm = TransactionalBatcher.this.tm;
+		private final Function<Throwable, E> exceptionTransformer = TransactionalBatcher.this.exceptionTransformer;
+		private final TransactionBatch suspendedBatch;
+		private final TransactionBatch resumedBatch;
+
+		TransactionalBatchContext(TransactionBatch suspendingBatch, TransactionBatch resumingBatch) {
+			Transaction suspendingTx = (suspendingBatch != null) ? suspendingBatch.getTransaction() : null;
+			if (suspendingTx != null) {
+				try {
+					if (this.tm.suspend() != suspendingTx) {
+						throw new IllegalStateException();
+					}
+				} catch (SystemException e) {
+					throw this.exceptionTransformer.apply(e);
+				}
+			}
+			Transaction resumingTx = (resumingBatch != null) ? resumingBatch.getTransaction() : null;
+			if (resumingTx != null) {
+				try {
+					this.tm.resume(resumingTx);
+				} catch (SystemException | InvalidTransactionException e) {
+					throw this.exceptionTransformer.apply(e);
+				}
+			}
+			this.suspendedBatch = suspendingBatch;
+			this.resumedBatch = resumingBatch;
+			setCurrentBatch(resumingBatch);
+		}
+
+		@Override
+		public TransactionBatch getBatch() {
+			return Optional.ofNullable(getCurrentBatch()).orElse(NON_TX_BATCH);
+		}
+
+		@Override
+		public void close() {
+			Transaction resumedTx = (this.resumedBatch != null) ? resumedBatch.getTransaction() : null;
+			if (resumedTx != null) {
+				try {
+					if (this.tm.suspend() != resumedTx) {
+						throw new IllegalStateException();
+					}
+				} catch (SystemException e) {
+					throw this.exceptionTransformer.apply(e);
+				}
+			}
+			Transaction suspendedTx = (this.suspendedBatch != null) ? suspendedBatch.getTransaction() : null;
+			if (suspendedTx != null) {
+				try {
+					this.tm.resume(suspendedTx);
+				} catch (SystemException | InvalidTransactionException e) {
+					throw this.exceptionTransformer.apply(e);
+				}
+			}
+			setCurrentBatch(this.suspendedBatch);
+		}
 	}
 }

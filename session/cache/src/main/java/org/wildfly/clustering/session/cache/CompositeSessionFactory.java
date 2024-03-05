@@ -15,18 +15,18 @@ import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaDat
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 
 /**
- * @param <DC> the deployment context type
+ * @param <C> the session manager context type
  * @param <MV> the session metadata type
  * @param <AV> the session attributes type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class CompositeSessionFactory<DC, MV extends Contextual<SC>, AV, SC> extends CompositeImmutableSessionFactory<MV, AV> implements SessionFactory<DC, MV, AV, SC> {
+public class CompositeSessionFactory<C, MV extends Contextual<SC>, AV, SC> extends CompositeImmutableSessionFactory<MV, AV> implements SessionFactory<C, MV, AV, SC> {
 	private final SessionMetaDataFactory<MV> metaDataFactory;
-	private final SessionAttributesFactory<DC, AV> attributesFactory;
+	private final SessionAttributesFactory<C, AV> attributesFactory;
 	private final Supplier<SC> contextFactory;
 
-	public CompositeSessionFactory(SessionMetaDataFactory<MV> metaDataFactory, SessionAttributesFactory<DC, AV> attributesFactory, Supplier<SC> localContextFactory) {
+	public CompositeSessionFactory(SessionMetaDataFactory<MV> metaDataFactory, SessionAttributesFactory<C, AV> attributesFactory, Supplier<SC> localContextFactory) {
 		super(metaDataFactory, attributesFactory);
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
@@ -39,12 +39,12 @@ public class CompositeSessionFactory<DC, MV extends Contextual<SC>, AV, SC> exte
 	}
 
 	@Override
-	public SessionAttributesFactory<DC, AV> getAttributesFactory() {
+	public SessionAttributesFactory<C, AV> getAttributesFactory() {
 		return this.attributesFactory;
 	}
 
 	@Override
-	public Session<SC> createSession(String id, Map.Entry<MV, AV> entry, DC context) {
+	public Session<SC> createSession(String id, Map.Entry<MV, AV> entry, C context) {
 		MV metaDataValue = entry.getKey();
 		AV attributesValue = entry.getValue();
 		if ((metaDataValue == null) || (attributesValue == null)) return null;

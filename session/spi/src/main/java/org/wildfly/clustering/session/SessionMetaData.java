@@ -14,14 +14,14 @@ import java.time.Instant;
 public interface SessionMetaData extends ImmutableSessionMetaData {
 	/**
 	 * Sets the time this session was last accessed.
-	 * @param the start time of the last request
-	 * @param the end time of the last request
+	 * @param startTime the start time of the last request
+	 * @param endTime the end time of the last request
 	 */
 	void setLastAccess(Instant startTime, Instant endTime);
 
 	/**
 	 * Set the time interval as a duration, after which this session will expire.
-	 * @param duration a time duration
+	 * @param duration a timeout duration
 	 */
 	void setTimeout(Duration duration);
 }

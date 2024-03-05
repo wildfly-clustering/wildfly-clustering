@@ -64,7 +64,7 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 
 	/**
 	 * Returns the marshalled size of the specified object.
-	 * @param buffer a byte buffer
+	 * @param object the object whose marshalled size is to be computed
 	 * @return the marshalled size of the specified object.
 	 */
 	default OptionalInt size(Object object) {

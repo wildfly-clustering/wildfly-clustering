@@ -16,7 +16,7 @@ import java.util.function.LongConsumer;
 import org.wildfly.common.function.Functions;
 
 /**
- * {@link DataOutput} implementation used to read the unexposed fields of an {@link org.jgroups.util.Streamable} object.
+ * {@link DataOutput} implementation used to write the unexposed serializable fields of an object.
  * @author Paul Ferraro
  */
 public class SimpleDataOutput implements DataOutput {

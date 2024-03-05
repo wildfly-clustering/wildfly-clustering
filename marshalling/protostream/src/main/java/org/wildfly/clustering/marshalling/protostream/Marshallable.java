@@ -16,7 +16,7 @@ public interface Marshallable<T> extends Readable<T>, Writable<T> {
 
 	/**
 	 * Computes the size of the specified object.
-	 * @param context the marshalling operation
+	 * @param operation the marshalling operation
 	 * @param value the value whose size is to be calculated
 	 * @return an optional buffer size, only present if the buffer size could be computed
 	 */

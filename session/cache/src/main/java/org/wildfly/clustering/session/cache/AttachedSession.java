@@ -5,11 +5,11 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.SessionAttributes;
 import org.wildfly.clustering.session.SessionMetaData;
 
 /**
@@ -37,7 +37,7 @@ public class AttachedSession<C> extends DecoratedSession<C> {
 	}
 
 	@Override
-	public SessionAttributes getAttributes() {
+	public Map<String, Object> getAttributes() {
 		this.validate();
 		return super.getAttributes();
 	}

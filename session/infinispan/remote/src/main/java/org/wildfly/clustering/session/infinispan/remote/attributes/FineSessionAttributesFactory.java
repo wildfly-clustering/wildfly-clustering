@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -21,18 +22,15 @@ import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheComputeMutatorF
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
-import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapComputeFunction;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -41,7 +39,7 @@ import org.wildfly.common.function.Functions;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
+public class FineSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 	private static final Logger LOGGER = Logger.getLogger(FineSessionAttributesFactory.class);
 
 	private final RemoteCache<SessionAttributesKey, Map<String, V>> cache;
@@ -50,16 +48,16 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 	private final Immutability immutability;
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, Map<String, V>> mutatorFactory;
-	private final SessionSpecificationProvider<S, C, L> provider;
+	private final BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory;
 
-	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, SessionSpecificationProvider<S, C, L> provider, RemoteCacheConfiguration hotrod) {
+	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
 		this.cache = hotrod.getCache();
 		this.ignoreReturnFlags = hotrod.getIgnoreReturnFlags();
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = hotrod.getCacheProperties();
 		this.mutatorFactory = new RemoteCacheComputeMutatorFactory<>(this.cache, this.ignoreReturnFlags, SessionAttributeMapComputeFunction::new);
-		this.provider = provider;
+		this.notifierFactory = notifierFactory;
 	}
 
 	@Override
@@ -110,13 +108,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
 	@Override
 	public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
-		SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
+		SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
 		return new FineSessionAttributes<>(new SessionAttributesKey(id), attributes, this.mutatorFactory, this.marshaller, this.immutability, this.properties, notifier);
 	}
 
 	@Override
-	public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, Object> attributes) {
-		return new SimpleImmutableSessionAttributes(attributes);
+	public Map<String, Object> createImmutableSessionAttributes(String id, Map<String, Object> attributes) {
+		return Map.copyOf(attributes);
 	}
 
 	@Override

@@ -4,7 +4,8 @@
  */
 package org.wildfly.clustering.session.cache;
 
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
+import java.util.Map;
+
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
 /**
@@ -14,9 +15,9 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
 public class CompositeImmutableSession extends AbstractImmutableSession {
 
 	private final ImmutableSessionMetaData metaData;
-	private final ImmutableSessionAttributes attributes;
+	private final Map<String, Object> attributes;
 
-	public CompositeImmutableSession(String id, ImmutableSessionMetaData metaData, ImmutableSessionAttributes attributes) {
+	public CompositeImmutableSession(String id, ImmutableSessionMetaData metaData, Map<String, Object> attributes) {
 		super(id);
 		this.metaData = metaData;
 		this.attributes = attributes;
@@ -28,7 +29,7 @@ public class CompositeImmutableSession extends AbstractImmutableSession {
 	}
 
 	@Override
-	public ImmutableSessionAttributes getAttributes() {
+	public Map<String, Object> getAttributes() {
 		return this.attributes;
 	}
 

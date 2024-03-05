@@ -49,7 +49,7 @@ public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 
 	/**
 	 * Reads an object of an arbitrary type from this reader, cast to the specified type.
-	 * @param the expected type
+	 * @param targetClass the expected type
 	 * @return a supplier of the unmarshalled object
 	 * @throws IOException if the object could not be read with the associated marshaller.
 	 */
@@ -68,8 +68,8 @@ public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 
 	/**
 	 * Reads an num of the specified type from this reader.
-	 * @param <T> the type of the associated marshaller
-	 * @param targetClass the class of the associated marshaller
+	 * @param <E> the enum type of the associated marshaller
+	 * @param enumClass the class of the associated marshaller
 	 * @return the unmarshalled enum
 	 * @throws IOException if no marshaller is associated with the specified enum class, or if the enum could not be read with the associated marshaller.
 	 */

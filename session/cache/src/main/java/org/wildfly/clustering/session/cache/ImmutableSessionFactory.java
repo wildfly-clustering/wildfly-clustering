@@ -10,7 +10,6 @@ import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.cache.BiLocator;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.attributes.ImmutableSessionAttributesFactory;
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
@@ -39,9 +38,9 @@ public interface ImmutableSessionFactory<MV, AV> extends BiLocator<String, MV, A
 		AV attributesValue = entry.getValue();
 		if ((metaDataValue == null) || (attributesValue == null)) return null;
 		ImmutableSessionMetaData metaData = this.getMetaDataFactory().createImmutableSessionMetaData(id, metaDataValue);
-		ImmutableSessionAttributes attributes = this.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
+		Map<String, Object> attributes = this.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
 		return this.createImmutableSession(id, metaData, attributes);
 	}
 
-	ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, ImmutableSessionAttributes attributes);
+	ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, Map<String, Object> attributes);
 }

@@ -4,15 +4,8 @@
  */
 package org.wildfly.clustering.cache.infinispan.batch;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
@@ -39,13 +32,21 @@ public class TransactionalBatcherTestCase {
 		TransactionalBatcher.setCurrentBatch(null);
 	}
 
+	private static TransactionBatch mockBatch() {
+		TransactionBatch batch = mock(TransactionBatch.class);
+		doCallRealMethod().when(batch).isActive();
+		doCallRealMethod().when(batch).isDiscarded();
+		doCallRealMethod().when(batch).isClosed();
+		return batch;
+	}
+
 	@Test
 	public void createExistingActiveBatch() throws Exception {
-		TransactionBatch existingBatch = mock(TransactionBatch.class);
+		TransactionBatch existingBatch = mockBatch();
 
 		TransactionalBatcher.setCurrentBatch(existingBatch);
-		when(existingBatch.getState()).thenReturn(Batch.State.ACTIVE);
-		when(existingBatch.interpose()).thenReturn(existingBatch);
+		doReturn(Batch.State.ACTIVE).when(existingBatch).getState();
+		doReturn(existingBatch).when(existingBatch).interpose();
 
 		TransactionBatch result = this.batcher.createBatch();
 
@@ -57,14 +58,13 @@ public class TransactionalBatcherTestCase {
 
 	@Test
 	public void createExistingClosedBatch() throws Exception {
-		TransactionBatch existingBatch = mock(TransactionBatch.class);
+		TransactionBatch existingBatch = mockBatch();
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
 		TransactionalBatcher.setCurrentBatch(existingBatch);
-		when(existingBatch.getState()).thenReturn(Batch.State.CLOSED);
-
-		when(this.tm.getTransaction()).thenReturn(tx);
+		doReturn(Batch.State.CLOSED).when(existingBatch).getState();
+		doReturn(tx).when(this.tm).getTransaction();
 
 		try (TransactionBatch batch = this.batcher.createBatch()) {
 			verify(this.tm).begin();
@@ -87,7 +87,7 @@ public class TransactionalBatcherTestCase {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		when(this.tm.getTransaction()).thenReturn(tx);
+		doReturn(tx).when(this.tm).getTransaction();
 
 		try (TransactionBatch batch = this.batcher.createBatch()) {
 			verify(this.tm).begin();
@@ -108,7 +108,7 @@ public class TransactionalBatcherTestCase {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		when(this.tm.getTransaction()).thenReturn(tx);
+		doReturn(tx).when(this.tm).getTransaction();
 
 		try (TransactionBatch batch = this.batcher.createBatch()) {
 			verify(this.tm).begin();
@@ -132,20 +132,19 @@ public class TransactionalBatcherTestCase {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		when(this.tm.getTransaction()).thenReturn(tx);
+		doReturn(tx).when(this.tm).getTransaction();
 
 		try (TransactionBatch outerBatch = this.batcher.createBatch()) {
-			verify(this.tm).begin();
-			verify(tx).registerSynchronization(capturedSync.capture());
-			reset(this.tm);
-
 			assertSame(tx, outerBatch.getTransaction());
 
-			when(this.tm.getTransaction()).thenReturn(tx);
+			verify(this.tm).suspend();
+			verify(this.tm).begin();
+			verify(tx).registerSynchronization(capturedSync.capture());
 
 			try (TransactionBatch innerBatch = this.batcher.createBatch()) {
-				verify(this.tm, never()).begin();
-				verify(this.tm, never()).suspend();
+				// No new interactions
+				verify(this.tm, times(1)).suspend();
+				verify(this.tm, times(1)).begin();
 			}
 
 			verify(tx, never()).rollback();
@@ -165,20 +164,22 @@ public class TransactionalBatcherTestCase {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		when(this.tm.getTransaction()).thenReturn(tx);
+		doReturn(tx).when(this.tm).getTransaction();
 
 		try (TransactionBatch outerBatch = this.batcher.createBatch()) {
+			verify(this.tm).suspend();
 			verify(this.tm).begin();
 			verify(tx).registerSynchronization(capturedSync.capture());
-			reset(this.tm);
 
 			assertSame(tx, outerBatch.getTransaction());
 
-			when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE);
-			when(this.tm.getTransaction()).thenReturn(tx);
+			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
+			doReturn(tx).when(this.tm).getTransaction();
 
 			try (TransactionBatch innerBatch = this.batcher.createBatch()) {
-				verify(this.tm, never()).begin();
+				// No new interactions
+				verify(this.tm, times(1)).suspend();
+				verify(this.tm, times(1)).begin();
 
 				innerBatch.discard();
 			}
@@ -195,28 +196,29 @@ public class TransactionalBatcherTestCase {
 		assertNull(TransactionalBatcher.getCurrentBatch());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
 	public void createOverlappingBatchClose() throws Exception {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		when(this.tm.getTransaction()).thenReturn(tx);
+		doReturn(tx).when(this.tm).getTransaction();
 
 		TransactionBatch batch = this.batcher.createBatch();
 
+		verify(this.tm).suspend();
 		verify(this.tm).begin();
 		verify(tx).registerSynchronization(capturedSync.capture());
-		reset(this.tm);
 
 		try {
 			assertSame(tx, batch.getTransaction());
 
-			when(this.tm.getTransaction()).thenReturn(tx);
-			when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE);
+			doReturn(tx).when(this.tm).getTransaction();
+			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
 
 			try (TransactionBatch innerBatch = this.batcher.createBatch()) {
-				verify(this.tm, never()).begin();
+				// No new interactions
+				verify(this.tm, times(1)).suspend();
+				verify(this.tm, times(1)).begin();
 
 				batch.close();
 
@@ -233,28 +235,28 @@ public class TransactionalBatcherTestCase {
 		assertNull(TransactionalBatcher.getCurrentBatch());
 	}
 
-	@SuppressWarnings("resource")
 	@Test
 	public void createOverlappingBatchDiscard() throws Exception {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		when(this.tm.getTransaction()).thenReturn(tx);
+		doReturn(tx).when(this.tm).getTransaction();
 
 		TransactionBatch batch = this.batcher.createBatch();
 
 		verify(this.tm).begin();
 		verify(tx).registerSynchronization(capturedSync.capture());
-		reset(this.tm);
 
 		try {
 			assertSame(tx, batch.getTransaction());
 
-			when(this.tm.getTransaction()).thenReturn(tx);
-			when(tx.getStatus()).thenReturn(Status.STATUS_ACTIVE);
+			doReturn(tx).when(this.tm).getTransaction();
+			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
 
 			try (TransactionBatch innerBatch = this.batcher.createBatch()) {
-				verify(this.tm, never()).begin();
+				// Verify no new interactions
+				verify(this.tm, times(1)).suspend();
+				verify(this.tm, times(1)).begin();
 
 				innerBatch.discard();
 
@@ -275,10 +277,10 @@ public class TransactionalBatcherTestCase {
 
 	@Test
 	public void resumeNullBatch() throws Exception {
-		TransactionBatch batch = mock(TransactionBatch.class);
+		TransactionBatch batch = mockBatch();
 		TransactionalBatcher.setCurrentBatch(batch);
 
-		try (BatchContext context = this.batcher.resumeBatch(null)) {
+		try (BatchContext<TransactionBatch> context = this.batcher.resumeBatch(null)) {
 			verifyNoInteractions(this.tm);
 			assertNull(TransactionalBatcher.getCurrentBatch());
 		}
@@ -287,12 +289,28 @@ public class TransactionalBatcherTestCase {
 	}
 
 	@Test
-	public void resumeNonTxBatch() throws Exception {
-		TransactionBatch existingBatch = mock(TransactionBatch.class);
+	public void resumeClosedBatch() throws Exception {
+		TransactionBatch existingBatch = mockBatch();
 		TransactionalBatcher.setCurrentBatch(existingBatch);
-		TransactionBatch batch = mock(TransactionBatch.class);
+		TransactionBatch batch = mockBatch();
 
-		try (BatchContext context = this.batcher.resumeBatch(batch)) {
+		doReturn(Batch.State.CLOSED).when(batch).getState();
+
+		try (BatchContext<TransactionBatch> context = this.batcher.resumeBatch(batch)) {
+			verifyNoInteractions(this.tm);
+			assertNull(TransactionalBatcher.getCurrentBatch());
+		}
+		verifyNoInteractions(this.tm);
+		assertSame(existingBatch, TransactionalBatcher.getCurrentBatch());
+	}
+
+	@Test
+	public void resumeNonTxBatch() throws Exception {
+		TransactionBatch existingBatch = mockBatch();
+		TransactionalBatcher.setCurrentBatch(existingBatch);
+		TransactionBatch batch = mockBatch();
+
+		try (BatchContext<TransactionBatch> context = this.batcher.resumeBatch(batch)) {
 			verifyNoInteractions(this.tm);
 			assertSame(batch, TransactionalBatcher.getCurrentBatch());
 		}
@@ -302,38 +320,45 @@ public class TransactionalBatcherTestCase {
 
 	@Test
 	public void resumeBatch() throws Exception {
-		TransactionBatch batch = mock(TransactionBatch.class);
+		TransactionBatch batch = mockBatch();
 		Transaction tx = mock(Transaction.class);
+		TransactionalBatcher.setCurrentBatch(null);
 
-		when(batch.getTransaction()).thenReturn(tx);
+		doReturn(tx).when(batch).getTransaction();
+		doReturn(Batch.State.ACTIVE).when(batch).getState();
+		doReturn(null).when(this.tm).suspend();
 
-		try (BatchContext context = this.batcher.resumeBatch(batch)) {
+		try (BatchContext<TransactionBatch> context = this.batcher.resumeBatch(batch)) {
+			assertSame(batch, TransactionalBatcher.getCurrentBatch());
+
 			verify(this.tm, never()).suspend();
 			verify(this.tm).resume(tx);
-			reset(this.tm);
 
-			assertSame(batch, TransactionalBatcher.getCurrentBatch());
+			doReturn(tx).when(this.tm).suspend();
 		}
 
 		verify(this.tm).suspend();
-		verify(this.tm, never()).resume(any());
+		// Nothing to resume
+		verifyNoMoreInteractions(this.tm);
 
 		assertNull(TransactionalBatcher.getCurrentBatch());
 	}
 
 	@Test
 	public void resumeBatchExisting() throws Exception {
-		TransactionBatch existingBatch = mock(TransactionBatch.class);
+		TransactionBatch existingBatch = mockBatch();
 		Transaction existingTx = mock(Transaction.class);
 		TransactionalBatcher.setCurrentBatch(existingBatch);
-		TransactionBatch batch = mock(TransactionBatch.class);
+		TransactionBatch batch = mockBatch();
 		Transaction tx = mock(Transaction.class);
 
-		when(existingBatch.getTransaction()).thenReturn(existingTx);
-		when(batch.getTransaction()).thenReturn(tx);
-		when(this.tm.suspend()).thenReturn(existingTx);
+		doReturn(existingTx).when(existingBatch).getTransaction();
+		doReturn(Batch.State.ACTIVE).when(existingBatch).getState();
+		doReturn(tx).when(batch).getTransaction();
+		doReturn(Batch.State.ACTIVE).when(batch).getState();
+		doReturn(existingTx).when(this.tm).suspend();
 
-		try (BatchContext context = this.batcher.resumeBatch(batch)) {
+		try (BatchContext<TransactionBatch> context = this.batcher.resumeBatch(batch)) {
 			verify(this.tm).resume(tx);
 			reset(this.tm);
 
@@ -349,7 +374,7 @@ public class TransactionalBatcherTestCase {
 
 	@Test
 	public void suspendBatch() throws Exception {
-		TransactionBatch batch = mock(TransactionBatch.class);
+		TransactionBatch batch = mockBatch();
 		TransactionalBatcher.setCurrentBatch(batch);
 
 		TransactionBatch result = this.batcher.suspendBatch();
@@ -362,10 +387,13 @@ public class TransactionalBatcherTestCase {
 
 	@Test
 	public void suspendNoBatch() throws Exception {
+		TransactionalBatcher.setCurrentBatch(null);
+
 		TransactionBatch result = this.batcher.suspendBatch();
 
 		verify(this.tm, never()).suspend();
 
-		assertNull(result);
+		assertNotNull(result);
+		assertNull(result.getTransaction());
 	}
 }

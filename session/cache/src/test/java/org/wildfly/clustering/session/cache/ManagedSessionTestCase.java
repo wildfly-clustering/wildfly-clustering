@@ -8,9 +8,10 @@ package org.wildfly.clustering.session.cache;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.SessionAttributes;
 import org.wildfly.clustering.session.SessionMetaData;
 
 /**
@@ -131,8 +132,8 @@ public class ManagedSessionTestCase {
 
 	@Test
 	public void getAttributes() {
-		SessionAttributes attachedAttributes = mock(SessionAttributes.class);
-		SessionAttributes detachedAttributes = mock(SessionAttributes.class);
+		Map<String, Object> attachedAttributes = mock(Map.class);
+		Map<String, Object> detachedAttributes = mock(Map.class);
 		doReturn(attachedAttributes).when(this.attachedSession).getAttributes();
 		doReturn(detachedAttributes).when(this.detachedSession).getAttributes();
 

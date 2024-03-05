@@ -14,14 +14,13 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
-import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
+import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
 
 /**
  * Exposes session attributes for a fine granularity sessions.
  * @author Paul Ferraro
  */
-public class FineSessionAttributes<K, V> extends SimpleImmutableSessionAttributes implements SessionAttributes {
+public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 
 	private final K key;
 	private final Map<String, Object> attributes;
@@ -50,7 +49,9 @@ public class FineSessionAttributes<K, V> extends SimpleImmutableSessionAttribute
 	}
 
 	@Override
-	public Object getAttribute(String name) {
+	public Object get(Object key) {
+		if (!(key instanceof String)) return null;
+		String name = (String) key;
 		Object value = this.attributes.get(name);
 
 		if (value != null) {
@@ -66,7 +67,9 @@ public class FineSessionAttributes<K, V> extends SimpleImmutableSessionAttribute
 	}
 
 	@Override
-	public Object removeAttribute(String name) {
+	public Object remove(Object key) {
+		if (!(key instanceof String)) return null;
+		String name = (String) key;
 		Object result = this.attributes.remove(name);
 
 		if (result != null) {
@@ -79,9 +82,9 @@ public class FineSessionAttributes<K, V> extends SimpleImmutableSessionAttribute
 	}
 
 	@Override
-	public Object setAttribute(String name, Object value) {
+	public Object put(String name, Object value) {
 		if (value == null) {
-			return this.removeAttribute(name);
+			return this.remove(name);
 		}
 
 		if (this.properties.isMarshalling() && !this.marshaller.isMarshallable(value)) {

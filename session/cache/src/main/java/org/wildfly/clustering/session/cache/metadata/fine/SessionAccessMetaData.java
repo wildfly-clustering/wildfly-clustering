@@ -16,7 +16,7 @@ public interface SessionAccessMetaData extends ImmutableSessionAccessMetaData {
 	/**
 	 * Sets the last accessed duration (since this session was created) and last request duration.
 	 * @param sinceCreation the duration of time this session was created
-	 * @param lastAccessDuration the duration of time this session was last accessed
+	 * @param lastAccess the duration of time this session was last accessed
 	 */
 	void setLastAccessDuration(Duration sinceCreation, Duration lastAccess);
 }

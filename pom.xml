@@ -112,6 +112,13 @@
 				<groupId>org.jboss.threads</groupId>
 				<artifactId>jboss-threads</artifactId>
 				<version>${version.org.jboss.threads}</version>
+				<exclusions>
+					<!-- JBoss Threads depends on an ancient version -->
+					<exclusion>
+						<groupId>org.wildfly.common</groupId>
+						<artifactId>wildfly-common</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.jgroups</groupId>
@@ -250,6 +257,14 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<detectLinks>true</detectLinks>
+					<detectJavaApiLink>true</detectJavaApiLink>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

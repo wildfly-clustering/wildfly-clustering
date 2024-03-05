@@ -7,8 +7,8 @@ package org.wildfly.clustering.session.cache.attributes.coarse;
 
 import static org.mockito.Mockito.*;
 
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
@@ -30,34 +30,34 @@ public class ImmutableSessionActivationNotifierTestCase {
 	interface Listener {
 	}
 
-	private final SessionSpecificationProvider<Session, Context, Listener> provider = mock(SessionSpecificationProvider.class);
+	private final SessionSpecificationProvider<Session, Context> sessionProvider = mock(SessionSpecificationProvider.class);
+	private final SessionEventListenerSpecificationProvider<Session, Listener> listenerProvider = mock(SessionEventListenerSpecificationProvider.class);
 	private final ImmutableSession session = mock(ImmutableSession.class);
 	private final Context context = mock(Context.class);
 	private final Listener listener1 = mock(Listener.class);
 	private final Listener listener2 = mock(Listener.class);
 
-	private final SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.provider, this.session, this.context);
+	private final SessionActivationNotifier notifier = new ImmutableSessionActivationNotifier<>(this.sessionProvider, this.listenerProvider, this.session, this.context);
 
 	@AfterEach
 	public void destroy() {
-		Mockito.reset(this.session, this.provider);
+		Mockito.reset(this.session, this.sessionProvider, this.listenerProvider);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void test() {
-		ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
+		Map<String, Object> attributes = Map.ofEntries(
+				Map.entry("foo", UUID.randomUUID()),
+				Map.entry("bar", UUID.randomUUID()),
+				Map.entry("listener1", this.listener1),
+				Map.entry("listener2", this.listener2));
 
-		when(this.session.getAttributes()).thenReturn(attributes);
-		when(attributes.getAttributeNames()).thenReturn(Set.of("foo", "bar", "listener1", "listener2"));
-		when(attributes.getAttribute("foo")).thenReturn(UUID.randomUUID());
-		when(attributes.getAttribute("bar")).thenReturn(UUID.randomUUID());
-		when(attributes.getAttribute("listener1")).thenReturn(this.listener1);
-		when(attributes.getAttribute("listener2")).thenReturn(this.listener2);
+		doReturn(attributes).when(this.session).getAttributes();
 
-		when(this.provider.asSessionActivationListener(any())).thenReturn(Optional.empty());
-		when(this.provider.asSessionActivationListener(this.listener1)).thenReturn(Optional.of(this.listener1));
-		when(this.provider.asSessionActivationListener(this.listener2)).thenReturn(Optional.of(this.listener2));
+		doReturn(Optional.empty()).when(this.listenerProvider).asEventListener(any(UUID.class));
+		doReturn(Optional.of(this.listener1)).when(this.listenerProvider).asEventListener(this.listener1);
+		doReturn(Optional.of(this.listener2)).when(this.listenerProvider).asEventListener(this.listener2);
 
 		Session session = mock(Session.class);
 		Consumer<Session> prePassivateNotifier1 = mock(Consumer.class);
@@ -65,11 +65,11 @@ public class ImmutableSessionActivationNotifierTestCase {
 		Consumer<Session> postActivateNotifier1 = mock(Consumer.class);
 		Consumer<Session> postActivateNotifier2 = mock(Consumer.class);
 
-		when(this.provider.asSession(same(this.session), same(this.context))).thenReturn(session);
-		when(this.provider.prePassivate(same(this.listener1))).thenReturn(prePassivateNotifier1);
-		when(this.provider.prePassivate(same(this.listener2))).thenReturn(prePassivateNotifier2);
-		when(this.provider.postActivate(same(this.listener1))).thenReturn(postActivateNotifier1);
-		when(this.provider.postActivate(same(this.listener2))).thenReturn(postActivateNotifier2);
+		when(this.sessionProvider.asSession(same(this.session), same(this.context))).thenReturn(session);
+		when(this.listenerProvider.preEvent(same(this.listener1))).thenReturn(prePassivateNotifier1);
+		when(this.listenerProvider.preEvent(same(this.listener2))).thenReturn(prePassivateNotifier2);
+		when(this.listenerProvider.postEvent(same(this.listener1))).thenReturn(postActivateNotifier1);
+		when(this.listenerProvider.postEvent(same(this.listener2))).thenReturn(postActivateNotifier2);
 
 		// verify pre-passivate before post-activate is a no-op
 		this.notifier.prePassivate();
@@ -126,33 +126,29 @@ public class ImmutableSessionActivationNotifierTestCase {
 
 	@Test
 	public void postActivate() {
-		ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
-		UUID foo = UUID.randomUUID();
-		UUID bar = UUID.randomUUID();
+		Map<String, Object> attributes = Map.ofEntries(
+				Map.entry("foo", UUID.randomUUID()),
+				Map.entry("bar", UUID.randomUUID()),
+				Map.entry("listener1", this.listener1),
+				Map.entry("listener2", this.listener2));
 
-		when(this.session.getAttributes()).thenReturn(attributes);
-		when(attributes.getAttributeNames()).thenReturn(Set.of("foo", "bar", "listener1", "listener2"));
-		when(attributes.getAttribute("foo")).thenReturn(UUID.randomUUID());
-		when(attributes.getAttribute("bar")).thenReturn(UUID.randomUUID());
-		when(attributes.getAttribute("listener1")).thenReturn(this.listener1);
-		when(attributes.getAttribute("listener2")).thenReturn(this.listener2);
-		when(this.provider.asSessionActivationListener(foo)).thenReturn(Optional.empty());
-		when(this.provider.asSessionActivationListener(bar)).thenReturn(Optional.empty());
-		when(this.provider.asSessionActivationListener(this.listener1)).thenReturn(Optional.of(this.listener1));
-		when(this.provider.asSessionActivationListener(this.listener2)).thenReturn(Optional.of(this.listener2));
+		doReturn(attributes).when(this.session).getAttributes();
+		doReturn(Optional.empty()).when(this.listenerProvider).asEventListener(any(UUID.class));
+		doReturn(Optional.of(this.listener1)).when(this.listenerProvider).asEventListener(this.listener1);
+		doReturn(Optional.of(this.listener2)).when(this.listenerProvider).asEventListener(this.listener2);
 
 		Session session = mock(Session.class);
 		Consumer<Session> notifier1 = mock(Consumer.class);
 		Consumer<Session> notifier2 = mock(Consumer.class);
 
-		when(this.provider.asSession(same(this.session), same(this.context))).thenReturn(session);
-		when(this.provider.postActivate(same(this.listener1))).thenReturn(notifier1);
-		when(this.provider.postActivate(same(this.listener2))).thenReturn(notifier2);
+		when(this.sessionProvider.asSession(same(this.session), same(this.context))).thenReturn(session);
+		when(this.listenerProvider.postEvent(same(this.listener1))).thenReturn(notifier1);
+		when(this.listenerProvider.postEvent(same(this.listener2))).thenReturn(notifier2);
 
 		this.notifier.postActivate();
 
-		verify(this.provider, never()).prePassivate(this.listener1);
-		verify(this.provider, never()).prePassivate(this.listener2);
+		verify(this.listenerProvider, never()).preEvent(this.listener1);
+		verify(this.listenerProvider, never()).preEvent(this.listener2);
 
 		verify(notifier1).accept(session);
 		verify(notifier2).accept(session);

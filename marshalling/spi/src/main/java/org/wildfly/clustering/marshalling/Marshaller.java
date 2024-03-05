@@ -9,11 +9,16 @@ import java.io.IOException;
 /**
  * Marshals an object to and from its serialized form.
  * @author Paul Ferraro
- * @param V the value type
- * @param S the serialized form type
+ * @param <V> the value type
+ * @param <S> the marshalled type
  */
 public interface Marshaller<V, S> extends Marshallability {
 
+	/**
+	 * An identity marshaller that does no marshalling.
+	 * @param <T> the value type
+	 * @return an identity marshaller
+	 */
 	static <T> Marshaller<T, T> identity() {
 		return new Marshaller<>() {
 			@Override
@@ -36,13 +41,13 @@ public interface Marshaller<V, S> extends Marshallability {
 	/**
 	 * Reads a value from its marshalled form.
 	 * @param value the marshalled form
-	 * @return an unmarshalled value/
+	 * @return an unmarshalled value
 	 */
 	V read(S value) throws IOException;
 
 	/**
 	 * Writes a value to its serialized form
-	 * @param a value to marshal.
+	 * @param value a value to marshal.
 	 * @return the serialized form of the value
 	 */
 	S write(V value) throws IOException;

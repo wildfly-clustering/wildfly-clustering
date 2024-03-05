@@ -11,14 +11,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.marshalling.Marshallability;
 import org.wildfly.clustering.server.immutable.Immutability;
-import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
+import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
 
 /**
  * Exposes session attributes for a coarse granularity session.
  * @author Paul Ferraro
  */
-public class CoarseSessionAttributes extends SimpleImmutableSessionAttributes implements SessionAttributes {
+public class CoarseSessionAttributes extends AbstractSessionAttributes {
 	private final Map<String, Object> attributes;
 	private final CacheEntryMutator mutator;
 	private final Marshallability marshallability;
@@ -39,8 +38,8 @@ public class CoarseSessionAttributes extends SimpleImmutableSessionAttributes im
 	}
 
 	@Override
-	public Object removeAttribute(String name) {
-		Object value = this.attributes.remove(name);
+	public Object remove(Object key) {
+		Object value = this.attributes.remove(key);
 		if (value != null) {
 			this.dirty.set(true);
 		}
@@ -48,22 +47,22 @@ public class CoarseSessionAttributes extends SimpleImmutableSessionAttributes im
 	}
 
 	@Override
-	public Object setAttribute(String name, Object value) {
+	public Object put(String key, Object value) {
 		if (value == null) {
-			return this.removeAttribute(name);
+			return this.remove(key);
 		}
 		if (!this.marshallability.isMarshallable(value)) {
 			throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
 		}
-		Object old = this.attributes.put(name, value);
+		Object old = this.attributes.put(key, value);
 		// Always trigger mutation, even if this is an immutable object that was previously retrieved via getAttribute(...)
 		this.dirty.set(true);
 		return old;
 	}
 
 	@Override
-	public Object getAttribute(String name) {
-		Object value = this.attributes.get(name);
+	public Object get(Object key) {
+		Object value = this.attributes.get(key);
 		if (value != null) {
 			if (!this.immutability.test(value)) {
 				this.dirty.set(true);

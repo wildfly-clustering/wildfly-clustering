@@ -9,7 +9,6 @@ import java.util.Set;
 
 /**
  * @author Paul Ferraro
- * @param <I> the session identifier type
  */
 public interface SessionStatistics {
 

@@ -18,17 +18,17 @@ import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 
 /**
  * Factory for creating sessions. Encapsulates the cache mapping strategy for sessions.
- * @param <DC> the deployment context type
+ * @param <C> the session manager context type
  * @param <MV> the meta-data value type
  * @param <AV> the attributes value type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public interface SessionFactory<DC, MV, AV, SC> extends ImmutableSessionFactory<MV, AV>, BiCreator<String, MV, AV, Duration>, Remover<String>, Registration {
+public interface SessionFactory<C, MV, AV, SC> extends ImmutableSessionFactory<MV, AV>, BiCreator<String, MV, AV, Duration>, Remover<String>, Registration {
 	@Override
 	SessionMetaDataFactory<MV> getMetaDataFactory();
 	@Override
-	SessionAttributesFactory<DC, AV> getAttributesFactory();
+	SessionAttributesFactory<C, AV> getAttributesFactory();
 
 	@Override
 	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> createEntry(String id, Duration context) {
@@ -45,7 +45,7 @@ public interface SessionFactory<DC, MV, AV, SC> extends ImmutableSessionFactory<
 		return CompletableFuture.allOf(this.getMetaDataFactory().purgeAsync(id).toCompletableFuture(), this.getAttributesFactory().purgeAsync(id).toCompletableFuture());
 	}
 
-	Session<SC> createSession(String id, Map.Entry<MV, AV> entry, DC context);
+	Session<SC> createSession(String id, Map.Entry<MV, AV> entry, C context);
 
 	@Override
 	default void close() {

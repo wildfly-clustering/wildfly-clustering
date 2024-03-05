@@ -47,7 +47,7 @@ public class CoarseSessionAttributesTestCase {
 	public void removeAttribute() {
 		UUID existing = UUID.randomUUID();
 		try (SessionAttributes attributes = this.createSessionAttributes(Map.of("existing", existing))) {
-			assertNull(attributes.removeAttribute("missing"));
+			assertNull(attributes.remove("missing"));
 		}
 
 		// Nothing to mutate
@@ -56,8 +56,8 @@ public class CoarseSessionAttributesTestCase {
 		reset(this.notifier);
 
 		try (SessionAttributes attributes = this.createSessionAttributes(Map.of("existing", existing))) {
-			assertNull(attributes.removeAttribute("missing"));
-			assertSame(existing, attributes.removeAttribute("existing"));
+			assertNull(attributes.remove("missing"));
+			assertSame(existing, attributes.remove("existing"));
 		}
 
 		verify(this.mutator).mutate();
@@ -73,10 +73,10 @@ public class CoarseSessionAttributesTestCase {
 			doReturn(false).when(this.marshallability).isMarshallable(unmarshallable);
 
 			// Should be treated as a removal
-			assertNull(attributes.setAttribute("missing", null));
+			assertNull(attributes.put("missing", null));
 
 			// Verify unmarshallable attribute
-			assertThrows(IllegalArgumentException.class, () -> attributes.setAttribute("unmarshallable", unmarshallable));
+			assertThrows(IllegalArgumentException.class, () -> attributes.put("unmarshallable", unmarshallable));
 		}
 
 		verify(this.notifier).prePassivate();
@@ -97,17 +97,17 @@ public class CoarseSessionAttributesTestCase {
 			doReturn(false).when(this.marshallability).isMarshallable(unmarshallable);
 
 			// Verify unmarshallable attribute
-			assertThrows(IllegalArgumentException.class, () -> attributes.setAttribute("unmarshallable", unmarshallable));
+			assertThrows(IllegalArgumentException.class, () -> attributes.put("unmarshallable", unmarshallable));
 
 			// Test new attribute
-			assertNull(attributes.setAttribute("new", newIntermediate));
-			assertSame(newIntermediate, attributes.setAttribute("new", newReplacement));
+			assertNull(attributes.put("new", newIntermediate));
+			assertSame(newIntermediate, attributes.put("new", newReplacement));
 			// Test replaced attribute
-			assertSame(existing, attributes.setAttribute("existing", existingIntermediate));
-			assertSame(existingIntermediate, attributes.setAttribute("existing", existingReplacement));
+			assertSame(existing, attributes.put("existing", existingIntermediate));
+			assertSame(existingIntermediate, attributes.put("existing", existingReplacement));
 
 			// Should be treated as a removal
-			assertSame(removing, attributes.setAttribute("removing", null));
+			assertSame(removing, attributes.put("removing", null));
 		}
 
 		verify(this.notifier).prePassivate();
@@ -121,7 +121,7 @@ public class CoarseSessionAttributesTestCase {
 		Map<String, Object> values = Map.of("foo", foo, "bar", bar);
 
 		try (SessionAttributes attributes = new CoarseSessionAttributes(values, this.mutator, this.marshallability, this.immutability, this.notifier)) {
-			Set<String> names = attributes.getAttributeNames();
+			Set<String> names = attributes.keySet();
 			assertEquals(2, names.size());
 			assertTrue(names.contains("foo"));
 			assertTrue(names.contains("bar"));
@@ -145,10 +145,10 @@ public class CoarseSessionAttributesTestCase {
 		// Verify read-only request
 		try (SessionAttributes attributes = this.createSessionAttributes(map)) {
 			// Verify non-existant attribute
-			assertNull(attributes.getAttribute("foo"));
+			assertNull(attributes.get("foo"));
 
 			// Verify mutable/immutable attributes
-			assertSame(immutable, attributes.getAttribute("immutable"));
+			assertSame(immutable, attributes.get("immutable"));
 		}
 
 		verify(this.notifier).prePassivate();
@@ -157,11 +157,11 @@ public class CoarseSessionAttributesTestCase {
 
 		try (SessionAttributes attributes = this.createSessionAttributes(map)) {
 			// Verify non-existant attribute
-			assertNull(attributes.getAttribute("baz"));
+			assertNull(attributes.get("baz"));
 
 			// Verify mutable/immutable attributes
-			assertSame(immutable, attributes.getAttribute("immutable"));
-			assertSame(mutable, attributes.getAttribute("mutable"));
+			assertSame(immutable, attributes.get("immutable"));
+			assertSame(mutable, attributes.get("mutable"));
 		}
 
 		verify(this.notifier).prePassivate();

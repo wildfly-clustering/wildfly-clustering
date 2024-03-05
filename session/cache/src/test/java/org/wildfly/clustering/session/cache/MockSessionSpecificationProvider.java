@@ -9,40 +9,41 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class MockSessionSpecificationProvider<C> implements SessionSpecificationProvider<Map.Entry<ImmutableSession, C>, C, PassivationListener<C>> {
-
-	@Override
-	public Consumer<Map.Entry<ImmutableSession, C>> prePassivate(PassivationListener<C> listener) {
-		return listener::passivated;
-	}
-
-	@Override
-	public Consumer<Map.Entry<ImmutableSession, C>> postActivate(PassivationListener<C> listener) {
-		return listener::activated;
-	}
+public class MockSessionSpecificationProvider<C> implements SessionSpecificationProvider<Map.Entry<ImmutableSession, C>, C>, SessionEventListenerSpecificationProvider<Map.Entry<ImmutableSession, C>, PassivationListener<C>> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<PassivationListener<C>> getSessionActivationListenerClass() {
+	public Class<PassivationListener<C>> getEventListenerClass() {
 		return (Class<PassivationListener<C>>) (Class<?>) PassivationListener.class;
 	}
 
 	@Override
-	public PassivationListener<C> asSessionActivationListener(Consumer<Map.Entry<ImmutableSession, C>> prePassivate, Consumer<Map.Entry<ImmutableSession, C>> postActivate) {
+	public Consumer<Map.Entry<ImmutableSession, C>> preEvent(PassivationListener<C> listener) {
+		return listener::passivated;
+	}
+
+	@Override
+	public Consumer<Map.Entry<ImmutableSession, C>> postEvent(PassivationListener<C> listener) {
+		return listener::activated;
+	}
+
+	@Override
+	public PassivationListener<C> asEventListener(Consumer<Map.Entry<ImmutableSession, C>> preEvent, Consumer<Map.Entry<ImmutableSession, C>> postEvent) {
 		return new PassivationListener<>() {
 			@Override
 			public void passivated(Map.Entry<ImmutableSession, C> entry) {
-				prePassivate.accept(entry);
+				preEvent.accept(entry);
 			}
 
 			@Override
 			public void activated(Map.Entry<ImmutableSession, C> entry) {
-				postActivate.accept(entry);
+				postEvent.accept(entry);
 			}
 		};
 	}

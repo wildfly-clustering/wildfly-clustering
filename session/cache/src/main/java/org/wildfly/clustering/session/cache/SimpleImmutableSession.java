@@ -4,10 +4,10 @@
  */
 package org.wildfly.clustering.session.cache;
 
+import java.util.Map;
+
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.session.cache.metadata.SimpleImmutableSessionMetaData;
 
 /**
@@ -18,13 +18,13 @@ public class SimpleImmutableSession extends AbstractImmutableSession {
 
 	private final boolean valid;
 	private final ImmutableSessionMetaData metaData;
-	private final ImmutableSessionAttributes attributes;
+	private final Map<String, Object> attributes;
 
 	public SimpleImmutableSession(ImmutableSession session) {
 		super(session.getId());
 		this.valid = session.isValid();
 		this.metaData = new SimpleImmutableSessionMetaData(session.getMetaData());
-		this.attributes = new SimpleImmutableSessionAttributes(session.getAttributes());
+		this.attributes = Map.copyOf(session.getAttributes());
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class SimpleImmutableSession extends AbstractImmutableSession {
 	}
 
 	@Override
-	public ImmutableSessionAttributes getAttributes() {
+	public Map<String, Object> getAttributes() {
 		return this.attributes;
 	}
 }

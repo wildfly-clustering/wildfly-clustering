@@ -33,8 +33,8 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 	 * Returns a marshaller for a wrapper of this scalar value, using the specified wrapping and unwrapping functions.
 	 * @param <V> the wrapper type
 	 * @param targetClass the wrapper marshaller type
-	 * @param function a function exposing the scalar type written by this marshaller from the wrapper instance
-	 * @param factory a function creating a wrapped instance from the scalar value read by this marshaller
+	 * @param unwrapper a function exposing the scalar type written by this marshaller from the wrapper instance
+	 * @param wrapper a function creating a wrapped instance from the scalar value read by this marshaller
 	 * @return a new marshaller
 	 */
 	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, Function<V, T> unwrapper, Function<T, V> wrapper) {

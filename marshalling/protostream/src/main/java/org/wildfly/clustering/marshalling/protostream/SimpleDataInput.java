@@ -17,7 +17,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 /**
- * {@link DataInput} implementation used to write the unexposed fields of an {@link org.jgroups.util.Streamable} object.
+ * {@link DataInput} implementation used to write the unexposed serializable fields of an object.
  * @author Paul Ferraro
  */
 public class SimpleDataInput implements DataInput {

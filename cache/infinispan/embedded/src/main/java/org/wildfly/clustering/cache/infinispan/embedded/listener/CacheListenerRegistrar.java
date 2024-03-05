@@ -26,7 +26,7 @@ public interface CacheListenerRegistrar<K, V> extends ListenerRegistrar {
 
 	/**
 	 * Registers this listener events for cache entries whose key matches the specified predicate.
-	 * @param keyClass a key class
+	 * @param keyPredicate a key predicate
 	 * @return a listener registration
 	 */
 	default ListenerRegistration register(Predicate<? super K> keyPredicate) {
