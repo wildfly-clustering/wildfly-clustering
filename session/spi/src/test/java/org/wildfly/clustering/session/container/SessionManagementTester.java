@@ -100,7 +100,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 					assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null));
 				}).join();
 
-				// Perform a number of concurrent requests incrementing the session attribute
+				// Perform a number of concurrent requests incrementing the mutable session attribute
 				List<CompletableFuture<Long>> futures = new ArrayList<>(CONCURRENCY);
 				for (int j = 0; j < CONCURRENCY; j++) {
 					CompletableFuture<Long> future = request(client, uri, HttpMethod.GET).thenApply(response -> {
@@ -114,6 +114,13 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 				expected.addAndGet(CONCURRENCY);
 				// Verify the correct number of unique results
 				assertEquals(CONCURRENCY, futures.stream().map(CompletableFuture::join).distinct().count());
+
+				// Grace time to increase likelihood that subsequent request does not overlap with post-request processing of previous requests
+				try {
+					Thread.sleep(FAILOVER_DURATION.getSeconds(), FAILOVER_DURATION.getNano());
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
 
 				// Verify expected session attribute value following concurrent updates
 				value = request(client, uri, HttpMethod.GET).thenApply(response -> {
