@@ -31,7 +31,7 @@ import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
 /**
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFactoryProvider<DC, TransactionBatch> {
+public class HotRodSessionManagerFactoryProvider<C> implements SessionManagerFactoryProvider<C, TransactionBatch> {
 
 	private static final String SERVER_NAME = "server";
 	private static final String DEPLOYMENT_NAME_PATTERN = "%s-%s.war";
@@ -53,7 +53,7 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 	}
 
 	@Override
-	public <SC> SessionManagerFactory<DC, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory) {
+	public <SC> SessionManagerFactory<C, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory) {
 		SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 			@Override
 			public OptionalInt getMaxActiveSessions() {
@@ -96,7 +96,8 @@ public class HotRodSessionManagerFactoryProvider<DC> implements SessionManagerFa
 				return HotRodSessionManagerFactoryProvider.this.container.getCache(HotRodSessionManagerFactoryProvider.this.deploymentName);
 			}
 		};
-		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, new MockSessionSpecificationProvider<>(), hotrod);
+		MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
+		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, provider, provider, hotrod);
 	}
 
 	@Override

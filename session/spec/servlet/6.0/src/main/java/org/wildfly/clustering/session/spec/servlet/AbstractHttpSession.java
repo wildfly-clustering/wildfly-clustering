@@ -5,29 +5,82 @@
 
 package org.wildfly.clustering.session.spec.servlet;
 
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Objects;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
+
+import org.wildfly.clustering.session.ImmutableSession;
 
 /**
  * @author Paul Ferraro
  */
 public abstract class AbstractHttpSession implements HttpSession {
 
+	private final ImmutableSession session;
+	private final ServletContext context;
+
+	protected AbstractHttpSession(ImmutableSession session, ServletContext context) {
+		this.session = session;
+		this.context = context;
+	}
+
+	@Override
+	public ServletContext getServletContext() {
+		return this.context;
+	}
+
+	@Override
+	public String getId() {
+		return this.session.getId();
+	}
+
+	@Override
+	public long getCreationTime() {
+		return this.session.getMetaData().getCreationTime().toEpochMilli();
+	}
+
+	@Override
+	public int getMaxInactiveInterval() {
+		return (int) this.session.getMetaData().getTimeout().getSeconds();
+	}
+
+	@Override
+	public long getLastAccessedTime() {
+		return this.session.getMetaData().getLastAccessTime().toEpochMilli();
+	}
+
+	@Override
+	public boolean isNew() {
+		return this.session.getMetaData().isNew();
+	}
+
+	@Override
+	public Enumeration<String> getAttributeNames() {
+		return Collections.enumeration(this.session.getAttributes().keySet());
+	}
+
+	@Override
+	public Object getAttribute(String name) {
+		return this.session.getAttributes().get(name);
+	}
+
 	@Override
 	public int hashCode() {
-		return this.getId().hashCode();
+		return this.session.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof HttpSession)) return false;
-		HttpSession session = (HttpSession) object;
-		return Objects.equals(this.getId(), session.getId()) && Objects.equals(this.getServletContext().getVirtualServerName(), session.getServletContext().getVirtualServerName()) && Objects.equals(this.getServletContext().getContextPath(), session.getServletContext().getContextPath());
+		if (!(object instanceof AbstractHttpSession)) return false;
+		AbstractHttpSession session = (AbstractHttpSession) object;
+		return Objects.equals(this.session, session.session);
 	}
 
 	@Override
 	public String toString() {
-		return this.getId();
+		return this.session.toString();
 	}
 }

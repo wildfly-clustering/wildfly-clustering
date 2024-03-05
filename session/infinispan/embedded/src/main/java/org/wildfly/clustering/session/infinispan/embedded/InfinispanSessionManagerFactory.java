@@ -40,6 +40,7 @@ import org.wildfly.clustering.server.infinispan.util.CacheInvoker;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.server.util.Invoker;
+import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
@@ -50,6 +51,9 @@ import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.IdentityMarshallerSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.session.cache.attributes.coarse.ImmutableSessionActivationNotifier;
+import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationNotifier;
+import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 import org.wildfly.clustering.session.cache.metadata.coarse.ContextualSessionMetaDataEntry;
@@ -57,32 +61,33 @@ import org.wildfly.clustering.session.infinispan.embedded.attributes.CoarseSessi
 import org.wildfly.clustering.session.infinispan.embedded.attributes.FineSessionAttributesFactory;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.InfinispanSessionMetaDataFactory;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKeyFilter;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * Factory for creating session managers.
- * @param <DC> the deployment context type
+ * @param <C> the session manager context type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFactory<DC, SC, TransactionBatch>, Runnable {
+public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC, TransactionBatch>, Runnable {
 	private final Scheduler<String, ExpirationMetaData> scheduler;
-	private final SessionFactory<DC, ContextualSessionMetaDataEntry<SC>, ?, SC> factory;
+	private final SessionFactory<C, ContextualSessionMetaDataEntry<SC>, ?, SC> factory;
 	private final BiConsumer<Locality, Locality> scheduleTask;
 	private final ListenerRegistration schedulerListenerRegistration;
 	private final EmbeddedCacheConfiguration configuration;
-	private final Function<SessionManagerConfiguration<DC>, Registrar<SessionManager<SC, TransactionBatch>>> managerRegistrarFactory;
+	private final Function<SessionManagerConfiguration<C>, Registrar<SessionManager<SC, TransactionBatch>>> managerRegistrarFactory;
 
-	public <S, L, GM extends GroupMember<Address>> InfinispanSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, DC, L> provider, InfinispanSessionManagerFactoryConfiguration<GM> infinispan) {
+	public <S, L, GM extends GroupMember<Address>> InfinispanSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, InfinispanSessionManagerFactoryConfiguration<GM> infinispan) {
 		this.configuration = infinispan;
-		SessionAttributeActivationNotifierFactory<S, DC, L, SC, TransactionBatch> notifierFactory = new SessionAttributeActivationNotifierFactory<>(provider);
+		SessionAttributeActivationNotifierFactory<S, C, L, SC, TransactionBatch> notifierFactory = new SessionAttributeActivationNotifierFactory<>(sessionProvider, listenerProvider);
 		CacheProperties properties = infinispan.getCacheProperties();
 		SessionMetaDataFactory<ContextualSessionMetaDataEntry<SC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(infinispan);
-		this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(configuration, provider, notifierFactory, infinispan), configuration.getSessionContextFactory());
-		ExpiredSessionRemover<DC, ?, ?, SC> remover = new ExpiredSessionRemover<>(this.factory);
+		this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, notifierFactory, infinispan), configuration.getSessionContextFactory());
+		ExpiredSessionRemover<C, ?, ?, SC> remover = new ExpiredSessionRemover<>(this.factory);
 		this.managerRegistrarFactory = new Function<>() {
 			@Override
-			public Registrar<SessionManager<SC, TransactionBatch>> apply(SessionManagerConfiguration<DC> managerConfiguration) {
+			public Registrar<SessionManager<SC, TransactionBatch>> apply(SessionManagerConfiguration<C> managerConfiguration) {
 				return new Registrar<>() {
 					@Override
 					public Registration register(SessionManager<SC, TransactionBatch> manager) {
@@ -142,7 +147,7 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 	}
 
 	@Override
-	public SessionManager<SC, TransactionBatch> createSessionManager(SessionManagerConfiguration<DC> configuration) {
+	public SessionManager<SC, TransactionBatch> createSessionManager(SessionManagerConfiguration<C> configuration) {
 		IdentifierFactory<String> identifierFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), this.configuration.getCache());
 		Registrar<SessionManager<SC, TransactionBatch>> registrar = this.managerRegistrarFactory.apply(configuration);
 		InfinispanSessionManagerConfiguration<SC> infinispanConfiguration = new InfinispanSessionManagerConfiguration<>() {
@@ -174,14 +179,16 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 		return new ContextualSessionManager<>(new InfinispanSessionManager<>(configuration, infinispanConfiguration, this.factory), this.configuration.getCacheProperties().isTransactional() ? ContextStrategy.UNSHARED : ContextStrategy.SHARED);
 	}
 
-	private <S, L, GM extends GroupMember<Address>> SessionAttributesFactory<DC, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, DC, L> provider, Function<String, SessionAttributeActivationNotifier> notifierFactory, EmbeddedCacheConfiguration infinispan) {
+	private <S, L, GM extends GroupMember<Address>> SessionAttributesFactory<C, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory, EmbeddedCacheConfiguration infinispan) {
 		boolean marshalling = infinispan.getCacheProperties().isMarshalling();
 		switch (configuration.getAttributePersistenceStrategy()) {
 			case FINE: {
-				return marshalling ? new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), provider, notifierFactory, infinispan) : new FineSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration), provider, notifierFactory, infinispan);
+				BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionAttributeActivationNotifier<>(sessionProvider, listenerProvider, session, context);
+				return marshalling ? new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), passivationNotifierFactory, detachedPassivationNotifierFactory, infinispan) : new FineSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration), passivationNotifierFactory, detachedPassivationNotifierFactory, infinispan);
 			}
 			case COARSE: {
-				return marshalling ? new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), provider, notifierFactory, infinispan) : new CoarseSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration), provider, notifierFactory, infinispan);
+				BiFunction<ImmutableSession, C, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionActivationNotifier<>(sessionProvider, listenerProvider, session, context);
+				return marshalling ? new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), passivationNotifierFactory, detachedPassivationNotifierFactory, infinispan) : new CoarseSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration), passivationNotifierFactory, detachedPassivationNotifierFactory, infinispan);
 			}
 			default: {
 				// Impossible

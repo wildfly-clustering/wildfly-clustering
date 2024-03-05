@@ -10,6 +10,7 @@ import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -22,6 +23,7 @@ import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheMutatorFactory;
 import org.wildfly.clustering.marshalling.Marshallability;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
+import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
@@ -30,15 +32,13 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.coarse.CoarseSessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.coarse.ImmutableSessionActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationNotifier;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
  */
-public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
+public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 	private static final Logger LOGGER = Logger.getLogger(CoarseSessionAttributesFactory.class);
 
 	private final RemoteCache<SessionAttributesKey, V> cache;
@@ -47,16 +47,16 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 	private final Immutability immutability;
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, V> mutatorFactory;
-	private final SessionSpecificationProvider<S, C, L> provider;
+	private final BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory;
 
-	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, SessionSpecificationProvider<S, C, L> provider, RemoteCacheConfiguration hotrod) {
+	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
 		this.cache = hotrod.getCache();
 		this.ignoreReturnFlags = hotrod.getIgnoreReturnFlags();
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = hotrod.getCacheProperties();
 		this.mutatorFactory = new RemoteCacheMutatorFactory<>(this.cache, this.ignoreReturnFlags);
-		this.provider = provider;
+		this.notifierFactory = notifierFactory;
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 	public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
 		try {
 			CacheEntryMutator mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
-			SessionActivationNotifier notifier = this.properties.isPersistent() ? new ImmutableSessionActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
+			SessionActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
 			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Marshallability.TRUE, this.immutability, notifier);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);

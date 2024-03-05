@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
@@ -26,6 +27,7 @@ import org.wildfly.clustering.cache.infinispan.embedded.listener.PostPassivateBl
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PrePassivateBlockingListener;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
+import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
@@ -34,11 +36,9 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapComputeFunction;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -47,7 +47,7 @@ import org.wildfly.common.function.Functions;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
+public class FineSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 	private static final Logger LOGGER = Logger.getLogger(FineSessionAttributesFactory.class);
 
 	private final Cache<SessionAttributesKey, Map<String, V>> cache;
@@ -57,13 +57,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 	private final Immutability immutability;
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, Map<String, V>> mutatorFactory;
-	private final SessionSpecificationProvider<S, C, L> provider;
-	private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
+	private final BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory;
+	private final Function<String, SessionAttributeActivationNotifier> detachedNotifierFactory;
 	private final ListenerRegistration evictListenerRegistration;
 	private final ListenerRegistration prePassivateListenerRegistration;
 	private final ListenerRegistration postActivateListenerRegistration;
 
-	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, SessionSpecificationProvider<S, C, L> provider, Function<String, SessionAttributeActivationNotifier> notifierFactory, EmbeddedCacheConfiguration infinispan) {
+	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory, Function<String, SessionAttributeActivationNotifier> detachedNotifierFactory, EmbeddedCacheConfiguration infinispan) {
 		this.cache = infinispan.getCache();
 		this.writeCache = infinispan.getWriteOnlyCache();
 		this.silentCache = infinispan.getSilentWriteCache();
@@ -71,8 +71,8 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 		this.immutability = configuration.getImmutability();
 		this.properties = infinispan.getCacheProperties();
 		this.mutatorFactory = new EmbeddedCacheComputeMutatorFactory<>(this.cache, SessionAttributeMapComputeFunction::new);
-		this.provider = provider;
 		this.notifierFactory = notifierFactory;
+		this.detachedNotifierFactory = detachedNotifierFactory;
 		this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
 		this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateBlockingListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;
 		this.evictListenerRegistration = new PostPassivateBlockingListener<>(infinispan.getCache(), this::cascadeEvict).register(SessionMetaDataKey.class);
@@ -151,7 +151,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
 	@Override
 	public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
-		SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
+		SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, attributes)), context) : null;
 		return new FineSessionAttributes<>(new SessionAttributesKey(id), attributes, this.mutatorFactory, this.marshaller, this.immutability, this.properties, notifier);
 	}
 
@@ -170,7 +170,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 	private void notify(BiConsumer<SessionAttributeActivationNotifier, Object> notification, SessionAttributesKey key, Map<String, V> attributes) {
 		String id = key.getId();
 		for (Map.Entry<String, V> entry : attributes.entrySet()) {
-			try (SessionAttributeActivationNotifier notifier = this.notifierFactory.apply(id)) {
+			try (SessionAttributeActivationNotifier notifier = this.detachedNotifierFactory.apply(id)) {
 				notification.accept(notifier, this.marshaller.read(entry.getValue()));
 			} catch (IOException e) {
 				LOGGER.warn(entry.getKey(), e);

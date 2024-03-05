@@ -6,7 +6,6 @@
 package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -18,42 +17,46 @@ import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * Factory for creating a SessionAttributeActivationNotifier for a given session identifier.
- * Session activation events will created using OOB sessions.
+ * Session activation events will created using detached sessions.
  * @author Paul Ferraro
  * @param <S> the container session type
- * @param <DC> the deployment context type
+ * @param <C> the session manager context type
  * @param <L> the activation listener specification type
  * @param <SC> the session context type
  * @param <B> the batch type
  */
-public class SessionAttributeActivationNotifierFactory<S, DC, L, SC, B extends Batch> implements Function<String, SessionAttributeActivationNotifier>, Registrar<Map.Entry<DC, SessionManager<SC, B>>> {
+public class SessionAttributeActivationNotifierFactory<S, C, L, SC, B extends Batch> implements Function<String, SessionAttributeActivationNotifier>, Registrar<Map.Entry<C, SessionManager<SC, B>>> {
 
-	private final Map<DC, SessionManager<SC, B>> contexts = new ConcurrentHashMap<>();
-	private final SessionSpecificationProvider<S, DC, L> provider;
+	private final Map<C, SessionManager<SC, B>> contexts = new ConcurrentHashMap<>();
+	private final SessionSpecificationProvider<S, C> sessionProvider;
+	private final SessionEventListenerSpecificationProvider<S, L> listenerProvider;
 	private final Function<L, Consumer<S>> prePassivateFactory;
 	private final Function<L, Consumer<S>> postActivateFactory;
 
-	public SessionAttributeActivationNotifierFactory(SessionSpecificationProvider<S, DC, L> provider) {
-		this.provider = provider;
-		this.prePassivateFactory = provider::prePassivate;
-		this.postActivateFactory = provider::postActivate;
+	public SessionAttributeActivationNotifierFactory(SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider) {
+		this.sessionProvider = sessionProvider;
+		this.listenerProvider = listenerProvider;
+		this.prePassivateFactory = listenerProvider::preEvent;
+		this.postActivateFactory = listenerProvider::postEvent;
 	}
 
 	@Override
-	public Registration register(Map.Entry<DC, SessionManager<SC, B>> entry) {
-		DC context = entry.getKey();
+	public Registration register(Map.Entry<C, SessionManager<SC, B>> entry) {
+		C context = entry.getKey();
 		this.contexts.put(context, entry.getValue());
 		return () -> this.contexts.remove(context);
 	}
 
 	@Override
 	public SessionAttributeActivationNotifier apply(String sessionId) {
-		Map<DC, SessionManager<SC, B>> contexts = this.contexts;
-		SessionSpecificationProvider<S, DC, L> provider = this.provider;
+		Map<C, SessionManager<SC, B>> contexts = this.contexts;
+		SessionSpecificationProvider<S, C> sessionProvider = this.sessionProvider;
+		SessionEventListenerSpecificationProvider<S, L> listenerProvider = this.listenerProvider;
 		Function<L, Consumer<S>> prePassivateNotifier = this.prePassivateFactory;
 		Function<L, Consumer<S>> postActivateNotifier = this.postActivateFactory;
 
@@ -69,15 +72,14 @@ public class SessionAttributeActivationNotifierFactory<S, DC, L, SC, B extends B
 			}
 
 			public void notify(Function<L, Consumer<S>> notifier, Object value) {
-				Optional<L> listener = provider.asSessionActivationListener(value);
-				if (listener.isPresent()) {
-					for (Map.Entry<DC, SessionManager<SC, B>> entry : contexts.entrySet()) {
-						DC context = entry.getKey();
+				listenerProvider.asEventListener(value).ifPresent(listener -> {
+					for (Map.Entry<C, SessionManager<SC, B>> entry : contexts.entrySet()) {
+						C context = entry.getKey();
 						SessionManager<SC, B> manager = entry.getValue();
 						Session<SC> session = new DetachedSession<>(manager, sessionId, null);
-						notifier.apply(listener.get()).accept(provider.asSession(session, context));
+						notifier.apply(listener).accept(sessionProvider.asSession(session, context));
 					}
-				}
+				});
 			}
 
 			@Override

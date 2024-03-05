@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
@@ -26,19 +27,19 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 
 	private final Function<Supplier<L>, L> prePassivateListenerFactory;
 	private final Function<Supplier<L>, L> postActivateListenerFactory;
-	private final SessionSpecificationProvider<S, C, L> provider;
+	private final SessionEventListenerSpecificationProvider<S, L> provider;
 	private final Function<L, Consumer<S>> prePassivateNotifier;
 	private final Function<L, Consumer<S>> postActivateNotifier;
 	private final S session;
 	private final Map<Supplier<L>, L> listeners = new ConcurrentHashMap<>();
 
-	public ImmutableSessionAttributeActivationNotifier(SessionSpecificationProvider<S, C, L> provider, ImmutableSession session, C context) {
-		this.provider = provider;
-		this.prePassivateNotifier = this.provider::prePassivate;
-		this.postActivateNotifier = this.provider::postActivate;
-		this.prePassivateListenerFactory = new SessionActivationListenerFactory<>(provider, true);
-		this.postActivateListenerFactory = new SessionActivationListenerFactory<>(provider, false);
-		this.session = provider.asSession(session, context);
+	public ImmutableSessionAttributeActivationNotifier(SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, ImmutableSession session, C context) {
+		this.provider = listenerProvider;
+		this.prePassivateNotifier = listenerProvider::preEvent;
+		this.postActivateNotifier = listenerProvider::postEvent;
+		this.prePassivateListenerFactory = new SessionActivationListenerFactory<>(listenerProvider, true);
+		this.postActivateListenerFactory = new SessionActivationListenerFactory<>(listenerProvider, false);
+		this.session = sessionProvider.asSession(session, context);
 	}
 
 	@Override
@@ -52,20 +53,17 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 	}
 
 	private void notify(Object object, Function<Supplier<L>, L> listenerFactory, Function<L, Consumer<S>> notifierFactory) {
-		this.provider.asSessionActivationListener(object).ifPresent(new Consumer<>() {
-			@Override
-			public void accept(L listener) {
-				Supplier<L> reference = new SessionActivationListenerKey<>(listener);
-				ImmutableSessionAttributeActivationNotifier.this.listeners.computeIfAbsent(reference, listenerFactory);
-				notifierFactory.apply(listener).accept(ImmutableSessionAttributeActivationNotifier.this.session);
-			}
+		this.provider.asEventListener(object).ifPresent(listener -> {
+			Supplier<L> reference = new SessionActivationListenerKey<>(listener);
+			this.listeners.computeIfAbsent(reference, listenerFactory);
+			notifierFactory.apply(listener).accept(ImmutableSessionAttributeActivationNotifier.this.session);
 		});
 	}
 
 	@Override
 	public void close() {
 		for (L listener : this.listeners.values()) {
-			this.provider.prePassivate(listener).accept(this.session);
+			this.provider.preEvent(listener).accept(this.session);
 		}
 		this.listeners.clear();
 	}
@@ -103,17 +101,17 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 	 * Factory for creating HttpSessionActivationListener values.
 	 */
 	private static class SessionActivationListenerFactory<S, C, L> implements Function<Supplier<L>, L> {
-		private final SessionSpecificationProvider<S, C, L> provider;
+		private final SessionEventListenerSpecificationProvider<S, L> provider;
 		private final boolean active;
 
-		SessionActivationListenerFactory(SessionSpecificationProvider<S, C, L> provider, boolean active) {
+		SessionActivationListenerFactory(SessionEventListenerSpecificationProvider<S, L> provider, boolean active) {
 			this.provider = provider;
 			this.active = active;
 		}
 
 		@Override
 		public L apply(Supplier<L> reference) {
-			SessionSpecificationProvider<S, C, L> provider = this.provider;
+			SessionEventListenerSpecificationProvider<S, L> provider = this.provider;
 			L listener = reference.get();
 			// Prevents redundant session activation events for a given listener.
 			AtomicBoolean active = new AtomicBoolean(this.active);
@@ -121,7 +119,7 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 				@Override
 				public void accept(S session) {
 					if (active.compareAndSet(true, false)) {
-						provider.prePassivate(listener).accept(session);
+						provider.preEvent(listener).accept(session);
 					}
 				}
 			};
@@ -129,11 +127,11 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 				@Override
 				public void accept(S session) {
 					if (active.compareAndSet(false, true)) {
-						provider.postActivate(listener).accept(session);
+						provider.postEvent(listener).accept(session);
 					}
 				}
 			};
-			return provider.asSessionActivationListener(prePassivate, postActivate);
+			return provider.asEventListener(prePassivate, postActivate);
 		}
 	}
 }
