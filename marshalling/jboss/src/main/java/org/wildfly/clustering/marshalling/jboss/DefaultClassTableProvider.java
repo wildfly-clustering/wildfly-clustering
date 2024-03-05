@@ -5,11 +5,14 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jboss.marshalling.ClassTable;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledKey;
@@ -81,11 +84,11 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 			java.util.concurrent.SynchronousQueue.class,
 			java.util.concurrent.TimeUnit.class)),
 	UTIL(List.of(
-			// Random access
 			Collections.checkedCollection(List.of(), Void.class).getClass(),
-			// Non-random access
-			Collections.checkedCollection(new java.util.LinkedList<>(), Void.class).getClass(),
+			// Random access
 			Collections.checkedList(List.of(), Void.class).getClass(),
+			// Non-random access
+			Collections.checkedList(new java.util.LinkedList<>(), Void.class).getClass(),
 			Collections.checkedMap(Map.of(), Void.class, Void.class).getClass(),
 			Collections.checkedNavigableMap(Collections.emptyNavigableMap(), Void.class, Void.class).getClass(),
 			Collections.checkedNavigableSet(Collections.emptyNavigableSet(), Void.class).getClass(),
@@ -96,11 +99,22 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 			Collections.singleton(null).getClass(),
 			Collections.singletonList(null).getClass(),
 			Collections.singletonMap(null, null).getClass(),
+			Collections.synchronizedCollection(List.of()).getClass(),
 			// Random access
+			Collections.synchronizedList(List.of()).getClass(),
+			// Sequential access
+			Collections.synchronizedList(new java.util.LinkedList<>()).getClass(),
+			Collections.synchronizedMap(Map.of()).getClass(),
+			Collections.synchronizedNavigableMap(Collections.emptyNavigableMap()).getClass(),
+			Collections.synchronizedNavigableSet(Collections.emptyNavigableSet()).getClass(),
+			Collections.synchronizedSet(Set.of()).getClass(),
+			Collections.synchronizedSortedMap(Collections.emptySortedMap()).getClass(),
+			Collections.synchronizedSortedSet(Collections.emptySortedSet()).getClass(),
 			Collections.unmodifiableCollection(List.of()).getClass(),
-			// Non-random access
-			Collections.unmodifiableCollection(new java.util.LinkedList<>()).getClass(),
+			// Random access
 			Collections.unmodifiableList(List.of()).getClass(),
+			// Sequential access
+			Collections.unmodifiableList(new java.util.LinkedList<>()).getClass(),
 			Collections.unmodifiableMap(Map.of()).getClass(),
 			Collections.unmodifiableNavigableMap(Collections.emptyNavigableMap()).getClass(),
 			Collections.unmodifiableNavigableSet(Collections.emptyNavigableSet()).getClass(),
@@ -151,10 +165,22 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 			)),
 		MARSHALLING(List.of(ByteBufferMarshalledKey.class, ByteBufferMarshalledValue.class)),
 	;
+
+	private static List<Class<?>> findSerializableClasses(Class<?> targetClass) {
+		Class<?>[] childClasses = java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<>() {
+			@Override
+			public Class<?>[] run() {
+				return targetClass.getDeclaredClasses();
+			}
+		});
+		// Include any non-public serializable components/replacements
+		return (childClasses.length > 0) ? Stream.concat(Stream.of(targetClass), Stream.of(childClasses).filter(Serializable.class::isAssignableFrom)).collect(Collectors.toList()) : List.of(targetClass);
+	}
+
 	private final ClassTable table;
 
 	DefaultClassTableProvider(List<Class<?>> classes) {
-		this.table = new IdentityClassTable(classes);
+		this.table = new IdentityClassTable(classes.stream().map(DefaultClassTableProvider::findSerializableClasses).flatMap(List::stream).collect(Collectors.toList()));
 	}
 
 	@Override
