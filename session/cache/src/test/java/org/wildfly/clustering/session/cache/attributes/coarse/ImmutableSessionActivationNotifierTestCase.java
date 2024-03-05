@@ -7,8 +7,8 @@ package org.wildfly.clustering.session.cache.attributes.coarse;
 
 import static org.mockito.Mockito.*;
 
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -16,7 +16,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
@@ -48,18 +47,17 @@ public class ImmutableSessionActivationNotifierTestCase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void test() {
-		ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
+		Map<String, Object> attributes = Map.ofEntries(
+				Map.entry("foo", UUID.randomUUID()),
+				Map.entry("bar", UUID.randomUUID()),
+				Map.entry("listener1", this.listener1),
+				Map.entry("listener2", this.listener2));
 
-		when(this.session.getAttributes()).thenReturn(attributes);
-		when(attributes.getAttributeNames()).thenReturn(Set.of("foo", "bar", "listener1", "listener2"));
-		when(attributes.getAttribute("foo")).thenReturn(UUID.randomUUID());
-		when(attributes.getAttribute("bar")).thenReturn(UUID.randomUUID());
-		when(attributes.getAttribute("listener1")).thenReturn(this.listener1);
-		when(attributes.getAttribute("listener2")).thenReturn(this.listener2);
+		doReturn(attributes).when(this.session).getAttributes();
 
-		when(this.listenerProvider.asEventListener(any())).thenReturn(Optional.empty());
-		when(this.listenerProvider.asEventListener(this.listener1)).thenReturn(Optional.of(this.listener1));
-		when(this.listenerProvider.asEventListener(this.listener2)).thenReturn(Optional.of(this.listener2));
+		doReturn(Optional.empty()).when(this.listenerProvider).asEventListener(any(UUID.class));
+		doReturn(Optional.of(this.listener1)).when(this.listenerProvider).asEventListener(this.listener1);
+		doReturn(Optional.of(this.listener2)).when(this.listenerProvider).asEventListener(this.listener2);
 
 		Session session = mock(Session.class);
 		Consumer<Session> prePassivateNotifier1 = mock(Consumer.class);
@@ -128,20 +126,16 @@ public class ImmutableSessionActivationNotifierTestCase {
 
 	@Test
 	public void postActivate() {
-		ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
-		UUID foo = UUID.randomUUID();
-		UUID bar = UUID.randomUUID();
+		Map<String, Object> attributes = Map.ofEntries(
+				Map.entry("foo", UUID.randomUUID()),
+				Map.entry("bar", UUID.randomUUID()),
+				Map.entry("listener1", this.listener1),
+				Map.entry("listener2", this.listener2));
 
-		when(this.session.getAttributes()).thenReturn(attributes);
-		when(attributes.getAttributeNames()).thenReturn(Set.of("foo", "bar", "listener1", "listener2"));
-		when(attributes.getAttribute("foo")).thenReturn(UUID.randomUUID());
-		when(attributes.getAttribute("bar")).thenReturn(UUID.randomUUID());
-		when(attributes.getAttribute("listener1")).thenReturn(this.listener1);
-		when(attributes.getAttribute("listener2")).thenReturn(this.listener2);
-		when(this.listenerProvider.asEventListener(foo)).thenReturn(Optional.empty());
-		when(this.listenerProvider.asEventListener(bar)).thenReturn(Optional.empty());
-		when(this.listenerProvider.asEventListener(this.listener1)).thenReturn(Optional.of(this.listener1));
-		when(this.listenerProvider.asEventListener(this.listener2)).thenReturn(Optional.of(this.listener2));
+		doReturn(attributes).when(this.session).getAttributes();
+		doReturn(Optional.empty()).when(this.listenerProvider).asEventListener(any(UUID.class));
+		doReturn(Optional.of(this.listener1)).when(this.listenerProvider).asEventListener(this.listener1);
+		doReturn(Optional.of(this.listener2)).when(this.listenerProvider).asEventListener(this.listener2);
 
 		Session session = mock(Session.class);
 		Consumer<Session> notifier1 = mock(Consumer.class);

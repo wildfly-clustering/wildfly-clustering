@@ -23,13 +23,11 @@ import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
-import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapComputeFunction;
@@ -115,8 +113,8 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	}
 
 	@Override
-	public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, Object> attributes) {
-		return new SimpleImmutableSessionAttributes(attributes);
+	public Map<String, Object> createImmutableSessionAttributes(String id, Map<String, Object> attributes) {
+		return Map.copyOf(attributes);
 	}
 
 	@Override

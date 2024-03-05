@@ -14,7 +14,6 @@ import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
@@ -121,7 +120,7 @@ public class CompositeSessionFactoryTestCase {
 		Contextual<Object> contextual = mock(Contextual.class);
 		Object attributesValue = new Object();
 		ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
-		ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
+		Map<String, Object> attributes = mock(Map.class);
 		String id = "id";
 
 		when(this.metaDataFactory.createImmutableSessionMetaData(id, contextual)).thenReturn(metaData);

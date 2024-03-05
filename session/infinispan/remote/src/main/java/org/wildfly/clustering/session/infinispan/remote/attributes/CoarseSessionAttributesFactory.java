@@ -24,13 +24,11 @@ import org.wildfly.clustering.marshalling.Marshallability;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
-import org.wildfly.clustering.session.cache.attributes.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationNotifier;
 import org.wildfly.common.function.Functions;
@@ -111,8 +109,8 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	}
 
 	@Override
-	public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, Object> values) {
-		return new SimpleImmutableSessionAttributes(values);
+	public Map<String, Object> createImmutableSessionAttributes(String id, Map<String, Object> values) {
+		return Map.copyOf(values);
 	}
 
 	@Override

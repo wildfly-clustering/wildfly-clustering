@@ -5,6 +5,7 @@
 package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
@@ -14,7 +15,6 @@ import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.SessionFactory;
 
@@ -44,7 +44,7 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Predicate<String>,
 			if (metaData.isExpired()) {
 				AV attributesValue = this.factory.getAttributesFactory().findValue(id);
 				if (attributesValue != null) {
-					ImmutableSessionAttributes attributes = this.factory.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
+					Map<String, Object> attributes = this.factory.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
 					ImmutableSession session = this.factory.createImmutableSession(id, metaData, attributes);
 					LOGGER.tracef("Session %s has expired.", id);
 					for (Consumer<ImmutableSession> listener : this.listeners) {

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,7 +20,6 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.SessionAttributes;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionMetaData;
 
@@ -279,20 +279,20 @@ public class DetachedSessionTestCase {
 		when(batcher.createBatch()).thenReturn(batch);
 		when(this.manager.findSession(this.id)).thenReturn(null);
 
-		assertThrows(IllegalStateException.class, this.session.getAttributes()::getAttributeNames);
+		assertThrows(IllegalStateException.class, this.session.getAttributes()::keySet);
 
 		verify(batch).close();
 		reset(batch);
 
 		Session<Object> session = mock(Session.class);
-		SessionAttributes attributes = mock(SessionAttributes.class);
+		Map<String, Object> attributes = mock(Map.class);
 		Set<String> expected = Collections.singleton("foo");
 
 		when(this.manager.findSession(this.id)).thenReturn(session);
 		when(session.getAttributes()).thenReturn(attributes);
-		when(attributes.getAttributeNames()).thenReturn(expected);
+		when(attributes.keySet()).thenReturn(expected);
 
-		Set<String> result = this.session.getAttributes().getAttributeNames();
+		Set<String> result = this.session.getAttributes().keySet();
 
 		assertSame(expected, result);
 
@@ -309,20 +309,20 @@ public class DetachedSessionTestCase {
 		when(batcher.createBatch()).thenReturn(batch);
 		when(this.manager.findSession(this.id)).thenReturn(null);
 
-		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().getAttribute(attributeName));
+		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().get(attributeName));
 
 		verify(batch).close();
 		reset(batch);
 
 		Session<Object> session = mock(Session.class);
-		SessionAttributes attributes = mock(SessionAttributes.class);
+		Map<String, Object> attributes = mock(Map.class);
 		Object expected = new Object();
 
 		when(this.manager.findSession(this.id)).thenReturn(session);
 		when(session.getAttributes()).thenReturn(attributes);
-		when(attributes.getAttribute(attributeName)).thenReturn(expected);
+		when(attributes.get(attributeName)).thenReturn(expected);
 
-		Object result = this.session.getAttributes().getAttribute(attributeName);
+		Object result = this.session.getAttributes().get(attributeName);
 
 		assertSame(expected, result);
 
@@ -340,20 +340,20 @@ public class DetachedSessionTestCase {
 		when(batcher.createBatch()).thenReturn(batch);
 		when(this.manager.findSession(this.id)).thenReturn(null);
 
-		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().setAttribute(attributeName, attributeValue));
+		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().put(attributeName, attributeValue));
 
 		verify(batch).close();
 		reset(batch);
 
 		Session<Object> session = mock(Session.class);
-		SessionAttributes attributes = mock(SessionAttributes.class);
+		Map<String, Object> attributes = mock(Map.class);
 		Object expected = new Object();
 
 		when(this.manager.findSession(this.id)).thenReturn(session);
 		when(session.getAttributes()).thenReturn(attributes);
-		when(attributes.setAttribute(attributeName, attributeValue)).thenReturn(expected);
+		when(attributes.put(attributeName, attributeValue)).thenReturn(expected);
 
-		Object result = this.session.getAttributes().setAttribute(attributeName, attributeValue);
+		Object result = this.session.getAttributes().put(attributeName, attributeValue);
 
 		assertSame(expected, result);
 
@@ -371,20 +371,20 @@ public class DetachedSessionTestCase {
 		when(batcher.createBatch()).thenReturn(batch);
 		when(this.manager.findSession(this.id)).thenReturn(null);
 
-		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().removeAttribute(attributeName));
+		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().remove(attributeName));
 
 		verify(batch).close();
 		reset(batch);
 
 		Session<Object> session = mock(Session.class);
-		SessionAttributes attributes = mock(SessionAttributes.class);
+		Map<String, Object> attributes = mock(Map.class);
 		Object expected = new Object();
 
 		when(this.manager.findSession(this.id)).thenReturn(session);
 		when(session.getAttributes()).thenReturn(attributes);
-		when(attributes.removeAttribute(attributeName)).thenReturn(expected);
+		when(attributes.remove(attributeName)).thenReturn(expected);
 
-		Object result = this.session.getAttributes().removeAttribute(attributeName);
+		Object result = this.session.getAttributes().remove(attributeName);
 
 		assertSame(expected, result);
 

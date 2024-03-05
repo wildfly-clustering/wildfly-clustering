@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.infinispan.remote;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -24,7 +25,6 @@ import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeSessionFactory;
 import org.wildfly.clustering.session.cache.attributes.ImmutableSessionAttributesFactory;
@@ -105,7 +105,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 
 						// Notify session expiration listeners
 						ImmutableSessionMetaData metaData = metaDataFactory.createImmutableSessionMetaData(id, new DefaultSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData));
-						ImmutableSessionAttributes attributes = attributesFactory.createImmutableSessionAttributes(id, attributesValue);
+						Map<String, Object> attributes = attributesFactory.createImmutableSessionAttributes(id, attributesValue);
 						ImmutableSession session = HotRodSessionFactory.this.createImmutableSession(id, metaData, attributes);
 						LOGGER.tracef("Session %s has expired.", id);
 						for (Consumer<ImmutableSession> listener : listeners) {

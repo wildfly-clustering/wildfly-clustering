@@ -5,8 +5,9 @@
 
 package org.wildfly.clustering.session.cache.attributes;
 
+import java.util.Map;
+
 import org.wildfly.clustering.cache.Locator;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 
 /**
  * Factory for creating {@link ImmutableSessionAttributes} objects.
@@ -14,5 +15,5 @@ import org.wildfly.clustering.session.ImmutableSessionAttributes;
  * @param <V> attributes cache entry type
  */
 public interface ImmutableSessionAttributesFactory<V> extends Locator<String, V> {
-	ImmutableSessionAttributes createImmutableSessionAttributes(String id, V value);
+	Map<String, Object> createImmutableSessionAttributes(String id, V value);
 }

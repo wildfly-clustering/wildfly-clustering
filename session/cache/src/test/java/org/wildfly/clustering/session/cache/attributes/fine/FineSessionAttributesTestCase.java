@@ -58,7 +58,7 @@ public class FineSessionAttributesTestCase {
 	public void getAttributeNames() {
 		Map<String, Object> map = Map.of("foo", UUID.randomUUID(), "bar", UUID.randomUUID());
 		try (SessionAttributes attributes = this.createSessionAttributes("id", map)) {
-			assertEquals(map.keySet(), attributes.getAttributeNames());
+			assertEquals(map.keySet(), attributes.keySet());
 		}
 
 		for (Object value : map.values()) {
@@ -82,10 +82,10 @@ public class FineSessionAttributesTestCase {
 		// Verify read-only request
 		try (SessionAttributes attributes = this.createSessionAttributes("id", map)) {
 			// Verify non-existant attribute
-			assertNull(attributes.getAttribute("missing"));
+			assertNull(attributes.get("missing"));
 
 			// Verify immutable attributes
-			assertSame(immutable, attributes.getAttribute("immutable"));
+			assertSame(immutable, attributes.get("immutable"));
 		}
 
 		for (Object value : map.values()) {
@@ -102,14 +102,14 @@ public class FineSessionAttributesTestCase {
 
 		try (SessionAttributes attributes = this.createSessionAttributes("id", map)) {
 			// Verify non-existant attribute
-			assertNull(attributes.getAttribute("missing"));
+			assertNull(attributes.get("missing"));
 
 			// Verify mutable/immutable attributes
 			doReturn(marshalledMutable).when(this.marshaller).write(mutable);
 			doReturn(mutator).when(this.mutatorFactory).createMutator(eq("id"), capturedUpdates.capture());
 
-			assertSame(immutable, attributes.getAttribute("immutable"));
-			assertSame(mutable, attributes.getAttribute("mutable"));
+			assertSame(immutable, attributes.get("immutable"));
+			assertSame(mutable, attributes.get("mutable"));
 		}
 
 		for (Object value : map.values()) {
@@ -131,7 +131,7 @@ public class FineSessionAttributesTestCase {
 		UUID bar = UUID.randomUUID();
 		try (SessionAttributes attributes = this.createSessionAttributes("id", Map.of("foo", foo, "bar", bar))) {
 			// Verify non-existant attribute
-			assertNull(attributes.removeAttribute("baz"));
+			assertNull(attributes.remove("baz"));
 		}
 
 		verify(this.notifier).prePassivate(foo);
@@ -145,12 +145,12 @@ public class FineSessionAttributesTestCase {
 		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
 		try (SessionAttributes attributes = this.createSessionAttributes("id", Map.of("foo", foo, "bar", bar))) {
 			// Verify non-existant attribute
-			assertNull(attributes.removeAttribute("baz"));
+			assertNull(attributes.remove("baz"));
 
 			// Verify mutable/immutable attributes
 			doReturn(mutator).when(this.mutatorFactory).createMutator(eq("id"), capturedUpdates.capture());
 
-			assertSame(foo, attributes.removeAttribute("foo"));
+			assertSame(foo, attributes.remove("foo"));
 		}
 
 		verify(this.notifier).prePassivate(bar);
@@ -173,10 +173,10 @@ public class FineSessionAttributesTestCase {
 			doReturn(false).when(this.marshaller).isMarshallable(unmarshallable);
 
 			// Should be treated as a removal
-			assertNull(attributes.setAttribute("missing", null));
+			assertNull(attributes.put("missing", null));
 
 			// Verify unmarshallable attribute
-			assertThrows(IllegalArgumentException.class, () -> attributes.setAttribute("unmarshallable", unmarshallable));
+			assertThrows(IllegalArgumentException.class, () -> attributes.put("unmarshallable", unmarshallable));
 		}
 
 		verify(this.notifier).prePassivate(existing);
@@ -206,13 +206,13 @@ public class FineSessionAttributesTestCase {
 			doReturn(marshalledExistingReplacement).when(this.marshaller).write(existingReplacement);
 
 			// Test new attribute
-			assertNull(attributes.setAttribute("new", newIntermediate));
-			assertSame(newIntermediate, attributes.setAttribute("new", newReplacement));
+			assertNull(attributes.put("new", newIntermediate));
+			assertSame(newIntermediate, attributes.put("new", newReplacement));
 			// Test replaced attribute
-			assertSame(existing, attributes.setAttribute("existing", existingIntermediate));
-			assertSame(existingIntermediate, attributes.setAttribute("existing", existingReplacement));
+			assertSame(existing, attributes.put("existing", existingIntermediate));
+			assertSame(existingIntermediate, attributes.put("existing", existingReplacement));
 			// Should be treated as a removal
-			assertSame(removing, attributes.setAttribute("removing", null));
+			assertSame(removing, attributes.put("removing", null));
 		}
 
 		verify(this.notifier).prePassivate(newReplacement);

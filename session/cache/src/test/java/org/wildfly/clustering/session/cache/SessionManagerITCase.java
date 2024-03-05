@@ -129,7 +129,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 							future = future.thenAcceptBoth(CompletableFuture.runAsync(() -> {
 								for (int j = 0; j < requests; ++j) {
 									this.requestSession(manager1, sessionId, session -> {
-										AtomicInteger v = (AtomicInteger) session.getAttributes().getAttribute("value");
+										AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
 										assertNotNull(v);
 										v.incrementAndGet();
 									});
@@ -306,7 +306,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 	}
 
 	private void verifySessionAttributes(ImmutableSession session, Map<String, Object> attributes) {
-		assertTrue(session.getAttributes().getAttributeNames().containsAll(attributes.keySet()));
+		assertTrue(session.getAttributes().keySet().containsAll(attributes.keySet()));
 		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
 			this.verifySessionAttribute(session, entry.getKey(), entry.getValue(), Objects::equals);
 		}
@@ -314,7 +314,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 
 	private <T> void verifySessionAttribute(ImmutableSession session, String name, T expected, BiPredicate<T, T> equals) {
 		@SuppressWarnings("unchecked")
-		T value = (T) session.getAttributes().getAttribute(name);
+		T value = (T) session.getAttributes().get(name);
 		assertTrue(equals.test(expected, value), () -> String.format("Expected %s, Actual %s", expected, value));
 	}
 
@@ -324,9 +324,9 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 			Object expected = entry.getValue().getKey();
 			Object value = entry.getValue().getValue();
 			if (value != null) {
-				assertEquals(expected, session.getAttributes().setAttribute(name, value));
+				assertEquals(expected, session.getAttributes().put(name, value));
 			} else {
-				assertEquals(expected, session.getAttributes().removeAttribute(name));
+				assertEquals(expected, session.getAttributes().remove(name));
 			}
 		}
 	}
@@ -339,11 +339,11 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		}
 	}
 
-	private static class TestSessionManagerConfiguration<DC> implements SessionManagerConfiguration<DC> {
+	private static class TestSessionManagerConfiguration<C> implements SessionManagerConfiguration<C> {
 		private final BlockingQueue<ImmutableSession> expired;
-		private final DC context;
+		private final C context;
 
-		TestSessionManagerConfiguration(BlockingQueue<ImmutableSession> expired, DC context) {
+		TestSessionManagerConfiguration(BlockingQueue<ImmutableSession> expired, C context) {
 			this.expired = expired;
 			this.context = context;
 		}
@@ -364,7 +364,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		}
 
 		@Override
-		public DC getContext() {
+		public C getContext() {
 			return this.context;
 		}
 	}

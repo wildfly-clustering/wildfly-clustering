@@ -4,8 +4,10 @@
  */
 package org.wildfly.clustering.session;
 
+import java.util.Map;
+
 /**
- * Represents an immutable view of a session.
+ * An immutable view of a session.
  * @author Paul Ferraro
  */
 public interface ImmutableSession {
@@ -33,5 +35,5 @@ public interface ImmutableSession {
 	 * @return this session's attributes
 	 * @throws IllegalStateException if this session is invalid
 	 */
-	ImmutableSessionAttributes getAttributes();
+	Map<String, Object> getAttributes();
 }

@@ -5,8 +5,9 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.util.Map;
+
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.attributes.ImmutableSessionAttributesFactory;
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
@@ -37,7 +38,7 @@ public class CompositeImmutableSessionFactory<MV, AV> implements ImmutableSessio
 	}
 
 	@Override
-	public ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, ImmutableSessionAttributes attributes) {
+	public ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, Map<String, Object> attributes) {
 		return new CompositeImmutableSession(id, metaData, attributes);
 	}
 }
