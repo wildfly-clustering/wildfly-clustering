@@ -29,5 +29,12 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-session-spec-spi</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-session-spi</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
 	</dependencies>
 </project>

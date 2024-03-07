@@ -24,6 +24,11 @@
 		<dependencies>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
+				<artifactId>wildfly-clustering-arquillian</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-cache-infinispan-common</artifactId>
 				<version>${project.version}</version>
 			</dependency>

@@ -8,33 +8,29 @@
 
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
-		<artifactId>wildfly-clustering-session-spec-servlet</artifactId>
+		<artifactId>wildfly-clustering</artifactId>
 		<version>1.0.9.Final-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>wildfly-clustering-session-spec-servlet-3.1</artifactId>
+	<artifactId>wildfly-clustering-arquillian</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Servlet specification 3.1</name>
+	<name>WildFly Clustering: Arquillian extension</name>
 
 	<dependencies>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<groupId>org.kohsuke.metainf-services</groupId>
+			<artifactId>metainf-services</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-session-spec-spi</artifactId>
+			<groupId>org.jboss.arquillian.container</groupId>
+			<artifactId>arquillian-container-spi</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-session-spi</artifactId>
-			<scope>test</scope>
-			<classifier>tests</classifier>
+			<groupId>org.jboss.arquillian.test</groupId>
+			<artifactId>arquillian-test-spi</artifactId>
 		</dependency>
 	</dependencies>
 </project>
