@@ -10,10 +10,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.clustering.arquillian.Deployment;
 import org.wildfly.clustering.arquillian.DeploymentContainer;
@@ -23,7 +26,7 @@ import org.wildfly.clustering.arquillian.DeploymentContainerRegistry;
  * Abstract container integration test.
  * @author Paul Ferraro
  */
-public abstract class AbstractSessionManagerITCase implements Consumer<Archive<?>>, SessionManagementTesterConfiguration {
+public abstract class AbstractSessionManagerITCase implements Consumer<Archive<?>>, SessionManagementTesterConfiguration, Supplier<WebArchive> {
 
 	@RegisterExtension
 	static final ArquillianExtension ARQUILLIAN = new ArquillianExtension();
@@ -46,6 +49,13 @@ public abstract class AbstractSessionManagerITCase implements Consumer<Archive<?
 	 */
 	protected AbstractSessionManagerITCase(Set<String> containerNames) {
 		this.containerNames = containerNames;
+	}
+
+	public WebArchive get() {
+		return ShrinkWrap.create(WebArchive.class, this.getClass().getSimpleName() + ".war")
+				.addClass(SessionManagementEndpointConfiguration.class)
+				.addPackage(this.getEndpointClass().getPackage())
+				;
 	}
 
 	@Override
