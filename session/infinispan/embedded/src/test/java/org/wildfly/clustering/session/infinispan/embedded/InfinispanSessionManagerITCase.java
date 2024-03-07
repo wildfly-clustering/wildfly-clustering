@@ -65,19 +65,19 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 		super(InfinispanSessionManagerFactoryProvider::new);
 	}
 
-	@ParameterizedTest(name = "{arguments}")
+	@ParameterizedTest(name = ParameterizedTest.ARGUMENTS_PLACEHOLDER)
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void basic(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}
 
-	@ParameterizedTest(name = "{arguments}")
+	@ParameterizedTest(name = ParameterizedTest.ARGUMENTS_PLACEHOLDER)
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
-	@ParameterizedTest(name = "{arguments}")
+	@ParameterizedTest(name = ParameterizedTest.ARGUMENTS_PLACEHOLDER)
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.expiration(parameters);

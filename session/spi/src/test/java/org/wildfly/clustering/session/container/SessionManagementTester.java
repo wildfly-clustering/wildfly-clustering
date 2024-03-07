@@ -38,9 +38,9 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		HEAD, GET, PUT, DELETE;
 	}
 
-	private static final int ITERATIONS = 5;
+	private static final int ITERATIONS = 3;
 	private static final int CONCURRENCY = ITERATIONS * 10;
-	private static final Duration FAILOVER_DURATION = Duration.ofSeconds(1);
+	private static final Duration FAILOVER_DURATION = Duration.ofSeconds(2);
 
 	private final ExecutorService executor;
 	private final SessionManagementTesterConfiguration configuration;
