@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright The WildFly Authors
+	SPDX-License-Identifier: Apache-2.0
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.wildfly.clustering</groupId>
+		<artifactId>wildfly-clustering</artifactId>
+		<version>1.0.9.Final-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>wildfly-clustering-arquillian</artifactId>
+	<packaging>jar</packaging>
+
+	<name>WildFly Clustering: Arquillian extension</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.kohsuke.metainf-services</groupId>
+			<artifactId>metainf-services</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.container</groupId>
+			<artifactId>arquillian-container-spi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.test</groupId>
+			<artifactId>arquillian-test-spi</artifactId>
+		</dependency>
+	</dependencies>
+</project>

@@ -47,6 +47,7 @@
 		<!-- Test dependency versions -->
 		<version.io.undertow>2.3.12.Final</version.io.undertow>
 		<version.org.apache.tomcat>10.1.19</version.org.apache.tomcat>
+		<version.org.jboss.arquillian>1.8.0.Final</version.org.jboss.arquillian>
 		<version.org.junit>5.10.2</version.org.junit>
 		<version.org.mockito>5.11.0</version.org.mockito>
 		<version.org.testcontainers>1.19.6</version.org.testcontainers>
@@ -57,6 +58,7 @@
 
 	<modules>
 		<module>bom</module>
+		<module>arquillian</module>
 		<module>cache</module>
 		<module>context</module>
 		<module>marshalling</module>
@@ -78,26 +80,28 @@
 				<version>${version.net.jcip}</version>
 			</dependency>
 
+			<!-- BOM dependencies -->
+			<dependency>
+				<groupId>org.infinispan</groupId>
+				<artifactId>infinispan-bom</artifactId>
+				<version>${version.org.infinispan}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian</groupId>
+				<artifactId>arquillian-bom</artifactId>
+				<version>${version.org.jboss.arquillian}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+
 			<!-- Compile dependencies -->
 			<!--dependency>
 				<groupId>dev.failsafe</groupId>
 				<artifactId>failsafe</artifactId>
 				<version>${version.dev.failsafe}</version>
 			</dependency-->
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-bom</artifactId>
-				<version>${version.org.infinispan}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-bom</artifactId>
-				<version>${project.version}</version>
-				<type>pom</type>
-			</dependency>
-
 			<dependency>
 				<groupId>org.jboss.logging</groupId>
 				<artifactId>jboss-logging</artifactId>
