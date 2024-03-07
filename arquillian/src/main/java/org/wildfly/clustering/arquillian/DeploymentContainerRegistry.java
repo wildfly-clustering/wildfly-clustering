@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.arquillian;
 
+import java.util.Collection;
+
 /**
  * @author Paul Ferraro
  */
@@ -12,5 +14,5 @@ public interface DeploymentContainerRegistry {
 
 	DeploymentContainer getContainer(String name);
 
-	Iterable<DeploymentContainer> getContainers();
+	Collection<DeploymentContainer> getContainers();
 }

@@ -7,6 +7,7 @@ package org.wildfly.clustering.arquillian.extension;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -61,7 +62,7 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		}
 
 		@Override
-		public Iterable<DeploymentContainer> getContainers() {
+		public Collection<DeploymentContainer> getContainers() {
 			return this.containers.values();
 		}
 	}

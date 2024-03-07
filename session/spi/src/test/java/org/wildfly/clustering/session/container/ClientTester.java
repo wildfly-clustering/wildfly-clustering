@@ -5,14 +5,16 @@
 
 package org.wildfly.clustering.session.container;
 
-import java.net.URI;
+import java.util.List;
+
+import org.wildfly.clustering.arquillian.Deployment;
 
 /**
  * @author Paul Ferraro
  */
 public interface ClientTester extends AutoCloseable {
 
-	void test(URI baseURI1, URI baseURI2);
+	void test(List<Deployment> deployments);
 
 	@Override
 	void close();

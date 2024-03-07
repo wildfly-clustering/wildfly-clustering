@@ -18,13 +18,15 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
+import org.wildfly.clustering.arquillian.Deployment;
 
 /**
  * A smoke test client for validating container integration.
@@ -36,7 +38,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		HEAD, GET, PUT, DELETE;
 	}
 
-	private static final int ITERATIONS = 4;
+	private static final int ITERATIONS = 5;
 	private static final int CONCURRENCY = ITERATIONS * 10;
 	private static final Duration FAILOVER_DURATION = Duration.ofSeconds(1);
 
@@ -54,13 +56,12 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 	}
 
 	@Override
-	public void test(URI baseURI1, URI baseURI2) {
+	public void test(List<Deployment> deployments) {
 		HttpClient client = this.configuration.getHttpClientConfigurator().apply(HttpClient.newBuilder()).cookieHandler(new CookieManager()).executor(this.executor).build();
 
-		URI uri1 = baseURI1.resolve(ENDPOINT_NAME);
-		URI uri2 = baseURI2.resolve(ENDPOINT_NAME);
+		List<URI> endpoints = deployments.stream().map(this.configuration::locateEndpoint).collect(Collectors.toList());
 
-		for (URI uri : Arrays.asList(uri1, uri2)) {
+		for (URI uri : endpoints) {
 			// Verify a request that never starts its session
 			request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
 				assertEquals(HTTP_OK, response.statusCode());
@@ -71,7 +72,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		}
 
 		// Force creation of a session
-		Map.Entry<String, String> entry = request(client, uri1, HttpMethod.PUT).<Map.Entry<String, String>>thenApply(response -> {
+		Map.Entry<String, String> entry = request(client, endpoints.get(0), HttpMethod.PUT).<Map.Entry<String, String>>thenApply(response -> {
 			assertEquals(HTTP_OK, response.statusCode());
 			String sessionId = response.headers().firstValue(SESSION_ID).orElse(null);
 			String immutableValue = response.headers().firstValue(IMMUTABLE).orElse(null);
@@ -84,7 +85,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 
 		AtomicLong expected = new AtomicLong(0);
 		for (int i = 0; i < ITERATIONS; i++) {
-			for (URI uri : Arrays.asList(uri1, uri2)) {
+			for (URI uri : endpoints) {
 				int count = i;
 				long value = request(client, uri, HttpMethod.GET).thenApply(response -> {
 					assertEquals(HTTP_OK, response.statusCode(), Integer.toString(count));
@@ -143,13 +144,13 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		}
 
 		// Invalidate session
-		request(client, uri1, HttpMethod.DELETE).thenAccept(response -> {
+		request(client, endpoints.get(0), HttpMethod.DELETE).thenAccept(response -> {
 			assertEquals(HTTP_OK, response.statusCode());
 			assertNull(response.headers().firstValue(SESSION_ID).orElse(null));
 		}).join();
 
 		List<CompletableFuture<Void>> futures = new ArrayList<>(2);
-		for (URI uri : Arrays.asList(uri1, uri2)) {
+		for (URI uri : endpoints) {
 			// Verify session was truly invalidated
 			futures.add(request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
 				assertEquals(HTTP_OK, response.statusCode());
