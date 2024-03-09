@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-cache</artifactId>
-		<version>1.0.12.Final-SNAPSHOT</version>
+		<version>1.0.12.Final</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-cache-infinispan</artifactId>
