@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.Map;
 
+import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.attributes.ImmutableSessionAttributesFactory;
@@ -21,10 +22,12 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
 public class CompositeImmutableSessionFactory<MV, AV> implements ImmutableSessionFactory<MV, AV> {
 	private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
 	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
+	private final CacheProperties properties;
 
-	public CompositeImmutableSessionFactory(ImmutableSessionMetaDataFactory<MV> metaDataFactory, ImmutableSessionAttributesFactory<AV> attributesFactory) {
+	public CompositeImmutableSessionFactory(ImmutableSessionMetaDataFactory<MV> metaDataFactory, ImmutableSessionAttributesFactory<AV> attributesFactory, CacheProperties properties) {
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
+		this.properties = properties;
 	}
 
 	@Override
@@ -40,5 +43,10 @@ public class CompositeImmutableSessionFactory<MV, AV> implements ImmutableSessio
 	@Override
 	public ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, Map<String, Object> attributes) {
 		return new CompositeImmutableSession(id, metaData, attributes);
+	}
+
+	@Override
+	public CacheProperties getCacheProperties() {
+		return this.properties;
 	}
 }

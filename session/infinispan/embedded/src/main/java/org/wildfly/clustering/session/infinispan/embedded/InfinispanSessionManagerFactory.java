@@ -83,7 +83,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		SessionAttributeActivationNotifierFactory<S, C, L, SC, TransactionBatch> notifierFactory = new SessionAttributeActivationNotifierFactory<>(sessionProvider, listenerProvider);
 		CacheProperties properties = infinispan.getCacheProperties();
 		SessionMetaDataFactory<ContextualSessionMetaDataEntry<SC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(infinispan);
-		this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, notifierFactory, infinispan), configuration.getSessionContextFactory());
+		this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, notifierFactory, infinispan), properties, configuration.getSessionContextFactory());
 		ExpiredSessionRemover<C, ?, ?, SC> remover = new ExpiredSessionRemover<>(this.factory);
 		this.managerRegistrarFactory = new Function<>() {
 			@Override

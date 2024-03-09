@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
@@ -26,8 +27,8 @@ public class CompositeSessionFactory<C, MV extends Contextual<SC>, AV, SC> exten
 	private final SessionAttributesFactory<C, AV> attributesFactory;
 	private final Supplier<SC> contextFactory;
 
-	public CompositeSessionFactory(SessionMetaDataFactory<MV> metaDataFactory, SessionAttributesFactory<C, AV> attributesFactory, Supplier<SC> localContextFactory) {
-		super(metaDataFactory, attributesFactory);
+	public CompositeSessionFactory(SessionMetaDataFactory<MV> metaDataFactory, SessionAttributesFactory<C, AV> attributesFactory, CacheProperties properties, Supplier<SC> localContextFactory) {
+		super(metaDataFactory, attributesFactory, properties);
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
 		this.contextFactory = localContextFactory;
