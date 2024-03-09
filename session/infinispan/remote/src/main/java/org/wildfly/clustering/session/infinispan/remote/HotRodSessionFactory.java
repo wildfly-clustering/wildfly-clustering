@@ -66,7 +66,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	 * @param localContextFactory
 	 */
 	public HotRodSessionFactory(RemoteCacheConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> localContextFactory) {
-		super(metaDataFactory, attributesFactory, localContextFactory);
+		super(metaDataFactory, attributesFactory, config.getCacheProperties(), localContextFactory);
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
 		this.attributesRemover = attributesFactory;

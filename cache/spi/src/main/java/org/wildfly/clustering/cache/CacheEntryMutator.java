@@ -4,10 +4,8 @@
  */
 package org.wildfly.clustering.cache;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Updates a cache entry within the cache.
@@ -18,14 +16,7 @@ public interface CacheEntryMutator {
 	 * Ensure that this object replicates.
 	 */
 	default void mutate() {
-		try {
-			this.mutateAsync().toCompletableFuture().get();
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new CancellationException();
-		}
+		this.mutateAsync().toCompletableFuture().join();
 	}
 
 	CompletionStage<Void> mutateAsync();

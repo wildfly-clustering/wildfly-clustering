@@ -15,7 +15,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,15 +37,11 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		HEAD, GET, PUT, DELETE;
 	}
 
-	private static final int ITERATIONS = 4;
-	private static final int CONCURRENCY = ITERATIONS * 10;
-	private static final Duration FAILOVER_DURATION = Duration.ofSeconds(2);
-
 	private final ExecutorService executor;
 	private final SessionManagementTesterConfiguration configuration;
 
 	public SessionManagementTester(SessionManagementTesterConfiguration configuration) {
-		this.executor = Executors.newFixedThreadPool(CONCURRENCY);
+		this.executor = Executors.newFixedThreadPool(configuration.getConcurrency());
 		this.configuration = configuration;
 	}
 
@@ -84,7 +79,8 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		assertNotNull(immutableValue);
 
 		AtomicLong expected = new AtomicLong(0);
-		for (int i = 0; i < ITERATIONS; i++) {
+		int concurrency = this.configuration.getConcurrency();
+		for (int i = 0; i < this.configuration.getIterations(); i++) {
 			for (URI uri : endpoints) {
 				String message = String.format("%s[%d]", uri, i);
 				long value = request(client, uri, HttpMethod.GET).thenApply(response -> {
@@ -96,8 +92,8 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 				assertEquals(expected.incrementAndGet(), value, message);
 
 				// Perform a number of concurrent requests incrementing the mutable session attribute
-				List<CompletableFuture<Long>> futures = new ArrayList<>(CONCURRENCY);
-				for (int j = 0; j < CONCURRENCY; j++) {
+				List<CompletableFuture<Long>> futures = new ArrayList<>(concurrency);
+				for (int j = 0; j < concurrency; j++) {
 					CompletableFuture<Long> future = request(client, uri, HttpMethod.GET).thenApply(response -> {
 						assertEquals(HTTP_OK, response.statusCode(), message);
 						assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null), message);
@@ -106,13 +102,13 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 					});
 					futures.add(future);
 				}
-				expected.addAndGet(CONCURRENCY);
+				expected.addAndGet(concurrency);
 				// Verify the correct number of unique results
-				assertEquals(CONCURRENCY, futures.stream().map(CompletableFuture::join).distinct().count(), message);
+				assertEquals(concurrency, futures.stream().map(CompletableFuture::join).distinct().count(), message);
 
 				// Grace time to increase likelihood that subsequent request does not overlap with post-request processing of previous requests
 				try {
-					Thread.sleep(FAILOVER_DURATION.getSeconds(), FAILOVER_DURATION.getNano());
+					Thread.sleep(this.configuration.getFailoverGracePeriod().toMillis());
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
@@ -126,13 +122,11 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 				}).join();
 				assertEquals(expected.incrementAndGet(), value, message);
 
-				if (!this.configuration.isTransactional()) {
-					// Grace time between fail-over requests
-					try {
-						Thread.sleep(FAILOVER_DURATION.getSeconds(), FAILOVER_DURATION.getNano());
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
+				// Grace time between fail-over requests
+				try {
+					Thread.sleep(this.configuration.getFailoverGracePeriod().toMillis());
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 				}
 			}
 		}

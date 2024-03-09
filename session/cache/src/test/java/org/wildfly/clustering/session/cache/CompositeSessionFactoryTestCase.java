@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
@@ -30,9 +31,10 @@ import org.wildfly.common.function.Functions;
 public class CompositeSessionFactoryTestCase {
 	private final SessionMetaDataFactory<Contextual<Object>> metaDataFactory = mock(SessionMetaDataFactory.class);
 	private final SessionAttributesFactory<Object, Object> attributesFactory = mock(SessionAttributesFactory.class);
+	private final CacheProperties properties = mock(CacheProperties.class);
 	private final Object transientContext = new Object();
 
-	private final SessionFactory<Object, Contextual<Object>, Object, Object> factory = new CompositeSessionFactory<>(this.metaDataFactory, this.attributesFactory, Functions.constantSupplier(this.transientContext));
+	private final SessionFactory<Object, Contextual<Object>, Object, Object> factory = new CompositeSessionFactory<>(this.metaDataFactory, this.attributesFactory, this.properties, Functions.constantSupplier(this.transientContext));
 
 	@Test
 	public void createValue() {

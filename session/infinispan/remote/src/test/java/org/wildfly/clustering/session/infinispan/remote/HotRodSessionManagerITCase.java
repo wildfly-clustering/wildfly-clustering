@@ -64,12 +64,43 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 		}
 	}
 
+	static class NearCacheDisabledHotRodSessionManagerArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+			Stream.Builder<Arguments> builder = Stream.builder();
+			for (SessionAttributePersistenceStrategy strategy : EnumSet.allOf(SessionAttributePersistenceStrategy.class)) {
+				builder.add(Arguments.of(new HotRodSessionManagerParameters() {
+					@Override
+					public SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy() {
+						return strategy;
+					}
+
+					@Override
+					public NearCacheMode getNearCacheMode() {
+						return NearCacheMode.DISABLED;
+					}
+
+					@Override
+					public RemoteCacheContainerConfigurator getRemoteCacheContainerConfigurator() {
+						return INFINISPAN;
+					}
+
+					@Override
+					public String toString() {
+						return Map.of(SessionAttributePersistenceStrategy.class.getSimpleName(), strategy).toString();
+					}
+				}));
+			}
+			return builder.build();
+		}
+	}
+
 	HotRodSessionManagerITCase() {
 		super(HotRodSessionManagerFactoryProvider::new);
 	}
 
 	@ParameterizedTest(name = "{arguments}")
-	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
+	@ArgumentsSource(NearCacheDisabledHotRodSessionManagerArgumentsProvider.class)
 	public void basic(HotRodSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}

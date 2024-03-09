@@ -4,9 +4,7 @@
  */
 package org.wildfly.clustering.cache;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Removes an entry from a cache.
@@ -18,14 +16,7 @@ public interface Remover<K> {
 	 * @param id the cache entry identifier.
 	 */
 	default void remove(K id) {
-		try {
-			this.removeAsync(id).toCompletableFuture().get();
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new CancellationException();
-		}
+		this.removeAsync(id).toCompletableFuture().join();
 	}
 
 	/**
@@ -40,14 +31,7 @@ public interface Remover<K> {
 	 * @param id the cache entry identifier.
 	 */
 	default void purge(K id) {
-		try {
-			this.purgeAsync(id).toCompletableFuture().get();
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new CancellationException();
-		}
+		this.purgeAsync(id).toCompletableFuture().join();
 	}
 
 	/**

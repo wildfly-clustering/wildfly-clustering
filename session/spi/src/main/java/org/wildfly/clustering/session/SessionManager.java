@@ -5,9 +5,7 @@
 
 package org.wildfly.clustering.session;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.manager.Manager;
@@ -27,14 +25,7 @@ public interface SessionManager<C, B extends Batch> extends Manager<String, B> {
 	 * @return a new web session, or null if a session with the specified identifier already exists.
 	 */
 	default Session<C> createSession(String id) {
-		try {
-			return this.createSessionAsync(id).toCompletableFuture().get();
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new CancellationException();
-		}
+		return this.createSessionAsync(id).toCompletableFuture().join();
 	}
 
 	/**
@@ -54,14 +45,7 @@ public interface SessionManager<C, B extends Batch> extends Manager<String, B> {
 	 * @return an existing web session, or null if none exists
 	 */
 	default Session<C> findSession(String id) {
-		try {
-			return this.findSessionAsync(id).toCompletableFuture().get();
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new CancellationException();
-		}
+		return this.findSessionAsync(id).toCompletableFuture().join();
 	}
 
 	/**
@@ -80,14 +64,7 @@ public interface SessionManager<C, B extends Batch> extends Manager<String, B> {
 	 * @return a read-only session or null if none exists
 	 */
 	default ImmutableSession findImmutableSession(String id) {
-		try {
-			return this.findImmutableSessionAsync(id).toCompletableFuture().get();
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new CancellationException();
-		}
+		return this.findImmutableSessionAsync(id).toCompletableFuture().join();
 	}
 
 	/**

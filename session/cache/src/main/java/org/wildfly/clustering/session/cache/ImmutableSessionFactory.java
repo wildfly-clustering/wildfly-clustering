@@ -6,9 +6,11 @@
 package org.wildfly.clustering.session.cache;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.cache.BiLocator;
+import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.attributes.ImmutableSessionAttributesFactory;
@@ -22,15 +24,22 @@ public interface ImmutableSessionFactory<MV, AV> extends BiLocator<String, MV, A
 
 	ImmutableSessionMetaDataFactory<MV> getMetaDataFactory();
 	ImmutableSessionAttributesFactory<AV> getAttributesFactory();
+	CacheProperties getCacheProperties();
 
 	@Override
 	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> findEntry(String id) {
-		return Map.entry(this.getMetaDataFactory().findValueAsync(id), this.getAttributesFactory().findValueAsync(id));
+		CompletionStage<MV> metaDataStage = this.getMetaDataFactory().findValueAsync(id);
+		// If cache locks on read, find meta data first
+		CompletionStage<AV> attributesStage = this.getCacheProperties().isLockOnRead() ? metaDataStage.thenCompose(metaData -> (metaData != null) ? this.getAttributesFactory().findValueAsync(id) : CompletableFuture.completedStage(null)) : this.getAttributesFactory().findValueAsync(id);
+		return Map.entry(metaDataStage, attributesStage);
 	}
 
 	@Override
 	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> tryEntry(String id) {
-		return Map.entry(this.getMetaDataFactory().tryValueAsync(id), this.getAttributesFactory().tryValueAsync(id));
+		CompletionStage<MV> metaDataStage = this.getMetaDataFactory().tryValueAsync(id);
+		// If cache locks on read, find meta data first
+		CompletionStage<AV> attributesStage = this.getCacheProperties().isLockOnRead() ? metaDataStage.thenCompose(metaData -> (metaData != null) ? this.getAttributesFactory().findValueAsync(id) : CompletableFuture.completedStage(null)) : this.getAttributesFactory().tryValueAsync(id);
+		return Map.entry(metaDataStage, attributesStage);
 	}
 
 	default ImmutableSession createImmutableSession(String id, Map.Entry<MV, AV> entry) {
