@@ -14,21 +14,25 @@ import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 
+import org.jboss.logging.Logger;
+
 /**
  * Abstract {@link TransactionBatch} that associates and exposes the underlying transaction.
  * @author Paul Ferraro
  */
 public class TransactionalBatch<E extends RuntimeException> implements TransactionBatch {
-
+	private final Logger logger;
 	private final Function<Throwable, E> exceptionTransformer;
 	private final Transaction tx;
 	private final AtomicInteger count = new AtomicInteger(0);
 
 	private volatile boolean active = true;
 
-	public TransactionalBatch(Transaction tx, Function<Throwable, E> exceptionTransformer) {
+	public TransactionalBatch(Transaction tx, Logger logger, Function<Throwable, E> exceptionTransformer) {
 		this.tx = tx;
+		this.logger = logger;
 		this.exceptionTransformer = exceptionTransformer;
+		this.logger.debugf("Started batch %s[%d]", this.tx, this.count.get());
 	}
 
 	@Override
@@ -38,7 +42,8 @@ public class TransactionalBatch<E extends RuntimeException> implements Transacti
 
 	@Override
 	public TransactionBatch interpose() {
-		this.count.incrementAndGet();
+		int count = this.count.incrementAndGet();
+		this.logger.debugf("Interposed batch %s[%d]", this.tx, count);
 		return this;
 	}
 
@@ -72,12 +77,14 @@ public class TransactionalBatch<E extends RuntimeException> implements Transacti
 
 	@Override
 	public void close() {
-		if (this.count.getAndDecrement() == 0) {
+		int count = this.count.getAndDecrement();
+		if (count == 0) {
 			try {
 				switch (this.tx.getStatus()) {
-					case Status.STATUS_ACTIVE: {
+					case Status.STATUS_ACTIVE:
 						if (this.active) {
 							try {
+								this.logger.debugf("Committing batch %s[%d]", this.tx, count);
 								this.tx.commit();
 								break;
 							} catch (RollbackException e) {
@@ -87,15 +94,18 @@ public class TransactionalBatch<E extends RuntimeException> implements Transacti
 							}
 						}
 						// Otherwise fall through
-					}
-					case Status.STATUS_MARKED_ROLLBACK: {
+					case Status.STATUS_MARKED_ROLLBACK:
+						this.logger.debugf("Rolling back batch %s[%d]", this.tx, count);
 						this.tx.rollback();
 						break;
-					}
+					default:
+						this.logger.debugf("Closed batch %s[%d] with status = %d", this.tx, count, this.tx.getStatus());
 				}
 			} catch (SystemException e) {
 				throw this.exceptionTransformer.apply(e);
 			}
+		} else {
+			this.logger.debugf("Closed interposed batch %s[%d]", this.tx, count);
 		}
 	}
 

@@ -25,7 +25,7 @@ import org.wildfly.clustering.cache.batch.Batcher;
  */
 public class TransactionalBatcherTestCase {
 	private final TransactionManager tm = mock(TransactionManager.class);
-	private final Batcher<TransactionBatch> batcher = new TransactionalBatcher<>(this.tm, RuntimeException::new);
+	private final Batcher<TransactionBatch> batcher = new TransactionalBatcher<>("test", this.tm, RuntimeException::new);
 
 	@AfterEach
 	public void destroy() {

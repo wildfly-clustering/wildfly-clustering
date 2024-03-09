@@ -27,6 +27,6 @@ public interface BasicCacheConfiguration extends CacheConfiguration<TransactionB
 	CacheProperties getCacheProperties();
 
 	default Batcher<TransactionBatch> getBatcher() {
-		return new TransactionalBatcher<>(this.getTransactionManager(), CacheException::new);
+		return new TransactionalBatcher<>(this.getCache().getName(), this.getTransactionManager(), CacheException::new);
 	}
 }

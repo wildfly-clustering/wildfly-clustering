@@ -17,15 +17,15 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.Batcher;
 
 /**
- * A {@link Batcher} implementation based on Infinispan's BatchContainer, except that its transaction reference
- * is stored within the returned Batch object instead of a ThreadLocal.  This also allows the user to call {@link Batch#close()} from a
- * different thread than the one that created the {@link Batch}.  In this case, however, the user must first resume the batch
- * via {@link #resumeBatch(TransactionBatch)}.
+ * A {@link Batcher} implementation based on Infinispan's BatchContainer, except that its transaction reference is stored within the returned Batch object instead of a ThreadLocal.
+ * This also allows the user to call {@link Batch#close()} from a different thread than the one that created the {@link Batch}.
+ * In this case, however, the user must first resume the batch via {@link #resumeBatch(TransactionBatch)}.
  * @author Paul Ferraro
  */
 public class TransactionalBatcher<E extends RuntimeException> implements Batcher<TransactionBatch> {
@@ -95,10 +95,12 @@ public class TransactionalBatcher<E extends RuntimeException> implements Batcher
 		}
 	};
 
+	private final Logger logger;
 	private final TransactionManager tm;
 	private final Function<Throwable, E> exceptionTransformer;
 
-	public TransactionalBatcher(TransactionManager tm, Function<Throwable, E> exceptionTransformer) {
+	public TransactionalBatcher(String name, TransactionManager tm, Function<Throwable, E> exceptionTransformer) {
+		this.logger = Logger.getLogger(this.getClass(), name);
 		this.tm = tm;
 		this.exceptionTransformer = exceptionTransformer;
 	}
@@ -119,7 +121,7 @@ public class TransactionalBatcher<E extends RuntimeException> implements Batcher
 			this.tm.begin();
 			Transaction tx = this.tm.getTransaction();
 			tx.registerSynchronization(CURRENT_BATCH_SYNCHRONIZATION);
-			batch = new TransactionalBatch<>(tx, this.exceptionTransformer);
+			batch = new TransactionalBatch<>(tx, this.logger, this.exceptionTransformer);
 			setCurrentBatch(batch);
 			return batch;
 		} catch (RollbackException | SystemException | NotSupportedException e) {
@@ -193,7 +195,8 @@ public class TransactionalBatcher<E extends RuntimeException> implements Batcher
 			Transaction resumedTx = (this.resumedBatch != null) ? resumedBatch.getTransaction() : null;
 			if (resumedTx != null) {
 				try {
-					if (this.tm.suspend() != resumedTx) {
+					Transaction suspendedTx = this.tm.suspend();
+					if ((suspendedTx != null) && (suspendedTx != resumedTx)) {
 						throw new IllegalStateException();
 					}
 				} catch (SystemException e) {

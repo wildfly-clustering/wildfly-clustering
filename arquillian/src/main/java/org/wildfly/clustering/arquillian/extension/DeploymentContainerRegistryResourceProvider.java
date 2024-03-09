@@ -109,7 +109,6 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 				LOGGER.log(System.Logger.Level.INFO, "Deploying {0} to {1}", archive.getName(), WebContainerImpl.this.container.getName());
 				return WebContainerImpl.this.container.getDeployableContainer().deploy(archive);
 			} catch (DeploymentException e) {
-				e.printStackTrace();
 				throw new IllegalStateException(e);
 			}
 		}
