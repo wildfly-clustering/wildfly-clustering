@@ -13,7 +13,7 @@
 		Maintain separation between the artifact id and the version to help prevent
 		merge conflicts between commits changing the GA and those changing the V.
 		-->
-		<version>1.0.11.Final</version>
+		<version>1.0.12.Final-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-session-infinispan-remote</artifactId>
