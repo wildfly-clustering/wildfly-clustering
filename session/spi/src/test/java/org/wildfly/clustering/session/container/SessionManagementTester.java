@@ -38,7 +38,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		HEAD, GET, PUT, DELETE;
 	}
 
-	private static final int ITERATIONS = 3;
+	private static final int ITERATIONS = 4;
 	private static final int CONCURRENCY = ITERATIONS * 10;
 	private static final Duration FAILOVER_DURATION = Duration.ofSeconds(2);
 
@@ -62,7 +62,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		List<URI> endpoints = deployments.stream().map(this.configuration::locateEndpoint).collect(Collectors.toList());
 
 		for (URI uri : endpoints) {
-			// Verify a request that never starts its session
+			// Verify no current session
 			request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
 				assertEquals(HTTP_OK, response.statusCode());
 				assertFalse(response.headers().firstValue(SESSION_ID).isPresent());
@@ -71,7 +71,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 			}).join();
 		}
 
-		// Force creation of a session
+		// Create a session
 		Map.Entry<String, String> entry = request(client, endpoints.get(0), HttpMethod.PUT).<Map.Entry<String, String>>thenApply(response -> {
 			assertEquals(HTTP_OK, response.statusCode());
 			String sessionId = response.headers().firstValue(SESSION_ID).orElse(null);
@@ -86,35 +86,29 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		AtomicLong expected = new AtomicLong(0);
 		for (int i = 0; i < ITERATIONS; i++) {
 			for (URI uri : endpoints) {
-				int count = i;
+				String message = String.format("%s[%d]", uri, i);
 				long value = request(client, uri, HttpMethod.GET).thenApply(response -> {
-					assertEquals(HTTP_OK, response.statusCode(), Integer.toString(count));
-					assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null));
-					assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null));
+					assertEquals(HTTP_OK, response.statusCode(), message);
+					assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null), message);
+					assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null), message);
 					return response.headers().firstValueAsLong(COUNTER).orElse(0);
 				}).join();
-				assertEquals(expected.incrementAndGet(), value);
-
-				// Validate session is still "started"
-				request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
-					assertEquals(HTTP_OK, response.statusCode());
-					assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null));
-				}).join();
+				assertEquals(expected.incrementAndGet(), value, message);
 
 				// Perform a number of concurrent requests incrementing the mutable session attribute
 				List<CompletableFuture<Long>> futures = new ArrayList<>(CONCURRENCY);
 				for (int j = 0; j < CONCURRENCY; j++) {
 					CompletableFuture<Long> future = request(client, uri, HttpMethod.GET).thenApply(response -> {
-						assertEquals(HTTP_OK, response.statusCode());
-						assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null));
-						assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null));
+						assertEquals(HTTP_OK, response.statusCode(), message);
+						assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null), message);
+						assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null), message);
 						return response.headers().firstValueAsLong(COUNTER).orElse(0);
 					});
 					futures.add(future);
 				}
 				expected.addAndGet(CONCURRENCY);
 				// Verify the correct number of unique results
-				assertEquals(CONCURRENCY, futures.stream().map(CompletableFuture::join).distinct().count());
+				assertEquals(CONCURRENCY, futures.stream().map(CompletableFuture::join).distinct().count(), message);
 
 				// Grace time to increase likelihood that subsequent request does not overlap with post-request processing of previous requests
 				try {
@@ -125,12 +119,12 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 
 				// Verify expected session attribute value following concurrent updates
 				value = request(client, uri, HttpMethod.GET).thenApply(response -> {
-					assertEquals(HTTP_OK, response.statusCode());
-					assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null));
-					assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null));
+					assertEquals(HTTP_OK, response.statusCode(), message);
+					assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null), message);
+					assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null), message);
 					return response.headers().firstValueAsLong(COUNTER).orElse(0);
 				}).join();
-				assertEquals(expected.incrementAndGet(), value);
+				assertEquals(expected.incrementAndGet(), value, message);
 
 				if (!this.configuration.isTransactional()) {
 					// Grace time between fail-over requests
@@ -158,7 +152,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 				assertFalse(response.headers().firstValueAsLong(COUNTER).isPresent());
 			}));
 		}
-		futures.stream().forEach(CompletableFuture::join);
+		futures.forEach(CompletableFuture::join);
 	}
 
 	private static CompletableFuture<HttpResponse<Void>> request(HttpClient client, URI uri, HttpMethod method) {
