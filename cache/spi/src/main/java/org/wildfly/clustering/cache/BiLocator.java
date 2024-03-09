@@ -34,4 +34,10 @@ public interface BiLocator<I, K, V> extends Locator<I, Map.Entry<K, V>> {
 		Map.Entry<CompletionStage<K>, CompletionStage<V>> entry = this.findEntry(id);
 		return entry.getKey().thenCombine(entry.getValue(), (key, value) -> (key != null) && (value != null) ? Map.entry(key, value) : null);
 	}
+
+	@Override
+	default CompletionStage<Map.Entry<K, V>> tryValueAsync(I id) {
+		Map.Entry<CompletionStage<K>, CompletionStage<V>> entry = this.tryEntry(id);
+		return entry.getKey().thenCombine(entry.getValue(), (key, value) -> (key != null) && (value != null) ? Map.entry(key, value) : null);
+	}
 }
