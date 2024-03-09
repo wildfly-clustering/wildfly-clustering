@@ -195,7 +195,8 @@ public class TransactionalBatcher<E extends RuntimeException> implements Batcher
 			Transaction resumedTx = (this.resumedBatch != null) ? resumedBatch.getTransaction() : null;
 			if (resumedTx != null) {
 				try {
-					if (this.tm.suspend() != resumedTx) {
+					Transaction suspendedTx = this.tm.suspend();
+					if ((suspendedTx != null) && (suspendedTx != resumedTx)) {
 						throw new IllegalStateException();
 					}
 				} catch (SystemException e) {
