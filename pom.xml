@@ -280,7 +280,7 @@
 	<repositories>
 		<repository>
 			<id>${jboss.releases.repo.id}</id>
-			<url>${jboss.releases.repo.url}}</url>
+			<url>${jboss.releases.repo.url}</url>
 			<layout>default</layout>
 			<releases>
 				<enabled>true</enabled>
