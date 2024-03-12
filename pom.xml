@@ -29,6 +29,7 @@
 		<jdk.runtime.args>--add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
 		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
+		<maven.repository.url>https://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
 
 		<!-- Provided dependency versions -->
 		<version.jakarta.transaction>2.0.1</version.jakarta.transaction>
@@ -279,8 +280,8 @@
 
 	<repositories>
 		<repository>
-			<id>${jboss.releases.repo.id}</id>
-			<url>${jboss.releases.repo.url}</url>
+			<id>default</id>
+			<url>${maven.repository.url}</url>
 			<layout>default</layout>
 			<releases>
 				<enabled>true</enabled>
@@ -294,8 +295,8 @@
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
-			<id>${jboss.releases.repo.id}</id>
-			<url>${jboss.releases.repo.url}</url>
+			<id>default</id>
+			<url>${maven.repository.url}</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
