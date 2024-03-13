@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link SessionAccessMetaDataKeyResolver}.
+ * Unit test for {@link SessionAccessMetaDataKey} and {@link SessionCreationMetaDataKey} marshalling.
  * @author Paul Ferraro
  */
 public class SessionMetaDataKeyTestCase {

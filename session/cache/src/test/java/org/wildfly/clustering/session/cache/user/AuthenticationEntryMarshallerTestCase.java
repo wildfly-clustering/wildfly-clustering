@@ -14,7 +14,7 @@ import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link AuthenticationEntryExternalizer}.
+ * Unit test for {@link UserContextEntry} marshalling.
  * @author Paul Ferraro
  */
 public class AuthenticationEntryMarshallerTestCase {

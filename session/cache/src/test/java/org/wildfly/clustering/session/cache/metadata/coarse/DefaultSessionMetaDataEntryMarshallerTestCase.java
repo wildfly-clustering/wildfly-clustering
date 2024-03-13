@@ -17,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.offset.Offset;
 
 /**
- * Unit test for {@link SessionCreationMetaDataEntryExternalizer}.
+ * Unit test for {@link DefaultSessionMetaDataEntry} marshalling.
  * @author Paul Ferraro
  */
 public class DefaultSessionMetaDataEntryMarshallerTestCase {

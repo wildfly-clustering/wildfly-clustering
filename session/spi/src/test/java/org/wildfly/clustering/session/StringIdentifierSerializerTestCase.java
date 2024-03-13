@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.Marshaller;
 
 /**
- * Unit test for {@link StringIdentifierMarshaller}.
+ * Unit test for {@link IdentifierMarshaller}.
  * @author Paul Ferraro
  */
 public class StringIdentifierSerializerTestCase {

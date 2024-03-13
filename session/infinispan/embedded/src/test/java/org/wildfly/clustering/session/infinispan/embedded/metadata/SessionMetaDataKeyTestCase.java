@@ -13,7 +13,7 @@ import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link SessionCreationMetaDataKey}.
+ * Unit test for {@link SessionMetaDataKey} marshalling.
  * @author Paul Ferraro
  */
 public class SessionMetaDataKeyTestCase {
