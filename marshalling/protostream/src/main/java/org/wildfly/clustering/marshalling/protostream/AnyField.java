@@ -20,7 +20,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * A set of fields used by {@link AnyMarshaller}.
  * @author Paul Ferraro
  */
-public enum AnyField implements Field<Object> {
+enum AnyField implements Field<Object> {
 	ANY(Scalar.ANY), // For re-use by other fields
 	REFERENCE(Scalar.REFERENCE),
 	BOOLEAN(Scalar.BOOLEAN),

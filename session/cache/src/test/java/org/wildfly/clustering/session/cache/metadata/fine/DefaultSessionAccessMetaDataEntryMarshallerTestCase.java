@@ -15,7 +15,7 @@ import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link SessionAccessMetaDataExternalizer}.
+ * Unit test for {@link DefaultSessionAccessMetaDataEntry} marshalling.
  * @author Paul Ferraro
  */
 public class DefaultSessionAccessMetaDataEntryMarshallerTestCase {

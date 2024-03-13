@@ -16,7 +16,7 @@ import org.wildfly.clustering.marshalling.jboss.JBossTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit tests for {@link AddressableNodeSerializer}.
+ * Unit tests for {@link EmbeddedCacheManagerGroupMemberSerializer}.
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerGroupMemberTestCase {

@@ -10,7 +10,7 @@ import java.util.Map;
 import org.wildfly.clustering.cache.Locator;
 
 /**
- * Factory for creating {@link ImmutableSessionAttributes} objects.
+ * Factory for creating a map of session attributes.
  * @author Paul Ferraro
  * @param <V> attributes cache entry type
  */

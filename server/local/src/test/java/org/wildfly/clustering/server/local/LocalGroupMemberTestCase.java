@@ -12,7 +12,7 @@ import org.wildfly.clustering.marshalling.FormatterTester;
 import org.wildfly.clustering.marshalling.Tester;
 
 /**
- * Unit test for {@link LocalNodeFormatter}.
+ * Unit test for {@link DefaultLocalGroupMemberFormatter}.
  * @author Paul Ferraro
  */
 public class LocalGroupMemberTestCase {
@@ -21,8 +21,6 @@ public class LocalGroupMemberTestCase {
 	@Test
 	public void test() throws IOException {
 		this.test(new FormatterTester<>(new DefaultLocalGroupMemberFormatter()));
-//		this.test(JBossMarshallingTesterFactory.INSTANCE.createTester());
-//		this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
 	}
 
 	private void test(Tester<DefaultLocalGroupMember> tester) throws IOException {

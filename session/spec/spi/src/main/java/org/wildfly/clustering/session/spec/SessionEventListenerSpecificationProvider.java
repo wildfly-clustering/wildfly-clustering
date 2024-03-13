@@ -18,6 +18,7 @@ public interface SessionEventListenerSpecificationProvider<S, L> {
 
 	/**
 	 * Fabricates an optional container-specific listener for the specified attribute.
+	 * @param attribute the session attribute event source
 	 * @return an optional container-specific listener.
 	 */
 	default Optional<L> asEventListener(Object attribute) {
@@ -27,7 +28,7 @@ public interface SessionEventListenerSpecificationProvider<S, L> {
 
 	/**
 	 * Returns the specification type of the session event listener.
-	 * @return
+	 * @return the specification type of the session event listener.
 	 */
 	Class<L> getEventListenerClass();
 

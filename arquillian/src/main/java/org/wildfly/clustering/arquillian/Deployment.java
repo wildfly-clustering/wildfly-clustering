@@ -14,7 +14,7 @@ public interface Deployment extends Lifecycle {
 
 	/**
 	 * Returns the container associated with this deployment.
-	 * @return
+	 * @return the container associated with this deployment.
 	 */
 	DeploymentContainer getContainer();
 
@@ -22,7 +22,7 @@ public interface Deployment extends Lifecycle {
 	 * Locates the base URI of the specific resource class.
 	 * For a servlet class, this would return the URI containing the context path of the associated ServletContext.
 	 * @param resourceClass
-	 * @return
+	 * @return the base URI of the specific resource class.
 	 */
 	default URI locate(Class<?> resourceClass) {
 		return this.locate(resourceClass.getName());
