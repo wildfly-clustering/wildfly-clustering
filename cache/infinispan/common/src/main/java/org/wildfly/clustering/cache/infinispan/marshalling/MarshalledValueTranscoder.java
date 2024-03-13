@@ -18,6 +18,7 @@ import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 
 /**
  * A transcoder that converts between an object and a {@link MarshalledValue}.
+ * @param <C> the marshalling context type
  * @author Paul Ferraro
  */
 public class MarshalledValueTranscoder<C> extends OneToManyTranscoder {

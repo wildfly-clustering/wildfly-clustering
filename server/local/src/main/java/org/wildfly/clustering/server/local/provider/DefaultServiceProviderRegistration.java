@@ -13,6 +13,8 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistry;
 
 /**
  * A generic service provider registration implementation.
+ * @param <T> the service provider type
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public class DefaultServiceProviderRegistration<T, M extends GroupMember> implements ServiceProviderRegistration<T, M> {

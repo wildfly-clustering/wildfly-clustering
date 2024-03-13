@@ -26,6 +26,8 @@ import org.wildfly.common.function.Functions;
 
 /**
  * A concurrent session manager, that can share session references across concurrent threads.
+ * @param <C> the session context type
+ * @param <B> the batch type
  * @author Paul Ferraro
  */
 public class ContextualSessionManager<C, B extends Batch> implements SessionManager<C, B> {

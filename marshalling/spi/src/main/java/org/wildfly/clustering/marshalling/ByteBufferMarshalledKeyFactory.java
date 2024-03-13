@@ -19,7 +19,7 @@ public class ByteBufferMarshalledKeyFactory extends ByteBufferMarshalledValueFac
 	}
 
 	@Override
-	public <T> ByteBufferMarshalledKey<T> createMarshalledValue(T object) {
+	public <K> ByteBufferMarshalledKey<K> createMarshalledValue(K object) {
 		return new ByteBufferMarshalledKey<>(object, this.marshaller);
 	}
 }

@@ -10,6 +10,11 @@ import java.util.function.BiFunction;
 
 /**
  * Generic marshaller based on three non-public members.
+ * @param <T> the target type of this marshaller
+ * @param <M> the reflection member type
+ * @param <M1> the first component member type
+ * @param <M2> the second component member type
+ * @param <M3> the third component member type
  * @author Paul Ferraro
  */
 public class TernaryMemberMarshaller<T, M extends Member, M1, M2, M3> extends AbstractMemberMarshaller<T, M> {

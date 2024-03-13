@@ -18,14 +18,14 @@ import org.jboss.logging.Logger;
 /**
  * {@link MarshalledValue} implementation that uses a {@link ByteBufferMarshaller}.
  * @author Paul Ferraro
- * @param <T> the type wrapped by this marshalled value
+ * @param <V> the type wrapped by this marshalled value
  */
-public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBufferMarshaller>, Serializable {
+public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBufferMarshaller>, Serializable {
 	private static final long serialVersionUID = -8419893544424515905L;
 	private static final Logger LOGGER = Logger.getLogger(ByteBufferMarshalledValue.class);
 
 	private transient volatile ByteBufferMarshaller marshaller;
-	private transient volatile T object;
+	private transient volatile V object;
 	private transient volatile ByteBuffer buffer;
 
 	/**
@@ -33,7 +33,7 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 	 * @param object the wrapped object
 	 * @param marshaller a marshaller suitable for marshalling the specified object
 	 */
-	public ByteBufferMarshalledValue(T object, ByteBufferMarshaller marshaller) {
+	public ByteBufferMarshalledValue(V object, ByteBufferMarshaller marshaller) {
 		this.marshaller = marshaller;
 		this.object = object;
 	}
@@ -51,7 +51,7 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 	}
 
 	// Used for testing purposes only
-	T peek() {
+	V peek() {
 		return this.object;
 	}
 
@@ -79,12 +79,12 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized T get(ByteBufferMarshaller marshaller) throws IOException {
+	public synchronized V get(ByteBufferMarshaller marshaller) throws IOException {
 		if (this.object == null) {
 			this.marshaller = marshaller;
 			if (this.buffer != null) {
 				// Invalidate buffer after reading object
-				this.object = (T) this.marshaller.read(this.buffer);
+				this.object = (V) this.marshaller.read(this.buffer);
 				this.buffer = null;
 			}
 		}
@@ -100,7 +100,7 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 	public boolean equals(Object object) {
 		if ((object == null) || !(object instanceof ByteBufferMarshalledValue)) return false;
 		@SuppressWarnings("unchecked")
-		ByteBufferMarshalledValue<T> value = (ByteBufferMarshalledValue<T>) object;
+		ByteBufferMarshalledValue<V> value = (ByteBufferMarshalledValue<V>) object;
 		Object ourObject = this.object;
 		Object theirObject = value.object;
 		if ((ourObject != null) && (theirObject != null)) {

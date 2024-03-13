@@ -38,7 +38,7 @@ import org.infinispan.factories.annotations.SurvivesRestarts;
  */
 @DefaultFactoryFor(classes = InternalDataContainer.class)
 @SurvivesRestarts
-public class DataContainerFactory<K, V> extends AbstractNamedCacheComponentFactory implements AutoInstantiableFactory {
+public class DataContainerFactory extends AbstractNamedCacheComponentFactory implements AutoInstantiableFactory {
 
 	@Override
 	public Object construct(String componentName) {
@@ -102,7 +102,7 @@ public class DataContainerFactory<K, V> extends AbstractNamedCacheComponentFacto
 		return new OffHeapConcurrentMap(memoryAllocator, entryFactory, null);
 	}
 
-	public static class EvictableDataContainer<K, V> extends DefaultDataContainer<K, V> {
+	static class EvictableDataContainer<K, V> extends DefaultDataContainer<K, V> {
 
 		EvictableDataContainer(long size, EntrySizeCalculator<? super K, ? super InternalCacheEntry<K, V>> calculator) {
 			super(size, calculator);

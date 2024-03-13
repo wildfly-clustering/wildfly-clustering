@@ -10,6 +10,7 @@ import org.wildfly.clustering.cache.batch.Batcher;
 
 /**
  * Encapsulates the generic configuration of a cache.
+ * @param <B> the batch type
  * @author Paul Ferraro
  */
 public interface CacheConfiguration<B extends Batch> {

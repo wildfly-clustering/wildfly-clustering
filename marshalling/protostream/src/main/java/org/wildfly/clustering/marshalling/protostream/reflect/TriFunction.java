@@ -10,6 +10,10 @@ import java.util.function.Function;
 
 /**
  * A function with 3 parameters.
+ * @param <P1> the first function parameter type
+ * @param <P2> the second function parameter type
+ * @param <P3> the third function parameter type
+ * @param <R> the function result type
  * @author Paul Ferraro
  */
 public interface TriFunction<P1, P2, P3, R> {

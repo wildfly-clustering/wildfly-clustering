@@ -9,6 +9,8 @@ import org.wildfly.clustering.server.dispatcher.Command;
 
 /**
  * Command that cancels a previously scheduled item.
+ * @param <I> the identifier type of the entry to cancel
+ * @param <M> the meta data type of the entry to cancel
  * @author Paul Ferraro
  */
 public class CancelCommand<I, M> implements Command<Void, CacheEntryScheduler<I, M>, RuntimeException> {

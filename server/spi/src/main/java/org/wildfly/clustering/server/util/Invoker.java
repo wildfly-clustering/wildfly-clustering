@@ -61,6 +61,7 @@ public interface Invoker {
 
 	/**
 	 * Creates a retrying invoker, where retries are spaced using the specified backoff intervals.
+	 * @param intervals a list of intervals between retries.
 	 * @return a new invoker instance.
 	 */
 	static Invoker retrying(List<Duration> intervals) {

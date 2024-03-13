@@ -23,6 +23,8 @@ import org.wildfly.clustering.marshalling.MarshalledValue;
 
 /**
  * Translates a {@link ServiceResponse} response to a {@link CancellationException}.
+ * @param <T> the request return type
+ * @param <C> the marshalling context type
  * @author Paul Ferraro
  */
 public class ServiceRequest<T, C> extends UnicastRequest<T> {

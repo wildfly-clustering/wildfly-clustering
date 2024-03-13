@@ -21,16 +21,19 @@ import org.wildfly.clustering.session.cache.user.UserContextFactory;
 import org.wildfly.common.function.Functions;
 
 /**
+ * @param <PC> the persistent context type
+ * @param <PV> the marshalled persistent context type
+ * @param <TC> the transient context type
  * @author Paul Ferraro
  */
-public class InfinispanUserContextFactory<C, CV, T> implements UserContextFactory<UserContext<CV, T>, C, T> {
+public class InfinispanUserContextFactory<PC, PV, TC> implements UserContextFactory<UserContext<PV, TC>, PC, TC> {
 
-	private final Cache<UserContextKey, UserContext<CV, T>> findCache;
-	private final Cache<UserContextKey, UserContext<CV, T>> writeCache;
-	private final Marshaller<C, CV> marshaller;
-	private final Supplier<T> contextFactory;
+	private final Cache<UserContextKey, UserContext<PV, TC>> findCache;
+	private final Cache<UserContextKey, UserContext<PV, TC>> writeCache;
+	private final Marshaller<PC, PV> marshaller;
+	private final Supplier<TC> contextFactory;
 
-	public InfinispanUserContextFactory(EmbeddedCacheConfiguration configuration, Marshaller<C, CV> marshaller, Supplier<T> contextFactory) {
+	public InfinispanUserContextFactory(EmbeddedCacheConfiguration configuration, Marshaller<PC, PV> marshaller, Supplier<TC> contextFactory) {
 		this.writeCache = configuration.getWriteOnlyCache();
 		this.findCache = configuration.getReadForUpdateCache();
 		this.marshaller = marshaller;
@@ -38,9 +41,9 @@ public class InfinispanUserContextFactory<C, CV, T> implements UserContextFactor
 	}
 
 	@Override
-	public CompletionStage<UserContext<CV, T>> createValueAsync(String id, C context) {
+	public CompletionStage<UserContext<PV, TC>> createValueAsync(String id, PC context) {
 		try {
-			UserContext<CV, T> entry = new UserContextEntry<>(this.marshaller.write(context));
+			UserContext<PV, TC> entry = new UserContextEntry<>(this.marshaller.write(context));
 			return this.writeCache.putAsync(new UserContextKey(id), entry).thenApply(v -> entry);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
@@ -48,7 +51,7 @@ public class InfinispanUserContextFactory<C, CV, T> implements UserContextFactor
 	}
 
 	@Override
-	public CompletionStage<UserContext<CV, T>> findValueAsync(String id) {
+	public CompletionStage<UserContext<PV, TC>> findValueAsync(String id) {
 		return this.findCache.getAsync(new UserContextKey(id));
 	}
 
@@ -58,9 +61,9 @@ public class InfinispanUserContextFactory<C, CV, T> implements UserContextFactor
 	}
 
 	@Override
-	public Map.Entry<C, T> createUserContext(UserContext<CV, T> entry) {
+	public Map.Entry<PC, TC> createUserContext(UserContext<PV, TC> entry) {
 		try {
-			C context = this.marshaller.read(entry.getPersistentContext());
+			PC context = this.marshaller.read(entry.getPersistentContext());
 			return new AbstractMap.SimpleImmutableEntry<>(context, entry.getTransientContext().get(this.contextFactory));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);

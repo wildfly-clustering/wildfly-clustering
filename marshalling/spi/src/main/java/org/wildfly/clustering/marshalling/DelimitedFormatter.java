@@ -9,12 +9,13 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
- * {@link Formatter} for keys with multiple string fields.
+ * {@link Formatter} for complex types with multiple string fields.
+ * @param <T> the formatted type
  * @author Paul Ferraro
  */
-public class DelimitedFormatter<K> extends SimpleFormatter<K> {
+public class DelimitedFormatter<T> extends SimpleFormatter<T> {
 
-	public DelimitedFormatter(Class<K> targetClass, String delimiter, Function<String[], K> parser, Function<K, String[]> formatter) {
+	public DelimitedFormatter(Class<T> targetClass, String delimiter, Function<String[], T> parser, Function<T, String[]> formatter) {
 		super(targetClass, value -> parser.apply(value.split(Pattern.quote(delimiter))), key -> String.join(delimiter, formatter.apply(key)));
 	}
 }

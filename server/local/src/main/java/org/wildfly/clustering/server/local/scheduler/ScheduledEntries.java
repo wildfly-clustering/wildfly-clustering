@@ -12,6 +12,8 @@ import java.util.stream.Stream;
 
 /**
  * A collection of scheduled entries with a predictable iteration order.
+ * @param <K> the scheduled entry key type
+ * @param <V> the scheduled entry value type
  * @author Paul Ferraro
  */
 public interface ScheduledEntries<K, V> extends Iterable<Map.Entry<K, V>> {
@@ -44,6 +46,7 @@ public interface ScheduledEntries<K, V> extends Iterable<Map.Entry<K, V>> {
 
 	/**
 	 * Returns, but does not remove, the first entry.
+	 * @return the first entry, or null if there are no entries.
 	 */
 	default Map.Entry<K, V> peek() {
 		return this.stream().findFirst().orElse(null);

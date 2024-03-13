@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 import org.wildfly.clustering.server.dispatcher.Command;
 
 /**
+ * Command returning the identifiers of all scheduler entries.
+ * @param <I> the identifier type of scheduled entries
+ * @param <M> the meta data type
  * @author Paul Ferraro
  */
 public class EntriesCommand<I, M> implements  Command<Collection<I>, CacheEntryScheduler<I, M>, RuntimeException> {

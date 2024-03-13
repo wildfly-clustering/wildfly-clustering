@@ -10,6 +10,9 @@ import java.util.function.BiFunction;
 
 /**
  * Generic marshaller based on two non-public fields.
+ * @param <T> the target type of this marshaller
+ * @param <F1> the first component field type
+ * @param <F2> the second component field type
  * @author Paul Ferraro
  */
 public class BinaryFieldMarshaller<T, F1, F2> extends BinaryMemberMarshaller<T, Field, F1, F2> {

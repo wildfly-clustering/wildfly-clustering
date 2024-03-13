@@ -7,6 +7,7 @@ package org.wildfly.clustering.cache;
 
 /**
  * A cache key for a given identifier
+ * @param <I> the identifier type of the cache key
  * @author Paul Ferraro
  */
 public interface Key<I> {

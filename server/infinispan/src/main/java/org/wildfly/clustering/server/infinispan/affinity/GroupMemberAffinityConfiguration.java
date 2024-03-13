@@ -12,6 +12,9 @@ import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.group.GroupMember;
 
 /**
+ * Encapsulates group member affinity configuration.
+ * @param <I> the identifier type of a cache key
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public interface GroupMemberAffinityConfiguration<I, M extends GroupMember<Address>> {

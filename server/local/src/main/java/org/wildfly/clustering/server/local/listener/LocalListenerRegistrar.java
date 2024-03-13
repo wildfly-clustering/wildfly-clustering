@@ -21,6 +21,8 @@ import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.listener.ListenerRegistrar;
 
 /**
+ * Local {@link ListenerRegistrar}.
+ * @param <T> the listener type
  * @author Paul Ferraro
  */
 public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {

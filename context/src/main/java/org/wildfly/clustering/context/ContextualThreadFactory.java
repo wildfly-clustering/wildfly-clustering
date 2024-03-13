@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * {@link ThreadFactory} decorator that contextualizes its threads.
+ * @param <C> the context type
  * @author Paul Ferraro
  */
 public class ContextualThreadFactory<C> implements ThreadFactory {

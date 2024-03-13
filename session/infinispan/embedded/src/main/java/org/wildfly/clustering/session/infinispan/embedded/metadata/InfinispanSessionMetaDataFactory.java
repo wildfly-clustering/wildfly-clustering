@@ -26,15 +26,16 @@ import org.wildfly.clustering.session.cache.metadata.coarse.SessionMetaDataEntry
 import org.wildfly.common.function.Functions;
 
 /**
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<ContextualSessionMetaDataEntry<L>> {
+public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFactory<ContextualSessionMetaDataEntry<C>> {
 
-	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> cache;
-	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> readForUpdateCache;
-	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> tryReadForUpdateCache;
-	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> writeOnlyCache;
-	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> silentWriteCache;
+	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> cache;
+	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> readForUpdateCache;
+	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> tryReadForUpdateCache;
+	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> writeOnlyCache;
+	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> silentWriteCache;
 	private final CacheProperties properties;
 
 	public InfinispanSessionMetaDataFactory(EmbeddedCacheConfiguration configuration) {
@@ -47,19 +48,19 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 	}
 
 	@Override
-	public CompletionStage<ContextualSessionMetaDataEntry<L>> createValueAsync(String id, Duration defaultTimeout) {
-		DefaultSessionMetaDataEntry<L> entry = new DefaultSessionMetaDataEntry<>();
+	public CompletionStage<ContextualSessionMetaDataEntry<C>> createValueAsync(String id, Duration defaultTimeout) {
+		DefaultSessionMetaDataEntry<C> entry = new DefaultSessionMetaDataEntry<>();
 		entry.setTimeout(defaultTimeout);
 		return this.writeOnlyCache.putAsync(new SessionMetaDataKey(id), entry).thenApply(v -> entry);
 	}
 
 	@Override
-	public CompletionStage<ContextualSessionMetaDataEntry<L>> findValueAsync(String id) {
+	public CompletionStage<ContextualSessionMetaDataEntry<C>> findValueAsync(String id) {
 		return this.readForUpdateCache.getAsync(new SessionMetaDataKey(id));
 	}
 
 	@Override
-	public CompletionStage<ContextualSessionMetaDataEntry<L>> tryValueAsync(String id) {
+	public CompletionStage<ContextualSessionMetaDataEntry<C>> tryValueAsync(String id) {
 		return this.tryReadForUpdateCache.getAsync(new SessionMetaDataKey(id));
 	}
 
@@ -73,17 +74,17 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 		return this.deleteAsync(this.silentWriteCache, id);
 	}
 
-	private CompletionStage<Void> deleteAsync(Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> cache, String id) {
+	private CompletionStage<Void> deleteAsync(Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> cache, String id) {
 		return cache.removeAsync(new SessionMetaDataKey(id)).thenAccept(Functions.discardingConsumer());
 	}
 
 	@Override
-	public ImmutableSessionMetaData createImmutableSessionMetaData(String id, ContextualSessionMetaDataEntry<L> entry) {
+	public ImmutableSessionMetaData createImmutableSessionMetaData(String id, ContextualSessionMetaDataEntry<C> entry) {
 		return new DefaultImmutableSessionMetaData(entry);
 	}
 
 	@Override
-	public InvalidatableSessionMetaData createSessionMetaData(String id, ContextualSessionMetaDataEntry<L> entry) {
+	public InvalidatableSessionMetaData createSessionMetaData(String id, ContextualSessionMetaDataEntry<C> entry) {
 		MutableSessionMetaDataOffsetValues delta = this.properties.isTransactional() && entry.isNew() ? null : MutableSessionMetaDataOffsetValues.from(entry);
 		CacheEntryMutator mutator = (delta != null) ? new EmbeddedCacheEntryComputeMutator<>(this.cache, new SessionMetaDataKey(id), new SessionMetaDataEntryFunction<>(delta)) : CacheEntryMutator.NO_OP;
 		return new DefaultSessionMetaData((delta != null) ? new MutableSessionMetaDataEntry(entry, delta) : entry, mutator);

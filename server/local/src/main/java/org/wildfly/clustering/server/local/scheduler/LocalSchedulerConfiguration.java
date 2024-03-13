@@ -12,6 +12,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
+ * Encapsulates configuration of a {@link LocalScheduler}.
+ * @param <T> the scheduled entry identifier type
  * @author Paul Ferraro
  */
 public interface LocalSchedulerConfiguration<T> {

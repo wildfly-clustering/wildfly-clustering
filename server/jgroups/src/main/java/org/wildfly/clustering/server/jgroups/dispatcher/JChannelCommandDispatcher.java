@@ -30,8 +30,8 @@ import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 /**
  * MessageDispatcher-based command dispatcher.
  * @author Paul Ferraro
- *
- * @param <CC> command execution context
+ * @param <CC> the command execution context
+ * @param <MC> the marshalling context
  */
 public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<ChannelGroupMember, CC> {
 

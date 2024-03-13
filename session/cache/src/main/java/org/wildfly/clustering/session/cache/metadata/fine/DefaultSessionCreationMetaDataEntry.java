@@ -15,6 +15,7 @@ import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.common.function.Functions;
 
 /**
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMetaDataEntry<C> {

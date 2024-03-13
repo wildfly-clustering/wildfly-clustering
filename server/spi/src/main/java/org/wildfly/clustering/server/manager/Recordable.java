@@ -7,6 +7,7 @@ package org.wildfly.clustering.server.manager;
 
 /**
  * Records some other object.
+ * @param <T> the recorded object type
  * @author Paul Ferraro
  */
 public interface Recordable<T> {

@@ -6,6 +6,8 @@
 package org.wildfly.clustering.server;
 
 /**
+ * Encapsulates a {@link GroupMembership} event.
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public interface GroupMembershipEvent<M extends GroupMember> {

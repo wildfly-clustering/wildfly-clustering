@@ -10,14 +10,15 @@ import java.util.Objects;
 
 /**
  * {@link MarshalledValue} implementation suitable for map keys that uses a {@link ByteBufferMarshaller}.
+ * @param <K> the key type
  * @author Paul Ferraro
  */
-public class ByteBufferMarshalledKey<T> extends ByteBufferMarshalledValue<T> {
+public class ByteBufferMarshalledKey<K> extends ByteBufferMarshalledValue<K> {
 	private static final long serialVersionUID = 7317347779979133897L;
 
 	private final int hashCode;
 
-	public ByteBufferMarshalledKey(T object, ByteBufferMarshaller marshaller) {
+	public ByteBufferMarshalledKey(K object, ByteBufferMarshaller marshaller) {
 		super(object, marshaller);
 		this.hashCode = Objects.hashCode(object);
 	}

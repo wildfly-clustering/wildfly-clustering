@@ -12,6 +12,7 @@ import org.infinispan.remoting.transport.Address;
 
 /**
  * A registry of keys with affinity to a given address.
+ * @param <K> the cache key type
  * @author Paul Ferraro
  */
 public interface KeyRegistry<K> {

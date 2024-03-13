@@ -22,6 +22,12 @@ import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionStatistics;
 
 /**
+ * An abstract {@link SessionManager} implementation that delegates most implementation details to a {@link SessionFactory}.
+ * @param <C> the session manager context type
+ * @param <MV> the session metadata value type
+ * @param <AV> the session attribute value type
+ * @param <SC> the session context type
+ * @param <B> the batch type
  * @author Paul Ferraro
  */
 public abstract class AbstractSessionManager<C, MV, AV, SC, B extends Batch> implements SessionManager<SC, B>, SessionStatistics {

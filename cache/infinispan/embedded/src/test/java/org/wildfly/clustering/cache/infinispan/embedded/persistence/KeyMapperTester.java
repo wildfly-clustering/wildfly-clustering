@@ -15,6 +15,7 @@ import org.wildfly.clustering.marshalling.Tester;
 
 /**
  * Tester for a {@link TwoWayKey2StringMapper}.
+ * @param <K> the test key type
  * @author Paul Ferraro
  */
 public class KeyMapperTester<K> implements Tester<K> {

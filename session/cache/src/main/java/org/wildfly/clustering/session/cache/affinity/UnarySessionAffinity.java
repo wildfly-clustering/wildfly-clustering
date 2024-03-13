@@ -11,6 +11,8 @@ import java.util.function.UnaryOperator;
 import org.wildfly.clustering.server.GroupMember;
 
 /**
+ * Session affinity to a multiple members.
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public class UnarySessionAffinity<M extends GroupMember> implements UnaryOperator<String> {

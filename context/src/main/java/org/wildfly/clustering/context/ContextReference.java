@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 /**
  * Reference to some context.
+ * @param <C> the context type
  * @author Paul Ferraro
  */
 public interface ContextReference<C> extends Supplier<C>, Consumer<C> {

@@ -6,27 +6,28 @@
 package org.wildfly.clustering.marshalling;
 
 /**
- * Formats a cache key to a string representation and back again.
+ * Formats an objects into a string representation and back again.
+ * @param <T> the formatted type
  * @author Paul Ferraro
  */
-public interface Formatter<K> {
+public interface Formatter<T> {
 	/**
 	 * The implementation class of the target key of this format.
 	 * @return an implementation class
 	 */
-	Class<K> getTargetClass();
+	Class<T> getTargetClass();
 
 	/**
 	 * Parses the key from the specified string.
 	 * @param value a string representation of the key
 	 * @return the parsed key
 	 */
-	K parse(String value);
+	T parse(String value);
 
 	/**
 	 * Formats the specified key to a string representation.
 	 * @param key a key to format
 	 * @return a string representation of the specified key.
 	 */
-	String format(K key);
+	String format(T key);
 }

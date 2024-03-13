@@ -23,6 +23,7 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
  * Scheduler that uses a single scheduled task in concert with an {@link ScheduledEntries}.
+ * @param <T> the scheduled entry identifier type
  * @author Paul Ferraro
  */
 public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {

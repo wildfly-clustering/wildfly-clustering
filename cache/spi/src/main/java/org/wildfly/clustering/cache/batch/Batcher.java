@@ -6,6 +6,7 @@ package org.wildfly.clustering.cache.batch;
 
 /**
  * Exposes a mechanism to handle batching.
+ * @param <B> the batch type
  * @author Paul Ferraro
  */
 public interface Batcher<B extends Batch> {

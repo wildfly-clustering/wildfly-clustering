@@ -14,6 +14,7 @@ import org.wildfly.clustering.session.SessionMetaData;
 
 /**
  * Decorated {@link Session} whose methods throw an {@link IllegalStateException} if the session is not valid.
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class AttachedSession<C> extends DecoratedSession<C> {

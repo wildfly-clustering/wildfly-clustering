@@ -17,6 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * A very generic marshaller for use with classes whose state is not publicly available for reading or writing except by pure reflection.
+ * @param <T> the target type of this marshaller
  * @author Paul Ferraro
  */
 public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {

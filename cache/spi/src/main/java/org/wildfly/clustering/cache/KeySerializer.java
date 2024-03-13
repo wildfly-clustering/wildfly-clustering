@@ -12,6 +12,8 @@ import org.wildfly.clustering.marshalling.Serializer;
 
 /**
  * Serializer for a key that delegates to the serializer of its identifier.
+ * @param <I> the identifier type of the cache key
+ * @param <K> the cache key type
  * @author Paul Ferraro
  */
 public class KeySerializer<I, K extends Key<I>> extends MappedSerializer<K, I> {
