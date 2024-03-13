@@ -42,6 +42,7 @@ public interface Marshaller<V, S> extends Marshallability {
 	 * Reads a value from its marshalled form.
 	 * @param value the marshalled form
 	 * @return an unmarshalled value
+	 * @throws IOException if the value could not be read
 	 */
 	V read(S value) throws IOException;
 
@@ -49,6 +50,7 @@ public interface Marshaller<V, S> extends Marshallability {
 	 * Writes a value to its serialized form
 	 * @param value a value to marshal.
 	 * @return the serialized form of the value
+	 * @throws IOException if the value could not be written
 	 */
 	S write(V value) throws IOException;
 }

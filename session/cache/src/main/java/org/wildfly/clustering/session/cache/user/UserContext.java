@@ -8,11 +8,14 @@ package org.wildfly.clustering.session.cache.user;
 import org.wildfly.clustering.server.util.Supplied;
 
 /**
+ * Cache entry storing persistent and transient user context.
+ * @param <PC> the persistent context type
+ * @param <TC> the transient context type
  * @author Paul Ferraro
  */
-public interface UserContext<C, T> {
+public interface UserContext<PC, TC> {
 
-	C getPersistentContext();
+	PC getPersistentContext();
 
-	Supplied<T> getTransientContext();
+	Supplied<TC> getTransientContext();
 }

@@ -8,14 +8,15 @@ import java.util.concurrent.CompletionStage;
 
 /**
  * Removes an entry from a cache.
+ * @param <I> the identifier type of the removed value
  * @author Paul Ferraro
  */
-public interface Remover<K> {
+public interface Remover<I> {
 	/**
 	 * Removes the specified entry from the cache.
 	 * @param id the cache entry identifier.
 	 */
-	default void remove(K id) {
+	default void remove(I id) {
 		this.removeAsync(id).toCompletableFuture().join();
 	}
 
@@ -24,13 +25,13 @@ public interface Remover<K> {
 	 * @param id the cache entry identifier.
 	 * @return true, if the entry was removed.
 	 */
-	CompletionStage<Void> removeAsync(K id);
+	CompletionStage<Void> removeAsync(I id);
 
 	/**
 	 * Like {@link #remove(Object)}, but does not notify listeners.
 	 * @param id the cache entry identifier.
 	 */
-	default void purge(K id) {
+	default void purge(I id) {
 		this.purgeAsync(id).toCompletableFuture().join();
 	}
 
@@ -39,7 +40,7 @@ public interface Remover<K> {
 	 * @param id the cache entry identifier.
 	 * @return true, if the entry was removed.
 	 */
-	default CompletionStage<Void> purgeAsync(K id) {
+	default CompletionStage<Void> purgeAsync(I id) {
 		return this.removeAsync(id);
 	}
 }

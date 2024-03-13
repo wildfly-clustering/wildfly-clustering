@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.cache.metadata.fine;
 
 /**
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class DefaultSessionMetaDataEntry<C> implements SessionMetaDataEntry<C> {

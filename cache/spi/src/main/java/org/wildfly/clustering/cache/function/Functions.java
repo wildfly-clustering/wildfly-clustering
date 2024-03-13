@@ -35,6 +35,7 @@ public class Functions {
 
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
+	 * @param result the value to return by the constant function
 	 * @param <T> the function parameter type
 	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
@@ -45,6 +46,7 @@ public class Functions {
 
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
+	 * @param result the value to return by the constant function
 	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
 	 */
@@ -54,6 +56,7 @@ public class Functions {
 
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
+	 * @param result the value to return by the constant function
 	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
 	 */
@@ -63,6 +66,7 @@ public class Functions {
 
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
+	 * @param result the value to return by the constant function
 	 * @param <R> the function return type
 	 * @return a function that always returns the specified result
 	 */

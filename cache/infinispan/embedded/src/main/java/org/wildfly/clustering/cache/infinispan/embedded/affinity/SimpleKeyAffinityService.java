@@ -11,6 +11,7 @@ import org.infinispan.remoting.transport.Address;
 
 /**
  * Simple {@link KeyAffinityService} implementation for use when co-location is not a requirement.
+ * @param <K> the cache key type
  * @author Paul Ferraro
  */
 public class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {

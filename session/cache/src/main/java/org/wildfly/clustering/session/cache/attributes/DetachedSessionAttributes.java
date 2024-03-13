@@ -13,6 +13,9 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.session.Session;
 
 /**
+ * A {@link SessionAttributes} implementation for detached sessions.
+ * @param <C> the session context type
+ * @param <B> the batch type
  * @author Paul Ferraro
  */
 public class DetachedSessionAttributes<C, B extends Batch> implements SessionAttributes {

@@ -9,6 +9,7 @@ package org.wildfly.clustering.server.dispatcher;
  *
  * @param <C> the command context type
  * @param <R> the command return type
+ * @param <E> the command execution exception type
  * @author Paul Ferraro
  */
 public interface Command<R, C, E extends Exception> {

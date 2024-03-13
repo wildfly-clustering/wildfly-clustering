@@ -10,6 +10,7 @@ import java.util.Map;
 import org.wildfly.clustering.cache.function.MapComputeFunction;
 
 /**
+ * @param <V> the session attribute value type
  * @author Paul Ferraro
  */
 public class SessionAttributeMapComputeFunction<V> extends MapComputeFunction<String, V> {

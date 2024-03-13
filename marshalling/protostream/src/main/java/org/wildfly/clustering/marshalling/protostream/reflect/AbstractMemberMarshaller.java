@@ -19,6 +19,8 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * Generic marshaller based on non-public members.
+ * @param <T> the target type of this marshaller
+ * @param <M> the reflection member type
  * @author Paul Ferraro
  */
 public abstract class AbstractMemberMarshaller<T, M extends Member> implements ProtoStreamMarshaller<T>, Function<Object[], T> {

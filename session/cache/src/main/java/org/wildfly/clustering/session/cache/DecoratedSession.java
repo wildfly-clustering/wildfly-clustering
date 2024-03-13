@@ -14,6 +14,7 @@ import org.wildfly.common.function.Functions;
 
 /**
  * A generic decorated session.
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class DecoratedSession<C> implements Session<C>, Supplier<Session<C>> {

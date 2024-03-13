@@ -11,17 +11,18 @@ import org.wildfly.clustering.cache.Key;
 
 /**
  * A base cache key implementation.
+ * @param <I> the identifier type of this cache key.
  * @author Paul Ferraro
  */
-public class CacheKey<K> implements Key<K> {
-	private final K id;
+public class CacheKey<I> implements Key<I> {
+	private final I id;
 
-	public CacheKey(K id) {
+	public CacheKey(I id) {
 		this.id = id;
 	}
 
 	@Override
-	public K getId() {
+	public I getId() {
 		return this.id;
 	}
 
@@ -29,7 +30,7 @@ public class CacheKey<K> implements Key<K> {
 	public boolean equals(Object object) {
 		if ((object == null) || (object.getClass() != this.getClass())) return false;
 		@SuppressWarnings("unchecked")
-		CacheKey<K> key = (CacheKey<K>) object;
+		CacheKey<I> key = (CacheKey<I>) object;
 		return this.id.equals(key.id);
 	}
 

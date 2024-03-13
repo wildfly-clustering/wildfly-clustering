@@ -17,6 +17,8 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
  * Abstract {@link CacheEntryScheduler} that delegates to a local scheduler.
+ * @param <I> the identifier type of scheduled entries
+ * @param <M> the meta data type
  * @author Paul Ferraro
  */
 public abstract class AbstractCacheEntryScheduler<I, M> implements CacheEntryScheduler<I, M> {

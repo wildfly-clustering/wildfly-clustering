@@ -10,6 +10,10 @@ import java.util.concurrent.CompletionStage;
 
 /**
  * Creates a pair of entries in a cache.
+ * @param <I> the identifier type of the cache key
+ * @param <K> the key type of the created entry
+ * @param <V> the value type of the created entry
+ * @param <C> the context of the created entry
  * @author Paul Ferraro
  */
 public interface BiCreator<I, K, V, C> extends Creator<I, Map.Entry<K, V>, C> {
@@ -17,7 +21,7 @@ public interface BiCreator<I, K, V, C> extends Creator<I, Map.Entry<K, V>, C> {
 	/**
 	 * Creates a value in the cache, if it does not already exist.
 	 * @param id the cache entry identifier.
-	 * @parem context the creation context
+	 * @param context the creation context
 	 * @return the new value, or the existing value the cache entry already exists.
 	 */
 	Map.Entry<CompletionStage<K>, CompletionStage<V>> createEntry(I id, C context);

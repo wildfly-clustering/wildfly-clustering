@@ -12,6 +12,7 @@ import org.wildfly.clustering.marshalling.SimpleFormatter;
 
 /**
  * Base {@link org.wildfly.clustering.marshalling.Formatter} for cache keys containing session identifiers.
+ * @param <K> the cache key type
  * @author Paul Ferraro
  */
 public class SessionKeyFormatter<K extends CacheKey<String>> extends SimpleFormatter<K> {

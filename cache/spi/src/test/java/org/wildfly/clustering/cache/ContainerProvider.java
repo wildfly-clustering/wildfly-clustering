@@ -10,6 +10,7 @@ import org.testcontainers.containers.Container;
 
 /**
  * JUnit extension providing a container.
+ * @param <C> the container type
  * @author Paul Ferraro
  */
 public interface ContainerProvider<C extends Container<C>> extends Extension {

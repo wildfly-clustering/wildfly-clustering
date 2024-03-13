@@ -11,6 +11,8 @@ import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 
 /**
+ * @param <I> the identifier type for group members
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public class LocalGroupMemberAffinity<I, M extends GroupMember> implements Function<I, M> {

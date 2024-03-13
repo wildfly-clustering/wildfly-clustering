@@ -6,7 +6,7 @@ package org.wildfly.clustering.server;
 
 /**
  * Represents a set of group members.
- *
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public interface Group<M extends GroupMember> extends Registrar<GroupMembershipListener<M>> {

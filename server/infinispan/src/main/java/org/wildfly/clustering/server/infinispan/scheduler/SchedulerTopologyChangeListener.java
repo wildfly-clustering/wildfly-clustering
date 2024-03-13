@@ -34,6 +34,10 @@ import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 
 /**
+ * Handles cache topology events for a distributed scheduler.
+ * @param <I> the identifier type for cache keys
+ * @param <K> the cache key type
+ * @param <V> the cache value type
  * @author Paul Ferraro
  */
 @Listener

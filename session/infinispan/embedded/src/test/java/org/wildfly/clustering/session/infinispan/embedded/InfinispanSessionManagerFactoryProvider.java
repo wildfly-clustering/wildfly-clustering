@@ -34,6 +34,7 @@ import org.wildfly.clustering.session.cache.MockSessionSpecificationProvider;
 import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
 
 /**
+ * @param <C> the session manager context type
  * @author Paul Ferraro
  */
 public class InfinispanSessionManagerFactoryProvider<C> implements SessionManagerFactoryProvider<C, TransactionBatch> {

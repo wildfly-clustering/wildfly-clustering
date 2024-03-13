@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.function.Predicate;
 
 /**
+ * @param <V> the collection element type
+ * @param <C> the collection type
  * @author Paul Ferraro
  */
 public interface CollectionOperations<V, C extends Collection<V>> extends Operations<C> {

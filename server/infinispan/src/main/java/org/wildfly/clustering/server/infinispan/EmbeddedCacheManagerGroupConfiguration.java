@@ -12,6 +12,9 @@ import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.group.GroupMember;
 
 /**
+ * Encapsulates the configuration of a {@link EmbeddedCacheManagerGroup}.
+ * @param <A> the group member address type
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public interface EmbeddedCacheManagerGroupConfiguration<A extends Comparable<A>, M extends GroupMember<A>> extends EmbeddedCacheContainerConfiguration {

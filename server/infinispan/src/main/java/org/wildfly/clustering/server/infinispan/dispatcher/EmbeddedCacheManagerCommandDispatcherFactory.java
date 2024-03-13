@@ -15,6 +15,9 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroup;
 
 /**
+ * A factory for creating a {@link CommandDispatcher} for dispatching commands to embedded cache manager group members.
+ * @param <A> the address type for group members
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerCommandDispatcherFactory<A extends Comparable<A>, M extends GroupMember<A>> implements CacheContainerCommandDispatcherFactory {

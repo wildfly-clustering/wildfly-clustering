@@ -16,6 +16,10 @@ import org.wildfly.clustering.server.group.GroupMember;
 import org.wildfly.clustering.server.util.Invoker;
 
 /**
+ * Encapsulates configuration of a {@link PrimaryOwnerScheduler}.
+ * @param <I> the identifier type of scheduled entries
+ * @param <M> the meta data type
+ * @param <GM> the group member type
  * @author Paul Ferraro
  */
 public interface PrimaryOwnerSchedulerConfiguration<I, M, GM extends GroupMember<Address>> {

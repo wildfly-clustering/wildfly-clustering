@@ -8,6 +8,8 @@ import java.util.Map;
 
 /**
  * Creates a mutator instance for a given cache entry.
+ * @param <K> the cache entry key type
+ * @param <V> the cache entry value type
  * @author Paul Ferraro
  */
 public interface CacheEntryMutatorFactory<K, V> {

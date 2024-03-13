@@ -11,6 +11,7 @@ import org.wildfly.clustering.server.manager.IdentifierFactory;
 
 /**
  * Simple {@link IdentifierFactory} that delegates to a supplier.
+ * @param <I> the identifier type
  * @author Paul Ferraro
  */
 public class SimpleIdentifierFactory<I> implements IdentifierFactory<I> {

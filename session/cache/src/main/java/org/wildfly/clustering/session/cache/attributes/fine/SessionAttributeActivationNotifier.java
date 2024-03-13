@@ -16,11 +16,13 @@ public interface SessionAttributeActivationNotifier extends AutoCloseable {
 
 	/**
 	 * Notifies the specified attribute that it will be passivated, if interested.
+	 * @param value an attribute value
 	 */
 	void prePassivate(Object value);
 
 	/**
 	 * Notifies the specified attribute that it was activated, if interested.
+	 * @param value an attribute value
 	 */
 	void postActivate(Object value);
 

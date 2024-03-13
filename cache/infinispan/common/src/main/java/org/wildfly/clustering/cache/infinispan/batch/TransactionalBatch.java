@@ -18,6 +18,7 @@ import org.jboss.logging.Logger;
 
 /**
  * Abstract {@link TransactionBatch} that associates and exposes the underlying transaction.
+ * @param <E> the exception wrapper type for transaction-related exceptions
  * @author Paul Ferraro
  */
 public class TransactionalBatch<E extends RuntimeException> implements TransactionBatch {

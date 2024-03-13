@@ -18,6 +18,10 @@ import org.wildfly.clustering.server.group.GroupMember;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 
 /**
+ * A {@link CommandDispatcher} for dispatching commands to embedded cache manager group members.
+ * @param <A> the address type for group members
+ * @param <M> the group member type
+ * @param <C> the command context type
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerCommandDispatcher<A extends Comparable<A>, M extends GroupMember<A>, C> implements CommandDispatcher<CacheContainerGroupMember, C> {

@@ -9,6 +9,8 @@ import java.util.function.BiFunction;
 
 /**
  * A context for managing references to server-side state.
+ * @param <K> the key type
+ * @param <V> the value type
  * @author Paul Ferraro
  */
 public interface Context<K, V> {

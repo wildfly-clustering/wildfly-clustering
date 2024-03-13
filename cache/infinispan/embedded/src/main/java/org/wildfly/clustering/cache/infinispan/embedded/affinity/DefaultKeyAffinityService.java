@@ -48,6 +48,7 @@ import org.wildfly.clustering.cache.infinispan.embedded.distribution.KeyDistribu
  * <li>Non-blocking topology change event handler.</li>
  * <li>{@link #getKeyForAddress(Address)} calls will not block during topology change events.</li>
  * </ul>
+ * @param <K> the cache key type
  * @author Paul Ferraro
  */
 @Listener(observation = Observation.POST)

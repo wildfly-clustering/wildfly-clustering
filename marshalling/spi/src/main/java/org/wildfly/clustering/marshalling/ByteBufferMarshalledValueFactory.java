@@ -23,7 +23,7 @@ public class ByteBufferMarshalledValueFactory implements MarshalledValueFactory<
 	}
 
 	@Override
-	public <T> ByteBufferMarshalledValue<T> createMarshalledValue(T object) {
+	public <V> ByteBufferMarshalledValue<V> createMarshalledValue(V object) {
 		return new ByteBufferMarshalledValue<>(object, this.marshaller);
 	}
 

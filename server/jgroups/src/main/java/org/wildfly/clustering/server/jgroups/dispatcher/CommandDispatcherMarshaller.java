@@ -16,6 +16,9 @@ import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 import org.wildfly.clustering.server.dispatcher.Command;
 
 /**
+ * Marshaller for commands.
+ * @param <C> the command execution context
+ * @param <MC> the marshalling context
  * @author Paul Ferraro
  */
 public class CommandDispatcherMarshaller<C, MC> implements CommandMarshaller<C> {

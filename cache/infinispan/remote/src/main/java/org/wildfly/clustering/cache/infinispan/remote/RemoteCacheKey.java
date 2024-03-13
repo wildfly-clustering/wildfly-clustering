@@ -11,6 +11,7 @@ import org.wildfly.clustering.cache.Key;
 
 /**
  * Base type for remote cache keys.
+ * @param <I> the identifier type of the cache key
  * @author Paul Ferraro
  */
 public class RemoteCacheKey<I> implements Key<I> {

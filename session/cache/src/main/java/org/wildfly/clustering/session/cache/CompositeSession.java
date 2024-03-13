@@ -16,6 +16,7 @@ import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaDat
 
 /**
  * Generic session implementation composed of attributes and metadata.
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class CompositeSession<C> extends CompositeImmutableSession implements Session<C> {

@@ -27,6 +27,10 @@ import org.wildfly.clustering.session.user.UserManagerConfiguration;
 import org.wildfly.clustering.session.user.UserManagerFactory;
 
 /**
+ * Remote Infinispan cache-based user manager factory.
+ * @param <C> the persistent context type
+ * @param <D> the deployment type
+ * @param <S> the session type
  * @author Paul Ferraro
  */
 public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, D, S, TransactionBatch> {

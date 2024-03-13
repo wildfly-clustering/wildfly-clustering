@@ -11,6 +11,7 @@ import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 
 /**
+ * @param <T> the listener type
  * @author Paul Ferraro
  */
 public interface ListenerRegistrar<T> extends Registrar<T>, Consumer<Consumer<T>>, Registration {

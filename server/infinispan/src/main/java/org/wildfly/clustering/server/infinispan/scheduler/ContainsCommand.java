@@ -8,6 +8,9 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 import org.wildfly.clustering.server.dispatcher.Command;
 
 /**
+ * Command that determine if a given entry is known to the scheduler.
+ * @param <I> the identifier type of scheduled entries
+ * @param <M> the meta data type
  * @author Paul Ferraro
  */
 public class ContainsCommand<I, M> implements Command<Boolean, CacheEntryScheduler<I, M>, RuntimeException> {

@@ -19,6 +19,7 @@ import org.wildfly.common.function.ExceptionBiConsumer;
 
 /**
  * Generic identity table.
+ * @param <T> the table entry type
  * @author Paul Ferraro
  */
 public interface IdentityTable<T> {

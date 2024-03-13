@@ -9,6 +9,7 @@ import org.wildfly.clustering.server.util.Supplied;
 
 /**
  * Implemented by object with a supplied context.
+ * @param <C> the context type
  * @author Paul Ferraro
  */
 public interface Contextual<C> {

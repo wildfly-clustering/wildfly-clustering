@@ -13,26 +13,27 @@ import java.io.IOException;
 import java.util.Base64;
 
 /**
- * {@link Formatter} implementation for binary keys.
+ * {@link Formatter} implementation for binary types.
+ * @param <T> the formatted type
  * @author Paul Ferraro
  */
-public class BinaryFormatter<K> implements Formatter<K> {
+public class BinaryFormatter<T> implements Formatter<T> {
 
-	private final Class<K> targetClass;
-	private final Serializer<K> serializer;
+	private final Class<T> targetClass;
+	private final Serializer<T> serializer;
 
-	public BinaryFormatter(Class<K> targetClass, Serializer<K> serializer) {
+	public BinaryFormatter(Class<T> targetClass, Serializer<T> serializer) {
 		this.targetClass = targetClass;
 		this.serializer = serializer;
 	}
 
 	@Override
-	public Class<K> getTargetClass() {
+	public Class<T> getTargetClass() {
 		return this.targetClass;
 	}
 
 	@Override
-	public K parse(String value) {
+	public T parse(String value) {
 		byte[] bytes = Base64.getDecoder().decode(value);
 		try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes))) {
 			return this.serializer.read(input);
@@ -42,7 +43,7 @@ public class BinaryFormatter<K> implements Formatter<K> {
 	}
 
 	@Override
-	public String format(K key) {
+	public String format(T key) {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		try (DataOutputStream output = new DataOutputStream(bytes)) {
 			this.serializer.write(output, key);

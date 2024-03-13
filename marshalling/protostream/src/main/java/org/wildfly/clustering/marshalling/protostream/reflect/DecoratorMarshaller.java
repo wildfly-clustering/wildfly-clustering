@@ -9,6 +9,7 @@ import java.util.function.UnaryOperator;
 
 /**
  * Marshaller for a decorator that does not provide public access to its decorated object.
+ * @param <T> the target type of this marshaller
  * @author Paul Ferraro
  */
 public class DecoratorMarshaller<T>  extends UnaryFieldMarshaller<T, T> {
