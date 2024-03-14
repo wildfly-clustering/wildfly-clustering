@@ -6,6 +6,7 @@ package org.wildfly.clustering.cache.batch;
 
 /**
  * Handles batch context switching.
+ * @param <B> the batch type
  * @author Paul Ferraro
  */
 public interface BatchContext<B extends Batch> extends AutoCloseable {

@@ -16,6 +16,7 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistry;
 
 /**
  * Factory that provides a non-clustered {@link ServiceProviderRegistration} implementation.
+ * @param <T> the service provider type
  * @author Paul Ferraro
  */
 public class LocalServiceProviderRegistry<T> implements ServiceProviderRegistry<T, LocalGroupMember> {

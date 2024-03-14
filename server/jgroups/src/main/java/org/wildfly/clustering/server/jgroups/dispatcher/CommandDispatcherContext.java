@@ -9,6 +9,9 @@ import org.wildfly.clustering.context.Contextualizer;
 import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 
 /**
+ * Encapsulates context of a command dispatcher.
+ * @param <CC> the command context type
+ * @param <MC> the marshalling context type
  * @author Paul Ferraro
  */
 public interface CommandDispatcherContext<CC, MC> {

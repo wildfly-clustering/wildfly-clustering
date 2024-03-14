@@ -27,6 +27,9 @@ import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Scheduler decorator that schedules/cancels a given object on the primary owner.
+ * @param <I> the identifier type of scheduled entries
+ * @param <M> the meta data type
+ * @param <GM> the group member type
  * @author Paul Ferraro
  */
 public class PrimaryOwnerScheduler<I, M, GM extends GroupMember<Address>> implements Scheduler<I, M>, Function<CompletionStage<Collection<I>>, Stream<I>> {

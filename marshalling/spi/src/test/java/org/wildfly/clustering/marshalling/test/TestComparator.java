@@ -8,6 +8,7 @@ package org.wildfly.clustering.marshalling.test;
 import java.util.Comparator;
 
 /**
+ * @param <T> comparison target type
  * @author Paul Ferraro
  */
 public class TestComparator<T> implements Comparator<T>, java.io.Serializable {

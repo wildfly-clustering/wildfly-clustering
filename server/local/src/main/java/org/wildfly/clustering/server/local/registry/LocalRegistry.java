@@ -16,6 +16,9 @@ import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryListener;
 
 /**
+ * Local {@link Registry}.
+ * @param <K> the registry key type
+ * @param <V> the registry value type
  * @author Paul Ferraro
  */
 public class LocalRegistry<K, V> implements Registry<LocalGroupMember, K, V>, Function<Map.Entry<K, V>, Map<K, V>> {

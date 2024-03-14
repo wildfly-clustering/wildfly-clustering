@@ -9,7 +9,8 @@ import org.infinispan.protostream.annotations.ProtoFactory;
 import org.wildfly.clustering.server.dispatcher.Command;
 
 /**
- * Test command
+ * Test command.
+ * @param <C> the command context type
  * @author Paul Ferraro
  */
 public class IdentityCommand<C> implements Command<C, C, RuntimeException> {

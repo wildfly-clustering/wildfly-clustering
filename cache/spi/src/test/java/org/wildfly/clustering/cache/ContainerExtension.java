@@ -18,6 +18,7 @@ import org.testcontainers.lifecycle.Startable;
 
 /**
  * Generic JUnit extension for managing the lifecycle of a container.
+ * @param <C> the container type
  * @author Paul Ferraro
  */
 public class ContainerExtension<C extends Container<C> & Startable> implements AfterAllCallback, BeforeAllCallback, ContainerProvider<C> {

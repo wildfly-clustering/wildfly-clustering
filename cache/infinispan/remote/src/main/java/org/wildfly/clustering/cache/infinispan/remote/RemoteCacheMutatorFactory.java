@@ -15,6 +15,8 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 
 /**
  * Factory for creating a {@link CacheEntryMutator} for a remote cache entry.
+ * @param <K> the cache key type
+ * @param <V> the cache value type
  * @author Paul Ferraro
  */
 public class RemoteCacheMutatorFactory<K, V> implements CacheEntryMutatorFactory<K, V> {

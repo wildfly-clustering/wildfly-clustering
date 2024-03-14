@@ -20,7 +20,7 @@ import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.Batcher;
 
 /**
- * Unit test for {@link InfinispanBatcher}.
+ * Unit test for {@link TransactionalBatcher}.
  * @author Paul Ferraro
  */
 public class TransactionalBatcherTestCase {

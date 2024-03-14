@@ -23,7 +23,7 @@ import org.wildfly.clustering.session.SessionStatistics;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 
 /**
- * Unit test for {@link ConcurrentSessionManager}.
+ * Unit test for {@link ContextualSessionManager}.
  * @author Paul Ferraro
  */
 public class ContextualSessionManagerTestCase {

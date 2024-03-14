@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.AbstractAtomicTestCase;
 public class JavaAtomicTestCase extends AbstractAtomicTestCase {
 
 	public JavaAtomicTestCase() {
-		super(JavaTesterFactory.INSTANCE);
+		super(new JavaSerializationTesterFactory());
 	}
 }

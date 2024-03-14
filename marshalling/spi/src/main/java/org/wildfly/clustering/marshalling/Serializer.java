@@ -12,6 +12,7 @@ import java.util.OptionalInt;
 
 /**
  * Writes/reads an object to/from a binary stream.
+ * @param <T> the target type of this serializer.
  * @author Paul Ferraro
  */
 public interface Serializer<T> {
@@ -34,6 +35,7 @@ public interface Serializer<T> {
 
 	/**
 	 * Returns the size of the buffer to use for marshalling the specified object, if known.
+	 * @param object the object to be sized
 	 * @return the buffer size (in bytes), or empty if unknown.
 	 */
 	default OptionalInt size(T object) {

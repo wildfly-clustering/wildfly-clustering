@@ -5,14 +5,13 @@
 
 package org.wildfly.clustering.session.cache.attributes.fine;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValue;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
@@ -22,11 +21,11 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 public class SessionAttributeMapEntryMarshallerTestCase {
 
 	@Test
-	public void test() throws IOException {
+	public void test() {
 		ProtoStreamTesterFactory factory = new ProtoStreamTesterFactory(List.of(new FineSessionAttributesSerializationContextInitializer()));
 		ByteBufferMarshaller marshaller = factory.getMarshaller();
 		ByteBufferMarshalledValue<UUID> value = new ByteBufferMarshalledValue<>(UUID.randomUUID(), marshaller);
-		MarshallingTester<SessionAttributeMapEntry<ByteBufferMarshalledValue<UUID>>> tester = factory.createTester();
-		tester.test(new SessionAttributeMapEntry<>("foo", value));
+		Consumer<SessionAttributeMapEntry<ByteBufferMarshalledValue<UUID>>> tester = factory.createTester();
+		tester.accept(new SessionAttributeMapEntry<>("foo", value));
 	}
 }

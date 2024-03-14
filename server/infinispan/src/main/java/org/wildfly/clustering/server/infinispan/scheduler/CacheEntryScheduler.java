@@ -10,6 +10,8 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
  * A task scheduler.
+ * @param <I> the identifier type of scheduled entries
+ * @param <M> the meta data type
  * @author Paul Ferraro
  */
 public interface CacheEntryScheduler<I, M> extends Scheduler<I, M> {

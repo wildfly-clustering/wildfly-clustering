@@ -16,7 +16,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * Marshaller for an {@link Any} object.
  * @author Paul Ferraro
  */
-public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
+enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 	INSTANCE;
 
 	@Override

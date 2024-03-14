@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.AbstractTimeTestCase;
 public class JBossTimeUnitTest extends AbstractTimeTestCase {
 
 	public JBossTimeUnitTest() {
-		super(JBossTesterFactory.INSTANCE);
+		super(new JBossMarshallingTesterFactory());
 	}
 }

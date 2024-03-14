@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.AbstractNetTestCase;
 public class JavaNetTestCase extends AbstractNetTestCase {
 
 	public JavaNetTestCase() {
-		super(JavaTesterFactory.INSTANCE);
+		super(new JavaSerializationTesterFactory());
 	}
 }

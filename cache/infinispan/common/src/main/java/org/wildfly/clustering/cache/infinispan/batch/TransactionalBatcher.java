@@ -26,6 +26,7 @@ import org.wildfly.clustering.cache.batch.Batcher;
  * A {@link Batcher} implementation based on Infinispan's BatchContainer, except that its transaction reference is stored within the returned Batch object instead of a ThreadLocal.
  * This also allows the user to call {@link Batch#close()} from a different thread than the one that created the {@link Batch}.
  * In this case, however, the user must first resume the batch via {@link #resumeBatch(TransactionBatch)}.
+ * @param <E> the exception wrapper type for transaction-related exceptions
  * @author Paul Ferraro
  */
 public class TransactionalBatcher<E extends RuntimeException> implements Batcher<TransactionBatch> {

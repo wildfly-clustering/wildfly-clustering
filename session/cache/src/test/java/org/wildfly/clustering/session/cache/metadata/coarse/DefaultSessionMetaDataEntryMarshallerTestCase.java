@@ -5,26 +5,25 @@
 
 package org.wildfly.clustering.session.cache.metadata.coarse;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.offset.Offset;
 
 /**
- * Unit test for {@link SessionCreationMetaDataEntryExternalizer}.
+ * Unit test for {@link DefaultSessionMetaDataEntry} marshalling.
  * @author Paul Ferraro
  */
 public class DefaultSessionMetaDataEntryMarshallerTestCase {
 
 	@Test
-	public void test() throws IOException {
-		MarshallingTester<ContextualSessionMetaDataEntry<Object>> tester = new ProtoStreamTesterFactory(List.of(new CoarseSessionMetaDataSerializationContextInitializer())).createTester();
+	public void test() {
+		Consumer<ContextualSessionMetaDataEntry<Object>> tester = new ProtoStreamTesterFactory(List.of(new CoarseSessionMetaDataSerializationContextInitializer())).createTester(DefaultSessionMetaDataEntryMarshallerTestCase::assertEquals);
 
 		ContextualSessionMetaDataEntry<Object> entry = new DefaultSessionMetaDataEntry<>(Instant.now());
 
@@ -32,16 +31,16 @@ public class DefaultSessionMetaDataEntryMarshallerTestCase {
 		entry.setTimeout(Duration.ofMinutes(30));
 		// Default last access duration
 		entry.getLastAccessEndTime().setOffset(Offset.forInstant(Duration.ofSeconds(1)));
-		tester.test(entry, DefaultSessionMetaDataEntryMarshallerTestCase::assertEquals);
+		tester.accept(entry);
 
 		Instant lastAccessStartTime = Instant.now();
 		entry.getLastAccessStartTime().set(lastAccessStartTime);
 		entry.getLastAccessEndTime().set(lastAccessStartTime.plus(Duration.ofSeconds(2)));
-		tester.test(entry, DefaultSessionMetaDataEntryMarshallerTestCase::assertEquals);
+		tester.accept(entry);
 
 		// Custom max-inactive-interval
 		entry.setTimeout(Duration.ofMinutes(10));
-		tester.test(entry, DefaultSessionMetaDataEntryMarshallerTestCase::assertEquals);
+		tester.accept(entry);
 	}
 
 	static void assertEquals(ContextualSessionMetaDataEntry<Object> entry1, ContextualSessionMetaDataEntry<Object> entry2) {

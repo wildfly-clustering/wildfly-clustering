@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-server</artifactId>
-		<version>1.0.13.Final-SNAPSHOT</version>
+		<version>2.0.0.Final-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-server-jgroups</artifactId>
@@ -36,19 +36,31 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -65,6 +77,12 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-server-spi</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>

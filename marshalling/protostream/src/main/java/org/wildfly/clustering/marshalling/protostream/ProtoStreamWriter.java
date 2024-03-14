@@ -16,6 +16,13 @@ import org.infinispan.protostream.descriptors.WireType;
  */
 public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
+	/**
+	 * Creates a writer for a set of consecutive fields.
+	 * @param <T> the type encapsulated by this field set
+	 * @param writer the marshaller used to write the set of fields
+	 * @param startIndex the starting index of this field set
+	 * @return a writer for a set of consecutive fields.
+	 */
 	<T> FieldSetWriter<T> createFieldSetWriter(Writable<T> writer, int startIndex);
 
 	/**
@@ -88,7 +95,7 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
 	/**
 	 * Deprecated to discourage use.
-	 * @deprecated Use {@link #writeUInt64(int, int)} or {@link #writeSInt64(int, int)}
+	 * @deprecated Use {@link #writeUInt64(int, long)} or {@link #writeSInt64(int, long)}
 	 */
 	@Deprecated
 	@Override
@@ -104,7 +111,7 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
 	/**
 	 * Deprecated to discourage use.
-	 * @deprecated Use {@link #writeSFixed64(int, int)} instead.
+	 * @deprecated Use {@link #writeSFixed64(int, long)} instead.
 	 */
 	@Deprecated
 	@Override

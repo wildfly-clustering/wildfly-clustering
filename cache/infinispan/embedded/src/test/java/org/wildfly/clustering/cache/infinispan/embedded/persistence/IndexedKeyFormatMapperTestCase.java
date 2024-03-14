@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.Formatter;
-import org.wildfly.clustering.marshalling.SimpleFormatter;
 
 /**
  * @author Paul Ferraro
@@ -83,6 +83,6 @@ public class IndexedKeyFormatMapperTestCase {
 
 	@SuppressWarnings("unchecked")
 	private static List<? extends Formatter<?>> createPersistenceList(int size) {
-		return java.util.stream.IntStream.range(0, size).mapToObj(index -> new SimpleFormatter<>((Class<Type>) Type.values()[index].getClass(), value -> Type.valueOf(value), Type::name)).collect(Collectors.toList());
+		return IntStream.range(0, size).mapToObj(index -> Formatter.IDENTITY.wrap((Class<Type>) Type.values()[index].getClass(), value -> Type.valueOf(value), Type::name)).collect(Collectors.toList());
 	}
 }

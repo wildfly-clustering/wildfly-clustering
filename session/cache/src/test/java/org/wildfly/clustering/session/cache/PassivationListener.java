@@ -10,6 +10,7 @@ import java.util.Map;
 import org.wildfly.clustering.session.ImmutableSession;
 
 /**
+ * @param <C> the session manager context type
  * @author Paul Ferraro
  */
 public interface PassivationListener<C> {

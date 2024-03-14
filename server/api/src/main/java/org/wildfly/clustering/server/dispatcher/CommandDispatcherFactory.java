@@ -11,7 +11,7 @@ import org.wildfly.clustering.server.GroupMember;
 
 /**
  * Factory for creating a command dispatcher.
- *
+ * @param <M> the member type
  * @author Paul Ferraro
  */
 public interface CommandDispatcherFactory<M extends GroupMember> {
@@ -41,6 +41,7 @@ public interface CommandDispatcherFactory<M extends GroupMember> {
 	 *
 	 * @param id a unique identifier for this dispatcher
 	 * @param context the context used for executing commands
+	 * @param loader the class loader used to load commands to be dispatched.
 	 * @return a new command dispatcher
 	 */
 	<C> CommandDispatcher<M, C> createCommandDispatcher(Object id, C context, ClassLoader loader);

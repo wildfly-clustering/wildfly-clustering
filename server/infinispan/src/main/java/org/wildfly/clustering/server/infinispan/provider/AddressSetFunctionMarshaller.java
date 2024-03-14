@@ -24,6 +24,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * Marshaller for an function that operates on a {@link Set} of {@link Address} instances.
+ * @param <F> the function type
  * @author Paul Ferraro
  */
 public class AddressSetFunctionMarshaller<F extends CollectionFunction<Address, Set<Address>>> implements ProtoStreamMarshaller<F> {

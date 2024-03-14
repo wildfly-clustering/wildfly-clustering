@@ -7,7 +7,6 @@ package org.wildfly.clustering.marshalling;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -41,10 +40,10 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.test.Empty;
 import org.wildfly.clustering.marshalling.test.TestComparator;
@@ -63,441 +62,433 @@ public abstract class AbstractUtilTestCase {
 	}
 
 	@Test
-	public void testArrayDeque() throws IOException {
-		MarshallingTester<ArrayDeque<Object>> tester = this.factory.createTester();
-		tester.test(new ArrayDeque<>(BASIS.keySet()), AbstractUtilTestCase::assertCollectionEquals);
+	public void testArrayDeque() {
+		Consumer<ArrayDeque<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(new ArrayDeque<>(BASIS.keySet()));
 	}
 
 	@Test
-	public void testArrayList() throws IOException {
-		MarshallingTester<ArrayList<Object>> tester = this.factory.createTester();
-		tester.test(new ArrayList<>(BASIS.keySet()), AbstractUtilTestCase::assertCollectionEquals);
+	public void testArrayList() {
+		Consumer<ArrayList<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(new ArrayList<>(BASIS.keySet()));
 	}
 
 	@Test
-	public void testBitSet() throws IOException {
-		MarshallingTester<BitSet> tester = this.factory.createTester();
+	public void testBitSet() {
+		Consumer<BitSet> tester = this.factory.createTester();
 
-		tester.test(new BitSet(0));
+		tester.accept(new BitSet(0));
 		BitSet set = new BitSet(7);
 		set.set(1);
 		set.set(3);
 		set.set(5);
-		tester.test(set);
+		tester.accept(set);
 	}
 
 	@Test
-	public void testCalendar() throws IOException {
-		MarshallingTester<Calendar> tester = this.factory.createTester();
+	public void testCalendar() {
+		Consumer<Calendar> tester = this.factory.createTester();
 		LocalDateTime time = LocalDateTime.now();
 		// Validate default calendar w/date only
-		tester.test(new Calendar.Builder().setDate(time.getYear(), time.getMonthValue(), time.getDayOfMonth()).build());
+		tester.accept(new Calendar.Builder().setDate(time.getYear(), time.getMonthValue(), time.getDayOfMonth()).build());
 		// Validate Gregorian calendar w/locale and date + time
-		tester.test(new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).setDate(time.getYear(), time.getMonthValue() - 1, time.getDayOfMonth()).setTimeOfDay(time.getHour(), time.getMinute(), time.getSecond()).build());
+		tester.accept(new Calendar.Builder().setLenient(false).setLocale(Locale.FRANCE).setDate(time.getYear(), time.getMonthValue() - 1, time.getDayOfMonth()).setTimeOfDay(time.getHour(), time.getMinute(), time.getSecond()).build());
 		// Validate Japanese Imperial calendar w/full date/time
-		tester.test(new Calendar.Builder().setLocale(Locale.JAPAN).setTimeZone(TimeZone.getTimeZone("Asia/Tokyo")).setInstant(Date.from(time.toInstant(ZoneOffset.UTC))).build());
+		tester.accept(new Calendar.Builder().setLocale(Locale.JAPAN).setTimeZone(TimeZone.getTimeZone("Asia/Tokyo")).setInstant(Date.from(time.toInstant(ZoneOffset.UTC))).build());
 		// Validate Buddhist calendar
-		tester.test(new Calendar.Builder().setLocale(Locale.forLanguageTag("th_TH")).setTimeZone(TimeZone.getTimeZone("Asia/Bangkok")).build());
+		tester.accept(new Calendar.Builder().setLocale(Locale.forLanguageTag("th_TH")).setTimeZone(TimeZone.getTimeZone("Asia/Bangkok")).build());
 	}
 
 	@Test
-	public void testCurrency() throws IOException {
-		MarshallingTester<Currency> tester = this.factory.createTester();
+	public void testCurrency() {
+		Consumer<Currency> tester = this.factory.createTester();
 		for (Currency currency : Currency.getAvailableCurrencies()) {
-			tester.test(currency);
+			tester.accept(currency);
 		}
 	}
 
 	@Test
-	public void testDate() throws IOException {
-		MarshallingTester<Date> tester = this.factory.createTester();
-		tester.test(Date.from(Instant.EPOCH));
-		tester.test(Date.from(Instant.now()));
+	public void testDate() {
+		Consumer<Date> tester = this.factory.createTester();
+		tester.accept(Date.from(Instant.EPOCH));
+		tester.accept(Date.from(Instant.now()));
 	}
 
 	@Test
-	public void testEnumMap() throws IOException {
-		MarshallingTester<EnumMap<Thread.State, String>> tester = this.factory.createTester();
+	public void testEnumMap() {
+		Consumer<EnumMap<Thread.State, String>> tester = this.factory.createMapTester();
 		EnumMap<Thread.State, String> map = new EnumMap<>(Thread.State.class);
-		tester.test(map, AbstractUtilTestCase::assertMapEquals);
+		tester.accept(map);
 		for (Thread.State state : EnumSet.allOf(Thread.State.class)) {
 			map.put(state, ((state.ordinal() % 2) == 0) ? state.name() : null);
-			tester.test(map, AbstractUtilTestCase::assertMapEquals);
+			tester.accept(map);
 		}
 	}
 
 	@Test
-	public void testEnumSet() throws IOException {
-		MarshallingTester<EnumSet<Thread.State>> tester = this.factory.createTester();
+	public void testEnumSet() {
+		Consumer<EnumSet<Thread.State>> tester = this.factory.createCollectionTester();
 		EnumSet<Thread.State> set = EnumSet.noneOf(Thread.State.class);
-		tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(set);
 		for (Thread.State state : EnumSet.allOf(Thread.State.class)) {
 			set.add(state);
-			tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+			tester.accept(set);
 		}
 	}
 
 	@Test
-	public void testJumboEnumSet() throws IOException {
-		MarshallingTester<EnumSet<Character.UnicodeScript>> tester = this.factory.createTester();
-		tester.test(EnumSet.noneOf(Character.UnicodeScript.class), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(EnumSet.of(Character.UnicodeScript.UNKNOWN), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(EnumSet.of(Character.UnicodeScript.ARABIC, Character.UnicodeScript.ARMENIAN, Character.UnicodeScript.AVESTAN, Character.UnicodeScript.BALINESE, Character.UnicodeScript.BAMUM, Character.UnicodeScript.BATAK, Character.UnicodeScript.BENGALI, Character.UnicodeScript.BOPOMOFO, Character.UnicodeScript.BRAHMI, Character.UnicodeScript.BRAILLE, Character.UnicodeScript.BUGINESE, Character.UnicodeScript.BUHID, Character.UnicodeScript.CANADIAN_ABORIGINAL, Character.UnicodeScript.CARIAN), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(EnumSet.complementOf(EnumSet.of(Character.UnicodeScript.UNKNOWN)), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(EnumSet.allOf(Character.UnicodeScript.class), AbstractUtilTestCase::assertCollectionEquals);
+	public void testJumboEnumSet() {
+		Consumer<EnumSet<Character.UnicodeScript>> tester = this.factory.createCollectionTester();
+		tester.accept(EnumSet.noneOf(Character.UnicodeScript.class));
+		tester.accept(EnumSet.of(Character.UnicodeScript.UNKNOWN));
+		tester.accept(EnumSet.of(Character.UnicodeScript.ARABIC, Character.UnicodeScript.ARMENIAN, Character.UnicodeScript.AVESTAN, Character.UnicodeScript.BALINESE, Character.UnicodeScript.BAMUM, Character.UnicodeScript.BATAK, Character.UnicodeScript.BENGALI, Character.UnicodeScript.BOPOMOFO, Character.UnicodeScript.BRAHMI, Character.UnicodeScript.BRAILLE, Character.UnicodeScript.BUGINESE, Character.UnicodeScript.BUHID, Character.UnicodeScript.CANADIAN_ABORIGINAL, Character.UnicodeScript.CARIAN));
+		tester.accept(EnumSet.complementOf(EnumSet.of(Character.UnicodeScript.UNKNOWN)));
+		tester.accept(EnumSet.allOf(Character.UnicodeScript.class));
 	}
 
 	@Test
-	public void testEmptyEnumSet() throws IOException {
-		MarshallingTester<EnumSet<Empty>> tester = this.factory.createTester();
-		EnumSet<Empty> set = EnumSet.noneOf(Empty.class);
-		tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+	public void testEmptyEnumSet() {
+		Consumer<EnumSet<Empty>> tester = this.factory.createCollectionTester();
+		tester.accept(EnumSet.noneOf(Empty.class));
 	}
 
 	@Test
-	public void testHashMap() throws IOException {
-		MarshallingTester<HashMap<Object, Object>> tester = this.factory.createTester();
-		tester.test(new HashMap<>(BASIS), AbstractUtilTestCase::assertMapEquals);
+	public void testHashMap() {
+		Consumer<HashMap<Object, Object>> tester = this.factory.createMapTester();
+		tester.accept(new HashMap<>(BASIS));
 	}
 
 	@Test
-	public void testHashSet() throws IOException {
-		MarshallingTester<HashSet<Object>> tester = this.factory.createTester();
-		tester.test(new HashSet<>(BASIS.keySet()), AbstractUtilTestCase::assertCollectionEquals);
+	public void testHashSet() {
+		Consumer<HashSet<Object>> tester = this.factory.createCollectionTester();
+		tester.accept(new HashSet<>(BASIS.keySet()));
 	}
 
 	@Test
-	public void testLinkedHashMap() throws IOException {
-		MarshallingTester<LinkedHashMap<Object, Object>> tester = this.factory.createTester();
-		tester.test(new LinkedHashMap<>(BASIS), AbstractUtilTestCase::assertLinkedMapEquals);
+	public void testLinkedHashMap() {
+		Consumer<LinkedHashMap<Object, Object>> tester = this.factory.createOrderedMapTester();
+		tester.accept(new LinkedHashMap<>(BASIS));
 		LinkedHashMap<Object, Object> accessOrderMap = new LinkedHashMap<>(5, 1, true);
 		accessOrderMap.putAll(BASIS);
-		tester.test(new LinkedHashMap<>(accessOrderMap), AbstractUtilTestCase::assertLinkedMapEquals);
+		tester.accept(new LinkedHashMap<>(accessOrderMap));
 	}
 
 	@Test
-	public void testLinkedHashSet() throws IOException {
-		MarshallingTester<LinkedHashSet<Object>> tester = this.factory.createTester();
-		tester.test(new LinkedHashSet<>(BASIS.keySet()), AbstractUtilTestCase::assertCollectionEquals);
+	public void testLinkedHashSet() {
+		Consumer<LinkedHashSet<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(new LinkedHashSet<>(BASIS.keySet()));
 	}
 
 	@Test
-	public void testLinkedList() throws IOException {
-		MarshallingTester<LinkedList<Object>> tester = this.factory.createTester();
-		tester.test(new LinkedList<>(BASIS.keySet()), AbstractUtilTestCase::assertCollectionEquals);
+	public void testLinkedList() {
+		Consumer<LinkedList<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(new LinkedList<>(BASIS.keySet()));
 	}
 
 	@Test
-	public void testLocale() throws IOException {
-		MarshallingTester<Locale> tester = this.factory.createTester();
+	public void testLocale() {
+		Consumer<Locale> tester = this.factory.createTester();
 		for (Locale locale : Locale.getAvailableLocales()) {
-			tester.test(locale);
+			tester.accept(locale);
 		}
 	}
 
 	@Test
-	public void testSimpleEntry() throws IOException {
-		MarshallingTester<AbstractMap.SimpleEntry<Object, Object>> tester = this.factory.createTester();
+	public void testSimpleEntry() {
+		Consumer<AbstractMap.SimpleEntry<Object, Object>> tester = this.factory.createTester();
 		String key = "key";
 		String value = "value";
-		tester.test(new AbstractMap.SimpleEntry<>(null, null));
-		tester.test(new AbstractMap.SimpleEntry<>(key, null));
-		tester.test(new AbstractMap.SimpleEntry<>(key, value));
-		tester.test(new AbstractMap.SimpleEntry<>(value, value));
+		tester.accept(new AbstractMap.SimpleEntry<>(null, null));
+		tester.accept(new AbstractMap.SimpleEntry<>(key, null));
+		tester.accept(new AbstractMap.SimpleEntry<>(key, value));
+		tester.accept(new AbstractMap.SimpleEntry<>(value, value));
 	}
 
 	@Test
-	public void testSimpleImmutableEntry() throws IOException {
-		MarshallingTester<AbstractMap.SimpleImmutableEntry<Object, Object>> tester = this.factory.createTester();
+	public void testSimpleImmutableEntry() {
+		Consumer<AbstractMap.SimpleImmutableEntry<Object, Object>> tester = this.factory.createTester();
 		String key = "key";
 		String value = "value";
-		tester.test(new AbstractMap.SimpleImmutableEntry<>(null, null));
-		tester.test(new AbstractMap.SimpleImmutableEntry<>(key, null));
-		tester.test(new AbstractMap.SimpleImmutableEntry<>(key, value));
-		tester.test(new AbstractMap.SimpleImmutableEntry<>(value, value));
+		tester.accept(new AbstractMap.SimpleImmutableEntry<>(null, null));
+		tester.accept(new AbstractMap.SimpleImmutableEntry<>(key, null));
+		tester.accept(new AbstractMap.SimpleImmutableEntry<>(key, value));
+		tester.accept(new AbstractMap.SimpleImmutableEntry<>(value, value));
 	}
 
 	@Test
-	public void testTimeZone() throws IOException {
-		MarshallingTester<TimeZone> tester = this.factory.createTester();
-		tester.test(TimeZone.getDefault());
-		tester.test(TimeZone.getTimeZone("GMT"));
+	public void testTimeZone() {
+		Consumer<TimeZone> tester = this.factory.createTester();
+		tester.accept(TimeZone.getDefault());
+		tester.accept(TimeZone.getTimeZone("GMT"));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testTreeMap() throws IOException {
-		MarshallingTester<TreeMap<Object, Object>> tester = this.factory.createTester();
+	public void testTreeMap() {
+		Consumer<TreeMap<Object, Object>> tester = this.factory.createOrderedMapTester();
 
 		TreeMap<Object, Object> map = new TreeMap<>();
 		map.putAll(BASIS);
-		tester.test(map, AbstractUtilTestCase::assertMapEquals);
+		tester.accept(map);
 
 		map = new TreeMap<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
 		map.putAll(BASIS);
-		tester.test(map, AbstractUtilTestCase::assertMapEquals);
+		tester.accept(map);
 
 		map = new TreeMap<>(new TestComparator<>());
 		map.putAll(BASIS);
-		tester.test(map, AbstractUtilTestCase::assertMapEquals);
+		tester.accept(map);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testTreeSet() throws IOException {
-		MarshallingTester<TreeSet<Object>> tester = this.factory.createTester();
+	public void testTreeSet() {
+		Consumer<TreeSet<Object>> tester = this.factory.createOrderedCollectionTester();
 
 		TreeSet<Object> set = new TreeSet<>();
 		set.addAll(BASIS.keySet());
-		tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(set);
 
 		set = new TreeSet<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
 		set.addAll(BASIS.keySet());
-		tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(set);
 
 		set = new TreeSet<>(new TestComparator<>());
 		set.addAll(BASIS.keySet());
-		tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(set);
 	}
 
 	@Test
-	public void testUUID() throws IOException {
-		MarshallingTester<UUID> tester = this.factory.createTester();
-		tester.test(UUID.randomUUID());
+	public void testUUID() {
+		Consumer<UUID> tester = this.factory.createTester();
+		tester.accept(UUID.randomUUID());
 	}
 
 	// java.util.Collections.emptyXXX() methods
 
 	@Test
-	public void testEmptyList() throws IOException {
-		MarshallingTester<List<Object>> tester = this.factory.createTester();
-		tester.test(Collections.emptyList(), Assertions::assertSame);
+	public void testEmptyList() {
+		Consumer<List<Object>> tester = this.factory.createIdentityTester();
+		tester.accept(Collections.emptyList());
 	}
 
 	@Test
-	public void testEmptyMap() throws IOException {
-		MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
-		tester.test(Collections.emptyMap(), Assertions::assertSame);
+	public void testEmptyMap() {
+		Consumer<Map<Object, Object>> tester = this.factory.createIdentityTester();
+		tester.accept(Collections.emptyMap());
 	}
 
 	@Test
-	public void testEmptyNavigableMap() throws IOException {
-		MarshallingTester<NavigableMap<Object, Object>> tester = this.factory.createTester();
-		tester.test(Collections.emptyNavigableMap(), Assertions::assertSame);
+	public void testEmptyNavigableMap() {
+		Consumer<NavigableMap<Object, Object>> tester = this.factory.createIdentityTester();
+		tester.accept(Collections.emptyNavigableMap());
 	}
 
 	@Test
-	public void testEmptyNavigableSet() throws IOException {
-		MarshallingTester<NavigableSet<Object>> tester = this.factory.createTester();
-		tester.test(Collections.emptyNavigableSet(), Assertions::assertSame);
+	public void testEmptyNavigableSet() {
+		Consumer<NavigableSet<Object>> tester = this.factory.createIdentityTester();
+		tester.accept(Collections.emptyNavigableSet());
 	}
 
 	@Test
-	public void testEmptySet() throws IOException {
-		MarshallingTester<Set<Object>> tester = this.factory.createTester();
-		tester.test(Collections.emptySet(), Assertions::assertSame);
+	public void testEmptySet() {
+		Consumer<Set<Object>> tester = this.factory.createIdentityTester();
+		tester.accept(Collections.emptySet());
 	}
 
 	@Test
-	public void testEmptySortedMap() throws IOException {
-		MarshallingTester<SortedMap<Object, Object>> tester = this.factory.createTester();
-		tester.test(Collections.emptySortedMap(), Assertions::assertSame);
+	public void testEmptySortedMap() {
+		Consumer<SortedMap<Object, Object>> tester = this.factory.createIdentityTester();
+		tester.accept(Collections.emptySortedMap());
 	}
 
 	@Test
-	public void testEmptySortedSet() throws IOException {
-		MarshallingTester<SortedSet<Object>> tester = this.factory.createTester();
-		tester.test(Collections.emptySortedSet(), Assertions::assertSame);
+	public void testEmptySortedSet() {
+		Consumer<SortedSet<Object>> tester = this.factory.createIdentityTester();
+		tester.accept(Collections.emptySortedSet());
 	}
 
 	// java.util.Collections.synchronizedXXX(...) methods
 	@Test
-	public void testSynchronizedCollection() throws IOException {
-		MarshallingTester<Collection<Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedCollection(new LinkedList<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+	public void testSynchronizedCollection() {
+		Consumer<Collection<Object>> tester = this.factory.createCollectionTester();
+		tester.accept(Collections.synchronizedCollection(new LinkedList<>(BASIS.keySet())));
 	}
 
 	@Test
-	public void testSynchronizedList() throws IOException {
-		MarshallingTester<List<Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedList(new LinkedList<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+	public void testSynchronizedList() {
+		Consumer<List<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(Collections.synchronizedList(new LinkedList<>(BASIS.keySet())));
 	}
 
 	@Test
-	public void testSynchronizedMap() throws IOException {
-		MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedMap(new HashMap<>(BASIS)), AbstractUtilTestCase::assertMapEquals);
+	public void testSynchronizedMap() {
+		Consumer<Map<Object, Object>> tester = this.factory.createMapTester();
+		tester.accept(Collections.synchronizedMap(new HashMap<>(BASIS)));
 	}
 
 	@Test
-	public void testSynchronizedNavigableMap() throws IOException {
-		MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
+	public void testSynchronizedNavigableMap() {
+		Consumer<Map<Object, Object>> tester = this.factory.createMapTester();
 		TreeMap<Object, Object> map = new TreeMap<>();
 		map.putAll(BASIS);
-		tester.test(Collections.synchronizedNavigableMap(map), AbstractUtilTestCase::assertMapEquals);
+		tester.accept(Collections.synchronizedNavigableMap(map));
 	}
 
 	@Test
-	public void testSynchronizedNavigableSet() throws IOException {
-		MarshallingTester<Set<Object>> tester = this.factory.createTester();
+	public void testSynchronizedNavigableSet() {
+		Consumer<Set<Object>> tester = this.factory.createOrderedCollectionTester();
 		TreeSet<Object> set = new TreeSet<>();
 		set.addAll(BASIS.keySet());
-		tester.test(Collections.synchronizedNavigableSet(set), AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(Collections.synchronizedNavigableSet(set));
 	}
 
 	@Test
-	public void testSynchronizedRandomAccessList() throws IOException {
-		MarshallingTester<List<Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedList(new ArrayList<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+	public void testSynchronizedRandomAccessList() {
+		Consumer<List<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(Collections.synchronizedList(new ArrayList<>(BASIS.keySet())));
 	}
 
 	@Test
-	public void testSynchronizedSet() throws IOException {
-		MarshallingTester<Set<Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedSet(new HashSet<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+	public void testSynchronizedSet() {
+		Consumer<Set<Object>> tester = this.factory.createCollectionTester();
+		tester.accept(Collections.synchronizedSet(new HashSet<>(BASIS.keySet())));
 	}
 
 	@Test
-	public void testSynchronizedSortedMap() throws IOException {
-		MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
+	public void testSynchronizedSortedMap() {
+		Consumer<SortedMap<Object, Object>> tester = this.factory.createTester();
 		TreeMap<Object, Object> map = new TreeMap<>();
 		map.putAll(BASIS);
-		tester.test(Collections.synchronizedSortedMap(map), AbstractUtilTestCase::assertMapEquals);
+		tester.accept(Collections.synchronizedSortedMap(map));
 	}
 
 	@Test
-	public void testSynchronizedSortedSet() throws IOException {
-		MarshallingTester<Set<Object>> tester = this.factory.createTester();
+	public void testSynchronizedSortedSet() {
+		Consumer<Set<Object>> tester = this.factory.createOrderedCollectionTester();
 		TreeSet<Object> set = new TreeSet<>();
 		set.addAll(BASIS.keySet());
-		tester.test(Collections.synchronizedSortedSet(set), AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(Collections.synchronizedSortedSet(set));
 	}
 
 	// java.util.Collections.singletonXXX(...) methods
 	@Test
-	public void testSingletonList() throws IOException {
-		MarshallingTester<List<Object>> tester = this.factory.createTester();
-		tester.test(Collections.singletonList(null), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Collections.singletonList("foo"), AbstractUtilTestCase::assertCollectionEquals);
+	public void testSingletonList() {
+		Consumer<List<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(Collections.singletonList(null));
+		tester.accept(Collections.singletonList("foo"));
 	}
 
 	@Test
-	public void testSingletonMap() throws IOException {
-		MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
-		tester.test(Collections.singletonMap(null, null), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Collections.singletonMap("foo", null), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Collections.singletonMap("foo", "bar"), AbstractUtilTestCase::assertMapEquals);
+	public void testSingletonMap() {
+		Consumer<Map<Object, Object>> tester = this.factory.createMapTester();
+		tester.accept(Collections.singletonMap(null, null));
+		tester.accept(Collections.singletonMap("foo", null));
+		tester.accept(Collections.singletonMap("foo", "bar"));
 	}
 
 	@Test
-	public void testSingletonSet() throws IOException {
-		MarshallingTester<Set<Object>> tester = this.factory.createTester();
-		tester.test(Collections.singleton(null), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Collections.singleton("foo"), AbstractUtilTestCase::assertCollectionEquals);
+	public void testSingletonSet() {
+		Consumer<Set<Object>> tester = this.factory.createCollectionTester();
+		tester.accept(Collections.singleton(null));
+		tester.accept(Collections.singleton("foo"));
 	}
 
 	// java.util.Collections.unmodifiableXXX(...) methods
 	@Test
-	public void testUnmodifiableCollection() throws IOException {
-		MarshallingTester<Collection<Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedCollection(new LinkedList<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+	public void testUnmodifiableCollection() {
+		Consumer<Collection<Object>> tester = this.factory.createCollectionTester();
+		tester.accept(Collections.unmodifiableCollection(new LinkedList<>(BASIS.keySet())));
 	}
 
 	@Test
-	public void testUnmodifiableList() throws IOException {
-		MarshallingTester<List<Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedList(new LinkedList<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+	public void testUnmodifiableList() {
+		Consumer<List<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(Collections.unmodifiableList(new LinkedList<>(BASIS.keySet())));
 
-		tester.test(List.of(), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3, 4), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3, 4, 5), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3, 4, 5, 6), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(List.of());
+		tester.accept(List.of(0));
+		tester.accept(List.of(0, 1));
+		tester.accept(List.of(0, 1, 2, 3));
+		tester.accept(List.of(0, 1, 2, 3, 4));
+		tester.accept(List.of(0, 1, 2, 3, 4, 5));
+		tester.accept(List.of(0, 1, 2, 3, 4, 5, 6));
+		tester.accept(List.of(0, 1, 2, 3, 4, 5, 6, 7));
+		tester.accept(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8));
+		tester.accept(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+		tester.accept(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
 	}
 
 	@Test
-	public void testUnmodifiableMap() throws IOException {
-		MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedMap(new HashMap<>(BASIS)), AbstractUtilTestCase::assertMapEquals);
+	public void testUnmodifiableMap() {
+		Consumer<Map<Object, Object>> tester = this.factory.createMapTester();
+		tester.accept(Collections.unmodifiableMap(new HashMap<>(BASIS)));
 
-		tester.test(Map.of(), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1", 2, "2"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7", 8, "8"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7", 8, "8", 9, "9"), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.ofEntries(Map.entry(0, "1")), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.ofEntries(Map.entry(0, "0"), Map.entry(1, "1")), AbstractUtilTestCase::assertMapEquals);
-		tester.test(Map.ofEntries(Map.entry(0, "0"), Map.entry(1, "1"), Map.entry(2, "2")), AbstractUtilTestCase::assertMapEquals);
+		tester.accept(Map.of());
+		tester.accept(Map.of(0, "0"));
+		tester.accept(Map.of(0, "0", 1, "1"));
+		tester.accept(Map.of(0, "0", 1, "1", 2, "2"));
+		tester.accept(Map.of(0, "0", 1, "1", 2, "2", 3, "3"));
+		tester.accept(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4"));
+		tester.accept(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5"));
+		tester.accept(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6"));
+		tester.accept(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7"));
+		tester.accept(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7", 8, "8"));
+		tester.accept(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7", 8, "8", 9, "9"));
+		tester.accept(Map.ofEntries(Map.entry(0, "1")));
+		tester.accept(Map.ofEntries(Map.entry(0, "0"), Map.entry(1, "1")));
+		tester.accept(Map.ofEntries(Map.entry(0, "0"), Map.entry(1, "1"), Map.entry(2, "2")));
 	}
 
 	@Test
-	public void testUnmodifiableNavigableMap() throws IOException {
-		MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
+	public void testUnmodifiableNavigableMap() {
+		Consumer<NavigableMap<Object, Object>> tester = this.factory.createOrderedMapTester();
 		TreeMap<Object, Object> map = new TreeMap<>();
 		map.putAll(BASIS);
-		tester.test(Collections.synchronizedNavigableMap(map), AbstractUtilTestCase::assertMapEquals);
+		tester.accept(Collections.unmodifiableNavigableMap(map));
 	}
 
 	@Test
-	public void testUnmodifiableNavigableSet() throws IOException {
-		MarshallingTester<Set<Object>> tester = this.factory.createTester();
+	public void testUnmodifiableNavigableSet() {
+		Consumer<NavigableSet<Object>> tester = this.factory.createOrderedCollectionTester();
 		TreeSet<Object> set = new TreeSet<>();
 		set.addAll(BASIS.keySet());
-		tester.test(Collections.synchronizedNavigableSet(set), AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(Collections.unmodifiableNavigableSet(set));
 	}
 
 	@Test
-	public void testUnmodifiableRandomAccessList() throws IOException {
-		MarshallingTester<List<Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedList(new ArrayList<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+	public void testUnmodifiableSet() {
+		Consumer<Set<Object>> tester = this.factory.createCollectionTester();
+		tester.accept(Collections.unmodifiableSet(new HashSet<>(BASIS.keySet())));
+
+		tester.accept(Set.of());
+		tester.accept(Set.of(0));
+		tester.accept(Set.of(0, 1));
+		tester.accept(Set.of(0, 1, 2, 3));
+		tester.accept(Set.of(0, 1, 2, 3, 4));
+		tester.accept(Set.of(0, 1, 2, 3, 4, 5));
+		tester.accept(Set.of(0, 1, 2, 3, 4, 5, 6));
+		tester.accept(Set.of(0, 1, 2, 3, 4, 5, 6, 7));
+		tester.accept(Set.of(0, 1, 2, 3, 4, 5, 6, 7));
+		tester.accept(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8));
+		tester.accept(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+		tester.accept(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
 	}
 
 	@Test
-	public void testUnmodifiableSet() throws IOException {
-		MarshallingTester<Set<Object>> tester = this.factory.createTester();
-		tester.test(Collections.synchronizedSet(new HashSet<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
-
-		tester.test(Set.of(), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3, 4), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3, 4, 5), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3, 4, 5, 6), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), AbstractUtilTestCase::assertCollectionEquals);
-		tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), AbstractUtilTestCase::assertCollectionEquals);
-	}
-
-	@Test
-	public void testUnmodifiableSortedMap() throws IOException {
-		MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
+	public void testUnmodifiableSortedMap() {
+		Consumer<SortedMap<Object, Object>> tester = this.factory.createOrderedMapTester();
 		TreeMap<Object, Object> map = new TreeMap<>();
 		map.putAll(BASIS);
-		tester.test(Collections.synchronizedSortedMap(map), AbstractUtilTestCase::assertMapEquals);
+		tester.accept(Collections.unmodifiableSortedMap(map));
 	}
 
 	@Test
-	public void testUnmodifiableSortedSet() throws IOException {
-		MarshallingTester<Set<Object>> tester = this.factory.createTester();
+	public void testUnmodifiableSortedSet() {
+		Consumer<SortedSet<Object>> tester = this.factory.createOrderedCollectionTester();
 		TreeSet<Object> set = new TreeSet<>();
 		set.addAll(BASIS.keySet());
-		tester.test(Collections.synchronizedSortedSet(set), AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(Collections.unmodifiableSortedSet(set));
 	}
 
 	static <T extends Collection<?>> void assertCollectionEquals(T expected, T actual) {

@@ -11,6 +11,7 @@ import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Reads a single field of a field set from a reader.
+ * @param <T> the field type
  * @author Paul Ferraro
  */
 public interface FieldReadable<T> {

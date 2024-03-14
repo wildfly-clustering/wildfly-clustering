@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import org.wildfly.clustering.server.GroupMember;
 
 /**
+ * Session affinity to a single member.
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public class NarySessionAffinity<M extends GroupMember> implements UnaryOperator<String> {

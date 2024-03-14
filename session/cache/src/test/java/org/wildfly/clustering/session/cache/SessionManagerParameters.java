@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 
 /**
@@ -18,4 +19,5 @@ public interface SessionManagerParameters {
 	}
 
 	SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy();
+	ByteBufferMarshaller getSessionAttributeMarshaller();
 }

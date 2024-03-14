@@ -18,6 +18,8 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
 
 /**
  * Factory for creating an {@link ImmutableSession}.
+ * @param <MV> the session metadata value type
+ * @param <AV> the session attribute value type
  * @author Paul Ferraro
  */
 public interface ImmutableSessionFactory<MV, AV> extends BiLocator<String, MV, AV> {

@@ -5,34 +5,15 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.IOException;
-import java.util.function.BiConsumer;
-
-import org.junit.jupiter.api.Assertions;
+import java.util.function.Consumer;
 
 /**
- * Generic interface for various marshalling testers.
+ * @param <T> test subject type
  * @author Paul Ferraro
  */
-public interface Tester<T> {
+public interface Tester<T> extends Consumer<T> {
 
-	default void test(T subject) throws IOException {
-		this.test(subject, Assertions::assertEquals);
-	}
+	void reject(T value);
 
-	/**
-	 * Same as {@link #test(Object)}, but additionally validates equality of hash code.
-	 * @param subject a test subject
-	 * @throws IOException if marshalling of the test subject fails
-	 */
-	default void testKey(T subject) throws IOException {
-		this.test(subject, (value1, value2) -> {
-			assertEquals(value1, value2);
-			assertEquals(value1.hashCode(), value2.hashCode());
-		});
-	}
-
-	void test(T subject, BiConsumer<T, T> assertion) throws IOException;
+	<E extends Throwable> void reject(T value, Class<E> expected);
 }

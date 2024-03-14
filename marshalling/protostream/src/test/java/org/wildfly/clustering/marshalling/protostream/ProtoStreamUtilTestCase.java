@@ -14,6 +14,6 @@ import org.wildfly.clustering.marshalling.AbstractUtilTestCase;
 public class ProtoStreamUtilTestCase extends AbstractUtilTestCase {
 
 	public ProtoStreamUtilTestCase() {
-		super(ProtoStreamTesterFactory.INSTANCE);
+		super(new ProtoStreamTesterFactory());
 	}
 }

@@ -10,6 +10,9 @@ import java.util.function.BiFunction;
 
 /**
  * Generic marshaller based on two non-public accessor methods.
+ * @param <T> the target type of this marshaller
+ * @param <M1> the first component accessor method return type
+ * @param <M2> the second component accessor method return type
  * @author Paul Ferraro
  */
 public class BinaryMethodMarshaller<T, M1, M2> extends BinaryMemberMarshaller<T, Method, M1, M2> {

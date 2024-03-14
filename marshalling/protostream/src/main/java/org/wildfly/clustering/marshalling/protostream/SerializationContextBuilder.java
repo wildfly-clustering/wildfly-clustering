@@ -27,6 +27,8 @@ public interface SerializationContextBuilder {
 
 	/**
 	 * Constructs a builder of a {@link SerializationContext} using a default set of initializers.
+	 * @param marshaller the marshaller used to write/resolve a ClassLoader
+	 * @return a new builder
 	 */
 	static SerializationContextBuilder newInstance(ClassLoaderMarshaller marshaller) {
 		return new DefaultSerializationContextBuilder(marshaller);

@@ -11,7 +11,6 @@ import java.io.IOException;
 
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.BinaryFormatter;
 import org.wildfly.clustering.marshalling.Formatter;
 import org.wildfly.clustering.marshalling.Serializer;
 import org.wildfly.clustering.server.jgroups.AddressSerializer;
@@ -34,9 +33,9 @@ public enum JGroupsAddressSerializer implements Serializer<JGroupsAddress> {
 	}
 
 	@MetaInfServices(Formatter.class)
-	public static class JGroupsAddressFormatter extends BinaryFormatter<JGroupsAddress> {
+	public static class JGroupsAddressFormatter extends Formatter.Provided<JGroupsAddress> {
 		public JGroupsAddressFormatter() {
-			super(JGroupsAddress.class, INSTANCE);
+			super(Formatter.serialized(JGroupsAddress.class, INSTANCE));
 		}
 	}
 }

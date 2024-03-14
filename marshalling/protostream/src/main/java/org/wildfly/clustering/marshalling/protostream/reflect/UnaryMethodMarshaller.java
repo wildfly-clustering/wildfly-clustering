@@ -10,6 +10,8 @@ import java.util.function.Function;
 
 /**
  * Generic marshaller based on a single non-public accessor method.
+ * @param <T> the marshaller target type
+ * @param <M> the method accessor result type
  * @author Paul Ferraro
  */
 public class UnaryMethodMarshaller<T, M> extends UnaryMemberMarshaller<T, Method, M> {

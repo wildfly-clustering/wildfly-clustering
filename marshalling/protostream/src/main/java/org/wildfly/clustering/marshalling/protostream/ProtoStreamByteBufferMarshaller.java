@@ -75,4 +75,9 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 		ProtoStreamMarshaller<Any> marshaller = writer.findMarshaller(Any.class);
 		marshaller.writeTo(writer, new Any(object));
 	}
+
+	@Override
+	public String toString() {
+		return "ProtoStream";
+	}
 }

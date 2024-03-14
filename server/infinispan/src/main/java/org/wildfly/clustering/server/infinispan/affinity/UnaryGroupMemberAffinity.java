@@ -16,6 +16,9 @@ import org.wildfly.clustering.server.group.GroupMember;
 import org.wildfly.clustering.server.group.GroupMemberFactory;
 
 /**
+ * Returns group member that primarily owns cache keys for a given identifier.
+ * @param <I> the identifier type of a cache key
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public class UnaryGroupMemberAffinity<I, M extends GroupMember<Address>> implements Function<I, M> {

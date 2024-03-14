@@ -6,7 +6,8 @@
 package org.wildfly.clustering.server;
 
 /**
- * Listener for {@link Group} membership changes.
+ * Listener for {@link GroupMembership} changes.
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public interface GroupMembershipListener<M extends GroupMember> {

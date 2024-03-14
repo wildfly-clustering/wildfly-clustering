@@ -9,6 +9,7 @@ import java.io.IOException;
 
 /**
  * Writes value as a set of fields.
+ * @param <T> the field set type
  * @author Paul Ferraro
  */
 public interface FieldSetWriter<T> {

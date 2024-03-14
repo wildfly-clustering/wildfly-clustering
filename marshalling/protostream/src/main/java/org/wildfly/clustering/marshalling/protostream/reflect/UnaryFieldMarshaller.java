@@ -11,6 +11,8 @@ import java.util.function.Function;
 
 /**
  * Generic marshaller based on a single non-public field.
+ * @param <T> the marshaller target type
+ * @param <F> the field type
  * @author Paul Ferraro
  */
 public class UnaryFieldMarshaller<T, F> extends UnaryMemberMarshaller<T, Field, F> {

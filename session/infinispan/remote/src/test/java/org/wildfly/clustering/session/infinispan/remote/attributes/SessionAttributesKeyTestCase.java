@@ -5,15 +5,16 @@
 
 package org.wildfly.clustering.session.infinispan.remote.attributes;
 
-import java.io.IOException;
-
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 public class SessionAttributesKeyTestCase {
 
-	@Test
-	public void test() throws IOException {
-		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SessionAttributesKey("test"));
+	@ParameterizedTest
+	@TesterFactorySource(ProtoStreamTesterFactory.class)
+	public void test(TesterFactory factory) {
+		factory.createTester().accept(new SessionAttributesKey("test"));
 	}
 }

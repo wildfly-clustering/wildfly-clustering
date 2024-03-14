@@ -17,7 +17,7 @@ public class FineSessionAttributesSerializationContextInitializer extends Abstra
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new SessionAttributeMapComputeFunctionMarshaller<>());
+		context.registerMarshaller(new SessionAttributeMapComputeFunctionMarshaller());
 		context.registerMarshaller(new SessionAttributeMapEntryMarshaller());
 	}
 }

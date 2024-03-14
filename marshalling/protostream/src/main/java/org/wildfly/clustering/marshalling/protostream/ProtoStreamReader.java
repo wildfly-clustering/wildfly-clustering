@@ -17,13 +17,14 @@ import org.infinispan.protostream.descriptors.WireType;
 public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 
 	/**
-	 * Returns the tag of the current field, or optional if {@link #readTag()} was not yet called for the next field.
-	 * @return
+	 * Returns the tag of the current field, or 0 if {@link #readTag()} was not yet called for the next field.
+	 * @return the tag of the current field.
 	 */
 	int getCurrentTag();
 
 	/**
 	 * Skips over the field of the specified wire type.
+	 * @param type the expected wire type of the field to skip.
 	 * @return true, if the current tag is a normal field, false otherwise
 	 * @throws IOException if the stream does not conform to the wire type of the skipped field.
 	 */

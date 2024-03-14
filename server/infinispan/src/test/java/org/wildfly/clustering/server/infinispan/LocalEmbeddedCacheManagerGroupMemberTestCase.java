@@ -5,29 +5,20 @@
 
 package org.wildfly.clustering.server.infinispan;
 
-import java.io.IOException;
-
-import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.FormatterTester;
-import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.jboss.JBossTesterFactory;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.cache.infinispan.embedded.persistence.TwoWayKey2StringMapperTesterFactory;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * @author Paul Ferraro
  */
 public class LocalEmbeddedCacheManagerGroupMemberTestCase {
 
-	private final LocalEmbeddedCacheManagerGroupMember member = new LocalEmbeddedCacheManagerGroupMember("foo");
-
-	@Test
-	public void test() throws IOException {
-		this.test(new FormatterTester<>(new LocalEmbeddedCacheManagerGroupMemberFormatter()));
-		this.test(JBossTesterFactory.INSTANCE.createTester());
-		this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
-	}
-
-	public void test(Tester<LocalEmbeddedCacheManagerGroupMember> tester) throws IOException {
-		tester.test(this.member);
+	@ParameterizedTest
+	@TesterFactorySource({ MarshallingTesterFactory.class, TwoWayKey2StringMapperTesterFactory.class })
+	public void test(TesterFactory factory) {
+		factory.createTester().accept(new LocalEmbeddedCacheManagerGroupMember("foo"));
 	}
 }

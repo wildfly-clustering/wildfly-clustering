@@ -12,7 +12,7 @@ import org.wildfly.clustering.server.GroupMember;
 
 /**
  * Factory for creating a clustered registry.
- *
+ * @param <M> the member type
  * @param <K> the type of the registry entry key
  * @param <V> the type of the registry entry value
  * @author Paul Ferraro

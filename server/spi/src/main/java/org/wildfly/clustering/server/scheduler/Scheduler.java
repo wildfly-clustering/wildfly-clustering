@@ -11,6 +11,8 @@ import org.wildfly.clustering.server.Registration;
 
 /**
  * A task scheduler.
+ * @param <I> the scheduled entry identifier type
+ * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
 public interface Scheduler<I, M> extends Registration {
@@ -34,8 +36,9 @@ public interface Scheduler<I, M> extends Registration {
 	Stream<I> stream();
 
 	/**
-	 * Indicates whether the object with the specified identifier is scheduled.
+	 * Indicates whether the entry with the specified identifier is scheduled.
 	 * @param id an object identifier
+	 * @return true, if the specified entry is scheduled, false otherwise.
 	 */
 	default boolean contains(I id) {
 		return this.stream().anyMatch(id::equals);

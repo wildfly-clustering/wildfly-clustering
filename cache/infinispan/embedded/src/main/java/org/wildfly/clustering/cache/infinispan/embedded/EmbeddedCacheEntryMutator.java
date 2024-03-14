@@ -17,6 +17,8 @@ import org.wildfly.common.function.Functions;
 
 /**
  * Mutates a given cache entry.
+ * @param <K> the cache entry key type
+ * @param <V> the cache entry value type
  * @author Paul Ferraro
  */
 public class EmbeddedCacheEntryMutator<K, V> implements CacheEntryMutator {

@@ -10,6 +10,8 @@ import org.wildfly.clustering.cache.batch.Batcher;
 
 /**
  * A manager of server-side state.
+ * @param <I> the identifier type
+ * @param <B> the batch type
  * @author Paul Ferraro
  */
 public interface Manager<I, B extends Batch> extends ManagerConfiguration<I>, Restartable {

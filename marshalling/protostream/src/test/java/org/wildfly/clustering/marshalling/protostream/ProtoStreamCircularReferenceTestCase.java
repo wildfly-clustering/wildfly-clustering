@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.AbstractCircularReferenceTestCase;
 public class ProtoStreamCircularReferenceTestCase extends AbstractCircularReferenceTestCase {
 
 	public ProtoStreamCircularReferenceTestCase() {
-		super(ProtoStreamTesterFactory.INSTANCE);
+		super(new ProtoStreamTesterFactory());
 	}
 }

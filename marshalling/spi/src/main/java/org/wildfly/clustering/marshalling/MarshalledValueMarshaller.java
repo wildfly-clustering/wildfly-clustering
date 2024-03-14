@@ -8,6 +8,8 @@ import java.io.IOException;
 
 /**
  * Marshaller that stores attribute values using marshalled values.
+ * @param <V> the marshalled value type
+ * @param <C> the marshalling context type
  * @author Paul Ferraro
  */
 public class MarshalledValueMarshaller<V, C> implements Marshaller<V, MarshalledValue<V, C>> {

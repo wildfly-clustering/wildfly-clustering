@@ -9,25 +9,28 @@ import java.util.concurrent.CompletionStage;
 
 /**
  * Creates an entry in a cache.
+ * @param <I> the logical identifier of the created value
+ * @param <V> the created value type
+ * @param <C> the context of the created type
  * @author Paul Ferraro
  */
-public interface Creator<K, V, C> {
+public interface Creator<I, V, C> {
 
 	/**
 	 * Creates a value in the cache, if it does not already exist.
 	 * @param id the cache entry identifier.
-	 * @parem context the creation context
+	 * @param context the context of the created value
 	 * @return the new value, or the existing value the cache entry already exists.
 	 */
-	default V createValue(K id, C context) {
+	default V createValue(I id, C context) {
 		return this.createValueAsync(id, context).toCompletableFuture().join();
 	}
 
 	/**
 	 * Creates a value in the cache, if it does not already exist.
 	 * @param id the cache entry identifier.
-	 * @parem context the creation context
+	 * @param context the context of the created value
 	 * @return the new value, or the existing value the cache entry already exists.
 	 */
-	CompletionStage<V> createValueAsync(K id, C context);
+	CompletionStage<V> createValueAsync(I id, C context);
 }

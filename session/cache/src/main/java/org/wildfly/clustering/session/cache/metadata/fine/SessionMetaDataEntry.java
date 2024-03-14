@@ -9,6 +9,7 @@ import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.cache.Contextual;
 
 /**
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public interface SessionMetaDataEntry<C> extends Contextual<C> {

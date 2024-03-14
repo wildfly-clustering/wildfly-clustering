@@ -4,13 +4,11 @@
  */
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,32 +25,32 @@ public abstract class AbstractAtomicTestCase {
 	}
 
 	@Test
-	public void testAtomicBoolean() throws IOException {
-		MarshallingTester<AtomicBoolean> tester = this.factory.createTester();
-		tester.test(new AtomicBoolean(false), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-		tester.test(new AtomicBoolean(true), (expected, actual) -> assertEquals(expected.get(), actual.get()));
+	public void testAtomicBoolean() {
+		Consumer<AtomicBoolean> tester = this.factory.createTester(AtomicBoolean::get);
+		tester.accept(new AtomicBoolean(false));
+		tester.accept(new AtomicBoolean(true));
 	}
 
 	@Test
-	public void testAtomicInteger() throws IOException {
-		MarshallingTester<AtomicInteger> tester = this.factory.createTester();
-		tester.test(new AtomicInteger(), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-		tester.test(new AtomicInteger(Byte.MAX_VALUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-		tester.test(new AtomicInteger(Integer.MAX_VALUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
+	public void testAtomicInteger() {
+		Consumer<AtomicInteger> tester = this.factory.createTester(AtomicInteger::get);
+		tester.accept(new AtomicInteger());
+		tester.accept(new AtomicInteger(Byte.MAX_VALUE));
+		tester.accept(new AtomicInteger(Integer.MAX_VALUE));
 	}
 
 	@Test
-	public void testAtomicLong() throws IOException {
-		MarshallingTester<AtomicLong> tester = this.factory.createTester();
-		tester.test(new AtomicLong(), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-		tester.test(new AtomicLong(Short.MAX_VALUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-		tester.test(new AtomicLong(Long.MAX_VALUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
+	public void testAtomicLong() {
+		Consumer<AtomicLong> tester = this.factory.createTester(AtomicLong::get);
+		tester.accept(new AtomicLong());
+		tester.accept(new AtomicLong(Short.MAX_VALUE));
+		tester.accept(new AtomicLong(Long.MAX_VALUE));
 	}
 
 	@Test
-	public void testAtomicReference() throws IOException {
-		MarshallingTester<AtomicReference<Object>> tester = this.factory.createTester();
-		tester.test(new AtomicReference<>(), (expected, actual) -> assertEquals(expected.get(), actual.get()));
-		tester.test(new AtomicReference<>(Boolean.TRUE), (expected, actual) -> assertEquals(expected.get(), actual.get()));
+	public void testAtomicReference() {
+		Consumer<AtomicReference<Object>> tester = this.factory.createTester(AtomicReference::get);
+		tester.accept(new AtomicReference<>());
+		tester.accept(new AtomicReference<>(Boolean.TRUE));
 	}
 }

@@ -15,6 +15,7 @@ import org.wildfly.common.function.Functions;
 
 /**
  * Default contextual session metadata entry.
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaDataEntry<C> {

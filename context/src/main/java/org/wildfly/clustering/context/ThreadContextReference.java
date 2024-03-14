@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 /**
  * Reference that can be associated with an arbitrary thread.
+ * @param <C> the context type
  * @author Paul Ferraro
  */
 public interface ThreadContextReference<C> extends ContextReference<C>, Function<Thread, C>, BiConsumer<Thread, C> {

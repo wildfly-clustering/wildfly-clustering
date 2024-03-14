@@ -5,9 +5,9 @@
 
 package org.wildfly.clustering.session.infinispan.remote.user;
 
-import java.io.IOException;
-
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
@@ -16,8 +16,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class UserContextKeyTestCase {
 
-	@Test
-	public void test() throws IOException {
-		ProtoStreamTesterFactory.INSTANCE.createTester().test(new UserContextKey("ABC123"));
+	@ParameterizedTest
+	@TesterFactorySource(ProtoStreamTesterFactory.class)
+	public void test(TesterFactory factory) {
+		factory.createTester().accept(new UserContextKey("ABC123"));
 	}
 }
