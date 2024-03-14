@@ -101,6 +101,11 @@ public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "JBossMarshalling";
+	}
+
 	private static ClassLoader setThreadContextClassLoader(ClassLoader loader) {
 		return (loader != null) ? Reflect.setThreadContextClassLoader(loader) : null;
 	}

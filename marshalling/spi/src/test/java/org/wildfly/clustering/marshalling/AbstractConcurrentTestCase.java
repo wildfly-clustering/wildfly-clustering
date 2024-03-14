@@ -5,10 +5,6 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +15,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,96 +36,83 @@ public abstract class AbstractConcurrentTestCase {
 	}
 
 	@Test
-	public void testConcurrentHashMap() throws IOException {
-		MarshallingTester<ConcurrentHashMap<Object, Object>> tester = this.factory.createTester();
-		tester.test(new ConcurrentHashMap<>(BASIS), AbstractConcurrentTestCase::assertMapEquals);
+	public void testConcurrentHashMap() {
+		Consumer<Map<Object, Object>> tester = this.factory.createMapTester();
+		tester.accept(new ConcurrentHashMap<>(BASIS));
 	}
 
 	@Test
-	public void testConcurrentHashSet() throws IOException {
+	public void testConcurrentHashSet() {
 		ConcurrentHashMap.KeySetView<Object, Boolean> keySetView = ConcurrentHashMap.newKeySet();
 		keySetView.addAll(BASIS.keySet());
-		MarshallingTester<ConcurrentHashMap.KeySetView<Object, Boolean>> tester = this.factory.createTester();
-		tester.test(keySetView, AbstractConcurrentTestCase::assertCollectionEquals);
+		Consumer<ConcurrentHashMap.KeySetView<Object, Boolean>> tester = this.factory.createCollectionTester();
+		tester.accept(keySetView);
 	}
 
 	@Test
-	public void testConcurrentLinkedDeque() throws IOException {
-		MarshallingTester<ConcurrentLinkedDeque<Object>> tester = this.factory.createTester();
-		tester.test(new ConcurrentLinkedDeque<>(BASIS.keySet()), AbstractConcurrentTestCase::assertCollectionEquals);
+	public void testConcurrentLinkedDeque() {
+		Consumer<ConcurrentLinkedDeque<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(new ConcurrentLinkedDeque<>(BASIS.keySet()));
 	}
 
 	@Test
-	public void testConcurrentLinkedQueue() throws IOException {
-		MarshallingTester<ConcurrentLinkedQueue<Object>> tester = this.factory.createTester();
-		tester.test(new ConcurrentLinkedQueue<>(BASIS.keySet()), AbstractConcurrentTestCase::assertCollectionEquals);
+	public void testConcurrentLinkedQueue() {
+		Consumer<ConcurrentLinkedQueue<Object>> tester = this.factory.createOrderedCollectionTester();
+		tester.accept(new ConcurrentLinkedQueue<>(BASIS.keySet()));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testConcurrentSkipListMap() throws IOException {
-		MarshallingTester<ConcurrentSkipListMap<Object, Object>> tester = this.factory.createTester();
+	public void testConcurrentSkipListMap() {
+		Consumer<ConcurrentSkipListMap<Object, Object>> tester = this.factory.createMapTester();
 
 		ConcurrentSkipListMap<Object, Object> map = new ConcurrentSkipListMap<>();
 		map.putAll(BASIS);
-		tester.test(map, AbstractConcurrentTestCase::assertMapEquals);
+		tester.accept(map);
 
 		map = new ConcurrentSkipListMap<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
 		map.putAll(BASIS);
-		tester.test(map, AbstractConcurrentTestCase::assertMapEquals);
+		tester.accept(map);
 
 		map = new ConcurrentSkipListMap<>(new TestComparator<>());
 		map.putAll(BASIS);
-		tester.test(map, AbstractConcurrentTestCase::assertMapEquals);
+		tester.accept(map);
 
-		tester.test(new ConcurrentSkipListMap<>(BASIS), AbstractConcurrentTestCase::assertMapEquals);
+		tester.accept(new ConcurrentSkipListMap<>(BASIS));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testConcurrentSkipListSet() throws IOException {
-		MarshallingTester<ConcurrentSkipListSet<Object>> tester = this.factory.createTester();
+	public void testConcurrentSkipListSet() {
+		Consumer<ConcurrentSkipListSet<Object>> tester = this.factory.createCollectionTester();
 
 		ConcurrentSkipListSet<Object> set = new ConcurrentSkipListSet<>();
 		set.addAll(BASIS.keySet());
-		tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(set);
 
 		set = new ConcurrentSkipListSet<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
 		set.addAll(BASIS.keySet());
-		tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(set);
 
 		set = new ConcurrentSkipListSet<>(new TestComparator<>());
 		set.addAll(BASIS.keySet());
-		tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+		tester.accept(set);
 	}
 
 	@Test
-	public void testCopyOnWriteArrayList() throws IOException {
-		MarshallingTester<CopyOnWriteArrayList<Object>> tester = this.factory.createTester();
-		tester.test(new CopyOnWriteArrayList<>(BASIS.keySet()), AbstractConcurrentTestCase::assertCollectionEquals);
+	public void testCopyOnWriteArrayList() {
+		Consumer<CopyOnWriteArrayList<Object>> tester = this.factory.createCollectionTester();
+		tester.accept(new CopyOnWriteArrayList<>(BASIS.keySet()));
 	}
 
 	@Test
-	public void testCopyOnWriteArraySet() throws IOException {
-		MarshallingTester<CopyOnWriteArraySet<Object>> tester = this.factory.createTester();
-		tester.test(new CopyOnWriteArraySet<>(BASIS.keySet()), AbstractConcurrentTestCase::assertCollectionEquals);
+	public void testCopyOnWriteArraySet() {
+		Consumer<CopyOnWriteArraySet<Object>> tester = this.factory.createCollectionTester();
+		tester.accept(new CopyOnWriteArraySet<>(BASIS.keySet()));
 	}
 
 	@Test
-	public void testTimeUnit() throws IOException {
-		this.factory.createTester(TimeUnit.class).test();
-	}
-
-	static <T extends Map<?, ?>> void assertMapEquals(T expected, T actual) {
-		assertEquals(expected.size(), actual.size());
-		assertTrue(expected.keySet().containsAll(actual.keySet()));
-		for (Map.Entry<?, ?> entry : expected.entrySet()) {
-			assertEquals(entry.getValue(), actual.get(entry.getKey()));
-		}
-	}
-
-	static <T extends Collection<?>> void assertCollectionEquals(T expected, T actual) {
-		assertEquals(expected.size(), actual.size());
-		assertTrue(expected.containsAll(actual));
+	public void testTimeUnit() {
+		this.factory.createTester(TimeUnit.class).run();
 	}
 }

@@ -5,18 +5,16 @@
 
 package org.wildfly.clustering.server.infinispan;
 
-import java.util.Formatter;
-
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.SimpleFormatter;
+import org.wildfly.clustering.marshalling.Formatter;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Formatter.class)
-public class LocalEmbeddedCacheManagerGroupMemberFormatter extends SimpleFormatter<LocalEmbeddedCacheManagerGroupMember> {
+public class LocalEmbeddedCacheManagerGroupMemberFormatter extends Formatter.Provided<LocalEmbeddedCacheManagerGroupMember> {
 
 	public LocalEmbeddedCacheManagerGroupMemberFormatter() {
-		super(LocalEmbeddedCacheManagerGroupMember.class, LocalEmbeddedCacheManagerGroupMember::new, LocalEmbeddedCacheManagerGroupMember::getName);
+		super(Formatter.IDENTITY.wrap(LocalEmbeddedCacheManagerGroupMember.class, LocalEmbeddedCacheManagerGroupMember::new, LocalEmbeddedCacheManagerGroupMember::getName));
 	}
 }

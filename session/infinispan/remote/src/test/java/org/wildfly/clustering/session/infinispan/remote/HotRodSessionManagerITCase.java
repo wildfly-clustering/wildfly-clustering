@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.infinispan.remote;
 
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
@@ -19,6 +20,8 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerConfigurator;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.cache.SessionManagerITCase;
 
@@ -35,9 +38,15 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 			Stream.Builder<Arguments> builder = Stream.builder();
-			for (SessionAttributePersistenceStrategy strategy : EnumSet.allOf(SessionAttributePersistenceStrategy.class)) {
-				for (NearCacheMode nearCacheMode : EnumSet.allOf(NearCacheMode.class)) {
+			for (MarshallingTesterFactory factory : ServiceLoader.load(MarshallingTesterFactory.class, MarshallingTesterFactory.class.getClassLoader())) {
+				ByteBufferMarshaller marshaller = factory.getMarshaller();
+				for (SessionAttributePersistenceStrategy strategy : EnumSet.allOf(SessionAttributePersistenceStrategy.class)) {
 					builder.add(Arguments.of(new HotRodSessionManagerParameters() {
+						@Override
+						public ByteBufferMarshaller getSessionAttributeMarshaller() {
+							return marshaller;
+						}
+
 						@Override
 						public SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy() {
 							return strategy;
@@ -45,7 +54,7 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 
 						@Override
 						public NearCacheMode getNearCacheMode() {
-							return nearCacheMode;
+							return NearCacheMode.DISABLED;
 						}
 
 						@Override
@@ -55,41 +64,10 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 
 						@Override
 						public String toString() {
-							return Map.of(SessionAttributePersistenceStrategy.class.getSimpleName(), strategy, NearCacheMode.class.getSimpleName(), nearCacheMode).toString();
+							return Map.of(ByteBufferMarshaller.class.getSimpleName(), marshaller.toString(), SessionAttributePersistenceStrategy.class.getSimpleName(), strategy).toString();
 						}
 					}));
 				}
-			}
-			return builder.build();
-		}
-	}
-
-	static class NearCacheDisabledHotRodSessionManagerArgumentsProvider implements ArgumentsProvider {
-		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-			Stream.Builder<Arguments> builder = Stream.builder();
-			for (SessionAttributePersistenceStrategy strategy : EnumSet.allOf(SessionAttributePersistenceStrategy.class)) {
-				builder.add(Arguments.of(new HotRodSessionManagerParameters() {
-					@Override
-					public SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy() {
-						return strategy;
-					}
-
-					@Override
-					public NearCacheMode getNearCacheMode() {
-						return NearCacheMode.DISABLED;
-					}
-
-					@Override
-					public RemoteCacheContainerConfigurator getRemoteCacheContainerConfigurator() {
-						return INFINISPAN;
-					}
-
-					@Override
-					public String toString() {
-						return Map.of(SessionAttributePersistenceStrategy.class.getSimpleName(), strategy).toString();
-					}
-				}));
 			}
 			return builder.build();
 		}
@@ -99,19 +77,19 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<Transaction
 		super(HotRodSessionManagerFactoryProvider::new);
 	}
 
-	@ParameterizedTest(name = "{arguments}")
-	@ArgumentsSource(NearCacheDisabledHotRodSessionManagerArgumentsProvider.class)
+	@ParameterizedTest
+	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void basic(HotRodSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}
 
-	@ParameterizedTest(name = "{arguments}")
+	@ParameterizedTest
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void concurrent(HotRodSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
-	@ParameterizedTest(name = "{arguments}")
+	@ParameterizedTest
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void expiration(HotRodSessionManagerParameters parameters) throws Exception {
 		super.expiration(parameters);

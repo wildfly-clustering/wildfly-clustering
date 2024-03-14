@@ -5,12 +5,11 @@
 
 package org.wildfly.clustering.session.cache.user;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
@@ -20,9 +19,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 public class AuthenticationEntryMarshallerTestCase {
 
 	@Test
-	public void test() throws IOException {
-		MarshallingTester<UserContextEntry<String, Object>> tester = new ProtoStreamTesterFactory(List.of(new UserSerializationContextInitializer())).createTester();
-		tester.test(new UserContextEntry<>("username"), AuthenticationEntryMarshallerTestCase::assertEquals);
+	public void test() {
+		Consumer<UserContextEntry<String, Object>> tester = new ProtoStreamTesterFactory(List.of(new UserSerializationContextInitializer())).createTester(AuthenticationEntryMarshallerTestCase::assertEquals);
+		tester.accept(new UserContextEntry<>("username"));
 	}
 
 	static void assertEquals(UserContextEntry<String, Object> entry1, UserContextEntry<String, Object> entry2) {

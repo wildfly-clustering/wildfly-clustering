@@ -35,7 +35,13 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+			<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>

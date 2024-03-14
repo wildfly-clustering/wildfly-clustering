@@ -57,4 +57,9 @@ public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
 			output.writeObject(object);
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "JavaSerialization";
+	}
 }

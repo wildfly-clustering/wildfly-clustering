@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.AbstractCircularReferenceTestCase;
 public class JavaCircularReferenceTestCase extends AbstractCircularReferenceTestCase {
 
 	public JavaCircularReferenceTestCase() {
-		super(JavaTesterFactory.INSTANCE);
+		super(new JavaSerializationTesterFactory());
 	}
 }

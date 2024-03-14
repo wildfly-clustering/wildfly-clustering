@@ -5,14 +5,13 @@
 
 package org.wildfly.clustering.server.infinispan;
 
-import java.io.IOException;
-
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
-import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.cache.infinispan.embedded.persistence.KeyMapperTester;
-import org.wildfly.clustering.marshalling.FormatterTester;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.cache.infinispan.embedded.persistence.TwoWayKey2StringMapperTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
@@ -20,14 +19,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class LocalModeAddressTestCase {
 
-	@Test
-	public void test() throws IOException {
-		test(new FormatterTester<>(new LocalAddressSerializer.LocalAddressFormatter()));
-		test(new KeyMapperTester<>(new KeyMapper()));
-		test(ProtoStreamTesterFactory.INSTANCE.createTester());
-	}
-
-	private static void test(Tester<Address> tester) throws IOException {
-		tester.test(LocalModeAddress.INSTANCE);
+	@ParameterizedTest
+	@TesterFactorySource({ ProtoStreamTesterFactory.class, TwoWayKey2StringMapperTesterFactory.class })
+	public void test(TesterFactory factory) {
+		Tester<Address> tester = factory.createTester();
+		tester.accept(LocalModeAddress.INSTANCE);
 	}
 }

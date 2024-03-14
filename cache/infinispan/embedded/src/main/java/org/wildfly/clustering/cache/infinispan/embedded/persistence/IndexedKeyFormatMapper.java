@@ -7,9 +7,13 @@ package org.wildfly.clustering.cache.infinispan.embedded.persistence;
 
 import static org.wildfly.common.Assert.checkNotNullParam;
 
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.UUID;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.wildfly.clustering.marshalling.Formatter;
@@ -22,13 +26,31 @@ import org.wildfly.clustering.marshalling.Formatter;
 public class IndexedKeyFormatMapper implements TwoWayKey2StringMapper {
 	private static final int HEX_RADIX = 16;
 
+	public static TwoWayKey2StringMapper load(ClassLoader loader) {
+		List<Formatter<?>> keyFormats = new LinkedList<>();
+		for (Formatter<?> keyFormat : ServiceLoader.load(Formatter.class, loader)) {
+			keyFormats.add(keyFormat);
+		}
+
+		List<Formatter<?>> result = new ArrayList<>(keyFormats.size() + 6);
+		// Add key formats for common key types
+		result.add(Formatter.IDENTITY);
+		result.add(Formatter.IDENTITY.wrap(Byte.class, Byte::valueOf));
+		result.add(Formatter.IDENTITY.wrap(Short.class, Short::valueOf));
+		result.add(Formatter.IDENTITY.wrap(Integer.class, Integer::valueOf));
+		result.add(Formatter.IDENTITY.wrap(Long.class, Long::valueOf));
+		result.add(Formatter.IDENTITY.wrap(UUID.class, UUID::fromString));
+		result.addAll(keyFormats);
+		return new IndexedKeyFormatMapper(result);
+	}
+
 	private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
 	private final List<Formatter<Object>> keyFormats;
 	private final int padding;
 
 	@SuppressWarnings("unchecked")
-	public IndexedKeyFormatMapper(List<? extends Formatter<?>> keyFormats) {
-		this.keyFormats = (List<Formatter<Object>>) (List<?>) keyFormats;
+	public IndexedKeyFormatMapper(List<? extends Formatter<?>> formatters) {
+		this.keyFormats = (List<Formatter<Object>>) (List<?>) formatters;
 		for (int i = 0; i < this.keyFormats.size(); ++i) {
 			this.indexes.put(this.keyFormats.get(i).getTargetClass(), i);
 		}

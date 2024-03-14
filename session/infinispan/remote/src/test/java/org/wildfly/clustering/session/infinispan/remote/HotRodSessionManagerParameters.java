@@ -14,5 +14,6 @@ import org.wildfly.clustering.session.cache.SessionManagerParameters;
  */
 public interface HotRodSessionManagerParameters extends SessionManagerParameters {
 	NearCacheMode getNearCacheMode();
+
 	RemoteCacheContainerConfigurator getRemoteCacheContainerConfigurator();
 }

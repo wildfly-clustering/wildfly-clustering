@@ -13,6 +13,7 @@ import java.util.OptionalInt;
 
 /**
  * A {@link ByteBufferMarshaller} based {@link TestMarshaller}.
+ * @param <T> marshaller target type
  * @author Paul Ferraro
  */
 public class ByteBufferTestMarshaller<T> implements TestMarshaller<T> {
