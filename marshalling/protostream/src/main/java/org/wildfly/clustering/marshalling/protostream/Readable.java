@@ -9,6 +9,7 @@ import java.io.IOException;
 
 /**
  * Readable view of a marshaller.
+ * @param <T> the read object type
  * @author Paul Ferraro
  */
 public interface Readable<T> {

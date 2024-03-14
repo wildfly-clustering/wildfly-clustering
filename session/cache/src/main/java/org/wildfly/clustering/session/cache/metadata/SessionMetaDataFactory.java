@@ -12,6 +12,8 @@ import org.wildfly.clustering.cache.Remover;
 import org.wildfly.clustering.server.Registration;
 
 /**
+ * Factory for session metadata.
+ * @param <V> the cache value type
  * @author Paul Ferraro
  */
 public interface SessionMetaDataFactory<V> extends ImmutableSessionMetaDataFactory<V>, Creator<String, V, Duration>, Remover<String>, Registration {

@@ -17,6 +17,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * @param <V> the collection element type
+ * @param <C> the collection type
+ * @param <F> the function type
  * @author Paul Ferraro
  */
 public class CollectionFunctionMarshaller<V, C extends Collection<V>, F extends CollectionFunction<V, C>> implements ProtoStreamMarshaller<F> {

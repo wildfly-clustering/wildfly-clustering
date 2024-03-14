@@ -12,6 +12,7 @@ import java.util.Map;
  * @author Paul Ferraro
  * @param <K> the map key type
  * @param <V> the map value type
+ * @param <T> the function operand type
  */
 public abstract class MapFunction<K, V, T> extends AbstractFunction<T, Map<K, V>> {
 

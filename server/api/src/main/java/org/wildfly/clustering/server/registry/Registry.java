@@ -14,7 +14,7 @@ import org.wildfly.clustering.server.Registration;
 
 /**
  * Registry of entries specific to a group member.
- *
+ * @param <M> the member type
  * @param <K> the type of the registry entry key
  * @param <V> the type of the registry entry value
  * @author Paul Ferraro

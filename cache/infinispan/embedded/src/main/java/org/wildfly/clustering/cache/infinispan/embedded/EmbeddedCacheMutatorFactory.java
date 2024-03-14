@@ -12,6 +12,8 @@ import org.wildfly.clustering.cache.CacheProperties;
 
 /**
  * Factory for creating {@link CacheEntryMutator} objects for an Infinispan cache.
+ * @param <K> the cache key type
+ * @param <V> the cache value type
  * @author Paul Ferraro
  */
 public class EmbeddedCacheMutatorFactory<K, V> implements CacheEntryMutatorFactory<K, V> {

@@ -10,6 +10,7 @@ import org.wildfly.clustering.session.Session;
 
 /**
  * A session facade whose lifecycle is managed as a {@link org.wildfly.clustering.server.context.Contextual}.
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class ContextualSessionRegistration<C> extends DecoratedSession<C> implements ContextualSession<C> {

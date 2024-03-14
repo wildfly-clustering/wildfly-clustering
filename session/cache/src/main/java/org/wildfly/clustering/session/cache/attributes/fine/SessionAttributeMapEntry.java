@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache.attributes.fine;
 import java.util.Map;
 
 /**
+ * @param <V> the session attribute value type
  * @author Paul Ferraro
  */
 public class SessionAttributeMapEntry<V> implements Map.Entry<String, V> {

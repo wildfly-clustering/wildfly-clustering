@@ -9,6 +9,7 @@ import java.io.IOException;
 
 /**
  * Reads a value from a set of fields.
+ * @param <T> the field set type
  * @author Paul Ferraro
  */
 public interface FieldSetReader<T> {

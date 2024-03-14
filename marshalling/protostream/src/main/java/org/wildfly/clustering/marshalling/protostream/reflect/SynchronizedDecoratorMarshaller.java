@@ -13,6 +13,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * A decorator marshaller that writes the decorated object while holding its monitor lock.
  * e.g. to enable iteration over a decorated collection without the risk of a ConcurrentModificationException.
+ * @param <T> the target type of this marshaller
  * @author Paul Ferraro
  */
 public class SynchronizedDecoratorMarshaller<T> extends DecoratorMarshaller<T> {

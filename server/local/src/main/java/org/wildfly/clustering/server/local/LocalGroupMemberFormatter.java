@@ -6,16 +6,15 @@ package org.wildfly.clustering.server.local;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Formatter;
-import org.wildfly.clustering.marshalling.SimpleFormatter;
 
 /**
  * Provides a formatter and externalizer for an {@link DefaultLocalGroupMember}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Formatter.class)
-public class LocalGroupMemberFormatter extends SimpleFormatter<DefaultLocalGroupMember> {
+public class LocalGroupMemberFormatter extends Formatter.Provided<DefaultLocalGroupMember> {
 
 	public LocalGroupMemberFormatter() {
-		super(DefaultLocalGroupMember.class, DefaultLocalGroupMember::new, DefaultLocalGroupMember::getName);
+		super(Formatter.IDENTITY.wrap(DefaultLocalGroupMember.class, DefaultLocalGroupMember::new, DefaultLocalGroupMember::getName));
 	}
 }

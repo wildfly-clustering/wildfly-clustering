@@ -4,13 +4,13 @@
  */
 package org.wildfly.clustering.session.infinispan.remote.attributes;
 
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheKey;
+import org.wildfly.clustering.cache.infinispan.CacheKey;
 
 /**
  * Cache key for session attributes.
  * @author Paul Ferraro
  */
-public class SessionAttributesKey extends RemoteCacheKey<String> {
+public class SessionAttributesKey extends CacheKey<String> {
 
 	public SessionAttributesKey(String id) {
 		super(id);

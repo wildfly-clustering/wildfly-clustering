@@ -19,6 +19,8 @@ import org.wildfly.clustering.session.user.UserSessions;
 import org.wildfly.common.function.Functions;
 
 /**
+ * @param <D> the deployment type
+ * @param <S> the session type
  * @author Paul Ferraro
  */
 public class InfinispanUserSessionsFactory<D, S> implements UserSessionsFactory<Map<D, S>, D, S> {

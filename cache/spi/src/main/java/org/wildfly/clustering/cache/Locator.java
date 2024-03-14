@@ -8,16 +8,18 @@ import java.util.concurrent.CompletionStage;
 
 /**
  * Locates a value from a cache.
+ * @param <I> the identifier type of the located value
+ * @param <V> the located value type
  * @author Paul Ferraro
  */
-public interface Locator<K, V> {
+public interface Locator<I, V> {
 
 	/**
 	 * Locates the value in the cache with the specified identifier.
 	 * @param id the cache entry identifier
 	 * @return the value of the cache entry, or null if not found.
 	 */
-	default V findValue(K id) {
+	default V findValue(I id) {
 		return this.findValueAsync(id).toCompletableFuture().join();
 	}
 
@@ -26,14 +28,14 @@ public interface Locator<K, V> {
 	 * @param id the cache entry identifier
 	 * @return the value of the cache entry, or null if not found.
 	 */
-	CompletionStage<V> findValueAsync(K id);
+	CompletionStage<V> findValueAsync(I id);
 
 	/**
 	 * Returns the value for the specified key, if possible without contention.
 	 * @param id a logical key
 	 * @return the value of the cache entry, or null if not found or unavailable.
 	 */
-	default V tryValue(K id) {
+	default V tryValue(I id) {
 		return this.tryValueAsync(id).toCompletableFuture().join();
 	}
 
@@ -42,7 +44,7 @@ public interface Locator<K, V> {
 	 * @param id a logical key
 	 * @return the value of the cache entry, or null if not found or unavailable.
 	 */
-	default CompletionStage<V> tryValueAsync(K id) {
+	default CompletionStage<V> tryValueAsync(I id) {
 		return this.findValueAsync(id);
 	}
 }

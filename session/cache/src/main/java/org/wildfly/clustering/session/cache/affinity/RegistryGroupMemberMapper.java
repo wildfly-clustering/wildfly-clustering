@@ -13,6 +13,7 @@ import org.wildfly.clustering.server.registry.Registry;
 
 /**
  * Uses a registry to map a group member to a string value.
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public class RegistryGroupMemberMapper<M extends GroupMember> implements Function<M, String> {

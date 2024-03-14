@@ -5,9 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.IOException;
 import java.util.Objects;
 
 import org.infinispan.protostream.SerializationContextInitializer;
@@ -16,6 +13,7 @@ import org.infinispan.protostream.annotations.ProtoAdapter;
 import org.infinispan.protostream.annotations.ProtoEnumValue;
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 
@@ -26,24 +24,24 @@ import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 public class NativeProtoStreamTestCase {
 
 	@Test
-	public void test() throws IOException {
-		MarshallingTesterFactory factory = ProtoStreamTesterFactory.INSTANCE;
-		factory.createTester(Sex.class).test();
+	public void test() {
+		MarshallingTesterFactory factory = new ProtoStreamTesterFactory();
+		factory.createTester(Sex.class).run();
 
 		Employee head = new Employee(1, new Name("Allegra", "Coleman"), Sex.FEMALE, null);
 		Employee manager = new Employee(2, new Name("John", "Barron"), Sex.MALE, head);
 		Employee employee = new Employee(3, new Name("Alan", "Smithee"), Sex.MALE, manager);
 
-		factory.<Employee>createTester().test(employee, NativeProtoStreamTestCase::equals);
+		factory.<Employee>createTester(NativeProtoStreamTestCase::assertEquals).accept(employee);
 	}
 
-	static void equals(Employee expected, Employee actual) {
-		assertEquals(expected, actual);
-		assertEquals(expected.getName(), actual.getName());
-		assertSame(expected.getSex(), actual.getSex());
-		assertEquals(expected.isHead(), actual.isHead());
+	static void assertEquals(Employee expected, Employee actual) {
+		Assertions.assertEquals(expected, actual);
+		Assertions.assertEquals(expected.getName(), actual.getName());
+		Assertions.assertSame(expected.getSex(), actual.getSex());
+		Assertions.assertEquals(expected.isHead(), actual.isHead());
 		if (!expected.isHead()) {
-			equals(expected.getManager(), actual.getManager());
+			assertEquals(expected.getManager(), actual.getManager());
 		}
 	}
 

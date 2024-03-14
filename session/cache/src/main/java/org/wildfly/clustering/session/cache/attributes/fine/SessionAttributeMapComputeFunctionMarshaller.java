@@ -17,23 +17,23 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * @author Paul Ferraro
  */
-public class SessionAttributeMapComputeFunctionMarshaller<V> implements ProtoStreamMarshaller<SessionAttributeMapComputeFunction<V>> {
+public class SessionAttributeMapComputeFunctionMarshaller implements ProtoStreamMarshaller<SessionAttributeMapComputeFunction<Object>> {
 	private static final int ENTRY_INDEX = 1;
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends SessionAttributeMapComputeFunction<V>> getJavaClass() {
-		return (Class<SessionAttributeMapComputeFunction<V>>) (Class<?>) SessionAttributeMapComputeFunction.class;
+	public Class<? extends SessionAttributeMapComputeFunction<Object>> getJavaClass() {
+		return (Class<SessionAttributeMapComputeFunction<Object>>) (Class<?>) SessionAttributeMapComputeFunction.class;
 	}
 
 	@Override
-	public SessionAttributeMapComputeFunction<V> readFrom(ProtoStreamReader reader) throws IOException {
-		Map<String, V> map = new TreeMap<>();
+	public SessionAttributeMapComputeFunction<Object> readFrom(ProtoStreamReader reader) throws IOException {
+		Map<String, Object> map = new TreeMap<>();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
 				case ENTRY_INDEX:
-					Map.Entry<String, V> entry = reader.readObject(SessionAttributeMapEntry.class);
+					Map.Entry<String, Object> entry = reader.readObject(SessionAttributeMapEntry.class);
 					map.put(entry.getKey(), entry.getValue());
 					break;
 				default:
@@ -44,8 +44,8 @@ public class SessionAttributeMapComputeFunctionMarshaller<V> implements ProtoStr
 	}
 
 	@Override
-	public void writeTo(ProtoStreamWriter writer, SessionAttributeMapComputeFunction<V> function) throws IOException {
-		for (Map.Entry<String, V> entry : function.getOperand().entrySet()) {
+	public void writeTo(ProtoStreamWriter writer, SessionAttributeMapComputeFunction<Object> function) throws IOException {
+		for (Map.Entry<String, Object> entry : function.getOperand().entrySet()) {
 			writer.writeObject(ENTRY_INDEX, new SessionAttributeMapEntry<>(entry));
 		}
 	}

@@ -33,7 +33,7 @@ public interface User<C, T, D, S> {
 
 	/**
 	 * Returns the sessions for this user.
-	 * @return
+	 * @return the sessions for this user.
 	 */
 	UserSessions<D, S> getSessions();
 

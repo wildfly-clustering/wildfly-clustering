@@ -15,6 +15,7 @@ import org.wildfly.clustering.session.SessionManager;
 
 /**
  * {@link Session} decorator that auto-detaches on {@link #close()}.
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class ManagedSession<C> extends DecoratedSession<C> {

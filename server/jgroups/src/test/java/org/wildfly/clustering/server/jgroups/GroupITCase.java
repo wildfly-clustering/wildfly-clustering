@@ -38,6 +38,9 @@ import org.wildfly.clustering.server.group.GroupMember;
 import org.wildfly.common.function.ExceptionBiFunction;
 
 /**
+ * Base integration test for {@link Group} implementations.
+ * @param <A> the address type of the group member
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember<A>> {

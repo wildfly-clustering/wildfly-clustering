@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 /**
  * Configuration of a state manager.
+ * @param <I> the identifier type
  * @author Paul Ferraro
  */
 public interface ManagerConfiguration<I> {

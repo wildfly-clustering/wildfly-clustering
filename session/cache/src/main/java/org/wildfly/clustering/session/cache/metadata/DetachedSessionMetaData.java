@@ -14,6 +14,9 @@ import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
 
 /**
+ * {@link SessionMetaData} implementation for detached sessions.
+ * @param <C> the session context type
+ * @param <B> the batch type
  * @author Paul Ferraro
  */
 public class DetachedSessionMetaData<C, B extends Batch> implements SessionMetaData {

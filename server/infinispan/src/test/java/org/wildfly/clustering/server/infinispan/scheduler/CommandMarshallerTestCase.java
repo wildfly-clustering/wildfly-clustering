@@ -5,11 +5,12 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
-import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.Tester;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
@@ -18,12 +19,13 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class CommandMarshallerTestCase {
 
-	@Test
-	public void testScheduleWithLocalMetaDataCommand() throws IOException {
-		Tester<ScheduleWithTransientMetaDataCommand<String, String>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+	@ParameterizedTest
+	@TesterFactorySource(ProtoStreamTesterFactory.class)
+	public void testScheduleWithLocalMetaDataCommand(TesterFactory factory) {
+		Consumer<ScheduleWithTransientMetaDataCommand<String, String>> tester = factory.createTester(this::assertEquals);
 
-		tester.test(new ScheduleWithTransientMetaDataCommand<>("foo"), this::assertEquals);
-		tester.test(new ScheduleWithTransientMetaDataCommand<>("foo", "bar"), this::assertEquals);
+		tester.accept(new ScheduleWithTransientMetaDataCommand<>("foo"));
+		tester.accept(new ScheduleWithTransientMetaDataCommand<>("foo", "bar"));
 	}
 
 	<I, M> void assertEquals(ScheduleWithTransientMetaDataCommand<I, M> expected, ScheduleWithTransientMetaDataCommand<I, M> actual) {
@@ -31,22 +33,24 @@ public class CommandMarshallerTestCase {
 		Assertions.assertNull(actual.getMetaData());
 	}
 
-	@Test
-	public void testCancelCommand() throws IOException {
-		Tester<CancelCommand<String, Object>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+	@ParameterizedTest
+	@TesterFactorySource(ProtoStreamTesterFactory.class)
+	public void testCancelCommand(TesterFactory factory) {
+		Consumer<CancelCommand<String, Object>> tester = factory.createTester(this::assertEquals);
 
-		tester.test(new CancelCommand<>("foo"), this::assertEquals);
+		tester.accept(new CancelCommand<>("foo"));
 	}
 
 	<I, M> void assertEquals(CancelCommand<I, M> expected, CancelCommand<I, M> actual) {
 		Assertions.assertEquals(expected.getId(), actual.getId());
 	}
 
-	@Test
-	public void testScheduleWithMetaDataCommand() throws IOException {
-		Tester<ScheduleWithMetaDataCommand<String, String>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+	@ParameterizedTest
+	@TesterFactorySource(ProtoStreamTesterFactory.class)
+	public void testScheduleWithMetaDataCommand(TesterFactory factory) {
+		Consumer<ScheduleWithMetaDataCommand<String, String>> tester = factory.createTester(this::assertEquals);
 
-		tester.test(new ScheduleWithMetaDataCommand<>("foo", "bar"), this::assertEquals);
+		tester.accept(new ScheduleWithMetaDataCommand<>("foo", "bar"));
 	}
 
 	<I, M> void assertEquals(ScheduleWithMetaDataCommand<I, M> expected, ScheduleWithMetaDataCommand<I, M> actual) {

@@ -5,13 +5,13 @@
 
 package org.wildfly.clustering.server.offset;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.Consumer;
 
-import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.MarshallingTester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Unit test for {@link Offset} marshalling.
@@ -19,17 +19,21 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class OffsetMarshallerTestCase {
 
-	@Test
-	public void duration() throws IOException {
-		MarshallingTester<Offset<Duration>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+	@ParameterizedTest
+	@TesterFactorySource
+	public void duration(TesterFactory factory) {
+		Consumer<Offset<Duration>> tester = factory.createTester();
 
-		tester.test(Offset.forDuration(Duration.ofSeconds(1)));
+		tester.accept(Offset.forDuration(Duration.ZERO));
+		tester.accept(Offset.forDuration(Duration.ofSeconds(1)));
 	}
 
-	@Test
-	public void instant() throws IOException {
-		MarshallingTester<Offset<Instant>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+	@ParameterizedTest
+	@TesterFactorySource
+	public void instant(TesterFactory factory) {
+		Consumer<Offset<Instant>> tester = factory.createTester();
 
-		tester.test(Offset.forInstant(Duration.ofSeconds(1)));
+		tester.accept(Offset.forInstant(Duration.ZERO));
+		tester.accept(Offset.forInstant(Duration.ofSeconds(1)));
 	}
 }

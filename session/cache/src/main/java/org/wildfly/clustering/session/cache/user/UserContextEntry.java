@@ -7,7 +7,7 @@ package org.wildfly.clustering.session.cache.user;
 import org.wildfly.clustering.server.util.Supplied;
 
 /**
- * Cache entry that stores persistent and transient user identity..
+ * Cache entry that stores persistent and transient user context.
  * @author Paul Ferraro
  * @param <C> the persistent user context type
  * @param <T> the transient user context type

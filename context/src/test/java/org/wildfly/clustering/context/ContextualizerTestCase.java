@@ -16,10 +16,10 @@ import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
- * Unit test for {@link ContextReferenceExecutor}.
+ * Unit test for {@link Contextualizer}.
  * @author Paul Ferraro
  */
-public class ContextReferenceExecutorTestCase {
+public class ContextualizerTestCase {
 
 	@Test
 	public void test() throws Exception {

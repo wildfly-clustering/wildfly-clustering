@@ -14,6 +14,7 @@ import org.wildfly.clustering.server.offset.OffsetValue;
 import org.wildfly.common.function.Functions;
 
 /**
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class SessionCreationMetaDataEntryFunction<C> extends RemappingFunction<SessionCreationMetaDataEntry<C>, Supplier<Offset<Duration>>> {

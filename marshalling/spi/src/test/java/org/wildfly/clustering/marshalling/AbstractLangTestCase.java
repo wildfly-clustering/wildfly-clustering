@@ -7,9 +7,9 @@ package org.wildfly.clustering.marshalling;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,199 +28,205 @@ public abstract class AbstractLangTestCase {
 	}
 
 	@Test
-	public void testBoolean() throws IOException {
-		this.factory.createTester().test(true);
+	public void testUnmarshallable() {
+		Tester<ThreadLocal<String>> tester = this.factory.createTester();
+		tester.reject(ThreadLocal.withInitial(() -> "foo"));
 	}
 
 	@Test
-	public void testByte() throws IOException {
-		Tester<Byte> tester = this.factory.createTester();
+	public void testBoolean() {
+		this.factory.createTester().accept(true);
+	}
+
+	@Test
+	public void testByte() {
+		Consumer<Byte> tester = this.factory.createTester();
 		for (int i = 0; i < Byte.SIZE; ++i) {
-			tester.test(Integer.valueOf((1 << i) - 1).byteValue());
-			tester.test(Integer.valueOf(-1 << i).byteValue());
+			tester.accept(Integer.valueOf((1 << i) - 1).byteValue());
+			tester.accept(Integer.valueOf(-1 << i).byteValue());
 		}
 	}
 
 	@Test
-	public void testShort() throws IOException {
-		Tester<Short> tester = this.factory.createTester();
+	public void testShort() {
+		Consumer<Short> tester = this.factory.createTester();
 		for (int i = 0; i < Short.SIZE; ++i) {
-			tester.test(Integer.valueOf((1 << i) - 1).shortValue());
-			tester.test(Integer.valueOf(-1 << i).shortValue());
+			tester.accept(Integer.valueOf((1 << i) - 1).shortValue());
+			tester.accept(Integer.valueOf(-1 << i).shortValue());
 		}
 	}
 
 	@Test
-	public void testInteger() throws IOException {
-		Tester<Integer> tester = this.factory.createTester();
+	public void testInteger() {
+		Consumer<Integer> tester = this.factory.createTester();
 		for (int i = 0; i < Integer.SIZE; ++i) {
-			tester.test((1 << i) - 1);
-			tester.test(-1 << i);
+			tester.accept((1 << i) - 1);
+			tester.accept(-1 << i);
 		}
 	}
 
 	@Test
-	public void testLong() throws IOException {
-		Tester<Long> tester = this.factory.createTester();
+	public void testLong() {
+		Consumer<Long> tester = this.factory.createTester();
 		for (int i = 0; i < Long.SIZE; ++i) {
-			tester.test((1L << i) - 1L);
-			tester.test(-1L << i);
+			tester.accept((1L << i) - 1L);
+			tester.accept(-1L << i);
 		}
 	}
 
 	@Test
-	public void testFloat() throws IOException {
-		Tester<Float> tester = this.factory.createTester();
-		tester.test(Float.NEGATIVE_INFINITY);
-		tester.test(Float.MIN_VALUE);
-		tester.test(0F);
-		tester.test(Float.MAX_VALUE);
-		tester.test(Float.POSITIVE_INFINITY);
-		tester.test(Float.NaN);
+	public void testFloat() {
+		Consumer<Float> tester = this.factory.createTester();
+		tester.accept(Float.NEGATIVE_INFINITY);
+		tester.accept(Float.MIN_VALUE);
+		tester.accept(0F);
+		tester.accept(Float.MAX_VALUE);
+		tester.accept(Float.POSITIVE_INFINITY);
+		tester.accept(Float.NaN);
 	}
 
 	@Test
-	public void testDouble() throws IOException {
-		Tester<Double> tester = this.factory.createTester();
-		tester.test(Double.NEGATIVE_INFINITY);
-		tester.test(Double.MIN_VALUE);
-		tester.test(0D);
-		tester.test(Double.MAX_VALUE);
-		tester.test(Double.POSITIVE_INFINITY);
-		tester.test(Double.NaN);
+	public void testDouble() {
+		Consumer<Double> tester = this.factory.createTester();
+		tester.accept(Double.NEGATIVE_INFINITY);
+		tester.accept(Double.MIN_VALUE);
+		tester.accept(0D);
+		tester.accept(Double.MAX_VALUE);
+		tester.accept(Double.POSITIVE_INFINITY);
+		tester.accept(Double.NaN);
 	}
 
 	@Test
-	public void testCharacter() throws IOException {
-		Tester<Character> tester = this.factory.createTester();
-		tester.test(Character.MIN_VALUE);
-		tester.test('A');
-		tester.test(Character.MAX_VALUE);
+	public void testCharacter() {
+		Consumer<Character> tester = this.factory.createTester();
+		tester.accept(Character.MIN_VALUE);
+		tester.accept('A');
+		tester.accept(Character.MAX_VALUE);
 	}
 
 	@Test
-	public void testString() throws IOException {
-		Tester<String> tester = this.factory.createTester();
-		tester.test("A");
-		tester.test(UUID.randomUUID().toString());
+	public void testString() {
+		Consumer<String> tester = this.factory.createTester();
+		tester.accept("A");
+		tester.accept(UUID.randomUUID().toString());
 	}
 
 	@Test
-	public void testBooleanArray() throws IOException {
+	public void testBooleanArray() {
 		boolean[] array = new boolean[] { true, false };
-		this.factory.<boolean[]>createTester().test(array, Assertions::assertArrayEquals);
-		this.factory.<boolean[][]>createTester().test(new boolean[][] { array, array }, Assertions::assertArrayEquals);
+		this.factory.<boolean[]>createTester(Assertions::assertArrayEquals).accept(array);
+		this.factory.<boolean[][]>createTester(Assertions::assertArrayEquals).accept(new boolean[][] { array, array });
 		Boolean[] objectArray = new Boolean[] { true, false };
-		this.factory.<Boolean[]>createTester().test(objectArray, Assertions::assertArrayEquals);
-		this.factory.<Boolean[][]>createTester().test(new Boolean[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
+		this.factory.<Boolean[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
+		this.factory.<Boolean[][]>createTester(Assertions::assertArrayEquals).accept(new Boolean[][] { objectArray, objectArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
-	public void testByteArray() throws IOException {
+	public void testByteArray() {
 		byte[] array = new byte[] { Byte.MIN_VALUE, 0, Byte.MAX_VALUE };
-		this.factory.<byte[]>createTester().test(array, Assertions::assertArrayEquals);
-		this.factory.<byte[][]>createTester().test(new byte[][] { array, array }, Assertions::assertArrayEquals);
+		this.factory.<byte[]>createTester(Assertions::assertArrayEquals).accept(array);
+		this.factory.<byte[][]>createTester(Assertions::assertArrayEquals).accept(new byte[][] { array, array });
 		Byte[] objectArray = new Byte[] { Byte.MIN_VALUE, 0, Byte.MAX_VALUE };
-		this.factory.<Byte[]>createTester().test(objectArray, Assertions::assertArrayEquals);
-		this.factory.<Byte[][]>createTester().test(new Byte[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
+		this.factory.<Byte[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
+		this.factory.<Byte[][]>createTester(Assertions::assertArrayEquals).accept(new Byte[][] { objectArray, objectArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
-	public void testShortArray() throws IOException {
+	public void testShortArray() {
 		short[] array = new short[] { Short.MIN_VALUE, 0, Short.MAX_VALUE };
-		this.factory.<short[]>createTester().test(array, Assertions::assertArrayEquals);
-		this.factory.<short[][]>createTester().test(new short[][] { array, array }, Assertions::assertArrayEquals);
+		this.factory.<short[]>createTester(Assertions::assertArrayEquals).accept(array);
+		this.factory.<short[][]>createTester(Assertions::assertArrayEquals).accept(new short[][] { array, array });
 		Short[] objectArray = new Short[] { Short.MIN_VALUE, 0, Short.MAX_VALUE };
-		this.factory.<Short[]>createTester().test(objectArray, Assertions::assertArrayEquals);
-		this.factory.<Short[][]>createTester().test(new Short[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
+		this.factory.<Short[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
+		this.factory.<Short[][]>createTester(Assertions::assertArrayEquals).accept(new Short[][] { objectArray, objectArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
-	public void testIntegerArray() throws IOException {
+	public void testIntegerArray() {
 		int[] array = new int[] { Integer.MIN_VALUE, 0, Integer.MAX_VALUE };
-		this.factory.<int[]>createTester().test(array, Assertions::assertArrayEquals);
-		this.factory.<int[][]>createTester().test(new int[][] { array, array }, Assertions::assertArrayEquals);
+		this.factory.<int[]>createTester(Assertions::assertArrayEquals).accept(array);
+		this.factory.<int[][]>createTester(Assertions::assertArrayEquals).accept(new int[][] { array, array });
 		Integer[] objectArray = new Integer[] { Integer.MIN_VALUE, 0, Integer.MAX_VALUE };
-		this.factory.<Integer[]>createTester().test(objectArray, Assertions::assertArrayEquals);
-		this.factory.<Integer[][]>createTester().test(new Integer[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
+		this.factory.<Integer[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
+		this.factory.<Integer[][]>createTester(Assertions::assertArrayEquals).accept(new Integer[][] { objectArray, objectArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
-	public void testLongArray() throws IOException {
+	public void testLongArray() {
 		long[] array = new long[] { Long.MIN_VALUE, 0L, Long.MAX_VALUE };
-		this.factory.<long[]>createTester().test(array, Assertions::assertArrayEquals);
-		this.factory.<long[][]>createTester().test(new long[][] { array, array }, Assertions::assertArrayEquals);
+		this.factory.<long[]>createTester(Assertions::assertArrayEquals).accept(array);
+		this.factory.<long[][]>createTester(Assertions::assertArrayEquals).accept(new long[][] { array, array });
 		Long[] objectArray = new Long[] { Long.MIN_VALUE, 0L, Long.MAX_VALUE };
-		this.factory.<Long[]>createTester().test(objectArray, Assertions::assertArrayEquals);
-		this.factory.<Long[][]>createTester().test(new Long[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
+		this.factory.<Long[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
+		this.factory.<Long[][]>createTester(Assertions::assertArrayEquals).accept(new Long[][] { objectArray, objectArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
-	public void testFloatArray() throws IOException {
+	public void testFloatArray() {
 		float[] array = new float[] { Float.MIN_VALUE, 0f, Float.MAX_VALUE };
-		this.factory.<float[]>createTester().test(array, Assertions::assertArrayEquals);
-		this.factory.<float[][]>createTester().test(new float[][] { array, array }, Assertions::assertArrayEquals);
+		this.factory.<float[]>createTester(Assertions::assertArrayEquals).accept(array);
+		this.factory.<float[][]>createTester(Assertions::assertArrayEquals).accept(new float[][] { array, array });
 		Float[] objectArray = new Float[] { Float.MIN_VALUE, 0f, Float.MAX_VALUE };
-		this.factory.<Float[]>createTester().test(objectArray, Assertions::assertArrayEquals);
-		this.factory.<Float[][]>createTester().test(new Float[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
+		this.factory.<Float[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
+		this.factory.<Float[][]>createTester(Assertions::assertArrayEquals).accept(new Float[][] { objectArray, objectArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
-	public void testDoubleArray() throws IOException {
+	public void testDoubleArray() {
 		double[] array = new double[] { Double.MIN_VALUE, 0d, Double.MAX_VALUE };
-		this.factory.<double[]>createTester().test(array, Assertions::assertArrayEquals);
-		this.factory.<double[][]>createTester().test(new double[][] { array, array }, Assertions::assertArrayEquals);
+		this.factory.<double[]>createTester(Assertions::assertArrayEquals).accept(array);
+		this.factory.<double[][]>createTester(Assertions::assertArrayEquals).accept(new double[][] { array, array });
 		Double[] objectArray = new Double[] { Double.MIN_VALUE, 0d, Double.MAX_VALUE };
-		this.factory.<Double[]>createTester().test(objectArray, Assertions::assertArrayEquals);
-		this.factory.<Double[][]>createTester().test(new Double[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
+		this.factory.<Double[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
+		this.factory.<Double[][]>createTester(Assertions::assertArrayEquals).accept(new Double[][] { objectArray, objectArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
-	public void testCharArray() throws IOException {
+	public void testCharArray() {
 		char[] array = new char[] { Character.MIN_VALUE, 'A', Character.MAX_VALUE };
-		this.factory.<char[]>createTester().test(array, Assertions::assertArrayEquals);
-		this.factory.<char[][]>createTester().test(new char[][] { array, array }, Assertions::assertArrayEquals);
+		this.factory.<char[]>createTester(Assertions::assertArrayEquals).accept(array);
+		this.factory.<char[][]>createTester(Assertions::assertArrayEquals).accept(new char[][] { array, array });
 		Character[] objectArray = new Character[] { Character.MIN_VALUE, 'A', Character.MAX_VALUE };
-		this.factory.<Character[]>createTester().test(objectArray, Assertions::assertArrayEquals);
-		this.factory.<Character[][]>createTester().test(new Character[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { objectArray, objectArray }, Assertions::assertArrayEquals);
+		this.factory.<Character[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
+		this.factory.<Character[][]>createTester(Assertions::assertArrayEquals).accept(new Character[][] { objectArray, objectArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
-	public void testObjectArray() throws IOException {
+	public void testObjectArray() {
 		String string1 = "foo";
 		String string2 = "bar";
 		String[] stringArray = new String[] { string1, string2 };
-		this.factory.<String[]>createTester().test(stringArray, Assertions::assertArrayEquals);
+		this.factory.<String[]>createTester(Assertions::assertArrayEquals).accept(stringArray);
 		// Test array with shared object references
-		this.factory.<String[]>createTester().test(new String[] { string1, string1 }, Assertions::assertArrayEquals);
-		this.factory.<String[][]>createTester().test(new String[][] { stringArray, stringArray }, Assertions::assertArrayEquals);
-		this.factory.<Object[][]>createTester().test(new Object[][] { stringArray, stringArray }, Assertions::assertArrayEquals);
+		this.factory.<String[]>createTester(Assertions::assertArrayEquals).accept(new String[] { string1, string1 });
+		this.factory.<String[][]>createTester(Assertions::assertArrayEquals).accept(new String[][] { stringArray, stringArray });
+		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { stringArray, stringArray });
 	}
 
 	@Test
-	public void testNull() throws IOException {
-		this.factory.createTester().test(null, Assertions::assertSame);
+	public void testNull() {
+		this.factory.createIdentityTester().accept(null);
 	}
 
 	@Test
-	public void testClass() throws IOException {
-		Tester<Class<?>> tester = this.factory.createTester();
-		tester.test(Object.class, Assertions::assertSame);
-		tester.test(Integer.class, Assertions::assertSame);
-		tester.test(Throwable.class, Assertions::assertSame);
-		tester.test(Exception.class, Assertions::assertSame);
+	public void testClass() {
+		Consumer<Class<?>> tester = this.factory.createIdentityTester();
+		tester.accept(Object.class);
+		tester.accept(Integer.class);
+		tester.accept(Throwable.class);
+		tester.accept(Exception.class);
 	}
 
 	@Test
-	public void testException() throws IOException {
+	public void testException() {
 		Throwable exception = new RuntimeException("foo");
 		exception.setStackTrace(new StackTraceElement[] { exception.getStackTrace()[0] });
 		Throwable cause = new Exception("bar");
@@ -229,20 +235,20 @@ public abstract class AbstractLangTestCase {
 		suppressed.setStackTrace(new StackTraceElement[] { suppressed.getStackTrace()[0] });
 		exception.initCause(cause);
 		exception.addSuppressed(suppressed);
-		this.factory.<Throwable>createTester().test(exception, AbstractLangTestCase::assertEquals);
+		this.factory.<Throwable>createTester(AbstractLangTestCase::assertEquals).accept(exception);
 	}
 
 	@Test
-	public void testStackTrace() throws IOException {
-		this.factory.<StackTraceElement>createTester().test(new StackTraceElement("class", "method", "file", -1), AbstractLangTestCase::assertEquals);
-		this.factory.<StackTraceElement>createTester().test(new StackTraceElement("loader", "module", "1.0", "class", "method", "file", 1), AbstractLangTestCase::assertEquals);
+	public void testStackTrace() {
+		this.factory.<StackTraceElement>createTester(AbstractLangTestCase::assertEquals).accept(new StackTraceElement("class", "method", "file", -1));
+		this.factory.<StackTraceElement>createTester(AbstractLangTestCase::assertEquals).accept(new StackTraceElement("loader", "module", "1.0", "class", "method", "file", 1));
 	}
 
 	@Test
-	public void testProxy() throws IOException {
+	public void testProxy() {
 		Object proxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class<?>[] { Iterable.class }, new TestInvocationHandler("foo"));
 
-		this.factory.createTester().test(proxy, AbstractLangTestCase::assertProxyEquals);
+		this.factory.createTester(AbstractLangTestCase::assertProxyEquals).accept(proxy);
 	}
 
 	private static void assertProxyEquals(Object expected, Object actual) {

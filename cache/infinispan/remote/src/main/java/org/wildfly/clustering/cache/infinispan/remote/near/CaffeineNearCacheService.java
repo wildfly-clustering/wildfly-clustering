@@ -18,6 +18,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Near cache service that constructs its near cache using a generic factory.
+ * @param <K> cache key type
+ * @param <V> cache value type
  * @author Paul Ferraro
  */
 public class CaffeineNearCacheService<K, V> extends NearCacheService<K, V> {

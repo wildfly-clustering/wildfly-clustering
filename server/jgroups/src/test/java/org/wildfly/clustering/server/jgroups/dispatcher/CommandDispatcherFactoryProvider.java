@@ -9,6 +9,7 @@ import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 /**
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public interface CommandDispatcherFactoryProvider<M extends GroupMember> extends AutoCloseable {

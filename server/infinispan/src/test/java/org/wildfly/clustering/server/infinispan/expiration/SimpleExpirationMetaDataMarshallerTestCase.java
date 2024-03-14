@@ -5,13 +5,14 @@
 
 package org.wildfly.clustering.server.infinispan.expiration;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.Tester;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 
@@ -21,15 +22,16 @@ import org.wildfly.clustering.server.expiration.ExpirationMetaData;
  */
 public class SimpleExpirationMetaDataMarshallerTestCase {
 
-	@Test
-	public void test() throws IOException {
-		Tester<ExpirationMetaData> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+	@ParameterizedTest
+	@TesterFactorySource(ProtoStreamTesterFactory.class)
+	public void test(TesterFactory factory) {
+		Consumer<ExpirationMetaData> tester = factory.createTester(SimpleExpirationMetaDataMarshallerTestCase::assertEquals);
 
-		tester.test(new SimpleExpirationMetaData(Duration.ofMinutes(30), Instant.EPOCH), this::assertEquals);
-		tester.test(new SimpleExpirationMetaData(Duration.ofSeconds(600), Instant.now()), this::assertEquals);
+		tester.accept(new SimpleExpirationMetaData(Duration.ofMinutes(30), Instant.EPOCH));
+		tester.accept(new SimpleExpirationMetaData(Duration.ofSeconds(600), Instant.now()));
 	}
 
-	private void assertEquals(ExpirationMetaData expected, ExpirationMetaData actual) {
+	private static void assertEquals(ExpirationMetaData expected, ExpirationMetaData actual) {
 		Assertions.assertEquals(expected.getTimeout(), actual.getTimeout());
 		Assertions.assertEquals(expected.getLastAccessTime(), actual.getLastAccessTime());
 	}

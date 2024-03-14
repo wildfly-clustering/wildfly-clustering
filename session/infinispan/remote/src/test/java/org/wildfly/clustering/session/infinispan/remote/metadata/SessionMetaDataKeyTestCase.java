@@ -5,20 +5,21 @@
 
 package org.wildfly.clustering.session.infinispan.remote.metadata;
 
-import java.io.IOException;
-
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
- * Unit test for {@link SessionAccessMetaDataKeyResolver}.
+ * Unit test for {@link SessionAccessMetaDataKey} and {@link SessionCreationMetaDataKey} marshalling.
  * @author Paul Ferraro
  */
 public class SessionMetaDataKeyTestCase {
 
-	@Test
-	public void test() throws IOException {
-		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SessionAccessMetaDataKey("test"));
-		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SessionCreationMetaDataKey("test"));
+	@ParameterizedTest
+	@TesterFactorySource(ProtoStreamTesterFactory.class)
+	public void test(TesterFactory factory) {
+		factory.createTester().accept(new SessionAccessMetaDataKey("test"));
+		factory.createTester().accept(new SessionCreationMetaDataKey("test"));
 	}
 }

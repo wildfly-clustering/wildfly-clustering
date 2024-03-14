@@ -42,6 +42,9 @@ import org.wildfly.common.function.Functions;
 
 /**
  * {@link SessionAttributesFactory} for coarse granularity sessions, where all session attributes are stored in a single cache entry.
+ * This implementation is safe for attributes that strongly reference each other.
+ * @param <C> the session manager context type
+ * @param <V> the cache value type
  * @author Paul Ferraro
  */
 public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {

@@ -8,19 +8,20 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.List;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.ByteBufferTestMarshaller;
-import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
-import org.wildfly.clustering.marshalling.java.JavaTesterFactory;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices({ MarshallingTesterFactory.class, ProtoStreamTesterFactory.class })
 public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
-	public static final ProtoStreamTesterFactory INSTANCE = new ProtoStreamTesterFactory(List.of());
-
 	private final ByteBufferMarshaller marshaller;
+
+	public ProtoStreamTesterFactory() {
+		this(List.of());
+	}
 
 	public ProtoStreamTesterFactory(Iterable<SerializationContextInitializer> initializers) {
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
@@ -29,12 +30,12 @@ public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
 	}
 
 	@Override
-	public <T> MarshallingTester<T> createTester() {
-		return new MarshallingTester<>(new ByteBufferTestMarshaller<>(this.marshaller), List.of(JavaTesterFactory.INSTANCE.getMarshaller()));
+	public ByteBufferMarshaller getMarshaller() {
+		return this.marshaller;
 	}
 
 	@Override
-	public ByteBufferMarshaller getMarshaller() {
-		return this.marshaller;
+	public String toString() {
+		return this.marshaller.toString();
 	}
 }

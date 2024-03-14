@@ -4,13 +4,13 @@
  */
 package org.wildfly.clustering.marshalling;
 
-import java.io.IOException;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,20 +27,20 @@ public abstract class AbstractSQLTestCase {
 	}
 
 	@Test
-	public void testSQLDate() throws IOException {
-		MarshallingTester<Date> tester = this.factory.createTester();
-		tester.test(Date.valueOf(LocalDate.now()));
+	public void testSQLDate() {
+		Consumer<Date> tester = this.factory.createTester();
+		tester.accept(Date.valueOf(LocalDate.now()));
 	}
 
 	@Test
-	public void testSQLTime() throws IOException {
-		MarshallingTester<Time> tester = this.factory.createTester();
-		tester.test(Time.valueOf(LocalTime.now()));
+	public void testSQLTime() {
+		Consumer<Time> tester = this.factory.createTester();
+		tester.accept(Time.valueOf(LocalTime.now()));
 	}
 
 	@Test
-	public void testSQLTimestamp() throws IOException {
-		MarshallingTester<Timestamp> tester = this.factory.createTester();
-		tester.test(Timestamp.valueOf(LocalDateTime.now()));
+	public void testSQLTimestamp() {
+		Consumer<Timestamp> tester = this.factory.createTester();
+		tester.accept(Timestamp.valueOf(LocalDateTime.now()));
 	}
 }

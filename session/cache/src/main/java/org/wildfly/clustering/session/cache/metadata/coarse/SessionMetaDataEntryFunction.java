@@ -13,6 +13,7 @@ import org.wildfly.clustering.server.offset.Offset;
 
 /**
  * Cache compute function that applies the session meta data delta.
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class SessionMetaDataEntryFunction<C> extends RemappingFunction<ContextualSessionMetaDataEntry<C>, SessionMetaDataEntryOffsets> {

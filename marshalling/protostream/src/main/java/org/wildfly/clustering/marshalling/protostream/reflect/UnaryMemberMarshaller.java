@@ -11,6 +11,9 @@ import java.util.function.Function;
 
 /**
  * Generic marshaller based on a single non-public member.
+ * @param <T> the marshaller target type
+ * @param <M> the reflection member type
+ * @param <M1> the component member type
  * @author Paul Ferraro
  */
 public class UnaryMemberMarshaller<T, M extends Member, M1> extends AbstractMemberMarshaller<T, M> {

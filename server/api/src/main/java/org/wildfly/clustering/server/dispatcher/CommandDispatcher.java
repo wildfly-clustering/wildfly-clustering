@@ -14,7 +14,7 @@ import org.wildfly.clustering.server.Registration;
 
 /**
  * Dispatches commands for execution on members of a group.
- *
+ * @param <M> the member type
  * @param <C> the command context type
  * @author Paul Ferraro
  */

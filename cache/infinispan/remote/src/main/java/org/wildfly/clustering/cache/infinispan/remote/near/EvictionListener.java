@@ -16,6 +16,8 @@ import com.github.benmanes.caffeine.cache.RemovalListener;
 
 /**
  * Removal listener that triggers the specified listener when the removal cause is {@link RemovalCause#SIZE}.
+ * @param <K> cache key type
+ * @param <V> cache value type
  * @author Paul Ferraro
  */
 public class EvictionListener<K, V> implements RemovalListener<K, MetadataValue<V>>, Consumer<Cache<K, MetadataValue<V>>> {

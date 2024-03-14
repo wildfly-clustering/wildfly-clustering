@@ -14,6 +14,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Near cache implementation based on a Caffeine cache.
+ * @param <K> cache key type
+ * @param <V> cache value type
  * @author Paul Ferraro
  */
 public class CaffeineNearCache<K, V> implements NearCache<K, V> {

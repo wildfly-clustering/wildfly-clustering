@@ -13,6 +13,7 @@ import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProv
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
+ * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class MockSessionSpecificationProvider<C> implements SessionSpecificationProvider<Map.Entry<ImmutableSession, C>, C>, SessionEventListenerSpecificationProvider<Map.Entry<ImmutableSession, C>, PassivationListener<C>> {

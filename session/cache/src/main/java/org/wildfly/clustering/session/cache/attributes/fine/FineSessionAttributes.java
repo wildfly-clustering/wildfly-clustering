@@ -18,6 +18,8 @@ import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes
 
 /**
  * Exposes session attributes for a fine granularity sessions.
+ * @param <K> the cache key type
+ * @param <V> the cache value type
  * @author Paul Ferraro
  */
 public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {

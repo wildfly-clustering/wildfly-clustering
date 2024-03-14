@@ -19,6 +19,7 @@ import org.infinispan.remoting.transport.Address;
 
 /**
  * Registry of queues of keys with affinity to the members of a consistent hash.
+ * @param <K> the cache key type
  * @author Paul Ferraro
  */
 public class ConsistentHashKeyRegistry<K> implements KeyRegistry<K> {

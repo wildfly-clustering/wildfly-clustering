@@ -9,6 +9,7 @@ import java.io.IOException;
 
 /**
  * Writable view of a marshaller.
+ * @param <T> the written object type
  * @author Paul Ferraro
  */
 public interface Writable<T> {

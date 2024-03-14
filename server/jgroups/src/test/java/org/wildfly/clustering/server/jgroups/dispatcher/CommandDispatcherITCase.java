@@ -22,6 +22,8 @@ import org.wildfly.clustering.server.jgroups.dispatcher.test.IdentityCommand;
 import org.wildfly.common.function.ExceptionBiFunction;
 
 /**
+ * Base integration test for {@link CommandDispatcher} implementations.
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
 public abstract class CommandDispatcherITCase<M extends GroupMember> {

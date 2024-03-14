@@ -4,17 +4,15 @@
  */
 package org.wildfly.clustering.marshalling.java;
 
-import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactoryTestCase;
+import org.wildfly.clustering.marshalling.ByteBufferMarshalledKeyFactoryTestCase;
 
 /**
- * Unit tests for {@link ByteBufferMarshalledValue}.
- *
- * @author Brian Stansberry
+ * Java serialization variant of {@link ByteBufferMarshalledKeyFactoryTestCase}.
  * @author Paul Ferraro
  */
-public class JavaByteBufferMarshalledKeyFactoryTestCase extends ByteBufferMarshalledValueFactoryTestCase {
+public class JavaByteBufferMarshalledKeyFactoryTestCase extends ByteBufferMarshalledKeyFactoryTestCase {
 
 	public JavaByteBufferMarshalledKeyFactoryTestCase() {
-		super(JavaTesterFactory.INSTANCE.getMarshaller());
+		super(new JavaSerializationTesterFactory());
 	}
 }

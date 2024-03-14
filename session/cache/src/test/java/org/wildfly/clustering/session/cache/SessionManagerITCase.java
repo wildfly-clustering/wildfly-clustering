@@ -44,6 +44,8 @@ import org.wildfly.common.function.Functions;
 
 /**
  * Session manager integration tests.
+ * @param <B> the batch type
+ * @param <P> the parameters type
  * @author Paul Ferraro
  */
 public abstract class SessionManagerITCase<B extends Batch, P extends SessionManagerParameters> {

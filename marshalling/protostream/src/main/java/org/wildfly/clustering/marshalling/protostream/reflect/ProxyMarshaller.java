@@ -18,6 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
 
 /**
  * Marshaller for proxies serialized using the writeReplace()/readResolve() pattern.
+ * @param <T> the proxy class type
  * @author Paul Ferraro
  */
 public class ProxyMarshaller<T> implements ProtoStreamMarshaller<T> {

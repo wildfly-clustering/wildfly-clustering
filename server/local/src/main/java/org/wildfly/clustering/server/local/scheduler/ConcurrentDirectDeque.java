@@ -12,6 +12,7 @@ import java.util.Deque;
  *
  * @author Jason T. Greene
  * @author Paul Ferraro
+ * @param <E> the element type
  */
 public interface ConcurrentDirectDeque<E> extends Deque<E> {
 

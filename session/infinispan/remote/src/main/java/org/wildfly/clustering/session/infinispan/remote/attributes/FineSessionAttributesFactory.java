@@ -34,9 +34,11 @@ import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapC
 import org.wildfly.common.function.Functions;
 
 /**
- * {@link SessionAttributesFactory} for fine granularity sessions.
- * A given session's attributes are mapped to N+1 co-located cache entries, where N is the number of session attributes.
- * A separate cache entry stores the activate attribute names for the session.
+ * {@link SessionAttributesFactory} for fine granularity sessions, where all session attributes are stored in a single cache entry,
+ * but changes are applied by functions such that only modified and mutated values ever replicate/persist.
+ * This implementation is unsuited for attributes that strongly reference each other.
+ * @param <C> the session manager context type
+ * @param <V> the cache value type
  * @author Paul Ferraro
  */
 public class FineSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
