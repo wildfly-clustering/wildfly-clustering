@@ -5,22 +5,20 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import java.util.List;
-
 import org.jboss.marshalling.MarshallingConfiguration;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
-import org.wildfly.clustering.marshalling.java.JavaTesterFactory;
 
 /**
  * @author Paul Ferraro
  */
-public enum JBossTesterFactory implements MarshallingTesterFactory {
-	INSTANCE;
+@MetaInfServices(MarshallingTesterFactory.class)
+public class JBossMarshallingTesterFactory implements MarshallingTesterFactory {
 
 	private final ByteBufferMarshaller marshaller;
 
-	JBossTesterFactory() {
+	public JBossMarshallingTesterFactory() {
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
 		MarshallingConfiguration configuration = new MarshallingConfiguration();
 		configuration.setClassTable(new LoadedClassTable(loader));
@@ -34,7 +32,7 @@ public enum JBossTesterFactory implements MarshallingTesterFactory {
 	}
 
 	@Override
-	public List<ByteBufferMarshaller> getBenchmarkMarshallers() {
-		return List.of(JavaTesterFactory.INSTANCE.getMarshaller());
+	public String toString() {
+		return this.marshaller.toString();
 	}
 }

@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.marshalling;
 
-import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +23,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 
@@ -40,146 +40,146 @@ public abstract class AbstractTimeTestCase {
 	}
 
 	@Test
-	public void testDayOfWeek() throws IOException {
-		this.factory.createTester(DayOfWeek.class).test();
+	public void testDayOfWeek() {
+		this.factory.createTester(DayOfWeek.class).run();
 	}
 
 	@Test
-	public void testDuration() throws IOException {
-		MarshallingTester<Duration> tester = this.factory.createTester();
-		tester.test(Duration.between(Instant.EPOCH, Instant.now()));
-		tester.test(Duration.ofMillis(1234567890));
-		tester.test(Duration.ofSeconds(100));
-		tester.test(Duration.ZERO);
+	public void testDuration() {
+		Consumer<Duration> tester = this.factory.createTester();
+		tester.accept(Duration.between(Instant.EPOCH, Instant.now()));
+		tester.accept(Duration.ofMillis(1234567890));
+		tester.accept(Duration.ofSeconds(100));
+		tester.accept(Duration.ZERO);
 		for (ChronoUnit unit : EnumSet.of(ChronoUnit.NANOS, ChronoUnit.MICROS, ChronoUnit.MILLIS, ChronoUnit.SECONDS, ChronoUnit.MINUTES, ChronoUnit.HOURS, ChronoUnit.DAYS)) {
-			tester.test(unit.getDuration());
+			tester.accept(unit.getDuration());
 		}
 	}
 
 	@Test
-	public void testInstant() throws IOException {
-		MarshallingTester<Instant> tester = this.factory.createTester();
-		tester.test(Instant.MAX);
-		tester.test(Instant.MIN);
-		tester.test(Instant.now());
-		tester.test(Instant.ofEpochMilli(System.currentTimeMillis()));
+	public void testInstant() {
+		Consumer<Instant> tester = this.factory.createTester();
+		tester.accept(Instant.MAX);
+		tester.accept(Instant.MIN);
+		tester.accept(Instant.now());
+		tester.accept(Instant.ofEpochMilli(System.currentTimeMillis()));
 	}
 
 	@Test
-	public void testLocalDate() throws IOException {
-		MarshallingTester<LocalDate> tester = this.factory.createTester();
-		tester.test(LocalDate.MAX);
-		tester.test(LocalDate.MIN);
-		tester.test(LocalDate.now());
-		tester.test(LocalDate.ofEpochDay(0));
+	public void testLocalDate() {
+		Consumer<LocalDate> tester = this.factory.createTester();
+		tester.accept(LocalDate.MAX);
+		tester.accept(LocalDate.MIN);
+		tester.accept(LocalDate.now());
+		tester.accept(LocalDate.ofEpochDay(0));
 	}
 
 	@Test
-	public void testLocalDateTime() throws IOException {
-		MarshallingTester<LocalDateTime> tester = this.factory.createTester();
-		tester.test(LocalDateTime.MAX);
-		tester.test(LocalDateTime.MIN);
-		tester.test(LocalDateTime.now());
-		tester.test(LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)));
-		tester.test(LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59)));
-		tester.test(LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 0)));
-		tester.test(LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT));
+	public void testLocalDateTime() {
+		Consumer<LocalDateTime> tester = this.factory.createTester();
+		tester.accept(LocalDateTime.MAX);
+		tester.accept(LocalDateTime.MIN);
+		tester.accept(LocalDateTime.now());
+		tester.accept(LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)));
+		tester.accept(LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59)));
+		tester.accept(LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 0)));
+		tester.accept(LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT));
 	}
 
 	@Test
-	public void testLocalTime() throws IOException {
-		MarshallingTester<LocalTime> tester = this.factory.createTester();
-		tester.test(LocalTime.MAX);
-		tester.test(LocalTime.MIN);
-		tester.test(LocalTime.now());
-		tester.test(LocalTime.of(23, 59, 59));
-		tester.test(LocalTime.of(23, 59));
-		tester.test(LocalTime.of(23, 0));
+	public void testLocalTime() {
+		Consumer<LocalTime> tester = this.factory.createTester();
+		tester.accept(LocalTime.MAX);
+		tester.accept(LocalTime.MIN);
+		tester.accept(LocalTime.now());
+		tester.accept(LocalTime.of(23, 59, 59));
+		tester.accept(LocalTime.of(23, 59));
+		tester.accept(LocalTime.of(23, 0));
 	}
 
 	@Test
-	public void testMonth() throws IOException {
-		this.factory.createTester(Month.class).test();
+	public void testMonth() {
+		this.factory.createTester(Month.class).run();
 	}
 
 	@Test
-	public void testMonthDay() throws IOException {
-		MarshallingTester<MonthDay> tester = this.factory.createTester();
-		tester.test(MonthDay.now());
+	public void testMonthDay() {
+		Consumer<MonthDay> tester = this.factory.createTester();
+		tester.accept(MonthDay.now());
 	}
 
 	@Test
-	public void testOffsetDateTime() throws IOException {
-		MarshallingTester<OffsetDateTime> tester = this.factory.createTester();
-		tester.test(OffsetDateTime.MAX);
-		tester.test(OffsetDateTime.MIN);
-		tester.test(OffsetDateTime.now(ZoneOffset.UTC));
-		tester.test(OffsetDateTime.now(ZoneOffset.MIN));
-		tester.test(OffsetDateTime.now(ZoneOffset.MAX));
+	public void testOffsetDateTime() {
+		Consumer<OffsetDateTime> tester = this.factory.createTester();
+		tester.accept(OffsetDateTime.MAX);
+		tester.accept(OffsetDateTime.MIN);
+		tester.accept(OffsetDateTime.now(ZoneOffset.UTC));
+		tester.accept(OffsetDateTime.now(ZoneOffset.MIN));
+		tester.accept(OffsetDateTime.now(ZoneOffset.MAX));
 	}
 
 	@Test
-	public void testOffsetTime() throws IOException {
-		MarshallingTester<OffsetTime> tester = this.factory.createTester();
-		tester.test(OffsetTime.MAX);
-		tester.test(OffsetTime.MIN);
-		tester.test(OffsetTime.now(ZoneOffset.UTC));
-		tester.test(OffsetTime.now(ZoneOffset.MIN));
-		tester.test(OffsetTime.now(ZoneOffset.MAX));
+	public void testOffsetTime() {
+		Consumer<OffsetTime> tester = this.factory.createTester();
+		tester.accept(OffsetTime.MAX);
+		tester.accept(OffsetTime.MIN);
+		tester.accept(OffsetTime.now(ZoneOffset.UTC));
+		tester.accept(OffsetTime.now(ZoneOffset.MIN));
+		tester.accept(OffsetTime.now(ZoneOffset.MAX));
 	}
 
 	@Test
-	public void testZonedDateTime() throws IOException {
-		MarshallingTester<ZonedDateTime> tester = this.factory.createTester();
-		tester.test(ZonedDateTime.now(ZoneOffset.UTC));
-		tester.test(ZonedDateTime.now(ZoneOffset.MIN));
-		tester.test(ZonedDateTime.now(ZoneOffset.MAX));
-		tester.test(ZonedDateTime.now(ZoneId.of("America/New_York")));
+	public void testZonedDateTime() {
+		Consumer<ZonedDateTime> tester = this.factory.createTester();
+		tester.accept(ZonedDateTime.now(ZoneOffset.UTC));
+		tester.accept(ZonedDateTime.now(ZoneOffset.MIN));
+		tester.accept(ZonedDateTime.now(ZoneOffset.MAX));
+		tester.accept(ZonedDateTime.now(ZoneId.of("America/New_York")));
 	}
 
 	@Test
-	public void testPeriod() throws IOException {
-		MarshallingTester<Period> tester = this.factory.createTester();
-		tester.test(Period.between(LocalDate.ofEpochDay(0), LocalDate.now()));
-		tester.test(Period.ofMonths(100));
-		tester.test(Period.ofYears(100));
-		tester.test(Period.ZERO);
+	public void testPeriod() {
+		Consumer<Period> tester = this.factory.createTester();
+		tester.accept(Period.between(LocalDate.ofEpochDay(0), LocalDate.now()));
+		tester.accept(Period.ofMonths(100));
+		tester.accept(Period.ofYears(100));
+		tester.accept(Period.ZERO);
 	}
 
 	@Test
-	public void testYear() throws IOException {
-		MarshallingTester<Year> tester = this.factory.createTester();
-		tester.test(Year.of(Year.MAX_VALUE));
-		tester.test(Year.of(Year.MIN_VALUE));
-		tester.test(Year.now());
-		tester.test(Year.of(Instant.EPOCH.atOffset(ZoneOffset.UTC).getYear()));
+	public void testYear() {
+		Consumer<Year> tester = this.factory.createTester();
+		tester.accept(Year.of(Year.MAX_VALUE));
+		tester.accept(Year.of(Year.MIN_VALUE));
+		tester.accept(Year.now());
+		tester.accept(Year.of(Instant.EPOCH.atOffset(ZoneOffset.UTC).getYear()));
 	}
 
 	@Test
-	public void testYearMonth() throws IOException {
-		MarshallingTester<YearMonth> tester = this.factory.createTester();
-		tester.test(YearMonth.of(Year.MAX_VALUE, Month.DECEMBER));
-		tester.test(YearMonth.of(Year.MIN_VALUE, Month.JANUARY));
-		tester.test(YearMonth.now());
-		tester.test(YearMonth.of(Instant.EPOCH.atOffset(ZoneOffset.UTC).getYear(), Instant.EPOCH.atOffset(ZoneOffset.UTC).getMonth()));
+	public void testYearMonth() {
+		Consumer<YearMonth> tester = this.factory.createTester();
+		tester.accept(YearMonth.of(Year.MAX_VALUE, Month.DECEMBER));
+		tester.accept(YearMonth.of(Year.MIN_VALUE, Month.JANUARY));
+		tester.accept(YearMonth.now());
+		tester.accept(YearMonth.of(Instant.EPOCH.atOffset(ZoneOffset.UTC).getYear(), Instant.EPOCH.atOffset(ZoneOffset.UTC).getMonth()));
 	}
 
 	@Test
-	public void testZoneId() throws IOException {
-		MarshallingTester<ZoneId> tester = this.factory.createTester();
-		tester.test(ZoneId.of("America/New_York"));
+	public void testZoneId() {
+		Consumer<ZoneId> tester = this.factory.createTester();
+		tester.accept(ZoneId.of("America/New_York"));
 	}
 
 	@Test
-	public void testZoneOffset() throws IOException {
-		MarshallingTester<ZoneOffset> tester = this.factory.createTester();
-		tester.test(ZoneOffset.MIN);
-		tester.test(ZoneOffset.MAX);
-		tester.test(ZoneOffset.of("-10")); // Hawaii Standard Time
-		tester.test(ZoneOffset.of("+12:45")); // New Zealand's Chatham Islands
+	public void testZoneOffset() {
+		Consumer<ZoneOffset> tester = this.factory.createTester();
+		tester.accept(ZoneOffset.MIN);
+		tester.accept(ZoneOffset.MAX);
+		tester.accept(ZoneOffset.of("-10")); // Hawaii Standard Time
+		tester.accept(ZoneOffset.of("+12:45")); // New Zealand's Chatham Islands
 		Random random = new Random(System.currentTimeMillis());
-		tester.test(ZoneOffset.ofHoursMinutesSeconds(random.nextInt(18), random.nextInt(60), random.nextInt(60)));
-		tester.test(ZoneOffset.ofHoursMinutesSeconds(0 - random.nextInt(18), 0 - random.nextInt(60), 0 - random.nextInt(60)));
-		tester.test(ZoneOffset.UTC);
+		tester.accept(ZoneOffset.ofHoursMinutesSeconds(random.nextInt(18), random.nextInt(60), random.nextInt(60)));
+		tester.accept(ZoneOffset.ofHoursMinutesSeconds(0 - random.nextInt(18), 0 - random.nextInt(60), 0 - random.nextInt(60)));
+		tester.accept(ZoneOffset.UTC);
 	}
 }

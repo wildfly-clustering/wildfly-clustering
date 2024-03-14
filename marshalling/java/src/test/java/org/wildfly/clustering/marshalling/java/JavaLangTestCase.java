@@ -13,6 +13,6 @@ import org.wildfly.clustering.marshalling.AbstractLangTestCase;
 public class JavaLangTestCase extends AbstractLangTestCase {
 
 	public JavaLangTestCase() {
-		super(JavaTesterFactory.INSTANCE);
+		super(new JavaSerializationTesterFactory());
 	}
 }

@@ -12,6 +12,7 @@ import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.marshall.Marshaller;
@@ -20,7 +21,7 @@ import org.wildfly.clustering.cache.infinispan.marshalling.protostream.ProtoStre
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.server.AutoCloseableProvider;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
@@ -32,7 +33,7 @@ import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
  * @param <C> the session manager context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryProvider<C> implements SessionManagerFactoryProvider<C, TransactionBatch> {
+public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvider implements SessionManagerFactoryProvider<C, TransactionBatch> {
 
 	private static final String SERVER_NAME = "server";
 	private static final String DEPLOYMENT_NAME_PATTERN = "%s-%s.war";
@@ -43,14 +44,17 @@ public class HotRodSessionManagerFactoryProvider<C> implements SessionManagerFac
 
 	public HotRodSessionManagerFactoryProvider(HotRodSessionManagerParameters parameters, String memberName) throws Exception {
 		this.parameters = parameters;
-		this.deploymentName = String.format(DEPLOYMENT_NAME_PATTERN, parameters.getSessionAttributePersistenceStrategy().name(), parameters.getNearCacheMode().name());
+		this.deploymentName = String.format(DEPLOYMENT_NAME_PATTERN, parameters.getSessionAttributeMarshaller(), parameters.getSessionAttributePersistenceStrategy().name());
 
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();
 		Marshaller marshaller = new ProtoStreamMarshaller(ClassLoaderMarshaller.of(loader), builder -> builder.require(loader));
 		this.container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder().marshaller(marshaller).classLoader(loader)), false);
 		this.container.start();
+		this.accept(this.container::stop);
 
-		container.getConfiguration().addRemoteCache(this.deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(parameters.getNearCacheMode()).transactionMode(TransactionMode.NONE).templateName(DefaultTemplate.LOCAL));
+		Configuration configuration = this.container.getConfiguration();
+		configuration.addRemoteCache(this.deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(parameters.getNearCacheMode()).transactionMode(TransactionMode.NONE).templateName(DefaultTemplate.LOCAL));
+		this.accept(() -> configuration.removeRemoteCache(this.deploymentName));
 	}
 
 	@Override
@@ -63,7 +67,7 @@ public class HotRodSessionManagerFactoryProvider<C> implements SessionManagerFac
 
 			@Override
 			public ByteBufferMarshaller getMarshaller() {
-				return ProtoStreamTesterFactory.INSTANCE.getMarshaller();
+				return HotRodSessionManagerFactoryProvider.this.parameters.getSessionAttributeMarshaller();
 			}
 
 			@Override
@@ -91,22 +95,17 @@ public class HotRodSessionManagerFactoryProvider<C> implements SessionManagerFac
 				return SERVER_NAME;
 			}
 		};
+		RemoteCache<?, ?> cache = this.container.getCache(this.deploymentName);
+		cache.start();
+		this.accept(cache::stop);
 		RemoteCacheConfiguration hotrod = new RemoteCacheConfiguration() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public <CK, CV> RemoteCache<CK, CV> getCache() {
-				return HotRodSessionManagerFactoryProvider.this.container.getCache(HotRodSessionManagerFactoryProvider.this.deploymentName);
+				return (RemoteCache<CK, CV>) cache;
 			}
 		};
 		MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
 		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, provider, provider, hotrod);
-	}
-
-	@Override
-	public void close() throws Exception {
-		try {
-			this.container.getConfiguration().removeRemoteCache(this.deploymentName);
-		} finally {
-			this.container.stop();
-		}
 	}
 }

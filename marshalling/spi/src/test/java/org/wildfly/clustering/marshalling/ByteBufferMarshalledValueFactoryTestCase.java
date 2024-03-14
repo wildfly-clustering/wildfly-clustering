@@ -24,6 +24,10 @@ public abstract class ByteBufferMarshalledValueFactoryTestCase {
 	private final ByteBufferMarshaller marshaller;
 	private final ByteBufferMarshalledValueFactory factory;
 
+	protected ByteBufferMarshalledValueFactoryTestCase(MarshallingTesterFactory factory) {
+		this(factory.getMarshaller());
+	}
+
 	protected ByteBufferMarshalledValueFactoryTestCase(ByteBufferMarshaller marshaller) {
 		this(marshaller, new ByteBufferMarshalledValueFactory(marshaller));
 	}

@@ -7,6 +7,7 @@ package org.wildfly.clustering.server.infinispan.dispatcher;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jgroups.Address;
+import org.wildfly.clustering.server.AutoCloseableProvider;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -19,25 +20,26 @@ import org.wildfly.clustering.server.jgroups.dispatcher.CommandDispatcherFactory
 /**
  * @author Paul Ferraro
  */
-public class CacheContainerCommandDispatcherFactoryProvider implements CommandDispatcherFactoryProvider<CacheContainerGroupMember> {
+public class CacheContainerCommandDispatcherFactoryProvider extends AutoCloseableProvider implements CommandDispatcherFactoryProvider<CacheContainerGroupMember> {
 	private static final String CONTAINER_NAME = "container";
 
-	private final ChannelCommandDispatcherFactoryProvider config;
-	private final EmbeddedCacheManager manager;
 	private final CommandDispatcherFactory<CacheContainerGroupMember> factory;
 
 	public CacheContainerCommandDispatcherFactoryProvider(String clusterName, String memberName) throws Exception {
-		this.config = new ChannelCommandDispatcherFactoryProvider(clusterName, memberName);
-		this.manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(this.config.getChannel()), clusterName, memberName).apply(CONTAINER_NAME, EmbeddedCacheManagerCommandDispatcherFactory.class.getClassLoader());
+		ChannelCommandDispatcherFactoryProvider provider = new ChannelCommandDispatcherFactoryProvider(clusterName, memberName);
+		this.accept(provider::close);
+		EmbeddedCacheManager manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(provider.getChannel()), clusterName, memberName).apply(CONTAINER_NAME, EmbeddedCacheManagerCommandDispatcherFactory.class.getClassLoader());
+		manager.start();
+		this.accept(manager::stop);
 		this.factory = new EmbeddedCacheManagerCommandDispatcherFactory<>(new ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration() {
 			@Override
 			public EmbeddedCacheManager getCacheContainer() {
-				return CacheContainerCommandDispatcherFactoryProvider.this.manager;
+				return manager;
 			}
 
 			@Override
 			public GroupCommandDispatcherFactory<Address, ChannelGroupMember> getCommandDispatcherFactory() {
-				return CacheContainerCommandDispatcherFactoryProvider.this.config.getCommandDispatcherFactory();
+				return provider.getCommandDispatcherFactory();
 			}
 		});
 	}
@@ -45,11 +47,5 @@ public class CacheContainerCommandDispatcherFactoryProvider implements CommandDi
 	@Override
 	public CommandDispatcherFactory<CacheContainerGroupMember> getCommandDispatcherFactory() {
 		return this.factory;
-	}
-
-	@Override
-	public void close() throws Exception {
-		this.manager.close();
-		this.config.close();
 	}
 }

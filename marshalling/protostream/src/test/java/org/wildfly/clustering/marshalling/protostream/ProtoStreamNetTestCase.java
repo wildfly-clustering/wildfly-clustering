@@ -14,6 +14,6 @@ import org.wildfly.clustering.marshalling.AbstractNetTestCase;
 public class ProtoStreamNetTestCase extends AbstractNetTestCase {
 
 	public ProtoStreamNetTestCase() {
-		super(ProtoStreamTesterFactory.INSTANCE);
+		super(new ProtoStreamTesterFactory());
 	}
 }

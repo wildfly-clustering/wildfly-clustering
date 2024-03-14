@@ -7,7 +7,7 @@ package org.wildfly.clustering.marshalling;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.test.Person;
@@ -24,7 +24,7 @@ public abstract class AbstractCircularReferenceTestCase {
 	}
 
 	@Test
-	public void test() throws IOException {
+	public void test() {
 		Person parent = Person.create("parent");
 		Person self = Person.create("self");
 		parent.addChild(self);
@@ -32,8 +32,7 @@ public abstract class AbstractCircularReferenceTestCase {
 		self.addChild(Person.create("son"));
 		self.addChild(Person.create("daughter"));
 
-		Tester<Person> tester = this.factory.createTester();
-		tester.test(self, (expected, actual) -> {
+		Consumer<Person> tester = this.factory.createTester((expected, actual) -> {
 			assertEquals(expected, actual);
 			assertEquals(expected.getParent(), actual.getParent());
 			assertEquals(expected.getChildren(), actual.getChildren());
@@ -45,5 +44,6 @@ public abstract class AbstractCircularReferenceTestCase {
 				assertSame(actual, child.getParent());
 			}
 		});
+		tester.accept(self);
 	}
 }

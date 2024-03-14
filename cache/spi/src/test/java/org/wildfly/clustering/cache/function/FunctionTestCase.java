@@ -8,7 +8,6 @@ package org.wildfly.clustering.cache.function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +15,9 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * @author Paul Ferraro
@@ -103,16 +103,16 @@ public class FunctionTestCase {
 		assertNull(result7);
 	}
 
-	@Test
-	public void marshalling() throws IOException {
-		MarshallingTesterFactory factory = ProtoStreamTesterFactory.INSTANCE;
-		factory.createTester().test(new SetAddFunction<>(List.of("foo", "bar")));
-		factory.createTester().test(new SetRemoveFunction<>(List.of("foo", "bar")));
-		factory.createTester().test(new MapPutFunction<>("foo", "bar"));
-		factory.createTester().test(new MapRemoveFunction<>("foo"));
+	@ParameterizedTest
+	@TesterFactorySource
+	public void marshalling(TesterFactory factory) {
+		factory.createTester().accept(new SetAddFunction<>(List.of("foo", "bar")));
+		factory.createTester().accept(new SetRemoveFunction<>(List.of("foo", "bar")));
+		factory.createTester().accept(new MapPutFunction<>("foo", "bar"));
+		factory.createTester().accept(new MapRemoveFunction<>("foo"));
 		Map<String, String> values = new TreeMap<>();
 		values.put("foo", "bar");
 		values.put("baz", null);
-		factory.createTester().test(new MapComputeFunction<>(values));
+		factory.createTester().accept(new MapComputeFunction<>(values));
 	}
 }

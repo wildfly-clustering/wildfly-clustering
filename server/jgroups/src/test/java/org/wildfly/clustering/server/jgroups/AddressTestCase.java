@@ -5,28 +5,29 @@
 
 package org.wildfly.clustering.server.jgroups;
 
-import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.function.Consumer;
 
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
-import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.cache.infinispan.embedded.persistence.TwoWayKey2StringMapperTesterFactory;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * @author Paul Ferraro
  */
 public class AddressTestCase {
 
-	@Test
-	public void test() throws IOException {
-		test(ProtoStreamTesterFactory.INSTANCE.createTester());
-	}
-
-	private static void test(Tester<Address> tester) throws IOException {
-		tester.test(UUID.randomUUID());
-		tester.test(new IpAddress(InetAddress.getLocalHost(), Short.MAX_VALUE));
+	@ParameterizedTest
+	@TesterFactorySource({ MarshallingTesterFactory.class, TwoWayKey2StringMapperTesterFactory.class })
+	private void test(TesterFactory factory) throws UnknownHostException {
+		Consumer<Address> tester = factory.createTester();
+		tester.accept(UUID.randomUUID());
+		tester.accept(new IpAddress(InetAddress.getLocalHost(), Short.MAX_VALUE));
 	}
 }

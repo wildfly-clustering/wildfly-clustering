@@ -18,6 +18,10 @@ public abstract class ByteBufferMarshalledKeyFactoryTestCase extends ByteBufferM
 
 	private final ByteBufferMarshalledKeyFactory factory;
 
+	protected ByteBufferMarshalledKeyFactoryTestCase(MarshallingTesterFactory factory) {
+		this(factory.getMarshaller());
+	}
+
 	protected ByteBufferMarshalledKeyFactoryTestCase(ByteBufferMarshaller marshaller) {
 		this(marshaller, new ByteBufferMarshalledKeyFactory(marshaller));
 	}

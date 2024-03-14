@@ -7,17 +7,17 @@ package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.util.function.Function;
 
-import org.wildfly.clustering.cache.infinispan.CacheKey;
-import org.wildfly.clustering.marshalling.SimpleFormatter;
+import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.marshalling.Formatter;
 
 /**
  * Base {@link org.wildfly.clustering.marshalling.Formatter} for cache keys containing session identifiers.
  * @param <K> the cache key type
  * @author Paul Ferraro
  */
-public class SessionKeyFormatter<K extends CacheKey<String>> extends SimpleFormatter<K> {
+public class SessionKeyFormatter<K extends Key<String>> extends Formatter.Provided<K> {
 
 	protected SessionKeyFormatter(Class<K> keyClass, Function<String, K> resolver) {
-		super(keyClass, resolver, CacheKey::getId);
+		super(Formatter.IDENTITY.wrap(keyClass, resolver, Key::getId));
 	}
 }

@@ -5,15 +5,16 @@
 
 package org.wildfly.clustering.server.infinispan.provider;
 
-import java.io.IOException;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jgroups.util.UUID;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.cache.function.CollectionFunction;
-import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
 /**
@@ -21,12 +22,13 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class AddressSetFunctionMarshallerTestCase {
 
-	@Test
-	public void test() throws IOException {
-		Tester<CollectionFunction<Address, Set<Address>>> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+	@ParameterizedTest
+	@TesterFactorySource(ProtoStreamTesterFactory.class)
+	public void test(TesterFactory factory) {
+		Consumer<CollectionFunction<Address, Set<Address>>> tester = factory.createTester();
 
 		Address address = new JGroupsAddress(UUID.randomUUID());
-		tester.test(new AddressSetAddFunction(address));
-		tester.test(new AddressSetRemoveFunction(address));
+		tester.accept(new AddressSetAddFunction(address));
+		tester.accept(new AddressSetRemoveFunction(address));
 	}
 }

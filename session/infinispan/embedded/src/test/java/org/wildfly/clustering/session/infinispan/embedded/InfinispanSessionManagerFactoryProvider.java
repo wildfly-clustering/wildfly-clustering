@@ -17,7 +17,7 @@ import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.server.AutoCloseableProvider;
 import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -37,19 +37,23 @@ import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
  * @param <C> the session manager context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryProvider<C> implements SessionManagerFactoryProvider<C, TransactionBatch> {
+public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseableProvider implements SessionManagerFactoryProvider<C, TransactionBatch> {
 	private static final String CONTAINER_NAME = "container";
 	private static final String SERVER_NAME = "server";
-	private static final String DEPLOYMENT_NAME = "test.war";
+	private static final String DEPLOYMENT_NAME_PATTERN = "%s-%s-%s.war";
 
 	private final InfinispanSessionManagerParameters parameters;
 	private final ChannelCommandDispatcherFactoryProvider dispatcherFactoryProvider;
 	private final EmbeddedCacheManager manager;
+	private final String deploymentName;
 
 	public InfinispanSessionManagerFactoryProvider(InfinispanSessionManagerParameters parameters, String memberName) throws Exception {
 		this.parameters = parameters;
+		this.deploymentName = String.format(DEPLOYMENT_NAME_PATTERN, parameters.getSessionAttributeMarshaller(), parameters.getSessionAttributePersistenceStrategy().name(), parameters.getCacheMode().name());
 		this.dispatcherFactoryProvider = new ChannelCommandDispatcherFactoryProvider(parameters.getClusterName(), memberName);
+		this.accept(this.dispatcherFactoryProvider::close);
 		this.manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(this.dispatcherFactoryProvider.getChannel()), parameters.getClusterName(), memberName).apply(CONTAINER_NAME, InfinispanSessionManagerFactoryConfiguration.class.getClassLoader());
+		this.accept(this.manager::stop);
 		ConfigurationBuilder builder = new ConfigurationBuilder();
 		builder.clustering().cacheMode(parameters.getCacheMode());
 		builder.transaction().lockingMode(LockingMode.PESSIMISTIC);
@@ -58,7 +62,8 @@ public class InfinispanSessionManagerFactoryProvider<C> implements SessionManage
 			builder.transaction().transactionManagerLookup(() -> EmbeddedTransactionManager.getInstance());
 			builder.locking().isolationLevel(IsolationLevel.REPEATABLE_READ);
 		}
-		this.manager.defineConfiguration(DEPLOYMENT_NAME, builder.build());
+		this.manager.defineConfiguration(this.deploymentName, builder.build());
+		this.accept(() -> this.manager.undefineConfiguration(this.deploymentName));
 	}
 
 	@Override
@@ -82,7 +87,7 @@ public class InfinispanSessionManagerFactoryProvider<C> implements SessionManage
 
 			@Override
 			public ByteBufferMarshaller getMarshaller() {
-				return ProtoStreamTesterFactory.INSTANCE.getMarshaller();
+				return InfinispanSessionManagerFactoryProvider.this.parameters.getSessionAttributeMarshaller();
 			}
 
 			@Override
@@ -97,12 +102,12 @@ public class InfinispanSessionManagerFactoryProvider<C> implements SessionManage
 
 			@Override
 			public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
-				return parameters.getSessionAttributePersistenceStrategy();
+				return InfinispanSessionManagerFactoryProvider.this.parameters.getSessionAttributePersistenceStrategy();
 			}
 
 			@Override
 			public String getDeploymentName() {
-				return DEPLOYMENT_NAME;
+				return InfinispanSessionManagerFactoryProvider.this.deploymentName;
 			}
 
 			@Override
@@ -110,10 +115,14 @@ public class InfinispanSessionManagerFactoryProvider<C> implements SessionManage
 				return SERVER_NAME;
 			}
 		};
+		Cache<?, ?> cache = this.manager.getCache(this.deploymentName);
+		cache.start();
+		this.accept(cache::stop);
 		InfinispanSessionManagerFactoryConfiguration<CacheContainerGroupMember> infinispan = new InfinispanSessionManagerFactoryConfiguration<>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public <K, V> Cache<K, V> getCache() {
-				return InfinispanSessionManagerFactoryProvider.this.manager.getCache(DEPLOYMENT_NAME);
+				return (Cache<K, V>) cache;
 			}
 
 			@Override
@@ -123,12 +132,5 @@ public class InfinispanSessionManagerFactoryProvider<C> implements SessionManage
 		};
 		MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
 		return new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, provider, provider, infinispan);
-	}
-
-	@Override
-	public void close() throws Exception {
-		this.manager.getCache(DEPLOYMENT_NAME).clear();
-		this.manager.close();
-		this.dispatcherFactoryProvider.close();
 	}
 }

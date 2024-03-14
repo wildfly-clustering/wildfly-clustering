@@ -4,12 +4,12 @@
  */
 package org.wildfly.clustering.marshalling;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,20 +30,21 @@ public abstract class AbstractMathTestCase {
 	}
 
 	@Test
-	public void testBigInteger() throws IOException {
+	public void testBigInteger() {
 		this.testBigInteger(BigInteger.ZERO);
 		this.testBigInteger(BigInteger.ONE);
 		this.testBigInteger(BigInteger.TEN);
 		this.testBigInteger(this.probablePrime());
 	}
 
-	private void testBigInteger(BigInteger value) throws IOException {
-		this.factory.createTester().test(value);
-		this.factory.createTester().test(value.negate());
+	private void testBigInteger(BigInteger value) {
+		Consumer<BigInteger> tester = this.factory.createTester();
+		tester.accept(value);
+		tester.accept(value.negate());
 	}
 
 	@Test
-	public void testBigDecimal() throws IOException {
+	public void testBigDecimal() {
 		this.testBigDecimal(BigDecimal.ZERO);
 		this.testBigDecimal(BigDecimal.ONE);
 		this.testBigDecimal(BigDecimal.TEN);
@@ -51,19 +52,21 @@ public abstract class AbstractMathTestCase {
 		this.testBigDecimal(new BigDecimal(this.probablePrime(), Integer.MIN_VALUE));
 	}
 
-	private void testBigDecimal(BigDecimal value) throws IOException {
-		this.factory.createTester().test(value);
-		this.factory.createTester().test(value.negate());
+	private void testBigDecimal(BigDecimal value) {
+		Consumer<BigDecimal> tester = this.factory.createTester();
+		tester.accept(value);
+		tester.accept(value.negate());
 	}
 
 	@Test
-	public void testMathContext() throws IOException {
-		this.factory.createTester().test(new MathContext(0));
-		this.factory.createTester().test(new MathContext(10, RoundingMode.UNNECESSARY));
+	public void testMathContext() {
+		Consumer<MathContext> tester = this.factory.createTester();
+		tester.accept(new MathContext(0));
+		tester.accept(new MathContext(10, RoundingMode.UNNECESSARY));
 	}
 
 	@Test
-	public void testRoundingMode() throws IOException {
-		this.factory.createTester(RoundingMode.class).test();
+	public void testRoundingMode() {
+		this.factory.createTester(RoundingMode.class).run();
 	}
 }

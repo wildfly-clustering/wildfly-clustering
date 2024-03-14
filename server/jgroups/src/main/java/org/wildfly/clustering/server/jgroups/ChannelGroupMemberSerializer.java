@@ -9,7 +9,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.BinaryFormatter;
 import org.wildfly.clustering.marshalling.Formatter;
 import org.wildfly.clustering.marshalling.Serializer;
 
@@ -31,9 +30,9 @@ public enum ChannelGroupMemberSerializer implements Serializer<JChannelGroupMemb
 	}
 
 	@MetaInfServices(Formatter.class)
-	public static class AddressGroupMemberFormatter extends BinaryFormatter<JChannelGroupMember> {
+	public static class AddressGroupMemberFormatter extends Formatter.Provided<JChannelGroupMember> {
 		public AddressGroupMemberFormatter() {
-			super(JChannelGroupMember.class, INSTANCE);
+			super(Formatter.serialized(JChannelGroupMember.class, INSTANCE));
 		}
 	}
 }
