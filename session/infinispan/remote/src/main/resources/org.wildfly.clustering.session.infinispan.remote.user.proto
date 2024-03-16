@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.session.infinispan.remote.user;
 
 // IDs: 230 - 234
@@ -6,12 +8,12 @@ package org.wildfly.clustering.session.infinispan.remote.user;
  * @TypeId(230)
  */
 message UserContextKey {
-	optional	bytes	id	= 1;
+	bytes	id	= 1;
 }
 
 /**
  * @TypeId(231)
  */
 message UserSessionsKey {
-	optional	bytes	id	= 1;
+	bytes	id	= 1;
 }

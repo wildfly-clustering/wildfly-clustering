@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.session.cache.metadata.fine;
 
 import "java.time.proto";
@@ -9,29 +11,29 @@ import "org.wildfly.clustering.server.offset.proto";
  * @TypeId(205)
  */
 message DefaultSessionCreationMetaDataEntry {
-	optional	java.time.Instant	creationTime	= 1;
-	optional	java.time.Duration	maxInactiveInterval	= 2;
+	java.time.Instant	creationTime	= 1;
+	java.time.Duration	maxInactiveInterval	= 2;
 }
 
 /**
  * @TypeId(206)
  */
 message DefaultSessionAccessMetaDataEntry {
-	optional	java.time.Duration	sinceCreation	= 1;
-	optional	java.time.Duration	lastAccess	= 2;
+	java.time.Duration	sinceCreation	= 1;
+	java.time.Duration	lastAccess	= 2;
 }
 
 /**
  * @TypeId(207)
  */
 message DefaultSessionCreationMetaDataEntryFunction {
-	optional	org.wildfly.clustering.server.offset.DurationOffset	timeoutOffset	= 1;
+	org.wildfly.clustering.server.offset.DurationOffset	timeoutOffset	= 1;
 }
 
 /**
  * @TypeId(208)
  */
 message DefaultSessionAccessMetaDataEntryFunction {
-	optional	org.wildfly.clustering.server.offset.DurationOffset	sinceCreationOffset	= 1;
-	optional	org.wildfly.clustering.server.offset.DurationOffset	lastAccessOffset	= 2;
+	org.wildfly.clustering.server.offset.DurationOffset	sinceCreationOffset	= 1;
+	org.wildfly.clustering.server.offset.DurationOffset	lastAccessOffset	= 2;
 }

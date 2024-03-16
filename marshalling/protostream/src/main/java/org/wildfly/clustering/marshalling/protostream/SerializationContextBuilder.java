@@ -9,6 +9,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.ServiceLoader;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -121,7 +124,7 @@ public interface SerializationContextBuilder {
 		}
 
 		private boolean tryLoad(ClassLoader loader) {
-			List<SerializationContextInitializer> loaded = Reflect.loadAll(SerializationContextInitializer.class, loader);
+			List<SerializationContextInitializer> loaded = loadAll(SerializationContextInitializer.class, loader);
 			if (loaded.isEmpty()) return false;
 
 			List<SerializationContextInitializer> unregistered = new LinkedList<>(loaded);
@@ -151,7 +154,7 @@ public interface SerializationContextBuilder {
 
 		private boolean tryLoadNative(ClassLoader loader) {
 			boolean registered = false;
-			for (org.infinispan.protostream.SerializationContextInitializer initializer : Reflect.loadAll(org.infinispan.protostream.SerializationContextInitializer.class, loader)) {
+			for (org.infinispan.protostream.SerializationContextInitializer initializer : loadAll(org.infinispan.protostream.SerializationContextInitializer.class, loader)) {
 				if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
 					initializer.registerSchema(this.context);
 					initializer.registerMarshallers(this.context);
@@ -164,6 +167,10 @@ public interface SerializationContextBuilder {
 		@Override
 		public ImmutableSerializationContext build() {
 			return this.context.getImmutableSerializationContext();
+		}
+
+		static <T> List<T> loadAll(Class<T> targetClass, ClassLoader loader) {
+			return ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).collect(Collectors.toList());
 		}
 	}
 }

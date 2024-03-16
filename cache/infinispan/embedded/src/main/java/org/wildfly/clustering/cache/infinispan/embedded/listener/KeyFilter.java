@@ -14,6 +14,7 @@ import org.infinispan.notifications.cachelistener.filter.EventType;
 /**
  * A {@link CacheEventFilter} for filtering events based on the cache key.
  * @author Paul Ferraro
+ * @param <K> cache key type
  */
 public class KeyFilter<K> implements CacheEventFilter<K, Object> {
 

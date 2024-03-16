@@ -167,12 +167,7 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 	;
 
 	private static List<Class<?>> findSerializableClasses(Class<?> targetClass) {
-		Class<?>[] childClasses = java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<>() {
-			@Override
-			public Class<?>[] run() {
-				return targetClass.getDeclaredClasses();
-			}
-		});
+		Class<?>[] childClasses = targetClass.getDeclaredClasses();
 		// Include any non-public serializable components/replacements
 		return (childClasses.length > 0) ? Stream.concat(Stream.of(targetClass), Stream.of(childClasses).filter(Serializable.class::isAssignableFrom)).collect(Collectors.toList()) : List.of(targetClass);
 	}

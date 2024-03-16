@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.server.infinispan.expiration;
 
 import "java.time.proto";
@@ -8,6 +10,6 @@ import "java.time.proto";
  * @TypeId(188)
  */
 message SimpleExpirationMetaData {
-	optional	java.time.Duration	timeout	 = 1;
-	optional	java.time.Instant	lastAccessTime	 = 2;
+	java.time.Duration	timeout	 = 1;
+	java.time.Instant	lastAccessTime	 = 2;
 }

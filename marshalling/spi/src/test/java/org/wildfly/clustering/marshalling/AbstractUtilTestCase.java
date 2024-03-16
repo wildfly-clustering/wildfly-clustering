@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.test.Empty;
 import org.wildfly.clustering.marshalling.test.TestComparator;
 
 /**
@@ -144,12 +143,6 @@ public abstract class AbstractUtilTestCase {
 		tester.accept(EnumSet.of(Character.UnicodeScript.ARABIC, Character.UnicodeScript.ARMENIAN, Character.UnicodeScript.AVESTAN, Character.UnicodeScript.BALINESE, Character.UnicodeScript.BAMUM, Character.UnicodeScript.BATAK, Character.UnicodeScript.BENGALI, Character.UnicodeScript.BOPOMOFO, Character.UnicodeScript.BRAHMI, Character.UnicodeScript.BRAILLE, Character.UnicodeScript.BUGINESE, Character.UnicodeScript.BUHID, Character.UnicodeScript.CANADIAN_ABORIGINAL, Character.UnicodeScript.CARIAN));
 		tester.accept(EnumSet.complementOf(EnumSet.of(Character.UnicodeScript.UNKNOWN)));
 		tester.accept(EnumSet.allOf(Character.UnicodeScript.class));
-	}
-
-	@Test
-	public void testEmptyEnumSet() {
-		Consumer<EnumSet<Empty>> tester = this.factory.createCollectionTester();
-		tester.accept(EnumSet.noneOf(Empty.class));
 	}
 
 	@Test

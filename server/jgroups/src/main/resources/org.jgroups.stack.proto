@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.jgroups.stack;
 
 // IDs: 137 - 139
@@ -6,6 +8,6 @@ package org.jgroups.stack;
  * @TypeId(137)
  */
 message IpAddress {
-	optional	bytes	address	= 1;
-	optional	uint32	port	= 2;
+	bytes	address	= 1;
+	uint32	port	= 2;
 }

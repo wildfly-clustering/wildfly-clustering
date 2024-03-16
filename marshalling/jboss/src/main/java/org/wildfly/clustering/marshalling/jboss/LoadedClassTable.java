@@ -7,6 +7,7 @@ package org.wildfly.clustering.marshalling.jboss;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -29,7 +30,7 @@ public class LoadedClassTable extends org.jboss.marshalling.ChainingClassTable {
 	private static ClassTable[] load(List<ClassLoader> loaders) {
 		List<ClassTable> loadedTables = new ArrayList<>(loaders.size());
 		for (ClassLoader loader : loaders) {
-			Reflect.loadSingle(ClassTable.class, loader, loadedTables::add);
+			ServiceLoader.load(ClassTable.class, loader).findFirst().ifPresent(loadedTables::add);
 		}
 		Stream<ClassTable> tables = EnumSet.allOf(DefaultClassTableProvider.class).stream().map(Supplier::get);
 		if (!loadedTables.isEmpty()) {

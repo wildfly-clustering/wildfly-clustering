@@ -104,7 +104,7 @@ public class EmbeddedCacheManagerFactory implements BiFunction<String, ClassLoad
 						.persistentLocation(Files.createTempDirectory(name).toString(), name)
 						.temporaryLocation(Files.createTempDirectory(name).toString(), name)
 					.build();
-			return new DefaultCacheManager(global);
+			return new DefaultCacheManager(global, false);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}

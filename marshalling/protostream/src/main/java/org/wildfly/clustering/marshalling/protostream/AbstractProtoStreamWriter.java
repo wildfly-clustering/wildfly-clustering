@@ -108,21 +108,9 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
 		this.writer.writeVarint64(value);
 	}
 
-	@Deprecated
-	@Override
-	public void writeRawByte(byte value) throws IOException {
-		this.writer.writeRawByte(value);
-	}
-
 	@Override
 	public void writeRawBytes(byte[] value, int offset, int length) throws IOException {
 		this.writer.writeRawBytes(value, offset, length);
-	}
-
-	@Deprecated
-	@Override
-	public void writeRawBytes(ByteBuffer value) throws IOException {
-		this.writer.writeRawBytes(value);
 	}
 
 	@Override

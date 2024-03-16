@@ -38,7 +38,7 @@ public class EncoderRegistryFactory extends AbstractComponentFactory implements 
 	@Inject EmbeddedCacheManager manager;
 	@Inject SerializationContextRegistry ctxRegistry;
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "removal" })
 	@Override
 	public Object construct(String componentName) {
 		ClassLoader classLoader = this.globalConfiguration.classLoader();

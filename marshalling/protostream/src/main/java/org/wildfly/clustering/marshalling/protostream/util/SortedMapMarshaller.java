@@ -6,10 +6,11 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.function.Function;
 
@@ -25,7 +26,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  */
 public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends AbstractMapMarshaller<T> {
 
-	private static final int COMPARATOR_INDEX = VALUE_INDEX + 1;
+	private static final int COMPARATOR_INDEX = ENTRY_INDEX + 1;
 
 	private final Function<Comparator<? super Object>, T> factory;
 
@@ -40,27 +41,21 @@ public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends Ab
 	public T readFrom(ProtoStreamReader reader) throws IOException {
 		FieldSetReader<Comparator<?>> comparatorReader = reader.createFieldSetReader(ComparatorMarshaller.INSTANCE, COMPARATOR_INDEX);
 		Comparator<Object> comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.createInitialValue();
-		T map = this.factory.apply(comparator);
-		List<Object> keys = new LinkedList<>();
-		List<Object> values = new LinkedList<>();
+		List<Map.Entry<Object, Object>> entries = new LinkedList<>();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
-			if (index == KEY_INDEX) {
-				keys.add(reader.readAny());
-			} else if (index == VALUE_INDEX) {
-				values.add(reader.readAny());
+			if (index == ENTRY_INDEX) {
+				entries.add(reader.readObject(AbstractMap.SimpleEntry.class));
 			} else if (comparatorReader.contains(index)) {
 				comparator = (Comparator<Object>) comparatorReader.readField(comparator);
-				map = this.factory.apply(comparator);
 			} else {
 				reader.skipField(tag);
 			}
 		}
-		Iterator<Object> keyIterator = keys.iterator();
-		Iterator<Object> valueIterator = values.iterator();
-		while (keyIterator.hasNext() || valueIterator.hasNext()) {
-			map.put(keyIterator.next(), valueIterator.next());
+		T map = this.factory.apply(comparator);
+		for (Map.Entry<Object, Object> entry : entries) {
+			map.put(entry.getKey(), entry.getValue());
 		}
 		return map;
 	}

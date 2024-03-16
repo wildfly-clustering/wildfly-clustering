@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.server.jgroups;
 
 import "org.jgroups.stack.proto";
@@ -9,6 +11,8 @@ import "org.jgroups.util.proto";
  * @TypeId(131)
  */
 message JChannelGroupMember {
-	optional	org.jgroups.util.UUID	uuidAddress	= 1;
-	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
+	oneof address {
+		org.jgroups.util.UUID	uuidAddress	= 1;
+		org.jgroups.stack.IpAddress	ipAddress	= 2;
+	}
 }

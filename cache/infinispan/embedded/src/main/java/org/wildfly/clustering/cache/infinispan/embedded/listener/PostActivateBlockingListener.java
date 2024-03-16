@@ -18,6 +18,8 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 /**
  * Generic non-blocking post-activation listener that delegates to a blocking consumer.
  * @author Paul Ferraro
+ * @param <K> cache key type
+ * @param <V> cache value type
  */
 @Listener(observation = Listener.Observation.POST)
 public class PostActivateBlockingListener<K, V> extends CacheEventListenerRegistrar<K, V> {

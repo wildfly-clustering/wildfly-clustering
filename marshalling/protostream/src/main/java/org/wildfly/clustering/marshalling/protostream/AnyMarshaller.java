@@ -36,7 +36,7 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 				reader.skipField(tag);
 			}
 		}
-		return new Any(value);
+		return (value != null) ? new Any(value) : Any.NULL;
 	}
 
 	@Override

@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package java.math;
 
 // IDs: 120 - 124
@@ -6,23 +8,23 @@ package java.math;
  * @TypeId(120)
  */
 message BigDecimal {
-	optional	bytes	unscaledValue	= 1;
-	optional	uint32	scale	= 2;
+	bytes	unscaledValue	= 1;
+	uint32	scale	= 2;
 }
 
 /**
  * @TypeId(121)
  */
 message BigInteger {
-	optional	bytes	bytes	= 1;
+	bytes	bytes	= 1;
 }
 
 /**
  * @TypeId(122)
  */
 message MathContext {
-	optional	uint32	precision	= 1;
-	optional	RoundingMode	mode	= 2;
+	uint32	precision	= 1;
+	RoundingMode	mode	= 2;
 }
 
 /**

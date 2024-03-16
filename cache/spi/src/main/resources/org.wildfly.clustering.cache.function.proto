@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.cache.function;
 
 import "java.util.proto";
@@ -9,7 +11,7 @@ import "org.wildfly.clustering.marshalling.protostream.proto";
  * @TypeId(160)
  */
 message MapComputeFunction {
-	repeated	java.util.SimpleImmutableEntry	entry	= 1;
+	repeated	java.util.SimpleEntry	entry	= 1;
 }
 
 /**
@@ -30,5 +32,5 @@ message SetRemoveFunction {
  * @TypeId(163)
  */
 message RemappingFunction {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	operand	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	operand	= 1;
 }

@@ -60,7 +60,7 @@ public class SessionExpirationSchedulerTestCase {
 		doReturn(true).when(remover).test(expiringSessionId);
 		doReturn(false, true).when(remover).test(busySessionId);
 
-		try (Scheduler<String, ExpirationMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover, Duration.ZERO)) {
+		try (Scheduler<String, ExpirationMetaData> scheduler = new SessionExpirationScheduler<>("test", batcher, metaDataFactory, remover, Duration.ZERO)) {
 			scheduler.schedule(immortalSessionId, immortalSessionMetaData);
 			scheduler.schedule(canceledSessionId, canceledSessionMetaData);
 			scheduler.schedule(expiringSessionId, expiringSessionMetaData);

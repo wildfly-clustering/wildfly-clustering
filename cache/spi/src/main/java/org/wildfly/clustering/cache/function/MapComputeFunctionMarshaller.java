@@ -6,7 +6,7 @@
 package org.wildfly.clustering.cache.function;
 
 import java.io.IOException;
-import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -35,7 +35,7 @@ public class MapComputeFunctionMarshaller implements ProtoStreamMarshaller<MapCo
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
 				case ENTRY_INDEX:
-					Map.Entry<Object, Object> entry = reader.readObject(SimpleImmutableEntry.class);
+					Map.Entry<Object, Object> entry = reader.readObject(SimpleEntry.class);
 					map.put(entry.getKey(), entry.getValue());
 					break;
 				default:
@@ -48,7 +48,7 @@ public class MapComputeFunctionMarshaller implements ProtoStreamMarshaller<MapCo
 	@Override
 	public void writeTo(ProtoStreamWriter writer, MapComputeFunction<Object, Object> function) throws IOException {
 		for (Map.Entry<Object, Object> entry : function.getOperand().entrySet()) {
-			writer.writeObject(ENTRY_INDEX, new SimpleImmutableEntry<>(entry));
+			writer.writeObject(ENTRY_INDEX, new SimpleEntry<>(entry));
 		}
 	}
 }

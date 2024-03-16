@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package java.lang;
 
 // IDs: 1 - 9
@@ -6,34 +8,36 @@ package java.lang;
  * @TypeId(1)
  */
 message Class {
-	optional	Class	any	= 1;
-	optional	uint32	id	= 2;
-	optional	string	name	= 3;
-	optional	uint32	field	= 4;
-	optional	string	module	= 5;
+	oneof field {
+		Class	any	= 1;
+		uint32	id	= 2;
+		string	name	= 3;
+		uint32	field	= 4;
+	}
+	optional	string	className	= 5;
+	optional	string	module	= 6;
 }
 
 /**
  * @TypeId(3)
  */
 message StackTraceElement {
-	optional	string	className	= 1;
-	optional	string	methodName	= 2;
-	optional	string	fileName	= 3;
-	optional	uint32	lineNumber	= 4;
-// JDK9+ fields
-	optional	string	classLoaderName	= 5;
-	optional	string	moduleName	= 6;
-	optional	string	moduleVersion	= 7;
+	string	className	= 1;
+	string	methodName	= 2;
+	string	fileName	= 3;
+	uint32	lineNumber	= 4;
+	string	classLoaderName	= 5;
+	string	moduleName	= 6;
+	string	moduleVersion	= 7;
 }
 
 /**
  * @TypeId(4)
  */
 message Throwable {
-	optional	Class	exceptionClass	= 1;
-	optional	string	message	= 2;
-	optional	Throwable	cause	= 3;
+	Class	exceptionClass	= 1;
+	string	message	= 2;
+	Throwable	cause	= 3;
 	repeated	StackTraceElement	stackTraceElement	= 4;
 	repeated	Throwable	suppressed	= 5;
 }

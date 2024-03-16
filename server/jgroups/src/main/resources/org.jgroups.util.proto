@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.jgroups.util;
 
 // IDs: 136
@@ -6,6 +8,6 @@ package org.jgroups.util;
  * @TypeId(136)
  */
 message UUID {
-	optional	sfixed64	mostSignificantBits	= 1;
-	optional	sfixed64	leastSignificantBits	= 2;
+	sfixed64	mostSignificantBits	= 1;
+	sfixed64	leastSignificantBits	= 2;
 }

@@ -6,6 +6,7 @@
 package org.wildfly.clustering.cache.infinispan.embedded.metadata;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import org.infinispan.container.versioning.NumericVersion;
 import org.infinispan.container.versioning.SimpleClusteredVersion;
@@ -18,6 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Marshaller for EmbeddedMetaData types.
  * @author Paul Ferraro
+ * @param <MD> metadata type
  */
 public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements ProtoStreamMarshaller<EmbeddedMetadata> {
 
@@ -49,11 +51,11 @@ public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements 
 					break;
 				}
 				case LIFESPAN_INDEX: {
-					builder.lifespan(reader.readUInt64());
+					builder.lifespan(reader.readObject(Duration.class).toMillis());
 					break;
 				}
 				case MAX_IDLE_INDEX: {
-					builder.maxIdle(reader.readUInt64());
+					builder.maxIdle(reader.readObject(Duration.class).toMillis());
 					break;
 				}
 				default: {
@@ -76,10 +78,10 @@ public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements 
 			writer.writeSInt64(VERSION_INDEX, metadata.getNumericVersion().getVersion());
 		}
 		if (metadata.lifespan() != -1) {
-			writer.writeUInt64(LIFESPAN_INDEX, metadata.lifespan());
+			writer.writeObject(LIFESPAN_INDEX, Duration.ofMillis(metadata.lifespan()));
 		}
 		if (metadata.maxIdle() != -1) {
-			writer.writeUInt64(MAX_IDLE_INDEX, metadata.maxIdle());
+			writer.writeObject(MAX_IDLE_INDEX, Duration.ofMillis(metadata.maxIdle()));
 		}
 	}
 

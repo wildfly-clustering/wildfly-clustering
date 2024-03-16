@@ -5,7 +5,11 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 import org.infinispan.protostream.DescriptorParserException;
+import org.infinispan.protostream.FileDescriptorSource;
 
 /**
  * @author Paul Ferraro
@@ -17,23 +21,25 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 
 	protected AbstractSerializationContextInitializer() {
 		this.resourceName = this.getClass().getPackage().getName() + ".proto";
-		this.loader = Reflect.getClassLoader(this.getClass());
+		this.loader = this.getClass().getClassLoader();
 	}
 
 	protected AbstractSerializationContextInitializer(String resourceName) {
 		this.resourceName = resourceName;
-		this.loader = Reflect.getClassLoader(this.getClass());
+		this.loader = this.getClass().getClassLoader();
 	}
 
 	protected AbstractSerializationContextInitializer(String resourceName, Class<?> containingClass) {
 		this.resourceName = resourceName;
-		this.loader = Reflect.getClassLoader(containingClass);
+		this.loader = containingClass.getClassLoader();
 	}
 
 	@Override
 	public void registerSchema(SerializationContext context) {
 		try {
-			context.registerProtoFiles(Reflect.loadSchemas(this.resourceName, this.loader));
+			context.registerProtoFiles(FileDescriptorSource.fromResources(this.loader, this.resourceName));
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
 		} catch (DescriptorParserException e) {
 			try {
 				// If parsing failed, unregister this schema so others can register

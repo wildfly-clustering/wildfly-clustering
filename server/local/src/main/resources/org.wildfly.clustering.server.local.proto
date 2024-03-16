@@ -1,8 +1,0 @@
-package org.wildfly.clustering.server.local;
-
-/**
- * @TypeId(132)
- */
-message DefaultLocalGroupMember {
-	optional	string	name	= 1;
-}

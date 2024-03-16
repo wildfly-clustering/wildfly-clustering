@@ -1,16 +1,18 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.marshalling;
 
 /**
  * @TypeId(128)
  */
 message ByteBufferMarshalledValue {
-	optional	bytes	buffer	= 1;
+	bytes	buffer	= 1;
 }
 
 /**
  * @TypeId(129)
  */
 message ByteBufferMarshalledKey {
-	optional	bytes	buffer	 = 1;
-	optional	sfixed32	hashCode	 = 2;
+	bytes	buffer	 = 1;
+	sfixed32	hashCode	 = 2;
 }

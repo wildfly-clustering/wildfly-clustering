@@ -35,8 +35,13 @@ public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<
 
 	private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
 
-	public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Predicate<String> remover, Duration closeTimeout) {
+	public SessionExpirationScheduler(String name, Batcher<TransactionBatch> batcher, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Predicate<String> remover, Duration closeTimeout) {
 		this(new LocalSchedulerConfiguration<>() {
+			@Override
+			public String getName() {
+				return name;
+			}
+
 			@Override
 			public Supplier<ScheduledEntries<String, Instant>> getScheduledEntriesFactory() {
 				return ScheduledEntries::sorted;

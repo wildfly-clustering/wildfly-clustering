@@ -12,7 +12,8 @@ import java.util.function.Supplier;
  * A wrapper for an arbitrary object.
  * @author Paul Ferraro
  */
-class Any implements Supplier<Object> {
+public class Any implements Supplier<Object> {
+	public static final Any NULL = new Any(null);
 
 	private final Object value;
 

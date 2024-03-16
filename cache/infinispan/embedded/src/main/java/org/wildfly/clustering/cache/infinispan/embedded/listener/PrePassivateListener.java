@@ -16,6 +16,8 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEven
 /**
  * Generic non-blocking pre-passivation listener that delegates to a generic cache event listener.
  * @author Paul Ferraro
+ * @param <K> cache key type
+ * @param <V> cache value type
  */
 @Listener(observation = Listener.Observation.PRE)
 public class PrePassivateListener<K, V> {

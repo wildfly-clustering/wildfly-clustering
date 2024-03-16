@@ -17,6 +17,7 @@ import java.util.function.Supplier;
  * @author Paul Ferraro
  */
 public interface LocalSchedulerConfiguration<T> {
+	String getName();
 
 	Supplier<ScheduledEntries<T, Instant>> getScheduledEntriesFactory();
 

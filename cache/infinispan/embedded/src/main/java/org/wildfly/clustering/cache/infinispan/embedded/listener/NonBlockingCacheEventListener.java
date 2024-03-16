@@ -16,6 +16,8 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 /**
  * Generic non-blocking event listener that delegates to a non-blocking event consumer.
  * @author Paul Ferraro
+ * @param <K> cache key type
+ * @param <V> cache value type
  */
 public class NonBlockingCacheEventListener<K, V> implements Function<CacheEntryEvent<K, V>, CompletionStage<Void>>, Consumer<CacheEntryEvent<K, V>> {
 

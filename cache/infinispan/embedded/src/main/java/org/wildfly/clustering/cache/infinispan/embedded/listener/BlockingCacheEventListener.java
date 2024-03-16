@@ -10,12 +10,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.infinispan.Cache;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.util.concurrent.BlockingManager;
 
 /**
  * Generic non-blocking event listener that delegates to a blocking event consumer.
  * @author Paul Ferraro
+ * @param <K> cache key type
+ * @param <V> cache value type
  */
 public class BlockingCacheEventListener<K, V> extends NonBlockingCacheEventListener<K, V> {
 
@@ -30,10 +33,9 @@ public class BlockingCacheEventListener<K, V> extends NonBlockingCacheEventListe
 		this(cache, consumer, consumer.getClass());
 	}
 
-	@SuppressWarnings("deprecation")
 	private BlockingCacheEventListener(Cache<K, V> cache, BiConsumer<K, V> consumer, Class<?> consumerClass) {
 		super(consumer);
-		this.blocking = cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
+		this.blocking = GlobalComponentRegistry.componentOf(cache.getCacheManager(), BlockingManager.class);
 		this.name = consumerClass.getName();
 	}
 

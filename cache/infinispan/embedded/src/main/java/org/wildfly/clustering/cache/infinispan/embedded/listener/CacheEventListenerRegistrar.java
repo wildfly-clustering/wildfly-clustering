@@ -11,6 +11,8 @@ import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 /**
  * A registering cache event listener.
  * @author Paul Ferraro
+ * @param <K> cache key type
+ * @param <V> cache value type
  */
 public class CacheEventListenerRegistrar<K, V> extends EventListenerRegistrar implements CacheListenerRegistrar<K, V> {
 

@@ -1,4 +1,8 @@
+syntax = "proto3";
+
 package org.infinispan.metadata;
+
+import "java.time.proto";
 
 // IDs: 410 - 419
 
@@ -6,7 +10,7 @@ package org.infinispan.metadata;
  * @TypeId(410)
  */
 message EmbeddedMetadata {
-	optional	uint64	version	= 1;
+	uint64	version	= 1;
 	optional	uint32	topologyId	= 2;
 }
 
@@ -14,28 +18,26 @@ message EmbeddedMetadata {
  * @TypeId(411)
  */
 message EmbeddedExpirableMetadata {
-	optional	uint64	version	= 1;
+	uint64	version	= 1;
 	optional	uint32	topologyId	= 2;
-	optional	uint64	lifespan	= 3;
-	optional	uint64	maxIdle	= 4;
+	java.time.Duration	maxIdle	= 3;
 }
 
 /**
  * @TypeId(412)
  */
 message EmbeddedLifespanExpirableMetadata {
-	optional	uint64	version	= 1;
+	uint64	version	= 1;
 	optional	uint32	topologyId	= 2;
-	optional	uint64	lifespan	= 3;
-	optional	uint64	maxIdle	= 4;
+	java.time.Duration	lifespan	= 3;
 }
 
 /**
  * @TypeId(413)
  */
 message EmbeddedMaxIdleExpirableMetadata {
-	optional	uint64	version	= 1;
+	uint64	version	= 1;
 	optional	uint32	topologyId	= 2;
-	optional	uint64	lifespan	= 3;
-	optional	uint64	maxIdle	= 4;
+	java.time.Duration	lifespan	= 3;
+	java.time.Duration	maxIdle	= 4;
 }

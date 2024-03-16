@@ -7,6 +7,8 @@ package org.wildfly.clustering.context;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Supplier;
 
+import org.jboss.threads.JBossThreadFactory;
+
 /**
  * Default {@link ThreadFactory} implementation that applies a specific context {@link ClassLoader}.
  * @author Paul Ferraro
@@ -18,7 +20,7 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 	}
 
 	public DefaultThreadFactory(Class<?> targetClass, Supplier<ThreadGroup> threadGroup) {
-		this(Reflect.createThreadFactory(threadGroup), targetClass);
+		this(new JBossThreadFactory(threadGroup.get(), Boolean.FALSE, null, "%G - %t", null, null), targetClass);
 	}
 
 	public DefaultThreadFactory(ThreadFactory factory) {
@@ -26,6 +28,6 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 	}
 
 	private DefaultThreadFactory(ThreadFactory factory, Class<?> targetClass) {
-		super(factory, Reflect.getClassLoader(targetClass), ContextClassLoaderReference.INSTANCE);
+		super(factory, targetClass.getClassLoader(), ContextClassLoaderReference.INSTANCE);
 	}
 }

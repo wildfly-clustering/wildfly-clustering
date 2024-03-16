@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.session.cache.attributes.fine;
 
 import "org.wildfly.clustering.marshalling.proto";
@@ -8,8 +10,8 @@ import "org.wildfly.clustering.marshalling.proto";
  * @TypeId(225)
  */
 message SessionAttributeMapEntry {
-	optional	string	name	= 1;
-	optional	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	value	= 2;
+	string	name	= 1;
+	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	value	= 2;
 }
 
 /**

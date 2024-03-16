@@ -69,7 +69,6 @@ public class DataContainerFactory extends AbstractNamedCacheComponentFactory imp
 		return offHeap ? new OffHeapDataContainer() : DefaultDataContainer.unBoundedDataContainer(level);
 	}
 
-	@SuppressWarnings("deprecation")
 	private DataContainer<?, ?> createBoundedDataContainer() {
 		ClusteringConfiguration clustering = this.configuration.clustering();
 		boolean segmented = clustering.cacheMode().needsStateTransfer();
@@ -79,6 +78,7 @@ public class DataContainerFactory extends AbstractNamedCacheComponentFactory imp
 		boolean offHeap = memory.isOffHeap();
 		long maxEntries = memory.maxCount();
 		long maxBytes = memory.maxSizeBytes();
+		@SuppressWarnings("removal")
 		org.infinispan.eviction.EvictionType type = memory.evictionType();
 		DataContainerConfiguration config = this.configuration.module(DataContainerConfiguration.class);
 		Predicate<?> evictable = (config != null) ? config.evictable() : DataContainerConfiguration.EVICTABLE_PREDICATE.getDefaultValue();

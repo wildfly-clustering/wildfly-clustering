@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.infinispan.commons.io;
 
 // IDs: 400 - 409
@@ -6,5 +8,5 @@ package org.infinispan.commons.io;
  * @TypeId(400)
  */
 message ByteBufferImpl {
-	optional	bytes	buffer	= 1;
+	bytes	buffer	= 1;
 }

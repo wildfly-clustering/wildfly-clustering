@@ -92,7 +92,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 	}
 
 	private void shutdown(ExecutorService executor) {
-		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
+		executor.shutdown();
 		try {
 			executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {

@@ -6,9 +6,7 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -33,26 +31,17 @@ public class MapMarshaller<T extends Map<Object, Object>> extends AbstractMapMar
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
 		T map = this.factory.get();
-		List<Object> keys = new LinkedList<>();
-		List<Object> values = new LinkedList<>();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case KEY_INDEX:
-					keys.add(reader.readAny());
-					break;
-				case VALUE_INDEX:
-					values.add(reader.readAny());
+				case ENTRY_INDEX:
+					Map.Entry<Object, Object> entry = reader.readObject(AbstractMap.SimpleEntry.class);
+					map.put(entry.getKey(), entry.getValue());
 					break;
 				default:
 					reader.skipField(tag);
 			}
-		}
-		Iterator<Object> keyIterator = keys.iterator();
-		Iterator<Object> valueIterator = values.iterator();
-		while (keyIterator.hasNext() || valueIterator.hasNext()) {
-			map.put(keyIterator.next(), valueIterator.next());
 		}
 		return map;
 	}

@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package java.util;
 
 import "java.lang.proto";
@@ -223,20 +225,19 @@ message Date {
  * @TypeId(36)
  */
 message EnumMap {
-	optional	java.lang.Class	enumClass	= 1;
-	optional	java.lang.Class	complementClass	= 2;
-	optional	BitSet	bits	= 3;
-	repeated	uint32	element	= 4;
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 5;
+	java.lang.Class	enumClass	= 1;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
  * @TypeId(37)
  */
 message EnumSet {
-	optional	java.lang.Class	enumClass	= 1;
-	optional	java.lang.Class	complementClass	= 2;
-	optional	BitSet	bits	= 3;
+	oneof class {
+		java.lang.Class	enumClass	= 1;
+		java.lang.Class	complementClass	= 2;
+	}
+	BitSet	bits	= 3;
 	repeated	uint32	element	= 4;
 }
 
@@ -244,8 +245,7 @@ message EnumSet {
  * @TypeId(38)
  */
 message HashMap {
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
+	repeated	SimpleEntry	entry	= 1;
 }
 
 /**
@@ -259,9 +259,8 @@ message HashSet {
  * @TypeId(40)
  */
 message LinkedHashMap {
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
-	optional	bool	accessOrder	= 3;
+	repeated	SimpleEntry	entry	= 1;
+	bool	accessOrder	= 2;
 }
 
 /**
@@ -282,10 +281,10 @@ message LinkedList {
  * @TypeId(43)
  */
 message Locale {
-	optional	string	language	= 1;
-	optional	string	region	= 2;
-	optional	string	variant	= 3;
-	optional	string	script	= 4;
+	string	language	= 1;
+	string	region	= 2;
+	string	variant	= 3;
+	string	script	= 4;
 	repeated	string	extension	= 5;
 }
 
@@ -293,33 +292,32 @@ message Locale {
  * @TypeId(48)
  */
 message SimpleEntry {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
+	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
  * @TypeId(49)
  */
 message SimpleImmutableEntry {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
+	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
  * @TypeId(50)
  */
 message TimeZone {
-	optional	string	value	= 1;
+	string	value	= 1;
 }
 
 /**
  * @TypeId(51)
  */
 message TreeMap {
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
-	optional	bool	reverse	= 3;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 4;
+	repeated	SimpleEntry	entry	= 1;
+	optional	bool	reverse	= 2;
+	optional	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 3;
 }
 
 /**
@@ -327,16 +325,16 @@ message TreeMap {
  */
 message TreeSet {
 	repeated	org.wildfly.clustering.marshalling.protostream.Any	element	= 1;
-	optional	bool	reverse	= 2;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 3;
+	bool	reverse	= 2;
+	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 3;
 }
 
 /**
  * @TypeId(53)
  */
 message UUID {
-	optional	sfixed64	high	= 1;
-	optional	sfixed64	low	= 2;
+	sfixed64	high	= 1;
+	sfixed64	low	= 2;
 }
 
 // Unmodifiable collections
@@ -359,16 +357,15 @@ message ListN {
  * @TypeId(56)
  */
 message Map1 {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	key	 = 1;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	key	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 2;
 }
 
 /**
  * @TypeId(57)
  */
 message MapN {
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	key	 = 1;
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	value	 = 2;
+	repeated	SimpleEntry	entry	 = 1;
 }
 
 /**

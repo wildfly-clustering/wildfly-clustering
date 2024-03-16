@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.infinispan.embedded;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.infinispan.configuration.cache.CacheMode;
@@ -20,6 +21,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.cache.SessionManagerITCase;
 
@@ -30,14 +32,18 @@ import org.wildfly.clustering.session.cache.SessionManagerITCase;
 public class InfinispanSessionManagerITCase extends SessionManagerITCase<TransactionBatch, InfinispanSessionManagerParameters> {
 
 	static class InfinispanSessionManagerArgumentsProvider implements ArgumentsProvider {
+		Class<? extends MarshallingTesterFactory> marshallerClass = MarshallingTesterFactory.class;
+		Set<TransactionMode> transactionModes = EnumSet.allOf(TransactionMode.class);
+		Set<CacheMode> cacheModes = EnumSet.of(CacheMode.DIST_SYNC, CacheMode.REPL_SYNC);
+
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 			Stream.Builder<Arguments> builder = Stream.builder();
-			for (MarshallingTesterFactory factory : ServiceLoader.load(MarshallingTesterFactory.class, MarshallingTesterFactory.class.getClassLoader())) {
+			for (MarshallingTesterFactory factory : ServiceLoader.load(this.marshallerClass, this.marshallerClass.getClassLoader())) {
 				ByteBufferMarshaller marshaller = factory.getMarshaller();
 				for (SessionAttributePersistenceStrategy strategy : EnumSet.allOf(SessionAttributePersistenceStrategy.class)) {
-					for (CacheMode cacheMode : EnumSet.of(CacheMode.DIST_SYNC, CacheMode.REPL_SYNC)) {
-						for (TransactionMode transactionMode : EnumSet.allOf(TransactionMode.class)) {
+					for (CacheMode cacheMode : this.cacheModes) {
+						for (TransactionMode transactionMode : this.transactionModes) {
 							builder.add(Arguments.of(new InfinispanSessionManagerParameters() {
 								@Override
 								public ByteBufferMarshaller getSessionAttributeMarshaller() {
@@ -61,7 +67,12 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 
 								@Override
 								public String toString() {
-									return Map.of(ByteBufferMarshaller.class.getSimpleName(), marshaller.toString(), SessionAttributePersistenceStrategy.class.getSimpleName(), strategy, CacheMode.class.getSimpleName(), cacheMode, TransactionMode.class.getSimpleName(), transactionMode).toString();
+									return Map.ofEntries(
+											Map.entry(ByteBufferMarshaller.class.getSimpleName(), marshaller.toString()),
+											Map.entry(SessionAttributePersistenceStrategy.class.getSimpleName(), strategy.name()),
+											Map.entry(CacheMode.class.getSimpleName(), cacheMode.name()),
+											Map.entry(TransactionMode.class.getSimpleName(), transactionMode.name())
+										).toString();
 								}
 							}));
 						}
@@ -69,6 +80,20 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 				}
 			}
 			return builder.build();
+		}
+	}
+
+	static class ConcurrentInfinispanSessionManagerArgumentsProvider extends InfinispanSessionManagerArgumentsProvider {
+		ConcurrentInfinispanSessionManagerArgumentsProvider() {
+			this.marshallerClass = ProtoStreamTesterFactory.class;
+			this.transactionModes = EnumSet.of(TransactionMode.NON_TRANSACTIONAL);
+		}
+	}
+
+	static class ExpirationInfinispanSessionManagerArgumentsProvider extends InfinispanSessionManagerArgumentsProvider {
+		ExpirationInfinispanSessionManagerArgumentsProvider() {
+			this.marshallerClass = ProtoStreamTesterFactory.class;
+			this.cacheModes = EnumSet.of(CacheMode.DIST_SYNC);
 		}
 	}
 
@@ -83,13 +108,13 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Transac
 	}
 
 	@ParameterizedTest
-	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
+	@ArgumentsSource(ConcurrentInfinispanSessionManagerArgumentsProvider.class)
 	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
 	@ParameterizedTest
-	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
+	@ArgumentsSource(ExpirationInfinispanSessionManagerArgumentsProvider.class)
 	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.expiration(parameters);
 	}

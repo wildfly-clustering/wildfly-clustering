@@ -48,7 +48,7 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();
 		Marshaller marshaller = new ProtoStreamMarshaller(ClassLoaderMarshaller.of(loader), builder -> builder.require(loader));
-		this.container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder().marshaller(marshaller).classLoader(loader)), false);
+		this.container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder().marshaller(marshaller)), false);
 		this.container.start();
 		this.accept(this.container::stop);
 

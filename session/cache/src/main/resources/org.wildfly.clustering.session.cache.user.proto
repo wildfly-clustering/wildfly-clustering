@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.session.cache.user;
 
 import "org.wildfly.clustering.marshalling.protostream.proto";
@@ -8,5 +10,5 @@ import "org.wildfly.clustering.marshalling.protostream.proto";
  * @TypeId(235)
  */
 message UserContextEntry {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	context	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	context	= 1;
 }
