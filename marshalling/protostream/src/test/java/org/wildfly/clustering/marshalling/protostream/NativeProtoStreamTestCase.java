@@ -8,11 +8,11 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.Objects;
 
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
 import org.infinispan.protostream.annotations.ProtoAdapter;
 import org.infinispan.protostream.annotations.ProtoEnumValue;
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
+import org.infinispan.protostream.annotations.ProtoSchema;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
@@ -163,7 +163,7 @@ public class NativeProtoStreamTestCase {
 		}
 	}
 
-	@AutoProtoSchemaBuilder(includeClasses = { Sex.class, NameFactory.class, Employee.class }, service = true)
+	@ProtoSchema(includeClasses = { Sex.class, NameFactory.class, Employee.class })
 	interface EmployeeInitializer extends SerializationContextInitializer {
 	}
 }

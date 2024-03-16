@@ -7,6 +7,7 @@ package org.wildfly.clustering.context;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ServiceLoader;
 
 /**
  * Default {@link Contextualizer} factory that applies a number of contexts.
@@ -24,7 +25,7 @@ public enum DefaultContextualizerFactory implements ContextualizerFactory {
 				return Contextualizer.withContext(loader, ContextClassLoaderReference.INSTANCE);
 			}
 		});
-		Reflect.load(ContextualizerFactory.class, this.factories::add);
+		ServiceLoader.load(ContextualizerFactory.class, ContextualizerFactory.class.getClassLoader()).forEach(this.factories::add);
 	}
 
 	@Override

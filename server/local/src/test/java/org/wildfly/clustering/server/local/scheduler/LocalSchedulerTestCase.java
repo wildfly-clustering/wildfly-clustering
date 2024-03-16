@@ -30,6 +30,11 @@ public class LocalSchedulerTestCase {
 	static LocalSchedulerConfiguration<UUID> configuration(ScheduledEntries<UUID, Instant> entries, Predicate<UUID> task) {
 		return new LocalSchedulerConfiguration<>() {
 			@Override
+			public String getName() {
+				return "test";
+			}
+
+			@Override
 			public Supplier<ScheduledEntries<UUID, Instant>> getScheduledEntriesFactory() {
 				return Functions.constantSupplier(entries);
 			}

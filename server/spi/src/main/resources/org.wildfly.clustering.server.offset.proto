@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.server.offset;
 
 import "java.time.proto";
@@ -8,12 +10,12 @@ import "java.time.proto";
  * @TypeId(170)
  */
 message DurationOffset {
-	optional	java.time.Duration	value	= 1;
+	java.time.Duration	value	= 1;
 }
 
 /**
  * @TypeId(171)
  */
 message InstantOffset {
-	optional	java.time.Duration	value	= 1;
+	java.time.Duration	value	= 1;
 }

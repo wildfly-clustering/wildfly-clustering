@@ -21,16 +21,17 @@ import java.util.function.Consumer;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.concurrent.BlockingManager;
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
-import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 
 /**
@@ -42,6 +43,7 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
  */
 @Listener
 public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements ListenerRegistrar {
+	private static final Logger LOGGER = Logger.getLogger(SchedulerTopologyChangeListener.class);
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class);
 
 	private final Cache<K, V> cache;
@@ -55,12 +57,11 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 		this(cache, scheduler::cancel, scheduleTask);
 	}
 
-	@SuppressWarnings("deprecation")
 	public SchedulerTopologyChangeListener(Cache<K, V> cache, Consumer<Locality> cancelTask, BiConsumer<Locality, Locality> scheduleTask) {
 		this.cache = cache;
 		this.cancelTask = cancelTask;
 		this.scheduleTask = scheduleTask;
-		this.blocking = this.cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class);
+		this.blocking = GlobalComponentRegistry.componentOf(this.cache.getCacheManager(), BlockingManager.class);
 	}
 
 	@Override
@@ -68,12 +69,15 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 		this.cache.addListener(this);
 		return () -> {
 			this.cache.removeListener(this);
-			java.security.AccessController.doPrivileged(DefaultExecutorService.shutdownNow(this.executor));
+			LOGGER.debugf("Shutting down thread pool for %s scheduler topology change listener", this.cache.getName());
+			this.executor.shutdownNow();
 			try {
+				LOGGER.debugf("Awaiting task termination for %s scheduler topology change listener", this.cache.getName());
 				this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
+			LOGGER.debugf("%s scheduler topology change listener shutdown complete", this.cache.getName());
 		};
 	}
 
@@ -85,6 +89,7 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 		Set<Integer> oldSegments = oldHash.getMembers().contains(address) ? oldHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
 		ConsistentHash newHash = event.getWriteConsistentHashAtEnd();
 		Set<Integer> newSegments = newHash.getMembers().contains(address) ? newHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
+		LOGGER.debugf("%s scheduler topology change listener received %s-topology changed event: %s -> %s", cache.getName(), event.isPre() ? "pre" : "post", oldHash.getMembers(), newHash.getMembers());
 		if (event.isPre()) {
 			// If there are segments that we no longer own, then run cancellation task
 			if (!newSegments.containsAll(oldSegments)) {

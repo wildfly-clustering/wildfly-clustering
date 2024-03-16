@@ -107,6 +107,8 @@ public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
 	}
 
 	private static ClassLoader setThreadContextClassLoader(ClassLoader loader) {
-		return (loader != null) ? Reflect.setThreadContextClassLoader(loader) : null;
+		ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(loader);
+		return currentLoader;
 	}
 }

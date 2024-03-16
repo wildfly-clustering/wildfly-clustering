@@ -12,6 +12,8 @@ import org.infinispan.Cache;
 /**
  * Generic non-blocking pre-passivation listener that delegates to a blocking consumer.
  * @author Paul Ferraro
+ * @param <K> cache key type
+ * @param <V> cache value type
  */
 public class PrePassivateBlockingListener<K, V> extends CacheEventListenerRegistrar<K, V> {
 

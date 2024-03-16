@@ -13,11 +13,11 @@ public enum ContextClassLoaderReference implements ThreadContextReference<ClassL
 
 	@Override
 	public ClassLoader apply(Thread thread) {
-		return Reflect.getContextClassLoader(thread);
+		return thread.getContextClassLoader();
 	}
 
 	@Override
 	public void accept(Thread thread, ClassLoader loader) {
-		Reflect.setContextClassLoader(thread, loader);
+		thread.setContextClassLoader(loader);
 	}
 }

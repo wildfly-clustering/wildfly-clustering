@@ -6,10 +6,12 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.infinispan.protostream.descriptors.WireType;
@@ -22,7 +24,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  */
 public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap<Object, Object>> {
 
-	private static final int ACCESS_ORDER_INDEX = VALUE_INDEX + 1;
+	private static final int ACCESS_ORDER_INDEX = ENTRY_INDEX + 1;
 
 	private  static final Function<LinkedHashMap<Object, Object>, Boolean> ACCESS_ORDER = new Function<>() {
 		@Override
@@ -58,30 +60,25 @@ public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap
 
 	@Override
 	public LinkedHashMap<Object, Object> readFrom(ProtoStreamReader reader) throws IOException {
-		LinkedHashMap<Object, Object> map = new LinkedHashMap<>(16, 0.75f, false);
-		List<Object> keys = new LinkedList<>();
-		List<Object> values = new LinkedList<>();
+		boolean accessOrder = false;
+		List<Map.Entry<Object, Object>> entries = new LinkedList<>();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case KEY_INDEX:
-					keys.add(reader.readAny());
-					break;
-				case VALUE_INDEX:
-					values.add(reader.readAny());
+				case ENTRY_INDEX:
+					entries.add(reader.readObject(AbstractMap.SimpleEntry.class));
 					break;
 				case ACCESS_ORDER_INDEX:
-					map = new LinkedHashMap<>(16, 0.75f, reader.readBool());
+					accessOrder = reader.readBool();
 					break;
 				default:
 					reader.skipField(tag);
 			}
 		}
-		Iterator<Object> keyIterator = keys.iterator();
-		Iterator<Object> valueIterator = values.iterator();
-		while (keyIterator.hasNext() || valueIterator.hasNext()) {
-			map.put(keyIterator.next(), valueIterator.next());
+		LinkedHashMap<Object, Object> map = new LinkedHashMap<>(16, 0.75f, accessOrder);
+		for (Map.Entry<Object, Object> entry : entries) {
+			map.put(entry.getKey(), entry.getValue());
 		}
 		return map;
 	}

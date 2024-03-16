@@ -113,7 +113,7 @@ enum AnyField implements Field<Object> {
 					reader.skipField(tag);
 				}
 			}
-			return Proxy.newProxyInstance(Reflect.getClassLoader(handler.getClass()), interfaces.toArray(new Class<?>[0]), handler);
+			return Proxy.newProxyInstance(handler.getClass().getClassLoader(), interfaces.toArray(new Class<?>[0]), handler);
 		}
 
 		@Override

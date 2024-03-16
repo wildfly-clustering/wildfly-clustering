@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.wildfly.clustering.context.DefaultExecutorService;
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
@@ -27,7 +27,9 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
  * @author Paul Ferraro
  */
 public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
+	private static final Logger LOGGER = Logger.getLogger(LocalScheduler.class);
 
+	private final String name;
 	private final ScheduledExecutorService executor;
 	private final ScheduledEntries<T, Instant> entries;
 	private final Predicate<T> task;
@@ -36,6 +38,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	private volatile Map.Entry<Map.Entry<T, Instant>, Future<?>> futureEntry = null;
 
 	public LocalScheduler(LocalSchedulerConfiguration<T> configuration) {
+		this.name = configuration.getName();
 		this.entries = configuration.getScheduledEntriesFactory().get();
 		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, configuration.getThreadFactory());
 		executor.setKeepAliveTime(1L, TimeUnit.MINUTES);
@@ -49,6 +52,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
 	@Override
 	public void schedule(T id, Instant instant) {
+		LOGGER.tracef("Scheduling %s on local %s scheduler for %s", id, this.name, instant);
 		this.entries.add(id, instant);
 		if (this.entries.isSorted()) {
 			this.rescheduleIfEarlier(instant);
@@ -58,6 +62,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
 	@Override
 	public void cancel(T id) {
+		LOGGER.tracef("Canceling %s on local %s scheduler", id, this.name);
 		if (this.entries.isSorted()) {
 			this.cancelIfPresent(id);
 		}
@@ -79,14 +84,17 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
 	@Override
 	public void close() {
-		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(this.executor));
+		LOGGER.debugf("Shutting down local %s scheduler", this.name);
+		this.executor.shutdown();
 		if (!this.closeTimeout.isNegative() && !this.closeTimeout.isZero()) {
 			try {
+				LOGGER.debugf("Waiting for local %s scheduler tasks to complete", this.name);
 				this.executor.awaitTermination(this.closeTimeout.toMillis(), TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
 		}
+		LOGGER.debugf("Local %s scheduler shutdown complete", this.name);
 	}
 
 	@Override
@@ -97,6 +105,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 			Map.Entry<T, Instant> entry = entries.next();
 			if (entry.getValue().isAfter(Instant.now())) break;
 			T key = entry.getKey();
+			LOGGER.tracef("Executing task for %s on local %s scheduler", key, this.name);
 			// Remove only if task is successful
 			if (this.task.test(key)) {
 				entries.remove();

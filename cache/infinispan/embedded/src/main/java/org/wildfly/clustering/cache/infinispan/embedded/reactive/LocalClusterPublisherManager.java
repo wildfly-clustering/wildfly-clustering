@@ -16,6 +16,8 @@ import org.infinispan.reactive.publisher.impl.LocalClusterPublisherManagerImpl;
 /**
  * Overrides Infinispan's {@link org.infinispan.factories.PublisherManagerFactory#LOCAL_CLUSTER_PUBLISHER} to align its segmentation logic with this module's key partitioner for non-tx invalidation caches.
  * @author Paul Ferraro
+ * @param <K> cache key type
+ * @param <V> cache value type
  */
 @Scope(Scopes.NAMED_CACHE)
 public class LocalClusterPublisherManager<K, V> extends LocalClusterPublisherManagerImpl<K, V> {

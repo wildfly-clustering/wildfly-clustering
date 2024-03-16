@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.globalstate;
 
-import static org.infinispan.factories.KnownComponentNames.CACHE_DEPENDENCY_GRAPH;
-
 import java.util.EnumSet;
 import java.util.concurrent.CompletionStage;
 
@@ -21,20 +19,19 @@ import org.infinispan.util.DependencyGraph;
  */
 public class LocalConfigurationStorage extends org.infinispan.globalstate.impl.VolatileLocalConfigurationStorage {
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public CompletionStage<Void> removeCache(String name, EnumSet<CacheContainerAdmin.AdminFlag> flags) {
 		return this.blockingManager.<Void>supplyBlocking(() -> {
-			GlobalComponentRegistry globalComponentRegistry = this.cacheManager.getGlobalComponentRegistry();
 			Cache<?, ?> cache = this.cacheManager.getCache(name, false);
 			if (cache != null) {
 				cache.stop();
 			}
+			GlobalComponentRegistry globalComponentRegistry = GlobalComponentRegistry.of(this.cacheManager);
 			globalComponentRegistry.removeCache(name);
 			// Remove cache configuration and remove it from the computed cache name list
 			this.configurationManager.removeConfiguration(name);
 			// Remove cache from dependency graph
-			globalComponentRegistry.getComponent(DependencyGraph.class, CACHE_DEPENDENCY_GRAPH).remove(name);
+			GlobalComponentRegistry.componentOf(this.cacheManager, DependencyGraph.class).remove(name);
 			return null;
 		}, name);
 	}

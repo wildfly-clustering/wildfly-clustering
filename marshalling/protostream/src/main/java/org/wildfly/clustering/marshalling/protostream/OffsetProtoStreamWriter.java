@@ -140,18 +140,6 @@ public class OffsetProtoStreamWriter implements ProtoStreamWriter {
 		this.writer.writeBytes(this.offset + number, value);
 	}
 
-	@Deprecated
-	@Override
-	public void writeRawByte(byte value) throws IOException {
-		this.writer.writeRawByte(value);
-	}
-
-	@Deprecated
-	@Override
-	public void writeRawBytes(ByteBuffer value) throws IOException {
-		this.writer.writeRawBytes(value);
-	}
-
 	@Override
 	public void writeAnyNoTag(Object value) throws IOException {
 		this.writer.writeAnyNoTag(value);

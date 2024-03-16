@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.marshalling.test;
 
 import "java.util.proto";
@@ -13,20 +15,14 @@ message TestComparator {
  * @TypeId(1001)
  */
 message TestInvocationHandler {
-	required	java.util.UUID	value	= 1;
+	java.util.UUID	value	= 1;
 }
 
 /**
  * @TypeId(1002)
  */
-enum Empty {
-}
-
-/**
- * @TypeId(1003)
- */
 message Person {
-	optional	string	name	 = 1;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	parent	 = 2;
-	repeated	org.wildfly.clustering.marshalling.protostream.Any	child	 = 3;
+	string	name	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	parent	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	child	 = 3;
 }

@@ -30,7 +30,7 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 		return this.getCache().getRemoteCacheContainer();
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("removal")
 	@Override
 	default Executor getExecutor() {
 		return this.getCache().getRemoteCacheManager().getAsyncExecutorService();

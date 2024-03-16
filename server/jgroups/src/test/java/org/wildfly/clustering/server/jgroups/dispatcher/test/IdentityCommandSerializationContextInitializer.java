@@ -6,8 +6,8 @@
 package org.wildfly.clustering.server.jgroups.dispatcher.test;
 
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
+import org.infinispan.protostream.annotations.ProtoSchema;
 
-@AutoProtoSchemaBuilder(includeClasses = { IdentityCommand.class }, service = true)
+@ProtoSchema(includeClasses = { IdentityCommand.class })
 public interface IdentityCommandSerializationContextInitializer extends SerializationContextInitializer {
 }

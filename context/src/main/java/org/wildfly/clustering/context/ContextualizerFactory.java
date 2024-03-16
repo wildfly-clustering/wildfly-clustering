@@ -22,6 +22,6 @@ public interface ContextualizerFactory {
 	 * @return a contextualizer
 	 */
 	default Contextualizer createContextualizer(Class<?> targetClass) {
-		return this.createContextualizer(Reflect.getClassLoader(targetClass));
+		return this.createContextualizer(targetClass.getClassLoader());
 	}
 }

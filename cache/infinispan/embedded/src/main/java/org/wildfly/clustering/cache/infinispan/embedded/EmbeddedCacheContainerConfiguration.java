@@ -7,6 +7,7 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 
 import java.util.concurrent.Executor;
 
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.cache.infinispan.BasicCacheContainerConfiguration;
@@ -25,6 +26,6 @@ public interface EmbeddedCacheContainerConfiguration extends BasicCacheContainer
 	}
 
 	default BlockingManager getBlockingManager() {
-		return this.getCacheContainer().getGlobalComponentRegistry().getComponent(BlockingManager.class);
+		return GlobalComponentRegistry.componentOf(this.getCacheContainer(), BlockingManager.class);
 	}
 }

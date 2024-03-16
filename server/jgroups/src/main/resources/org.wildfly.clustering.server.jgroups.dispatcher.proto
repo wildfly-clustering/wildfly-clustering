@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.server.jgroups.dispatcher;
 
 // IDs: 130

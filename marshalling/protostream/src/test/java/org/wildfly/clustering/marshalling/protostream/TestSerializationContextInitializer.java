@@ -6,7 +6,6 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.test.Empty;
 import org.wildfly.clustering.marshalling.test.TestComparator;
 import org.wildfly.clustering.marshalling.test.TestInvocationHandler;
 
@@ -23,7 +22,6 @@ public class TestSerializationContextInitializer extends AbstractSerializationCo
 	@Override
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(ProtoStreamMarshaller.of(new TestComparator<>()));
-		context.registerMarshaller(ProtoStreamMarshaller.of(Empty.class));
 		context.registerMarshaller(Scalar.ANY.toMarshaller(TestInvocationHandler.class, TestInvocationHandler::getValue, TestInvocationHandler::new));
 		context.registerMarshaller(new PersonMarshaller());
 	}

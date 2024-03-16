@@ -7,20 +7,24 @@ package org.wildfly.clustering.server.jgroups;
 
 import org.jgroups.Address;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.server.AutoCloseableProvider;
 import org.wildfly.clustering.server.group.Group;
 
 /**
  * @author Paul Ferraro
  */
-public class JChannelGroupProvider implements GroupProvider<Address, ChannelGroupMember> {
+public class JChannelGroupProvider extends AutoCloseableProvider implements GroupProvider<Address, ChannelGroupMember> {
 
 	private final JChannel channel;
 	private final ChannelGroup group;
 
 	public JChannelGroupProvider(String clusterName, String memberName) throws Exception {
 		this.channel = JChannelFactory.INSTANCE.apply(memberName);
+		this.accept(this.channel::close);
 		this.channel.connect(clusterName);
+		this.accept(this.channel::disconnect);
 		this.group = new JChannelGroup(this.channel);
+		this.accept(this.group::close);
 	}
 
 	@Override
@@ -36,12 +40,5 @@ public class JChannelGroupProvider implements GroupProvider<Address, ChannelGrou
 	@Override
 	public String getName() {
 		return this.channel.getClusterName();
-	}
-
-	@Override
-	public void close() throws Exception {
-		this.group.close();
-		this.channel.disconnect();
-		this.channel.close();
 	}
 }

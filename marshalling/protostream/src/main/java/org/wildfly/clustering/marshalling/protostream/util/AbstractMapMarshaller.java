@@ -6,6 +6,7 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.Map;
 
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -17,8 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @param <T> the map type of this marshaller
  */
 public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> implements ProtoStreamMarshaller<T> {
-	protected static final int KEY_INDEX = 1;
-	protected static final int VALUE_INDEX = 2;
+	protected static final int ENTRY_INDEX = 1;
 
 	private final Class<? extends T> mapClass;
 
@@ -30,8 +30,7 @@ public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> imple
 	public void writeTo(ProtoStreamWriter writer, T map) throws IOException {
 		synchronized (map) { // Avoid ConcurrentModificationException
 			for (Map.Entry<Object, Object> entry : map.entrySet()) {
-				writer.writeAny(KEY_INDEX, entry.getKey());
-				writer.writeAny(VALUE_INDEX, entry.getValue());
+				writer.writeObject(ENTRY_INDEX, new AbstractMap.SimpleEntry<>(entry));
 			}
 		}
 	}

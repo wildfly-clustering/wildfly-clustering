@@ -30,6 +30,7 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.Listener.Observation;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
@@ -83,7 +84,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 	 * @param generator a key generator
 	 */
 	DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyGenerator<? extends K> generator, Predicate<Address> filter) {
-		this(cache, generator, filter, cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class).asExecutor(DefaultKeyAffinityService.class.getSimpleName()), CURRENT_CONSISTENT_HASH, KEY_DISTRIBUTION_FACTORY);
+		this(cache, generator, filter, GlobalComponentRegistry.componentOf(cache.getCacheManager(), BlockingManager.class).asExecutor(DefaultKeyAffinityService.class.getSimpleName()), CURRENT_CONSISTENT_HASH, KEY_DISTRIBUTION_FACTORY);
 	}
 
 	DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyGenerator<? extends K> generator, Predicate<Address> filter, Executor executor, Function<Cache<?, ?>, ConsistentHash> currentConsistentHash, BiFunction<Cache<?, ?>, ConsistentHash, KeyDistribution> distributionFactory) {

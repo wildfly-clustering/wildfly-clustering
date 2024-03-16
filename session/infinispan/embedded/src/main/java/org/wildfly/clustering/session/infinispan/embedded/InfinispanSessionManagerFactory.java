@@ -102,7 +102,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 		};
 		Cache<? extends CacheKey<String>, ?> cache = infinispan.getCache();
-		CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(infinispan.getBatcher(), this.factory.getMetaDataFactory(), remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
+		CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(cache.getName(), infinispan.getBatcher(), this.factory.getMetaDataFactory(), remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
 		GroupCommandDispatcherFactory<Address, GM> dispatcherFactory = infinispan.getCommandDispatcherFactory();
 		Group<Address, GM> group = dispatcherFactory.getGroup();
 		this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<String, ExpirationMetaData, GM>() {

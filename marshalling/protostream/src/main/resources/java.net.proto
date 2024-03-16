@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package java.net;
 
 // IDs: 110 - 119
@@ -6,30 +8,30 @@ package java.net;
  * @TypeId(110)
  */
 message InetAddress {
-	optional	string	host	= 1;
-	optional	bytes	address	= 2;
+	string	host	= 1;
+	bytes	address	= 2;
 }
 
 /**
  * @TypeId(111)
  */
 message InetSocketAddress {
-	optional	string	resolvedHost	= 1;
-	optional	bytes	address	= 2;
-	optional	string	unresolvedHost	= 3;
-	optional	uint32	port	= 4;
+	string	resolvedHost	= 1;
+	bytes	address	= 2;
+	string	unresolvedHost	= 3;
+	uint32	port	= 4;
 }
 
 /**
  * @TypeId(112)
  */
 message URI {
-	optional	string	uri	= 1;
+	string	uri	= 1;
 }
 
 /**
  * @TypeId(113)
  */
 message URL {
-	optional	string	url	= 1;
+	string	url	= 1;
 }

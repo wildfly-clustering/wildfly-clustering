@@ -27,7 +27,7 @@ import org.infinispan.factories.scopes.Scopes;
  */
 @Scope(Scopes.GLOBAL)
 public class DefaultEncoderRegistry implements EncoderRegistry {
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("removal")
 	private final Map<Short, org.infinispan.commons.dataconversion.Encoder> encoders = new ConcurrentHashMap<>();
 	private final Map<Byte, Wrapper> wrappers = new ConcurrentHashMap<>();
 	private final List<Transcoder> transcoders = Collections.synchronizedList(new ArrayList<>());

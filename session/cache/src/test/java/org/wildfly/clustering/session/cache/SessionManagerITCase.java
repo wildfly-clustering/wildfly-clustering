@@ -71,36 +71,38 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
+						try {
+							String sessionId = manager1.getIdentifierFactory().get();
+							this.verifyNoSession(manager1, sessionId);
+							this.verifyNoSession(manager2, sessionId);
+							UUID foo = UUID.randomUUID();
+							UUID bar = UUID.randomUUID();
 
-						String sessionId = manager1.getIdentifierFactory().get();
-						this.verifyNoSession(manager1, sessionId);
-						this.verifyNoSession(manager2, sessionId);
-						UUID foo = UUID.randomUUID();
-						UUID bar = UUID.randomUUID();
+							this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
 
-						this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
+							this.verifySession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
+							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
 
-						this.verifySession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
-						this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
+							this.updateSession(manager1, sessionId, Map.of("foo", new AbstractMap.SimpleEntry<>(foo, null), "bar", Map.entry(bar, 0)));
 
-						this.updateSession(manager1, sessionId, Map.of("foo", new AbstractMap.SimpleEntry<>(foo, null), "bar", Map.entry(bar, 0)));
+							for (int i = 1; i <= 20; i += 2) {
+								this.updateSession(manager1, sessionId, Map.of("bar", Map.entry(i - 1, i)));
+								this.updateSession(manager2, sessionId, Map.of("bar", Map.entry(i, i + 1)));
+							}
 
-						for (int i = 1; i <= 20; i += 2) {
-							this.updateSession(manager1, sessionId, Map.of("bar", Map.entry(i - 1, i)));
-							this.updateSession(manager2, sessionId, Map.of("bar", Map.entry(i, i + 1)));
+							this.invalidateSession(manager1, sessionId);
+
+							this.verifyNoSession(manager1, sessionId);
+							this.verifyNoSession(manager2, sessionId);
+
+							assertTrue(expiredSessions.isEmpty());
+						} finally {
+							manager2.stop();
 						}
-
-						this.invalidateSession(manager1, sessionId);
-
-						this.verifyNoSession(manager1, sessionId);
-						this.verifyNoSession(manager2, sessionId);
-
-						assertTrue(expiredSessions.isEmpty());
-
-						manager2.stop();
 					}
+				} finally {
+					manager1.stop();
 				}
-				manager1.stop();
 			}
 		}
 	}
@@ -119,40 +121,42 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
+						try {
+							String sessionId = manager1.getIdentifierFactory().get();
+							AtomicInteger value = new AtomicInteger();
 
-						String sessionId = manager1.getIdentifierFactory().get();
-						AtomicInteger value = new AtomicInteger();
+							this.createSession(manager1, sessionId, Map.of("value", value));
 
-						this.createSession(manager1, sessionId, Map.of("value", value));
+							// Trigger a number of concurrent sequences of requests for the same session
+							CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+							for (int i = 0; i < threads; ++i) {
+								future = future.thenAcceptBoth(CompletableFuture.runAsync(() -> {
+									for (int j = 0; j < requests; ++j) {
+										this.requestSession(manager1, sessionId, session -> {
+											AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
+											assertNotNull(v);
+											v.incrementAndGet();
+										});
+									}
+								}), Functions.discardingBiConsumer());
+							}
+							future.join();
 
-						// Trigger a number of concurrent sequences of requests for the same session
-						CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-						for (int i = 0; i < threads; ++i) {
-							future = future.thenAcceptBoth(CompletableFuture.runAsync(() -> {
-								for (int j = 0; j < requests; ++j) {
-									this.requestSession(manager1, sessionId, session -> {
-										AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
-										assertNotNull(v);
-										v.incrementAndGet();
-									});
-								}
-							}), Functions.discardingBiConsumer());
+							// Verify integrity of value on other manager
+							AtomicInteger expected = new AtomicInteger(threads * requests);
+							this.requestSession(manager2, sessionId, session -> {
+								// N.B. AtomicInteger does not implement equals(...)
+								this.verifySessionAttribute(session, "value", expected, (value1, value2) -> value1.get() == value2.get());
+							});
+
+							this.invalidateSession(manager2, sessionId);
+						} finally {
+							manager2.stop();
 						}
-						future.join();
-
-						// Verify integrity of value on other manager
-						AtomicInteger expected = new AtomicInteger(threads * requests);
-						this.requestSession(manager2, sessionId, session -> {
-							// N.B. AtomicInteger does not implement equals(...)
-							this.verifySessionAttribute(session, "value", expected, (value1, value2) -> value1.get() == value2.get());
-						});
-
-						this.invalidateSession(manager2, sessionId);
-
-						manager2.stop();
 					}
+				} finally {
+					manager1.stop();
 				}
-				manager1.stop();
 			}
 		}
 	}
@@ -170,52 +174,59 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
 						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
-
-						String sessionId = manager1.getIdentifierFactory().get();
-						UUID foo = UUID.randomUUID();
-						UUID bar = UUID.randomUUID();
-
-						this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
-
-						// Setup session to expire soon
-						this.requestSession(manager1, sessionId, session -> {
-							session.getMetaData().setTimeout(Duration.ofSeconds(3));
-						});
-
-						// Verify that session does not expire prematurely
-						TimeUnit.SECONDS.sleep(2);
-
-						this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
-
-						// Verify that session does not expire prematurely
-						TimeUnit.SECONDS.sleep(2);
-
-						this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
-
 						try {
-							Instant start = Instant.now();
-							ImmutableSession expiredSession = expiredSessions.poll(expirationDuration.getSeconds(), TimeUnit.SECONDS);
-							assertNotNull(expiredSession, () -> String.format("No expiration event received within %s seconds", expirationDuration.getSeconds()));
-							System.out.println(String.format("Received expiration event for %s after %s", expiredSession.getId(), Duration.between(start, Instant.now())));
-							assertEquals(sessionId, expiredSession.getId());
-							assertFalse(expiredSession.isValid());
-							assertFalse(expiredSession.getMetaData().isNew());
-							assertTrue(expiredSession.getMetaData().isExpired());
-							assertFalse(expiredSession.getMetaData().isImmortal());
-							this.verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
+							String sessionId = manager1.getIdentifierFactory().get();
+							UUID foo = UUID.randomUUID();
+							UUID bar = UUID.randomUUID();
 
-							assertEquals(0, expiredSessions.size(), expiredSessions.toString());
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
+							this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
+
+							// Setup session to expire soon
+							this.requestSession(manager1, sessionId, session -> {
+								session.getMetaData().setTimeout(Duration.ofSeconds(2));
+							});
+
+							// Verify that session does not expire prematurely
+							TimeUnit.SECONDS.sleep(1);
+
+							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
+
+							// Verify that session does not expire prematurely
+							TimeUnit.SECONDS.sleep(1);
+
+							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
+
+							// Verify that session does not expire prematurely
+							TimeUnit.SECONDS.sleep(1);
+
+							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
+
+							try {
+								Instant start = Instant.now();
+								ImmutableSession expiredSession = expiredSessions.poll(expirationDuration.getSeconds(), TimeUnit.SECONDS);
+								assertNotNull(expiredSession, () -> String.format("No expiration event received within %s seconds", expirationDuration.getSeconds()));
+								System.out.println(String.format("Received expiration event for %s after %s", expiredSession.getId(), Duration.between(start, Instant.now())));
+								assertEquals(sessionId, expiredSession.getId());
+								assertFalse(expiredSession.isValid());
+								assertFalse(expiredSession.getMetaData().isNew());
+								assertTrue(expiredSession.getMetaData().isExpired());
+								assertFalse(expiredSession.getMetaData().isImmortal());
+								this.verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
+
+								assertEquals(0, expiredSessions.size(), expiredSessions.toString());
+							} catch (InterruptedException e) {
+								Thread.currentThread().interrupt();
+							}
+
+							this.verifyNoSession(manager1, sessionId);
+							this.verifyNoSession(manager2, sessionId);
+						} finally {
+							manager2.stop();
 						}
-
-						this.verifyNoSession(manager1, sessionId);
-						this.verifyNoSession(manager2, sessionId);
-
-						manager2.stop();
 					}
+				} finally {
+					manager1.stop();
 				}
-				manager1.stop();
 			}
 		}
 	}

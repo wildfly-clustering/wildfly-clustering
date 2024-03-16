@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.marshalling.protostream;
 
 import "java.lang.proto";
@@ -26,12 +28,12 @@ message Any {
 	optional	string	namedArray	= 18;
 	optional	bytes	booleanArray	= 19;
 	optional	bytes	byteArray	= 20;
-	repeated	sint32	shortArray	= 21	[packed=true];
-	repeated	sint32	integerArray	= 22	[packed=true];
-	repeated	sint64	longArray	= 23	[packed=true];
-	repeated	float	floatArray	= 24	[packed=true];
-	repeated	double	doubleArray	= 25	[packed=true];
-	repeated	uint32	charArray	= 26	[packed=true];
+	repeated	sint32	shortArray	= 21;
+	repeated	sint32	integerArray	= 22;
+	repeated	sint64	longArray	= 23;
+	repeated	float	floatArray	= 24;
+	repeated	double	doubleArray	= 25;
+	repeated	uint32	charArray	= 26;
 	optional	java.lang.Class	anyArray	= 27;
 	optional	Any	invocationHandler	= 28;
 }

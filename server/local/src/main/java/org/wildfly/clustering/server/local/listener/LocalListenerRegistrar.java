@@ -75,7 +75,7 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 	}
 
 	private void shutdown(ExecutorService executor) {
-		java.security.AccessController.doPrivileged(DefaultExecutorService.shutdown(executor));
+		executor.shutdown();
 		try {
 			executor.awaitTermination(this.shutdownTimeout.toMillis(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {

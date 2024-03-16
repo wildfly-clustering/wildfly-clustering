@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.session.infinispan.embedded.metadata;
 
 // IDs: 200 - 203
@@ -6,7 +8,7 @@ package org.wildfly.clustering.session.infinispan.embedded.metadata;
  * @TypeId(200)
  */
 message SessionMetaDataKey {
-	required	bytes	id	= 1;
+	bytes	id	= 1;
 }
 
 /**

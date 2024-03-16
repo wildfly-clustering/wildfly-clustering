@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import "org.wildfly.clustering.marshalling.protostream.proto";
@@ -8,22 +10,22 @@ import "org.wildfly.clustering.marshalling.protostream.proto";
  * @TypeId(180)
  */
 message CancelCommand {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
 }
 
 /**
  * @TypeId(181)
  */
 message ScheduleWithTransientMetaDataCommand {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
 }
 
 /**
  * @TypeId(182)
  */
 message ScheduleWithMetaDataCommand {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	metaData	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	metaData	 = 2;
 }
 
 /**
@@ -36,5 +38,5 @@ message EntriesCommand {
  * @TypeId(184)
  */
 message ContainsCommand {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
 }

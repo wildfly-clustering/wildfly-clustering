@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.server.infinispan.provider;
 
 import "org.infinispan.remoting.transport.jgroups.proto";

@@ -7,7 +7,6 @@ package org.wildfly.clustering.session.cache;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.security.PrivilegedAction;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 
@@ -27,12 +26,7 @@ import org.wildfly.clustering.session.IdentifierMarshallerProvider;
 public enum IdentifierMarshaller implements ScalarMarshaller<String> {
 	INSTANCE;
 
-	private final Marshaller<String, ByteBuffer> marshaller = java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
-		@Override
-		public Marshaller<String, ByteBuffer> run() {
-			return ServiceLoader.load(IdentifierMarshallerProvider.class, IdentifierMarshallerProvider.class.getClassLoader()).findFirst().map(IdentifierMarshallerProvider::getMarshaller).orElseThrow(IllegalStateException::new);
-		}
-	});
+	private final Marshaller<String, ByteBuffer> marshaller = ServiceLoader.load(IdentifierMarshallerProvider.class, IdentifierMarshallerProvider.class.getClassLoader()).findFirst().map(IdentifierMarshallerProvider::getMarshaller).orElseThrow(IllegalStateException::new);
 
 	@Override
 	public String readFrom(ProtoStreamReader reader) throws IOException {

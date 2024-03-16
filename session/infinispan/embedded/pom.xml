@@ -35,7 +35,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-java</artifactId>
+			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -47,7 +47,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-marshalling-java</artifactId>
+			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>

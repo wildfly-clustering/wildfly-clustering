@@ -56,7 +56,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
 	@Override
 	public void writeTo(ProtoStreamWriter writer, Class<?> targetClass) throws IOException {
 		Scalar.STRING.writeTo(writer, targetClass.getName());
-		writer.createFieldSetWriter(this.loaderMarshaller, this.loaderIndex).writeFields(Reflect.getClassLoader(targetClass));
+		writer.createFieldSetWriter(this.loaderMarshaller, this.loaderIndex).writeFields(targetClass.getClassLoader());
 	}
 
 	@Override

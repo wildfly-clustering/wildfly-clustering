@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -62,7 +61,7 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(Currency.class, Currency::getCurrencyCode, Currency::getInstance));
 		context.registerMarshaller(context.getMarshaller(Instant.class).wrap(Date.class, Date::toInstant, Date::from));
 		context.registerMarshaller(new EnumMapMarshaller<>());
-		context.registerMarshaller(new EnumSetFieldSetMarshaller<Thread.State>().asMarshaller((Class<EnumSet<Thread.State>>) (Class<?>) EnumSet.class));
+		context.registerMarshaller(new EnumSetMarshaller<>());
 		context.registerMarshaller(hashMapMarshaller);
 		context.registerMarshaller(new CollectionMarshaller<>(HashSet::new));
 		context.registerMarshaller(new LinkedHashMapMarshaller());
@@ -74,7 +73,7 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 		context.registerMarshaller(new SortedSetMarshaller<>(TreeSet::new));
 		context.registerMarshaller(UUIDMarshaller.INSTANCE.asMarshaller());
 
-		context.registerMarshaller(new MapEntryMarshaller<>(AbstractMap.SimpleEntry::new));
+		context.registerMarshaller(new MapEntryMarshaller<>(Function.identity()));
 		context.registerMarshaller(new MapEntryMarshaller<>(AbstractMap.SimpleImmutableEntry::new));
 
 		// Empty collections

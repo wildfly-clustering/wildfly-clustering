@@ -7,9 +7,6 @@ package org.wildfly.clustering.marshalling.protostream.net;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 
 import org.infinispan.protostream.descriptors.WireType;
@@ -46,20 +43,7 @@ public enum InetAddressMarshaller implements FieldSetMarshaller.Simple<InetAddre
 		switch (index) {
 			case HOST_NAME_INDEX:
 				String hostName = reader.readString();
-				try {
-					return java.security.AccessController.doPrivileged(new PrivilegedExceptionAction<>() {
-						@Override
-						public InetAddress run() throws UnknownHostException {
-							return InetAddress.getByName(hostName);
-						}
-					});
-				} catch (PrivilegedActionException e) {
-					Exception exception = e.getException();
-					if (exception instanceof IOException) {
-						throw (IOException) exception;
-					}
-					throw new IllegalStateException(e);
-				}
+				return InetAddress.getByName(hostName);
 			case ADDRESS_INDEX:
 				return InetAddress.getByAddress(reader.readByteArray());
 			default:
@@ -84,5 +68,4 @@ public enum InetAddressMarshaller implements FieldSetMarshaller.Simple<InetAddre
 			}
 		}
 	}
-
 }
