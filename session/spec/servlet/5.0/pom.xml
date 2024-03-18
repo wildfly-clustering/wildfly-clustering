@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-session-spec-servlet</artifactId>
-		<version>1.0.13.Final-SNAPSHOT</version>
+		<version>1.0.13.Final</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-session-spec-servlet-5.0</artifactId>
