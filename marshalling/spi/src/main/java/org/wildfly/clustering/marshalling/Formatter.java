@@ -5,12 +5,6 @@
 
 package org.wildfly.clustering.marshalling;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Base64;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -115,36 +109,6 @@ public interface Formatter<T> {
 			@Override
 			public String format(T ignored) {
 				return "";
-			}
-		};
-	}
-
-	static <T> Formatter<T> serialized(Class<? extends T> type, Serializer<T> serializer) {
-		return new Formatter<>() {
-			@Override
-			public Class<? extends T> getType() {
-				return type;
-			}
-
-			@Override
-			public T parse(String value) {
-				byte[] bytes = Base64.getDecoder().decode(value);
-				try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes))) {
-					return serializer.read(input);
-				} catch (IOException e) {
-					throw new IllegalArgumentException(e);
-				}
-			}
-
-			@Override
-			public String format(T key) {
-				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-				try (DataOutputStream output = new DataOutputStream(bytes)) {
-					serializer.write(output, key);
-				} catch (IOException e) {
-					throw new IllegalArgumentException(e);
-				}
-				return Base64.getEncoder().encodeToString(bytes.toByteArray());
 			}
 		};
 	}

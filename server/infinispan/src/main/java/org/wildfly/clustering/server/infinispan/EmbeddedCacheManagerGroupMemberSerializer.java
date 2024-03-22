@@ -49,8 +49,9 @@ public enum EmbeddedCacheManagerGroupMemberSerializer implements Serializer<Embe
 
 	@MetaInfServices(Formatter.class)
 	public static class AddressGroupMemberFormatter extends Formatter.Provided<EmbeddedCacheManagerGroupMember> {
+
 		public AddressGroupMemberFormatter() {
-			super(Formatter.serialized(EmbeddedCacheManagerGroupMember.class, INSTANCE));
+			super(INSTANCE.toFormatter(EmbeddedCacheManagerGroupMember.class));
 		}
 	}
 }
