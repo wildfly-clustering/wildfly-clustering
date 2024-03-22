@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.session.infinispan.remote.attributes;
 
+import static org.wildfly.clustering.cache.function.Functions.nullFunction;
+import static org.wildfly.common.function.Functions.discardingConsumer;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
@@ -31,7 +34,6 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryC
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapComputeFunction;
-import org.wildfly.common.function.Functions;
 
 /**
  * {@link SessionAttributesFactory} for fine granularity sessions, where all session attributes are stored in a single cache entry,
@@ -83,7 +85,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(e -> null);
+		return this.getValueAsync(id).exceptionally(nullFunction());
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {
@@ -105,7 +107,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.cache.withFlags(this.ignoreReturnFlags).removeAsync(new SessionAttributesKey(id)).thenAccept(Functions.discardingConsumer());
+		return this.cache.withFlags(this.ignoreReturnFlags).removeAsync(new SessionAttributesKey(id)).thenAccept(discardingConsumer());
 	}
 
 	@Override

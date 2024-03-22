@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.session.infinispan.embedded.user;
 
+import static org.wildfly.clustering.cache.function.Functions.constantFunction;
+import static org.wildfly.common.function.Functions.discardingConsumer;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.AbstractMap;
@@ -18,7 +21,6 @@ import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.session.cache.user.UserContext;
 import org.wildfly.clustering.session.cache.user.UserContextEntry;
 import org.wildfly.clustering.session.cache.user.UserContextFactory;
-import org.wildfly.common.function.Functions;
 
 /**
  * @param <PC> the persistent context type
@@ -44,7 +46,7 @@ public class InfinispanUserContextFactory<PC, PV, TC> implements UserContextFact
 	public CompletionStage<UserContext<PV, TC>> createValueAsync(String id, PC context) {
 		try {
 			UserContext<PV, TC> entry = new UserContextEntry<>(this.marshaller.write(context));
-			return this.writeCache.putAsync(new UserContextKey(id), entry).thenApply(v -> entry);
+			return this.writeCache.putAsync(new UserContextKey(id), entry).thenApply(constantFunction(entry));
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -57,7 +59,7 @@ public class InfinispanUserContextFactory<PC, PV, TC> implements UserContextFact
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.writeCache.removeAsync(new UserContextKey(id)).thenAccept(Functions.discardingConsumer());
+		return this.writeCache.removeAsync(new UserContextKey(id)).thenAccept(discardingConsumer());
 	}
 
 	@Override
