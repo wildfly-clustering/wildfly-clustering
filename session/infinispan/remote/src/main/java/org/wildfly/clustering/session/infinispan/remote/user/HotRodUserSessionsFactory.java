@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.session.infinispan.remote.user;
 
+import static org.wildfly.clustering.cache.function.Functions.constantFunction;
+import static org.wildfly.common.function.Functions.discardingConsumer;
+
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +20,6 @@ import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryMutator;
 import org.wildfly.clustering.session.cache.user.MutableUserSessions;
 import org.wildfly.clustering.session.cache.user.UserSessionsFactory;
 import org.wildfly.clustering.session.user.UserSessions;
-import org.wildfly.common.function.Functions;
 
 /**
  * @param <D> the deployment type
@@ -44,7 +46,7 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 	@Override
 	public CompletionStage<Map<D, S>> createValueAsync(String id, Void context) {
 		Map<D, S> sessions = new ConcurrentHashMap<>();
-		return this.cache.withFlags(this.ignoreReturnFlags).putAsync(new UserSessionsKey(id), sessions).thenApply(v -> sessions);
+		return this.cache.withFlags(this.ignoreReturnFlags).putAsync(new UserSessionsKey(id), sessions).thenApply(constantFunction(sessions));
 	}
 
 	@Override
@@ -54,6 +56,6 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.cache.withFlags(this.ignoreReturnFlags).removeAsync(new UserSessionsKey(id)).thenAccept(Functions.discardingConsumer());
+		return this.cache.withFlags(this.ignoreReturnFlags).removeAsync(new UserSessionsKey(id)).thenAccept(discardingConsumer());
 	}
 }

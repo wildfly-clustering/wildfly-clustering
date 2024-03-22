@@ -5,6 +5,10 @@
 
 package org.wildfly.clustering.session.infinispan.remote.metadata;
 
+import static org.wildfly.clustering.cache.function.Functions.constantFunction;
+import static org.wildfly.common.function.Functions.discardingBiConsumer;
+import static org.wildfly.common.function.Functions.discardingConsumer;
+
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -35,7 +39,6 @@ import org.wildfly.clustering.session.cache.metadata.fine.SessionCreationMetaDat
 import org.wildfly.clustering.session.cache.metadata.fine.SessionCreationMetaDataEntry;
 import org.wildfly.clustering.session.cache.metadata.fine.SessionCreationMetaDataEntryFunction;
 import org.wildfly.clustering.session.cache.metadata.fine.SessionMetaDataEntry;
-import org.wildfly.common.function.Functions;
 
 /**
  * Factory for creating {@link org.wildfly.clustering.session.SessionMetaData} backed by a pair of {@link RemoteCache} entries.
@@ -63,7 +66,7 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 		SessionAccessMetaDataEntry accessMetaData = new DefaultSessionAccessMetaDataEntry();
 		CompletableFuture<?> creationStage = this.creationMetaDataCache.withFlags(this.ignoreReturnFlags).putAsync(creationMetaDataKey, creationMetaData);
 		CompletableFuture<?> accessStage = this.accessMetaDataCache.withFlags(this.ignoreReturnFlags).putAsync(accessMetaDataKey, accessMetaData, 0L, TimeUnit.SECONDS, defaultTimeout.getSeconds(), TimeUnit.SECONDS);
-		return CompletableFuture.allOf(creationStage, accessStage).thenApply(v -> new DefaultSessionMetaDataEntry<>(creationMetaData, accessMetaData));
+		return CompletableFuture.allOf(creationStage, accessStage).thenApply(constantFunction(new DefaultSessionMetaDataEntry<>(creationMetaData, accessMetaData)));
 	}
 
 	@Override
@@ -82,7 +85,7 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 	public CompletionStage<Void> removeAsync(String id) {
 		CompletableFuture<?> creationMetaData = this.creationMetaDataCache.withFlags(this.ignoreReturnFlags).removeAsync(new SessionCreationMetaDataKey(id));
 		CompletableFuture<?> accessMetaData = this.accessMetaDataCache.withFlags(this.ignoreReturnFlags).removeAsync(new SessionAccessMetaDataKey(id));
-		return CompletableFuture.allOf(creationMetaData, accessMetaData).thenAccept(Functions.discardingConsumer());
+		return CompletableFuture.allOf(creationMetaData, accessMetaData).thenAccept(discardingConsumer());
 	}
 
 	@Override
@@ -99,7 +102,7 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 			@Override
 			public CompletionStage<Void> mutateAsync() {
 				CompletionStage<Void> stage = !timeoutOffset.getOffset().isZero() ? creationMetaDataMutator.mutateAsync() : CompletableFuture.completedStage(null);
-				return stage.thenAcceptBoth(accessMetaDataMutator.mutateAsync(), Functions.discardingBiConsumer());
+				return stage.thenAcceptBoth(accessMetaDataMutator.mutateAsync(), discardingBiConsumer());
 			}
 		};
 

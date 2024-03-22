@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.session.infinispan.embedded.metadata;
 
+import static org.wildfly.clustering.cache.function.Functions.constantFunction;
+import static org.wildfly.common.function.Functions.discardingConsumer;
+
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
@@ -23,7 +26,6 @@ import org.wildfly.clustering.session.cache.metadata.coarse.DefaultSessionMetaDa
 import org.wildfly.clustering.session.cache.metadata.coarse.MutableSessionMetaDataEntry;
 import org.wildfly.clustering.session.cache.metadata.coarse.MutableSessionMetaDataOffsetValues;
 import org.wildfly.clustering.session.cache.metadata.coarse.SessionMetaDataEntryFunction;
-import org.wildfly.common.function.Functions;
 
 /**
  * @param <C> the session context type
@@ -51,7 +53,7 @@ public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFacto
 	public CompletionStage<ContextualSessionMetaDataEntry<C>> createValueAsync(String id, Duration defaultTimeout) {
 		DefaultSessionMetaDataEntry<C> entry = new DefaultSessionMetaDataEntry<>();
 		entry.setTimeout(defaultTimeout);
-		return this.writeOnlyCache.putAsync(new SessionMetaDataKey(id), entry).thenApply(v -> entry);
+		return this.writeOnlyCache.putAsync(new SessionMetaDataKey(id), entry).thenApply(constantFunction(entry));
 	}
 
 	@Override
@@ -75,7 +77,7 @@ public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFacto
 	}
 
 	private CompletionStage<Void> deleteAsync(Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> cache, String id) {
-		return cache.removeAsync(new SessionMetaDataKey(id)).thenAccept(Functions.discardingConsumer());
+		return cache.removeAsync(new SessionMetaDataKey(id)).thenAccept(discardingConsumer());
 	}
 
 	@Override
