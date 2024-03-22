@@ -10,7 +10,7 @@ import static org.mockito.Mockito.*;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.cache.Remover;
+import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserSessions;
 
@@ -19,7 +19,7 @@ public class CompositeUserTestCase {
 	private final UserSessions<String, String> sessions = mock(UserSessions.class);
 	private final String context = "context";
 	private final String localContext = "local-context";
-	private final Remover<String> remover = mock(Remover.class);
+	private final CacheEntryRemover<String> remover = mock(CacheEntryRemover.class);
 
 	private final User<String, Object, String, String> user = new CompositeUser<>(this.id, Map.entry(this.context, this.localContext), this.sessions, this.remover);
 

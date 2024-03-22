@@ -8,13 +8,13 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 /**
- * Locates a pair of values from a cache.
+ * Locates a pair of entries from a cache.
  * @param <I> the identifier type of the cache key
  * @param <K> the key type of the located entry
  * @param <V> the value type of the located entry
  * @author Paul Ferraro
  */
-public interface BiLocator<I, K, V> extends Locator<I, Map.Entry<K, V>> {
+public interface BiCacheEntryLocator<I, K, V> extends CacheEntryLocator<I, Map.Entry<K, V>> {
 
 	/**
 	 * Locates the value in the cache with the specified identifier.

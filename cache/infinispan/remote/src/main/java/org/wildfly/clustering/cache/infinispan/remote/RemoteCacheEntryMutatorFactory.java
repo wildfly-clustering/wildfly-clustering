@@ -19,17 +19,17 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
  * @param <V> the cache value type
  * @author Paul Ferraro
  */
-public class RemoteCacheMutatorFactory<K, V> implements CacheEntryMutatorFactory<K, V> {
+public class RemoteCacheEntryMutatorFactory<K, V> implements CacheEntryMutatorFactory<K, V> {
 
 	private final RemoteCache<K, V> cache;
 	private final Flag[] flags;
 	private final Function<V, Duration> maxIdle;
 
-	public RemoteCacheMutatorFactory(RemoteCache<K, V> cache, Flag[] flags) {
+	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache, Flag[] flags) {
 		this(cache, flags, null);
 	}
 
-	public RemoteCacheMutatorFactory(RemoteCache<K, V> cache, Flag[] flags, Function<V, Duration> maxIdle) {
+	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache, Flag[] flags, Function<V, Duration> maxIdle) {
 		this.cache = cache;
 		this.flags = flags;
 		this.maxIdle = maxIdle;

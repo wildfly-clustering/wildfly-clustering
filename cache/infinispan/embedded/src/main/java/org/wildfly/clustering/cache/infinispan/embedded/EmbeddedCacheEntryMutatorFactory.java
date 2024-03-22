@@ -16,16 +16,16 @@ import org.wildfly.clustering.cache.CacheProperties;
  * @param <V> the cache value type
  * @author Paul Ferraro
  */
-public class EmbeddedCacheMutatorFactory<K, V> implements CacheEntryMutatorFactory<K, V> {
+public class EmbeddedCacheEntryMutatorFactory<K, V> implements CacheEntryMutatorFactory<K, V> {
 
 	private final Cache<K, V> cache;
 	private final CacheProperties properties;
 
-	public EmbeddedCacheMutatorFactory(Cache<K, V> cache) {
+	public EmbeddedCacheEntryMutatorFactory(Cache<K, V> cache) {
 		this(cache, new EmbeddedCacheProperties(cache.getCacheConfiguration()));
 	}
 
-	public EmbeddedCacheMutatorFactory(Cache<K, V> cache, CacheProperties properties) {
+	public EmbeddedCacheEntryMutatorFactory(Cache<K, V> cache, CacheProperties properties) {
 		this.cache = cache;
 		this.properties = properties;
 	}

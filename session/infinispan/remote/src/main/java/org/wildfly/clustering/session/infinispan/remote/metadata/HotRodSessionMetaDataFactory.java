@@ -15,7 +15,7 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryComputeMutator;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryComputer;
 import org.wildfly.clustering.server.offset.OffsetValue;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
@@ -93,8 +93,8 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 		MutableSessionAccessMetaDataOffsetValues values = MutableSessionAccessMetaDataOffsetValues.from(entry.getAccessMetaDataEntry());
 		SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaDataEntry(), values);
 
-		CacheEntryMutator creationMetaDataMutator = new RemoteCacheEntryComputeMutator<>(this.creationMetaDataCache, this.ignoreReturnFlags, new SessionCreationMetaDataKey(id), new SessionCreationMetaDataEntryFunction<>(timeoutOffset));
-		CacheEntryMutator accessMetaDataMutator = new RemoteCacheEntryComputeMutator<>(this.accessMetaDataCache, this.ignoreReturnFlags, new SessionAccessMetaDataKey(id), new SessionAccessMetaDataEntryFunction(values), creationMetaData::getTimeout);
+		CacheEntryMutator creationMetaDataMutator = new RemoteCacheEntryComputer<>(this.creationMetaDataCache, this.ignoreReturnFlags, new SessionCreationMetaDataKey(id), new SessionCreationMetaDataEntryFunction<>(timeoutOffset));
+		CacheEntryMutator accessMetaDataMutator = new RemoteCacheEntryComputer<>(this.accessMetaDataCache, this.ignoreReturnFlags, new SessionAccessMetaDataKey(id), new SessionAccessMetaDataEntryFunction(values), creationMetaData::getTimeout);
 		CacheEntryMutator mutator = new CacheEntryMutator() {
 			@Override
 			public CompletionStage<Void> mutateAsync() {

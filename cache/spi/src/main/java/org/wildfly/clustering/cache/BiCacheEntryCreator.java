@@ -16,7 +16,7 @@ import java.util.concurrent.CompletionStage;
  * @param <C> the context of the created entry
  * @author Paul Ferraro
  */
-public interface BiCreator<I, K, V, C> extends Creator<I, Map.Entry<K, V>, C> {
+public interface BiCacheEntryCreator<I, K, V, C> extends CacheEntryCreator<I, Map.Entry<K, V>, C> {
 
 	/**
 	 * Creates a value in the cache, if it does not already exist.

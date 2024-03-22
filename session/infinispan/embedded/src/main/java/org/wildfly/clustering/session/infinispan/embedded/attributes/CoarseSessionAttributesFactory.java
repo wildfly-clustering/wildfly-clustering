@@ -20,7 +20,7 @@ import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheMutatorFactory;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PostActivateBlockingListener;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PostPassivateBlockingListener;
@@ -70,7 +70,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = infinispan.getCacheProperties();
-		this.mutatorFactory = new EmbeddedCacheMutatorFactory<>(this.cache, this.properties);
+		this.mutatorFactory = new EmbeddedCacheEntryMutatorFactory<>(this.cache, this.properties);
 		this.notifierFactory = notifierFactory;
 		this.detachedNotifierFactory = detachedNotifierFactory;
 		this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
