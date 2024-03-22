@@ -7,6 +7,7 @@ package org.wildfly.clustering.server.local.scheduler;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
@@ -14,6 +15,7 @@ import java.util.Spliterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Consumer;
+import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 
 /**
@@ -22,13 +24,27 @@ import java.util.stream.Stream;
  * @author Paul Ferraro
  */
 class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
-	static <K extends Comparable<? super K>, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> defaultComparator() {
+	static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> defaultComparator() {
 		return new Comparator<>() {
+			private final List<ToIntFunction<K>> hashFunctions = List.of(Object::hashCode, System::identityHashCode);
+
 			@Override
 			public int compare(Map.Entry<K, V> entry1, Map.Entry<K, V> entry2) {
+				K key1 = entry1.getKey();
+				K key2 = entry2.getKey();
+				// Check for key equality first
+				if (key1.equals(key2)) return 0;
+				// If keys are not equal, this method cannot return 0
+				// Compare by value
 				int result = entry1.getValue().compareTo(entry2.getValue());
-				// Compare using keys if necessary, as value comparison of 0 does not imply equality!
-				return (result == 0) ? entry1.getKey().compareTo(entry2.getKey()) : result;
+				if (result != 0) return result;
+				// Compare by key hash
+				for (ToIntFunction<K> hashFunction : hashFunctions) {
+					result = Integer.compare(hashFunction.applyAsInt(key1), hashFunction.applyAsInt(key2));
+					if (result != 0) return result;
+				}
+				// Highly unlikely, but use fixed value as a last resort
+				return 1;
 			}
 		};
 	}
