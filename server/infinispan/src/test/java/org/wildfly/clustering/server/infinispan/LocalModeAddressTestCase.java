@@ -8,7 +8,7 @@ package org.wildfly.clustering.server.infinispan;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.wildfly.clustering.cache.infinispan.embedded.persistence.TwoWayKey2StringMapperTesterFactory;
+import org.wildfly.clustering.cache.infinispan.embedded.persistence.FormatterTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
@@ -20,7 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 public class LocalModeAddressTestCase {
 
 	@ParameterizedTest
-	@TesterFactorySource({ ProtoStreamTesterFactory.class, TwoWayKey2StringMapperTesterFactory.class })
+	@TesterFactorySource({ ProtoStreamTesterFactory.class, FormatterTesterFactory.class })
 	public void test(TesterFactory factory) {
 		Tester<Address> tester = factory.createTester();
 		tester.accept(LocalModeAddress.INSTANCE);

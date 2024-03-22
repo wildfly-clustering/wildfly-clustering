@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.session.cache.attributes.fine;
 
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -23,7 +22,7 @@ public class SessionAttributeMapComputeFunctionMarshallerTestCase {
 
 	@Test
 	public void test() {
-		ProtoStreamTesterFactory factory = new ProtoStreamTesterFactory(List.of(new FineSessionAttributesSerializationContextInitializer()));
+		ProtoStreamTesterFactory factory = new ProtoStreamTesterFactory(new FineSessionAttributesSerializationContextInitializer());
 		ByteBufferMarshaller marshaller = factory.getMarshaller();
 		Map<String, ByteBufferMarshalledValue<UUID>> map = new TreeMap<>();
 		map.put("foo", new ByteBufferMarshalledValue<>(UUID.randomUUID(), marshaller));

@@ -24,28 +24,34 @@ import org.wildfly.common.function.ExceptionBiConsumer;
  */
 public interface IdentityTable<T> {
 
-	ExceptionBiConsumer<Marshaller, T, IOException> findWriter(T object);
+	ExceptionBiConsumer<Marshaller, T, IOException> findWriter(T value);
 
-	T read(Unmarshaller unmarshaller) throws IOException;
+	T read(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException;
 
-	static <T> IdentityTable<T> from(List<T> objects) {
-		IntSerializer indexSerializer = IndexSerializer.select(objects.size());
-		Map<Object, Integer> indexes = new IdentityHashMap<>(objects.size());
-		ListIterator<T> iterator = objects.listIterator();
+	static <T> IdentityTable<T> from(List<T> entries) {
+		IntSerializer indexSerializer = IndexSerializer.select(entries.size());
+		Map<T, Integer> indexes = new IdentityHashMap<>(entries.size());
+		ListIterator<T> iterator = entries.listIterator();
 		while (iterator.hasNext()) {
 			indexes.putIfAbsent(iterator.next(), iterator.previousIndex());
 		}
-		ExceptionBiConsumer<Marshaller, T, IOException> writer = (marshaller, object) -> indexSerializer.writeInt(marshaller, indexes.get(object));
+		ExceptionBiConsumer<Marshaller, T, IOException> writer = new ExceptionBiConsumer<>() {
+			@Override
+			public void accept(Marshaller marshaller, T value) throws IOException {
+				int index = indexes.get(value);
+				indexSerializer.writeInt(marshaller, index);
+			}
+		};
 		return new IdentityTable<>() {
 			@Override
-			public ExceptionBiConsumer<Marshaller, T, IOException> findWriter(T object) {
-				Integer index = indexes.get(object);
-				return (index != null) ? writer : null;
+			public ExceptionBiConsumer<Marshaller, T, IOException> findWriter(T value) {
+				return indexes.containsKey(value) ? writer : null;
 			}
 
 			@Override
-			public T read(Unmarshaller unmarshaller) throws IOException {
-				return objects.get(indexSerializer.readInt(unmarshaller));
+			public T read(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
+				int index = indexSerializer.readInt(unmarshaller);
+				return entries.get(index);
 			}
 		};
 	}

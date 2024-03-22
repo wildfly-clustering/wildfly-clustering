@@ -25,8 +25,11 @@ import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolConfiguration;
 import org.jgroups.util.SocketFactory;
-import org.wildfly.clustering.cache.infinispan.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
+import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 
 /**
  * @author Paul Ferraro
@@ -45,7 +48,7 @@ public class EmbeddedCacheManagerFactory implements BiFunction<String, ClassLoad
 
 	@Override
 	public EmbeddedCacheManager apply(String name, ClassLoader loader) {
-		Marshaller marshaller = new ProtoStreamMarshaller(ClassLoaderMarshaller.of(loader), builder -> builder.require(loader));
+		Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
 		JGroupsChannelConfigurator configurator = new JGroupsChannelConfigurator() {
 			@Override
 			public String getProtocolStackString() {

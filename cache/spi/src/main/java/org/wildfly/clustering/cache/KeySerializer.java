@@ -7,18 +7,17 @@ package org.wildfly.clustering.cache;
 
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.MappedSerializer;
 import org.wildfly.clustering.marshalling.Serializer;
 
 /**
- * Serializer for a key that delegates to the serializer of its identifier.
- * @param <I> the identifier type of the cache key
- * @param <K> the cache key type
+ * A serializer for a key.
  * @author Paul Ferraro
+ * @param <I> the key identifier type
+ * @param <K> the key type
  */
-public class KeySerializer<I, K extends Key<I>> extends MappedSerializer<K, I> {
+public class KeySerializer<I, K extends Key<I>> extends Serializer.Provided<K> {
 
 	public KeySerializer(Serializer<I> serializer, Function<I, K> factory) {
-		super(serializer, Key::getId, factory);
+		super(serializer.wrap(Key::getId, factory));
 	}
 }

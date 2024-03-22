@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
 
 import org.infinispan.commons.dataconversion.MediaType;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -21,6 +22,10 @@ public class UserMarshaller extends AbstractMarshaller {
 
 	private final MediaType type;
 	private final ByteBufferMarshaller marshaller;
+
+	public UserMarshaller(Supplier<MediaType> type, ByteBufferMarshaller marshaller) {
+		this(type.get(), marshaller);
+	}
 
 	public UserMarshaller(MediaType type, ByteBufferMarshaller marshaller) {
 		this.type = type;

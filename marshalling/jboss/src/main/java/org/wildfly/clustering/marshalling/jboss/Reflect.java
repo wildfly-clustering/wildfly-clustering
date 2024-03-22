@@ -15,13 +15,11 @@ import java.util.function.Consumer;
  */
 class Reflect {
 
-	static <T> void loadAll(Class<T> targetClass, Consumer<T> consumer) {
+	static <T> void loadAll(Class<T> targetClass, ClassLoader loader, Consumer<T> consumer) {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Void run() {
-				for (T provider : ServiceLoader.load(targetClass, targetClass.getClassLoader())) {
-					consumer.accept(provider);
-				}
+				ServiceLoader.load(targetClass, targetClass.getClassLoader()).forEach(consumer);
 				return null;
 			}
 		});

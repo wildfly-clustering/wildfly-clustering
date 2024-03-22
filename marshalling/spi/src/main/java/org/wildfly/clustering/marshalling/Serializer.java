@@ -9,6 +9,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.OptionalInt;
+import java.util.function.Function;
 
 /**
  * Writes/reads an object to/from a binary stream.
@@ -42,6 +43,33 @@ public interface Serializer<T> {
 		return OptionalInt.empty();
 	}
 
+	/**
+	 * Creates a wrapped serializer that delegates to this serializer applying the specified wrapping/unwrapping functions.
+	 * @param <V> the wrapper type
+	 * @param unwrapper an unwrapping function
+	 * @param wrapper a wrapping function
+	 * @return a wrapped serializer
+	 */
+	default <V> Serializer<V> wrap(Function<V, T> unwrapper, Function<T, V> wrapper) {
+		Serializer<T> serializer = this;
+		return new Serializer<>() {
+			@Override
+			public void write(DataOutput output, V value) throws IOException {
+				serializer.write(output, unwrapper.apply(value));
+			}
+
+			@Override
+			public V read(DataInput input) throws IOException {
+				return wrapper.apply(serializer.read(input));
+			}
+
+			@Override
+			public OptionalInt size(V object) {
+				return serializer.size(unwrapper.apply(object));
+			}
+		};
+	}
+
 	static <T> Serializer<T> of(T value) {
 		return new Serializer<>() {
 			@Override
@@ -53,5 +81,33 @@ public interface Serializer<T> {
 				return value;
 			}
 		};
+	}
+
+	class Provided<T> implements Serializer<T> {
+		private final Serializer<T> serializer;
+
+		public Provided(Serializer<T> serializer) {
+			this.serializer = serializer;
+		}
+
+		@Override
+		public void write(DataOutput output, T value) throws IOException {
+			this.serializer.write(output, value);
+		}
+
+		@Override
+		public T read(DataInput input) throws IOException {
+			return this.serializer.read(input);
+		}
+
+		@Override
+		public OptionalInt size(T object) {
+			return this.serializer.size(object);
+		}
+
+		@Override
+		public <V> Serializer<V> wrap(Function<V, T> unwrapper, Function<T, V> wrapper) {
+			return this.serializer.wrap(unwrapper, wrapper);
+		}
 	}
 }

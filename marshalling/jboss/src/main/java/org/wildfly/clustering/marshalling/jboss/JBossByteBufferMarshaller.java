@@ -12,13 +12,10 @@ import java.io.InvalidObjectException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
-import org.jboss.marshalling.ClassExternalizerFactory;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ObjectTable;
-import org.jboss.marshalling.SerializabilityChecker;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
@@ -33,69 +30,88 @@ public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
 
 	private final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader());
 	private final MarshallingConfigurationRepository repository;
+	private final MarshallingConfiguration configuration;
 	private final WeakReference<ClassLoader> loader;
 
+	/**
+	 * Creates a versioned marshaller supporting multiple marshalling configurations.
+	 * @param repository a repository of marshalling configurations
+	 * @param loader a class loader
+	 */
 	public JBossByteBufferMarshaller(MarshallingConfigurationRepository repository, ClassLoader loader) {
-		this.repository = repository;
-		this.loader = new WeakReference<>(loader);
+		this(repository, repository.getCurrentMarshallingConfiguration(), loader);
 	}
 
-	private MarshallingConfiguration getMarshallingConfiguration(int version) {
-		return this.repository.getMarshallingConfiguration(version);
+	/**
+	 * Creates an unversioned marshaller using a single marshalling configuration.
+	 * @param configuration a marshalling configuration
+	 * @param loader a loader
+	 */
+	public JBossByteBufferMarshaller(MarshallingConfiguration configuration, ClassLoader loader) {
+		this(null, configuration, loader);
+	}
+
+	private JBossByteBufferMarshaller(MarshallingConfigurationRepository repository, MarshallingConfiguration configuration, ClassLoader loader) {
+		this.repository = repository;
+		this.configuration = configuration;
+		this.loader = new WeakReference<>(loader);
 	}
 
 	@Override
 	public Object readFrom(InputStream input) throws IOException {
+		// Weld deserialization is still dependency on TCCL
+		ClassLoader loader = setThreadContextClassLoader(this.loader.get());
 		try (SimpleDataInput data = new SimpleDataInput(Marshalling.createByteInput(input))) {
-			int version = IndexSerializer.UNSIGNED_BYTE.readInt(data);
-			ClassLoader loader = setThreadContextClassLoader(this.loader.get());
-			try (Unmarshaller unmarshaller = this.factory.createUnmarshaller(this.repository.getMarshallingConfiguration(version))) {
+			MarshallingConfiguration configuration = this.configuration;
+			if (this.repository != null) {
+				int version = IndexSerializer.UNSIGNED_BYTE.readInt(data);
+				configuration = this.repository.getMarshallingConfiguration(version);
+			}
+			try (Unmarshaller unmarshaller = this.factory.createUnmarshaller(configuration)) {
 				unmarshaller.start(data);
 				Object result = unmarshaller.readObject();
 				unmarshaller.finish();
 				return result;
-			} catch (ClassNotFoundException e) {
-				InvalidClassException exception = new InvalidClassException(e.getMessage());
-				exception.initCause(e);
-				throw exception;
-			} catch (RuntimeException e) {
-				// Issues such as invalid lambda deserialization throw runtime exceptions
-				InvalidObjectException exception = new InvalidObjectException(e.getMessage());
-				exception.initCause(e);
-				throw exception;
-			} finally {
-				setThreadContextClassLoader(loader);
 			}
+		} catch (ClassNotFoundException e) {
+			InvalidClassException exception = new InvalidClassException(e.getMessage());
+			exception.initCause(e);
+			throw exception;
+		} catch (RuntimeException e) {
+			// Issues such as invalid lambda deserialization throw runtime exceptions
+			InvalidObjectException exception = new InvalidObjectException(e.getMessage());
+			exception.initCause(e);
+			throw exception;
+		} finally {
+			setThreadContextClassLoader(loader);
 		}
 	}
 
 	@Override
 	public void writeTo(OutputStream output, Object value) throws IOException {
-		int version = this.repository.getCurrentVersion();
+		ClassLoader loader = setThreadContextClassLoader(this.loader.get());
 		try (SimpleDataOutput data = new SimpleDataOutput(Marshalling.createByteOutput(output))) {
-			IndexSerializer.UNSIGNED_BYTE.writeInt(data, version);
-			ClassLoader loader = setThreadContextClassLoader(this.loader.get());
-			try (Marshaller marshaller = this.factory.createMarshaller(this.getMarshallingConfiguration(version))) {
+			if (this.repository != null) {
+				IndexSerializer.UNSIGNED_BYTE.writeInt(data, this.repository.getCurrentVersion());
+			}
+			try (Marshaller marshaller = this.factory.createMarshaller(this.configuration)) {
 				marshaller.start(data);
 				marshaller.writeObject(value);
 				marshaller.finish();
-			} finally {
-				setThreadContextClassLoader(loader);
 			}
+		} finally {
+			setThreadContextClassLoader(loader);
 		}
 	}
 
 	@Override
 	public boolean isMarshallable(Object object) {
 		if (object == null) return true;
-		MarshallingConfiguration configuration = this.repository.getMarshallingConfiguration(this.repository.getCurrentVersion());
+		Class<?> objectClass = object.getClass();
 		try {
-			ObjectTable table = configuration.getObjectTable();
-			if ((table != null) && table.getObjectWriter(object) != null) return true;
-			ClassExternalizerFactory factory = configuration.getClassExternalizerFactory();
-			if ((factory != null) && (factory.getExternalizer(object.getClass()) != null)) return true;
-			SerializabilityChecker checker = configuration.getSerializabilityChecker();
-			return ((checker == null) ? SerializabilityChecker.DEFAULT : checker).isSerializable(object.getClass());
+			if (this.configuration.getObjectTable().getObjectWriter(object) != null) return true;
+			if (this.configuration.getClassExternalizerFactory().getExternalizer(objectClass) != null) return true;
+			return this.configuration.getSerializabilityChecker().isSerializable(objectClass);
 		} catch (IOException e) {
 			return false;
 		}
