@@ -5,10 +5,13 @@
 
 package org.wildfly.clustering.cache.function;
 
+import java.util.Optional;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.LongFunction;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * Reusable function implementations.
@@ -21,6 +24,36 @@ public class Functions {
 	}
 
 	private static final Function<?, ?> NULL_FUNCTION = constantFunction(null);
+
+	/**
+	 * Returns a function that replaces a null with the specified value.
+	 * @param replacement the  value
+	 * @param <T> the function type
+	 * @return a function that replaces a null with the specified value.
+	 */
+	public static <T> UnaryOperator<T> whenNullFunction(T replacement) {
+		return new UnaryOperator<>() {
+			@Override
+			public T apply(T value) {
+				return Optional.ofNullable(value).orElse(replacement);
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that replaces a null with the value provided by the specified factory.
+	 * @param factory the provider of the replacement value
+	 * @param <T> the function type
+	 * @return a function that replaces a null with the value provided by the specified factory.
+	 */
+	public static <T> UnaryOperator<T> whenNullFunction(Supplier<T> factory) {
+		return new UnaryOperator<>() {
+			@Override
+			public T apply(T value) {
+				return Optional.ofNullable(value).orElseGet(factory);
+			}
+		};
+	}
 
 	/**
 	 * Returns a function that always returns a constant result, regardless of input.
