@@ -6,7 +6,6 @@
 package org.wildfly.clustering.session.cache.user;
 
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.cache.CacheEntryCreator;
 import org.wildfly.clustering.cache.CacheEntryLocator;
@@ -21,8 +20,4 @@ import org.wildfly.clustering.cache.CacheEntryRemover;
 public interface UserContextFactory<V, PC, TC> extends CacheEntryCreator<String, V, PC>, CacheEntryLocator<String, V>, CacheEntryRemover<String> {
 
 	Map.Entry<PC, TC> createUserContext(V value);
-
-	default CompletionStage<Map.Entry<PC, TC>> createUserContext(CompletionStage<V> value) {
-		return value.thenApply(this::createUserContext);
-	}
 }
