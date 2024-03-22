@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -20,8 +19,8 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.AutoCloseableProvider;
 import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
 import org.wildfly.clustering.server.immutable.Immutability;
-import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerFactory;
+import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.dispatcher.ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration;
 import org.wildfly.clustering.server.infinispan.dispatcher.EmbeddedCacheManagerCommandDispatcherFactory;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
@@ -68,7 +67,7 @@ public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseablePro
 
 	@Override
 	public <SC> SessionManagerFactory<C, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory) {
-		GroupCommandDispatcherFactory<Address, CacheContainerGroupMember> commandDispatcherFactory = new EmbeddedCacheManagerCommandDispatcherFactory<>(new ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration() {
+		CacheContainerCommandDispatcherFactory commandDispatcherFactory = new EmbeddedCacheManagerCommandDispatcherFactory<>(new ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration() {
 			@Override
 			public EmbeddedCacheManager getCacheContainer() {
 				return InfinispanSessionManagerFactoryProvider.this.manager;
@@ -118,7 +117,7 @@ public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseablePro
 		Cache<?, ?> cache = this.manager.getCache(this.deploymentName);
 		cache.start();
 		this.accept(cache::stop);
-		InfinispanSessionManagerFactoryConfiguration<CacheContainerGroupMember> infinispan = new InfinispanSessionManagerFactoryConfiguration<>() {
+		InfinispanSessionManagerFactoryConfiguration infinispan = new InfinispanSessionManagerFactoryConfiguration() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public <K, V> Cache<K, V> getCache() {
@@ -126,7 +125,7 @@ public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseablePro
 			}
 
 			@Override
-			public GroupCommandDispatcherFactory<Address, CacheContainerGroupMember> getCommandDispatcherFactory() {
+			public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
 				return commandDispatcherFactory;
 			}
 		};

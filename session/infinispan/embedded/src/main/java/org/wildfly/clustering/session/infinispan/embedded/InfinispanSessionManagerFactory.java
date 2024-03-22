@@ -11,7 +11,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.CacheKey;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
@@ -21,12 +20,11 @@ import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistr
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.context.ContextStrategy;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
-import org.wildfly.clustering.server.group.Group;
-import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
-import org.wildfly.clustering.server.group.GroupMember;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
+import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommandFactory;
 import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactory;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
@@ -78,7 +76,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 	private final EmbeddedCacheConfiguration configuration;
 	private final Function<SessionManagerConfiguration<C>, Registrar<SessionManager<SC, TransactionBatch>>> managerRegistrarFactory;
 
-	public <S, L, GM extends GroupMember<Address>> InfinispanSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, InfinispanSessionManagerFactoryConfiguration<GM> infinispan) {
+	public <S, L> InfinispanSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, InfinispanSessionManagerFactoryConfiguration infinispan) {
 		this.configuration = infinispan;
 		SessionAttributeActivationNotifierFactory<S, C, L, SC, TransactionBatch> notifierFactory = new SessionAttributeActivationNotifierFactory<>(sessionProvider, listenerProvider);
 		CacheProperties properties = infinispan.getCacheProperties();
@@ -103,16 +101,16 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		};
 		Cache<? extends CacheKey<String>, ?> cache = infinispan.getCache();
 		CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(infinispan.getBatcher(), this.factory.getMetaDataFactory(), remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
-		GroupCommandDispatcherFactory<Address, GM> dispatcherFactory = infinispan.getCommandDispatcherFactory();
-		Group<Address, GM> group = dispatcherFactory.getGroup();
-		this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<String, ExpirationMetaData, GM>() {
+		CacheContainerCommandDispatcherFactory dispatcherFactory = infinispan.getCommandDispatcherFactory();
+		CacheContainerGroup group = dispatcherFactory.getGroup();
+		this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<String, ExpirationMetaData>() {
 			@Override
 			public String getName() {
 				return cache.getName();
 			}
 
 			@Override
-			public CommandDispatcherFactory<GM> getCommandDispatcherFactory() {
+			public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
 				return dispatcherFactory;
 			}
 
@@ -122,7 +120,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public Function<String, GM> getAffinity() {
+			public Function<String, CacheContainerGroupMember> getAffinity() {
 				return new UnaryGroupMemberAffinity<>(cache, group);
 			}
 
@@ -179,7 +177,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		return new ContextualSessionManager<>(new InfinispanSessionManager<>(configuration, infinispanConfiguration, this.factory), this.configuration.getCacheProperties().isTransactional() ? ContextStrategy.UNSHARED : ContextStrategy.SHARED);
 	}
 
-	private <S, L, GM extends GroupMember<Address>> SessionAttributesFactory<C, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory, EmbeddedCacheConfiguration infinispan) {
+	private <S, L> SessionAttributesFactory<C, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory, EmbeddedCacheConfiguration infinispan) {
 		boolean marshalling = infinispan.getCacheProperties().isMarshalling();
 		switch (configuration.getAttributePersistenceStrategy()) {
 			case FINE: {

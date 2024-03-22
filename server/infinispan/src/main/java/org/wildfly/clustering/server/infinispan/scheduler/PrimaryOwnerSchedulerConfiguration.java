@@ -10,27 +10,25 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.group.GroupMember;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.util.Invoker;
 
 /**
  * Encapsulates configuration of a {@link PrimaryOwnerScheduler}.
  * @param <I> the identifier type of scheduled entries
  * @param <M> the meta data type
- * @param <GM> the group member type
  * @author Paul Ferraro
  */
-public interface PrimaryOwnerSchedulerConfiguration<I, M, GM extends GroupMember<Address>> {
+public interface PrimaryOwnerSchedulerConfiguration<I, M> {
 
 	String getName();
 
-	CommandDispatcherFactory<GM> getCommandDispatcherFactory();
+	CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
 
 	CacheEntryScheduler<I, M> getScheduler();
 
-	Function<I, GM> getAffinity();
+	Function<I, CacheContainerGroupMember> getAffinity();
 
 	default BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory() {
 		return ScheduleWithTransientMetaDataCommand::new;

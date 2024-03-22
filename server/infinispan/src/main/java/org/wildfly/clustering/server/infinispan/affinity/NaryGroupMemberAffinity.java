@@ -11,41 +11,41 @@ import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.CacheKey;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.KeyDistribution;
-import org.wildfly.clustering.server.group.Group;
-import org.wildfly.clustering.server.group.GroupMember;
-import org.wildfly.clustering.server.group.GroupMemberFactory;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroupMemberFactory;
 
 /**
  * Returns a list of group members that own cache keys for a given identifier.
  * @param <I> the identifier type of a cache key
- * @param <M> the group member type
  * @author Paul Ferraro
  */
-public class NaryGroupMemberAffinity<I, M extends GroupMember<Address>> implements Function<I, List<M>> {
+public class NaryGroupMemberAffinity<I> implements Function<I, List<CacheContainerGroupMember>> {
 
 	private final KeyDistribution distribution;
-	private final GroupMemberFactory<Address, M> factory;
-	private final M localMember;
+	private final CacheContainerGroupMemberFactory factory;
+	private final CacheContainerGroupMember localMember;
 
-	public NaryGroupMemberAffinity(GroupMemberAffinityConfiguration<I, M> configuration) {
+	public NaryGroupMemberAffinity(GroupMemberAffinityConfiguration<I> configuration) {
 		this(configuration.getCache(), configuration.getGroup());
 	}
 
-	public NaryGroupMemberAffinity(Cache<? extends CacheKey<I>, ?> cache, Group<Address, M> group) {
+	public NaryGroupMemberAffinity(Cache<? extends Key<I>, ?> cache, CacheContainerGroup group) {
 		this(KeyDistribution.forCache(cache), group.getGroupMemberFactory(), group.getLocalMember());
 	}
 
-	NaryGroupMemberAffinity(KeyDistribution distribution, GroupMemberFactory<Address, M> factory, M localMember) {
+	NaryGroupMemberAffinity(KeyDistribution distribution, CacheContainerGroupMemberFactory factory, CacheContainerGroupMember localMember) {
 		this.distribution = distribution;
 		this.factory = factory;
 		this.localMember = localMember;
 	}
 
 	@Override
-	public List<M> apply(I id) {
-		List<M> members = new LinkedList<>();
+	public List<CacheContainerGroupMember> apply(I id) {
+		List<CacheContainerGroupMember> members = new LinkedList<>();
 		boolean locallyOwned = false;
 		for (Address address : this.distribution.getOwners(new CacheKey<>(id))) {
 			locallyOwned |= this.localMember.getAddress().equals(address);
