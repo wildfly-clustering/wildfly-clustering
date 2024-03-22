@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 /**
- * Locates a pair of values from a cache.
+ * Locates a pair of entries from a cache.
  * @param <I> the identifier type of the cache key
  * @param <K> the key type of the located entry
  * @param <V> the value type of the located entry
