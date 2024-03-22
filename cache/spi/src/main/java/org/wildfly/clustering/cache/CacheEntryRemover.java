@@ -11,7 +11,7 @@ import java.util.concurrent.CompletionStage;
  * @param <I> the identifier type of the removed value
  * @author Paul Ferraro
  */
-public interface Remover<I> {
+public interface CacheEntryRemover<I> {
 	/**
 	 * Removes the specified entry from the cache.
 	 * @param id the cache entry identifier.

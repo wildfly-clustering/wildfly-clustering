@@ -20,13 +20,13 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
  * @param <V> the cache value type
  * @param <O> the function operand type
  */
-public class RemoteCacheComputeMutatorFactory<K, V, O> implements CacheEntryMutatorFactory<K, O> {
+public class RemoteCacheEntryComputerFactory<K, V, O> implements CacheEntryMutatorFactory<K, O> {
 
 	private final RemoteCache<K, V> cache;
 	private final Flag[] flags;
 	private final Function<O, BiFunction<Object, V, V>> functionFactory;
 
-	public RemoteCacheComputeMutatorFactory(RemoteCache<K, V> cache, Flag[] flags, Function<O, BiFunction<Object, V, V>> functionFactory) {
+	public RemoteCacheEntryComputerFactory(RemoteCache<K, V> cache, Flag[] flags, Function<O, BiFunction<Object, V, V>> functionFactory) {
 		this.cache = cache;
 		this.flags = flags;
 		this.functionFactory = functionFactory;
@@ -34,6 +34,6 @@ public class RemoteCacheComputeMutatorFactory<K, V, O> implements CacheEntryMuta
 
 	@Override
 	public CacheEntryMutator createMutator(K key, O operand) {
-		return new RemoteCacheEntryComputeMutator<>(this.cache, this.flags, key, this.functionFactory.apply(operand));
+		return new RemoteCacheEntryComputer<>(this.cache, this.flags, key, this.functionFactory.apply(operand));
 	}
 }

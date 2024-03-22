@@ -19,13 +19,13 @@ import org.wildfly.common.function.Functions;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class EmbeddedCacheEntryComputeMutator<K, V> implements CacheEntryMutator {
+public class EmbeddedCacheEntryComputer<K, V> implements CacheEntryMutator {
 
 	private final Cache<K, V> cache;
 	private final K key;
 	private final BiFunction<Object, V, V> function;
 
-	public EmbeddedCacheEntryComputeMutator(Cache<K, V> cache, K key, BiFunction<Object, V, V> function) {
+	public EmbeddedCacheEntryComputer(Cache<K, V> cache, K key, BiFunction<Object, V, V> function) {
 		this.cache = cache;
 		this.key = key;
 		this.function = function;

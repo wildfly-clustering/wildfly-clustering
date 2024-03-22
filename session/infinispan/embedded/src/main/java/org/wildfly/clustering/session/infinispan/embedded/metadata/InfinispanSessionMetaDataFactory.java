@@ -12,7 +12,7 @@ import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryComputeMutator;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryComputer;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
@@ -86,7 +86,7 @@ public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFacto
 	@Override
 	public InvalidatableSessionMetaData createSessionMetaData(String id, ContextualSessionMetaDataEntry<C> entry) {
 		MutableSessionMetaDataOffsetValues delta = this.properties.isTransactional() && entry.isNew() ? null : MutableSessionMetaDataOffsetValues.from(entry);
-		CacheEntryMutator mutator = (delta != null) ? new EmbeddedCacheEntryComputeMutator<>(this.cache, new SessionMetaDataKey(id), new SessionMetaDataEntryFunction<>(delta)) : CacheEntryMutator.NO_OP;
+		CacheEntryMutator mutator = (delta != null) ? new EmbeddedCacheEntryComputer<>(this.cache, new SessionMetaDataKey(id), new SessionMetaDataEntryFunction<>(delta)) : CacheEntryMutator.NO_OP;
 		return new DefaultSessionMetaData((delta != null) ? new MutableSessionMetaDataEntry(entry, delta) : entry, mutator);
 	}
 

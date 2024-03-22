@@ -19,18 +19,18 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
  * @param <V> the cache value type
  * @param <O> the function operand type
  */
-public class EmbeddedCacheComputeMutatorFactory<K, V, O> implements CacheEntryMutatorFactory<K, O> {
+public class EmbeddedCacheEntryComputerFactory<K, V, O> implements CacheEntryMutatorFactory<K, O> {
 
 	private final Cache<K, V> cache;
 	private final Function<O, BiFunction<Object, V, V>> functionFactory;
 
-	public EmbeddedCacheComputeMutatorFactory(Cache<K, V> cache, Function<O, BiFunction<Object, V, V>> functionFactory) {
+	public EmbeddedCacheEntryComputerFactory(Cache<K, V> cache, Function<O, BiFunction<Object, V, V>> functionFactory) {
 		this.cache = cache;
 		this.functionFactory = functionFactory;
 	}
 
 	@Override
 	public CacheEntryMutator createMutator(K key, O operand) {
-		return new EmbeddedCacheEntryComputeMutator<>(this.cache, key, this.functionFactory.apply(operand));
+		return new EmbeddedCacheEntryComputer<>(this.cache, key, this.functionFactory.apply(operand));
 	}
 }

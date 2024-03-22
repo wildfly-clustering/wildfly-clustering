@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.cache.Remover;
+import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
@@ -24,7 +24,7 @@ public class CompositeSessionTestCase {
 	private final String id = "session";
 	private final InvalidatableSessionMetaData metaData = mock(InvalidatableSessionMetaData.class);
 	private final SessionAttributes attributes = mock(SessionAttributes.class);
-	private final Remover<String> remover = mock(Remover.class);
+	private final CacheEntryRemover<String> remover = mock(CacheEntryRemover.class);
 	private final Object context = new Object();
 
 	private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, Supplied.simple(), Functions.constantSupplier(this.context), this.remover);
