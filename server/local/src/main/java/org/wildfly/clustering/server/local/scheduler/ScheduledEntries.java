@@ -67,11 +67,11 @@ public interface ScheduledEntries<K, V> extends Iterable<Map.Entry<K, V>> {
 		return new LinkedScheduledEntries<>();
 	}
 
-	static <K extends Comparable<? super K>, V extends Comparable<? super V>> ScheduledEntries<K, V> sorted() {
+	static <K, V extends Comparable<? super V>> ScheduledEntries<K, V> sorted() {
 		return sorted(SortedScheduledEntries.<K, V>defaultComparator());
 	}
 
-	static <K, V> ScheduledEntries<K, V> sorted(Comparator<Map.Entry<K, V>> comparator) {
+	static <K, V extends Comparable<? super V>> ScheduledEntries<K, V> sorted(Comparator<Map.Entry<K, V>> comparator) {
 		return new SortedScheduledEntries<>(comparator);
 	}
 }
