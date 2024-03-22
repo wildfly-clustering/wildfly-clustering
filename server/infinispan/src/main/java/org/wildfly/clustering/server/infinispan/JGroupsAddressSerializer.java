@@ -53,7 +53,7 @@ public enum JGroupsAddressSerializer implements Serializer<JGroupsAddress> {
 	@MetaInfServices(Formatter.class)
 	public static class JGroupsAddressFormatter extends Formatter.Provided<JGroupsAddress> {
 		public JGroupsAddressFormatter() {
-			super(Formatter.serialized(JGroupsAddress.class, INSTANCE));
+			super(INSTANCE.toFormatter(JGroupsAddress.class));
 		}
 	}
 }

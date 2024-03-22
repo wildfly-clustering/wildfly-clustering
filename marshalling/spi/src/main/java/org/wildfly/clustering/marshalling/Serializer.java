@@ -5,9 +5,14 @@
 
 package org.wildfly.clustering.marshalling;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.OptionalInt;
 import java.util.function.Function;
 
@@ -66,6 +71,42 @@ public interface Serializer<T> {
 			@Override
 			public OptionalInt size(V object) {
 				return serializer.size(unwrapper.apply(object));
+			}
+		};
+	}
+
+	/**
+	 * Creates a {@link Formatter} based on this serializer.
+	 * @param type the serialized type
+	 * @return a new formatter
+	 */
+	default Formatter<T> toFormatter(Class<? extends T> type) {
+		Serializer<T> serializer = this;
+		return new Formatter<>() {
+			@Override
+			public Class<? extends T> getType() {
+				return type;
+			}
+
+			@Override
+			public T parse(String value) {
+				byte[] bytes = Base64.getDecoder().decode(value);
+				try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes))) {
+					return serializer.read(input);
+				} catch (IOException e) {
+					throw new IllegalArgumentException(e);
+				}
+			}
+
+			@Override
+			public String format(T key) {
+				ByteArrayOutputStream bytes = new ByteArrayOutputStream(serializer.size(key).orElse(64));
+				try (DataOutputStream output = new DataOutputStream(bytes)) {
+					serializer.write(output, key);
+				} catch (IOException e) {
+					throw new IllegalArgumentException(e);
+				}
+				return Base64.getEncoder().encodeToString(bytes.toByteArray());
 			}
 		};
 	}
