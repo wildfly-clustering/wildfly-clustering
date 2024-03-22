@@ -15,6 +15,6 @@ import org.wildfly.clustering.marshalling.Formatter;
 public class LocalEmbeddedCacheManagerGroupMemberFormatter extends Formatter.Provided<LocalEmbeddedCacheManagerGroupMember> {
 
 	public LocalEmbeddedCacheManagerGroupMemberFormatter() {
-		super(Formatter.IDENTITY.wrap(LocalEmbeddedCacheManagerGroupMember.class, LocalEmbeddedCacheManagerGroupMember::new, LocalEmbeddedCacheManagerGroupMember::getName));
+		super(Formatter.IDENTITY.wrap(LocalEmbeddedCacheManagerGroupMember.class, LocalEmbeddedCacheManagerGroupMember::getName, LocalEmbeddedCacheManagerGroupMember::new));
 	}
 }

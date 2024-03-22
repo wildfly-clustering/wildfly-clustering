@@ -17,7 +17,7 @@ import org.wildfly.clustering.marshalling.TesterFactory;
 /**
  * @author Paul Ferraro
  */
-public interface TwoWayKey2StringMapperTesterFactory extends TesterFactory {
+public interface FormatterTesterFactory extends TesterFactory {
 
 	@Override
 	default <T> Tester<T> createTester(BiConsumer<T, T> assertion) {

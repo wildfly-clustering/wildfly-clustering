@@ -8,7 +8,7 @@ package org.wildfly.clustering.server.infinispan;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jgroups.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.wildfly.clustering.cache.infinispan.embedded.persistence.TwoWayKey2StringMapperTesterFactory;
+import org.wildfly.clustering.cache.infinispan.embedded.persistence.FormatterTesterFactory;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
@@ -20,7 +20,7 @@ import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 public class EmbeddedCacheManagerGroupMemberTestCase {
 
 	@ParameterizedTest
-	@TesterFactorySource({ MarshallingTesterFactory.class, TwoWayKey2StringMapperTesterFactory.class })
+	@TesterFactorySource({ MarshallingTesterFactory.class, FormatterTesterFactory.class })
 	public void test(TesterFactory factory) {
 		factory.createTester().accept(new EmbeddedCacheManagerGroupMember(new JGroupsAddress(UUID.randomUUID())));
 	}

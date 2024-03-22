@@ -3,19 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.cache.infinispan.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.PrivilegedAction;
 import java.util.OptionalInt;
-import java.util.ServiceLoader;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
@@ -25,25 +21,6 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 public class WrappedMessageByteBufferMarshaller implements ByteBufferMarshaller {
 
 	private final ImmutableSerializationContext context;
-
-	public WrappedMessageByteBufferMarshaller(ClassLoader loader) {
-		this(createSerializationContext(loader));
-	}
-
-	private static ImmutableSerializationContext createSerializationContext(ClassLoader loader) {
-		SerializationContext context = ProtobufUtil.newSerializationContext();
-		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				for (SerializationContextInitializer initializer : ServiceLoader.load(SerializationContextInitializer.class, loader)) {
-					initializer.registerSchema(context);
-					initializer.registerMarshallers(context);
-				}
-				return null;
-			}
-		});
-		return context;
-	}
 
 	public WrappedMessageByteBufferMarshaller(ImmutableSerializationContext context) {
 		this.context = context;

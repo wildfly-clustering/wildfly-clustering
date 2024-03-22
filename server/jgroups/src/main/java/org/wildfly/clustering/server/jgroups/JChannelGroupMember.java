@@ -5,11 +5,7 @@
 
 package org.wildfly.clustering.server.jgroups;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
+import java.util.Optional;
 
 import org.jgroups.Address;
 import org.jgroups.util.NameCache;
@@ -18,8 +14,7 @@ import org.wildfly.clustering.server.group.GroupMember;
 /**
  * @author Paul Ferraro
  */
-public class JChannelGroupMember implements ChannelGroupMember, Serializable {
-	private static final long serialVersionUID = 3818614808896402906L;
+public class JChannelGroupMember implements ChannelGroupMember {
 
 	private final Address address;
 
@@ -52,41 +47,11 @@ public class JChannelGroupMember implements ChannelGroupMember, Serializable {
 
 	@Override
 	public String toString() {
-		return this.getName();
+		return Optional.ofNullable(this.getName()).orElseGet(this.address::toString);
 	}
 
 	@Override
 	public int compareTo(GroupMember<Address> member) {
 		return this.address.compareTo(member.getAddress());
-	}
-
-	@SuppressWarnings("unused")
-	Object writeReplace() throws ObjectStreamException {
-		return new JChannelGroupMemberProxy(this.address);
-	}
-
-	static class JChannelGroupMemberProxy implements Serializable {
-		private static final long serialVersionUID = 1154615703830003932L;
-
-		private transient Address address;
-
-		JChannelGroupMemberProxy(Address address) {
-			this.address = address;
-		}
-
-		private void writeObject(ObjectOutputStream output) throws IOException {
-			output.defaultWriteObject();
-			AddressSerializer.INSTANCE.write(output, this.address);
-		}
-
-		private void readObject(ObjectInputStream input) throws IOException, ClassNotFoundException {
-			input.defaultReadObject();
-			this.address = AddressSerializer.INSTANCE.read(input);
-		}
-
-		@SuppressWarnings("unused")
-		Object readResolve() throws ObjectStreamException {
-			return new JChannelGroupMember(this.address);
-		}
 	}
 }

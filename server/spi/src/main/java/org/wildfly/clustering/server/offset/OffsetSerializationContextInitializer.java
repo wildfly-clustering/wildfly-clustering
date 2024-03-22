@@ -21,7 +21,7 @@ public class OffsetSerializationContextInitializer extends AbstractSerialization
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		ProtoStreamMarshaller<Duration> marshaller = (ProtoStreamMarshaller<Duration>) context.getMarshaller(Duration.class);
+		ProtoStreamMarshaller<Duration> marshaller = context.getMarshaller(Duration.class);
 		context.registerMarshaller(marshaller.wrap(Offset.DurationOffset.class, Offset.DurationOffset::get, Offset.DurationOffset::new));
 		context.registerMarshaller(marshaller.wrap(Offset.InstantOffset.class, Offset.InstantOffset::get, Offset.InstantOffset::new));
 	}
