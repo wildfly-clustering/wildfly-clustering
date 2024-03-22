@@ -8,7 +8,7 @@ package org.wildfly.clustering.server.infinispan;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jgroups.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.wildfly.clustering.cache.infinispan.embedded.persistence.TwoWayKey2StringMapperTesterFactory;
+import org.wildfly.clustering.cache.infinispan.embedded.persistence.FormatterTesterFactory;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
@@ -19,7 +19,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 public class JGroupsAddressTestCase {
 
 	@ParameterizedTest
-	@TesterFactorySource({ ProtoStreamTesterFactory.class, TwoWayKey2StringMapperTesterFactory.class })
+	@TesterFactorySource({ ProtoStreamTesterFactory.class, FormatterTesterFactory.class })
 	public void test(TesterFactory factory) {
 		factory.createTester().accept(new JGroupsAddress(UUID.randomUUID()));
 	}

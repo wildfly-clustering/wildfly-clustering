@@ -7,7 +7,7 @@ package org.wildfly.clustering.session.cache;
 import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.cache.Remover;
+import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
@@ -26,9 +26,9 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 	private final SessionAttributes attributes;
 	private final Supplied<C> context;
 	private final Supplier<C> contextFactory;
-	private final Remover<String> remover;
+	private final CacheEntryRemover<String> remover;
 
-	public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, Supplied<C> context, Supplier<C> contextFactory, Remover<String> remover) {
+	public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, Supplied<C> context, Supplier<C> contextFactory, CacheEntryRemover<String> remover) {
 		super(id, metaData, attributes);
 		this.metaData = metaData;
 		this.attributes = attributes;

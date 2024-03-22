@@ -7,13 +7,13 @@ package org.wildfly.clustering.session.cache.attributes;
 
 import java.util.Map;
 
-import org.wildfly.clustering.cache.Locator;
+import org.wildfly.clustering.cache.CacheEntryLocator;
 
 /**
  * Factory for creating a map of session attributes.
  * @author Paul Ferraro
  * @param <V> attributes cache entry type
  */
-public interface ImmutableSessionAttributesFactory<V> extends Locator<String, V> {
+public interface ImmutableSessionAttributesFactory<V> extends CacheEntryLocator<String, V> {
 	Map<String, Object> createImmutableSessionAttributes(String id, V value);
 }

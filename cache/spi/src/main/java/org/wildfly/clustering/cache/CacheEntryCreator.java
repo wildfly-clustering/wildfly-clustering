@@ -14,7 +14,7 @@ import java.util.concurrent.CompletionStage;
  * @param <C> the context of the created type
  * @author Paul Ferraro
  */
-public interface Creator<I, V, C> {
+public interface CacheEntryCreator<I, V, C> {
 
 	/**
 	 * Creates a value in the cache, if it does not already exist.

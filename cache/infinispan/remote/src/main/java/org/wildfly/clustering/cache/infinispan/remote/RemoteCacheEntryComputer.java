@@ -22,7 +22,7 @@ import org.wildfly.common.function.Functions;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class RemoteCacheEntryComputeMutator<K, V> implements CacheEntryMutator {
+public class RemoteCacheEntryComputer<K, V> implements CacheEntryMutator {
 
 	private final RemoteCache<K, V> cache;
 	private final Flag[] flags;
@@ -30,11 +30,11 @@ public class RemoteCacheEntryComputeMutator<K, V> implements CacheEntryMutator {
 	private final BiFunction<Object, V, V> function;
 	private final Supplier<Duration> maxIdle;
 
-	public RemoteCacheEntryComputeMutator(RemoteCache<K, V> cache, Flag[] flags, K key, BiFunction<Object, V, V> function) {
+	public RemoteCacheEntryComputer(RemoteCache<K, V> cache, Flag[] flags, K key, BiFunction<Object, V, V> function) {
 		this(cache, flags, key, function, Functions.constantSupplier(Duration.ZERO));
 	}
 
-	public RemoteCacheEntryComputeMutator(RemoteCache<K, V> cache, Flag[] flags, K key, BiFunction<Object, V, V> function, Supplier<Duration> maxIdle) {
+	public RemoteCacheEntryComputer(RemoteCache<K, V> cache, Flag[] flags, K key, BiFunction<Object, V, V> function, Supplier<Duration> maxIdle) {
 		this.cache = cache;
 		this.flags = flags;
 		this.key = key;

@@ -13,8 +13,6 @@ import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.wildfly.clustering.cache.infinispan.embedded.persistence.TwoWayKey2StringMapperTesterFactory;
-import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
@@ -24,7 +22,7 @@ import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 public class AddressTestCase {
 
 	@ParameterizedTest
-	@TesterFactorySource({ MarshallingTesterFactory.class, TwoWayKey2StringMapperTesterFactory.class })
+	@TesterFactorySource
 	private void test(TesterFactory factory) throws UnknownHostException {
 		Consumer<Address> tester = factory.createTester();
 		tester.accept(UUID.randomUUID());

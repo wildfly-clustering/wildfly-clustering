@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.session.cache.user;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
@@ -20,7 +19,7 @@ public class AuthenticationEntryMarshallerTestCase {
 
 	@Test
 	public void test() {
-		Consumer<UserContextEntry<String, Object>> tester = new ProtoStreamTesterFactory(List.of(new UserSerializationContextInitializer())).createTester(AuthenticationEntryMarshallerTestCase::assertEquals);
+		Consumer<UserContextEntry<String, Object>> tester = new ProtoStreamTesterFactory(new UserSerializationContextInitializer()).createTester(AuthenticationEntryMarshallerTestCase::assertEquals);
 		tester.accept(new UserContextEntry<>("username"));
 	}
 

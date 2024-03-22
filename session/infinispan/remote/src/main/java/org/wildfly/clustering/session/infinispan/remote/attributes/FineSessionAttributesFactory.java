@@ -18,8 +18,8 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheComputeMutatorFactory;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryComputerFactory;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -58,7 +58,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = hotrod.getCacheProperties();
-		this.mutatorFactory = new RemoteCacheComputeMutatorFactory<>(this.cache, this.ignoreReturnFlags, SessionAttributeMapComputeFunction::new);
+		this.mutatorFactory = new RemoteCacheEntryComputerFactory<>(this.cache, this.ignoreReturnFlags, SessionAttributeMapComputeFunction::new);
 		this.notifierFactory = notifierFactory;
 	}
 

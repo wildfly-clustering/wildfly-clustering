@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache.metadata;
 
-import org.wildfly.clustering.cache.Locator;
+import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
 /**
@@ -13,6 +13,6 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
  * @param <V> the cache value type
  * @author Paul Ferraro
  */
-public interface ImmutableSessionMetaDataFactory<V> extends Locator<String, V> {
+public interface ImmutableSessionMetaDataFactory<V> extends CacheEntryLocator<String, V> {
 	ImmutableSessionMetaData createImmutableSessionMetaData(String id, V value);
 }

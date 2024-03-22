@@ -12,7 +12,7 @@ import java.util.concurrent.CompletionStage;
  * @param <V> the located value type
  * @author Paul Ferraro
  */
-public interface Locator<I, V> {
+public interface CacheEntryLocator<I, V> {
 
 	/**
 	 * Locates the value in the cache with the specified identifier.

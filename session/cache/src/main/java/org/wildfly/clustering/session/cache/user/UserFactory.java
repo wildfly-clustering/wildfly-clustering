@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import org.wildfly.clustering.cache.BiCreator;
-import org.wildfly.clustering.cache.BiLocator;
-import org.wildfly.clustering.cache.Remover;
+import org.wildfly.clustering.cache.BiCacheEntryCreator;
+import org.wildfly.clustering.cache.BiCacheEntryLocator;
+import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.session.user.User;
 
 /**
@@ -24,7 +24,7 @@ import org.wildfly.clustering.session.user.User;
  * @param <D> the deployment type
  * @param <S> the session type
  */
-public interface UserFactory<CV, C, T, SV, D, S> extends BiCreator<String, CV, SV, C>, BiLocator<String, CV, SV>, Remover<String> {
+public interface UserFactory<CV, C, T, SV, D, S> extends BiCacheEntryCreator<String, CV, SV, C>, BiCacheEntryLocator<String, CV, SV>, CacheEntryRemover<String> {
 
 	UserContextFactory<CV, C, T> getUserContextFactory();
 	UserSessionsFactory<SV, D, S> getUserSessionsFactory();

@@ -11,10 +11,10 @@ import org.kohsuke.MetaInfServices;
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(TwoWayKey2StringMapperTesterFactory.class)
-public class IndexedKeyFormatMapperTesterFactory implements TwoWayKey2StringMapperTesterFactory {
+@MetaInfServices(FormatterTesterFactory.class)
+public class KeyFormatterMapperTesterFactory implements FormatterTesterFactory {
 
-	private final TwoWayKey2StringMapper mapper = IndexedKeyFormatMapper.load(Thread.currentThread().getContextClassLoader());
+	private final TwoWayKey2StringMapper mapper = KeyFormatterMapper.load(Thread.currentThread().getContextClassLoader());
 
 	@Override
 	public TwoWayKey2StringMapper getMapper() {

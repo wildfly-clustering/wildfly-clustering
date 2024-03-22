@@ -18,7 +18,7 @@ import org.wildfly.clustering.marshalling.Formatter;
 /**
  * @author Paul Ferraro
  */
-public class IndexedKeyFormatMapperTestCase {
+public class KeyFormatterMapperTestCase {
 
 	enum Type {
 		TYPE00 {},
@@ -43,7 +43,7 @@ public class IndexedKeyFormatMapperTestCase {
 
 	@Test
 	public void testSinglePadding() {
-		TwoWayKey2StringMapper mapper = new IndexedKeyFormatMapper(createPersistenceList(16));
+		TwoWayKey2StringMapper mapper = new KeyFormatterMapper(createPersistenceList(16));
 
 		assertTrue(mapper.isSupportedType(Type.TYPE00.getClass()));
 		assertTrue(mapper.isSupportedType(Type.TYPE15.getClass()));
@@ -61,7 +61,7 @@ public class IndexedKeyFormatMapperTestCase {
 
 	@Test
 	public void testDoublePadding() {
-		TwoWayKey2StringMapper mapper = new IndexedKeyFormatMapper(createPersistenceList(17));
+		TwoWayKey2StringMapper mapper = new KeyFormatterMapper(createPersistenceList(17));
 
 		assertTrue(mapper.isSupportedType(Type.TYPE00.getClass()));
 		assertTrue(mapper.isSupportedType(Type.TYPE15.getClass()));
@@ -83,6 +83,6 @@ public class IndexedKeyFormatMapperTestCase {
 
 	@SuppressWarnings("unchecked")
 	private static List<? extends Formatter<?>> createPersistenceList(int size) {
-		return IntStream.range(0, size).mapToObj(index -> Formatter.IDENTITY.wrap((Class<Type>) Type.values()[index].getClass(), value -> Type.valueOf(value), Type::name)).collect(Collectors.toList());
+		return IntStream.range(0, size).mapToObj(index -> Formatter.IDENTITY.wrap((Class<Type>) Type.values()[index].getClass(), Type::name, value -> Type.valueOf(value))).collect(Collectors.toList());
 	}
 }

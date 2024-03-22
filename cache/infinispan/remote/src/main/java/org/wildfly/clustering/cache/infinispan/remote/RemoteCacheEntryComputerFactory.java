@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.cache.infinispan.embedded;
+package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.infinispan.Cache;
+import org.infinispan.client.hotrod.Flag;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 
@@ -19,18 +20,20 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
  * @param <V> the cache value type
  * @param <O> the function operand type
  */
-public class EmbeddedCacheComputeMutatorFactory<K, V, O> implements CacheEntryMutatorFactory<K, O> {
+public class RemoteCacheEntryComputerFactory<K, V, O> implements CacheEntryMutatorFactory<K, O> {
 
-	private final Cache<K, V> cache;
+	private final RemoteCache<K, V> cache;
+	private final Flag[] flags;
 	private final Function<O, BiFunction<Object, V, V>> functionFactory;
 
-	public EmbeddedCacheComputeMutatorFactory(Cache<K, V> cache, Function<O, BiFunction<Object, V, V>> functionFactory) {
+	public RemoteCacheEntryComputerFactory(RemoteCache<K, V> cache, Flag[] flags, Function<O, BiFunction<Object, V, V>> functionFactory) {
 		this.cache = cache;
+		this.flags = flags;
 		this.functionFactory = functionFactory;
 	}
 
 	@Override
 	public CacheEntryMutator createMutator(K key, O operand) {
-		return new EmbeddedCacheEntryComputeMutator<>(this.cache, key, this.functionFactory.apply(operand));
+		return new RemoteCacheEntryComputer<>(this.cache, this.flags, key, this.functionFactory.apply(operand));
 	}
 }
