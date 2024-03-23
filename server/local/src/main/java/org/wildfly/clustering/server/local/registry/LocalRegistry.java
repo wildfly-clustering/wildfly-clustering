@@ -5,9 +5,9 @@
 
 package org.wildfly.clustering.server.local.registry;
 
+import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.local.LocalGroup;
@@ -21,16 +21,18 @@ import org.wildfly.clustering.server.registry.RegistryListener;
  * @param <V> the registry value type
  * @author Paul Ferraro
  */
-public class LocalRegistry<K, V> implements Registry<LocalGroupMember, K, V>, Function<Map.Entry<K, V>, Map<K, V>> {
+public class LocalRegistry<K, V> implements Registry<LocalGroupMember, K, V> {
 
 	private final LocalGroup group;
 	private final Runnable closeTask;
-
-	private volatile Map.Entry<K, V> entry;
+	private final AtomicBoolean closed = new AtomicBoolean(false);
+	private final Map.Entry<K, V> entry;
+	private final Map<K, V> entries;
 
 	public LocalRegistry(LocalGroup group, Map.Entry<K, V> entry, Runnable closeTask) {
 		this.group = group;
 		this.entry = entry;
+		this.entries = Collections.singletonMap(entry.getKey(), entry.getValue());
 		this.closeTask = closeTask;
 	}
 
@@ -46,22 +48,18 @@ public class LocalRegistry<K, V> implements Registry<LocalGroupMember, K, V>, Fu
 
 	@Override
 	public Map<K, V> getEntries() {
-		return Optional.ofNullable(this.entry).map(this).orElse(Map.of());
+		return !this.closed.get() ? this.entries : Map.of();
 	}
 
 	@Override
 	public Map.Entry<K, V> getEntry(LocalGroupMember member) {
-		return this.group.getLocalMember().equals(member) ? this.entry : null;
+		return !this.closed.get() && this.group.getLocalMember().equals(member) ? this.entry : null;
 	}
 
 	@Override
 	public void close() {
-		this.entry = null;
-		this.closeTask.run();
-	}
-
-	@Override
-	public Map<K, V> apply(Map.Entry<K, V> entry) {
-		return Map.of(entry.getKey(), entry.getValue());
+		if (this.closed.compareAndSet(false, true)) {
+			this.closeTask.run();
+		}
 	}
 }
