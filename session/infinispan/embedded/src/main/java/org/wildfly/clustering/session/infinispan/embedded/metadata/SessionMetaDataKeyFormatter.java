@@ -17,6 +17,6 @@ import org.wildfly.clustering.session.infinispan.embedded.SessionKeyFormatter;
 public class SessionMetaDataKeyFormatter extends SessionKeyFormatter<SessionMetaDataKey> {
 
 	public SessionMetaDataKeyFormatter() {
-		super(SessionMetaDataKey.class, SessionMetaDataKey::new);
+		super(SessionMetaDataKey::new);
 	}
 }
