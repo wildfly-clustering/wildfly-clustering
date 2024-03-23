@@ -36,7 +36,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	private volatile Map.Entry<Map.Entry<T, Instant>, Future<?>> futureEntry = null;
 
 	public LocalScheduler(LocalSchedulerConfiguration<T> configuration) {
-		this.entries = configuration.getScheduledEntriesFactory().get();
+		this.entries = configuration.getScheduledEntries();
 		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, configuration.getThreadFactory());
 		executor.setKeepAliveTime(1L, TimeUnit.MINUTES);
 		executor.allowCoreThreadTimeOut(true);
