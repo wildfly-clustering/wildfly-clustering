@@ -7,7 +7,7 @@ package org.wildfly.clustering.session.infinispan.remote.metadata;
 
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
-import org.wildfly.clustering.session.cache.IdentifierMarshaller;
+import org.wildfly.clustering.session.cache.IdentifierScalarMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -16,7 +16,7 @@ public class SessionMetaDataSerializationContextInitializer extends AbstractSeri
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(IdentifierMarshaller.getKeyMarshaller(SessionCreationMetaDataKey::new));
-		context.registerMarshaller(IdentifierMarshaller.getKeyMarshaller(SessionAccessMetaDataKey::new));
+		context.registerMarshaller(IdentifierScalarMarshaller.INSTANCE.toKeyMarshaller(SessionCreationMetaDataKey::new));
+		context.registerMarshaller(IdentifierScalarMarshaller.INSTANCE.toKeyMarshaller(SessionAccessMetaDataKey::new));
 	}
 }

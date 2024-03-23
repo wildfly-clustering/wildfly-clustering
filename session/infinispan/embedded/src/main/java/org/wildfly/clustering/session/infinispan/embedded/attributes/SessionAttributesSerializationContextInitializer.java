@@ -7,7 +7,7 @@ package org.wildfly.clustering.session.infinispan.embedded.attributes;
 
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
-import org.wildfly.clustering.session.cache.IdentifierMarshaller;
+import org.wildfly.clustering.session.cache.IdentifierScalarMarshaller;
 
 /**
  * @author Paul Ferraro
@@ -16,6 +16,6 @@ public class SessionAttributesSerializationContextInitializer extends AbstractSe
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(IdentifierMarshaller.getKeyMarshaller(SessionAttributesKey::new));
+		context.registerMarshaller(IdentifierScalarMarshaller.INSTANCE.toKeyMarshaller(SessionAttributesKey::new));
 	}
 }

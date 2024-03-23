@@ -17,6 +17,7 @@ import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 import org.wildfly.clustering.session.IdentifierMarshallerProvider;
 
@@ -24,7 +25,7 @@ import org.wildfly.clustering.session.IdentifierMarshallerProvider;
  * Scalar marshaller for a session identifier.
  * @author Paul Ferraro
  */
-public enum IdentifierMarshaller implements ScalarMarshaller<String> {
+public enum IdentifierScalarMarshaller implements ScalarMarshaller<String> {
 	INSTANCE;
 
 	private final Marshaller<String, ByteBuffer> marshaller = java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
@@ -33,19 +34,18 @@ public enum IdentifierMarshaller implements ScalarMarshaller<String> {
 			return ServiceLoader.load(IdentifierMarshallerProvider.class, IdentifierMarshallerProvider.class.getClassLoader()).findFirst().map(IdentifierMarshallerProvider::getMarshaller).orElseThrow(IllegalStateException::new);
 		}
 	});
+	private final ScalarMarshaller<ByteBuffer> bufferMarshaller = Scalar.BYTE_BUFFER.cast(ByteBuffer.class);
 
 	@Override
 	public String readFrom(ProtoStreamReader reader) throws IOException {
-		return this.marshaller.read(reader.readByteBuffer());
+		ByteBuffer buffer = this.bufferMarshaller.readFrom(reader);
+		return this.marshaller.read(buffer);
 	}
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, String id) throws IOException {
 		ByteBuffer buffer = this.marshaller.write(id);
-		int offset = buffer.arrayOffset();
-		int length = buffer.limit() - offset;
-		writer.writeVarint32(length);
-		writer.writeRawBytes(buffer.array(), offset, length);
+		this.bufferMarshaller.writeTo(writer, buffer);
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public enum IdentifierMarshaller implements ScalarMarshaller<String> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <K extends Key<String>> ProtoStreamMarshaller<K> getKeyMarshaller(Function<String, K> factory) {
-		return INSTANCE.toMarshaller((Class<K>) factory.apply("").getClass(), Key::getId, factory);
+	public <K extends Key<String>> ProtoStreamMarshaller<K> toKeyMarshaller(Function<String, K> factory) {
+		return this.toMarshaller((Class<K>) factory.apply("").getClass(), Key::getId, factory);
 	}
 }
