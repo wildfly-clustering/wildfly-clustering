@@ -18,7 +18,12 @@ import org.wildfly.clustering.marshalling.Formatter;
  */
 public class SessionKeyFormatter<K extends Key<String>> extends KeyFormatter<String, K> {
 
-	protected SessionKeyFormatter(Class<K> keyClass, Function<String, K> resolver) {
-		super(keyClass, Formatter.IDENTITY, resolver);
+	@SuppressWarnings("unchecked")
+	protected SessionKeyFormatter(Function<String, K> factory) {
+		this((Class<K>) factory.apply("").getClass(), factory);
+	}
+
+	private SessionKeyFormatter(Class<K> keyClass, Function<String, K> factory) {
+		super(keyClass, Formatter.IDENTITY, factory);
 	}
 }
