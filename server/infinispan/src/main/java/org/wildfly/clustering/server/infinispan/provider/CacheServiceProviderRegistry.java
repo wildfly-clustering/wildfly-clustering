@@ -59,7 +59,7 @@ import org.wildfly.common.function.ExceptionRunnable;
  * @param <T> the service identifier type
  */
 @Listener(observation = Observation.POST)
-public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T, CacheContainerGroupMember>, Registration {
+public class CacheServiceProviderRegistry<T> implements CacheContainerServiceProviderRegistry<T>, Registration {
 	private static final Logger LOGGER = Logger.getLogger(CacheServiceProviderRegistry.class);
 
 	private final Batcher<TransactionBatch> batcher;

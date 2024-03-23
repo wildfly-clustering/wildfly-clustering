@@ -61,7 +61,7 @@ import org.wildfly.common.function.ExceptionRunnable;
  * @param <V> value type
  */
 @Listener(observation = Observation.POST)
-public class CacheRegistry<K, V> implements Registry<CacheContainerGroupMember, K, V>, ExceptionRunnable<CacheException> {
+public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, ExceptionRunnable<CacheException> {
 	private static final Logger LOGGER = Logger.getLogger(CacheRegistry.class);
 
 	private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
