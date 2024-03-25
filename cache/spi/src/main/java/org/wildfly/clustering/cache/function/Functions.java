@@ -23,6 +23,7 @@ public class Functions {
 		// Hide
 	}
 
+	private static final UnaryOperator<?> NULL_OPERATOR = constantOperator(null);
 	private static final Function<?, ?> NULL_FUNCTION = constantFunction(null);
 
 	/**
@@ -56,10 +57,30 @@ public class Functions {
 	}
 
 	/**
-	 * Returns a function that always returns a constant result, regardless of input.
+	 * Returns an operator that always returns null, regardless of input.
+	 * @param <R> the operator type
+	 * @return an operator that always returns null.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <R> UnaryOperator<R> nullOperator() {
+		return (UnaryOperator<R>) NULL_OPERATOR;
+	}
+
+	/**
+	 * Returns an operator that always returns a constant result, regardless of input.
+	 * @param result the value returned by the constant operator
+	 * @param <R> the operator type
+	 * @return an operator that always returns the specified result
+	 */
+	public static <R> UnaryOperator<R> constantOperator(R result) {
+		return new ConstantOperator<>(result);
+	}
+
+	/**
+	 * Returns a function that always returns null, regardless of input.
 	 * @param <T> the function parameter type
 	 * @param <R> the function return type
-	 * @return a function that always returns the specified result
+	 * @return a function that always returns null.
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T, R> Function<T, R> nullFunction() {
@@ -105,6 +126,12 @@ public class Functions {
 	 */
 	public static <R> DoubleFunction<R> constantDoubleFunction(R result) {
 		return new ConstantFunction<>(result);
+	}
+
+	static class ConstantOperator<R> extends ConstantFunction<R, R> implements UnaryOperator<R> {
+		ConstantOperator(R result) {
+			super(result);
+		}
 	}
 
 	static class ConstantFunction<T, R> implements Function<T, R>, IntFunction<R>, LongFunction<R>, DoubleFunction<R> {
