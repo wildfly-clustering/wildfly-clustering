@@ -23,7 +23,7 @@ import org.wildfly.clustering.marshalling.Formatter;
  * Key is mapped to an padded hexadecimal index + the formatted key.
  * @author Paul Ferraro
  */
-public class KeyFormatterMapper implements TwoWayKey2StringMapper {
+public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 	private static final int HEX_RADIX = 16;
 
 	public static TwoWayKey2StringMapper load(ClassLoader loader) {
@@ -41,7 +41,7 @@ public class KeyFormatterMapper implements TwoWayKey2StringMapper {
 		result.add(Formatter.IDENTITY.wrap(Long.class, Long::valueOf));
 		result.add(Formatter.IDENTITY.wrap(UUID.class, UUID::fromString));
 		result.addAll(formatters);
-		return new KeyFormatterMapper(result);
+		return new FormatterKeyMapper(result);
 	}
 
 	private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
@@ -49,7 +49,7 @@ public class KeyFormatterMapper implements TwoWayKey2StringMapper {
 	private final int padding;
 
 	@SuppressWarnings("unchecked")
-	public KeyFormatterMapper(List<? extends Formatter<?>> formatters) {
+	public FormatterKeyMapper(List<? extends Formatter<?>> formatters) {
 		this.formatters = (List<Formatter<Object>>) (List<?>) formatters;
 		for (int i = 0; i < this.formatters.size(); ++i) {
 			this.indexes.put(this.formatters.get(i).getType(), i);

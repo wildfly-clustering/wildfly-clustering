@@ -18,7 +18,7 @@ import org.wildfly.clustering.marshalling.Formatter;
 /**
  * @author Paul Ferraro
  */
-public class KeyFormatterMapperTestCase {
+public class FormatterKeyMapperTestCase {
 
 	enum Type {
 		TYPE00 {},
@@ -43,7 +43,7 @@ public class KeyFormatterMapperTestCase {
 
 	@Test
 	public void testSinglePadding() {
-		TwoWayKey2StringMapper mapper = new KeyFormatterMapper(createPersistenceList(16));
+		TwoWayKey2StringMapper mapper = new FormatterKeyMapper(createPersistenceList(16));
 
 		assertTrue(mapper.isSupportedType(Type.TYPE00.getClass()));
 		assertTrue(mapper.isSupportedType(Type.TYPE15.getClass()));
@@ -61,7 +61,7 @@ public class KeyFormatterMapperTestCase {
 
 	@Test
 	public void testDoublePadding() {
-		TwoWayKey2StringMapper mapper = new KeyFormatterMapper(createPersistenceList(17));
+		TwoWayKey2StringMapper mapper = new FormatterKeyMapper(createPersistenceList(17));
 
 		assertTrue(mapper.isSupportedType(Type.TYPE00.getClass()));
 		assertTrue(mapper.isSupportedType(Type.TYPE15.getClass()));
