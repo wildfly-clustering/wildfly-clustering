@@ -6,12 +6,15 @@
 package org.wildfly.clustering.cache.function;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.LongFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
  * Reusable function implementations.
@@ -126,6 +129,28 @@ public class Functions {
 	 */
 	public static <R> DoubleFunction<R> constantDoubleFunction(R result) {
 		return new ConstantFunction<>(result);
+	}
+
+	/**
+	 * Converts an ExceptionFunction to a Function, applying the specified exception wrapper on failure.
+	 * @param <T> the function parameter type
+	 * @param <R> the function return type
+	 * @param <E> the function exception type
+	 * @param function the exception function to quiet
+	 * @param exceptionWrapper an exception wrapper
+	 * @return a function.
+	 */
+	public static <T, R, E extends Exception> Function<T, R> quiet(ExceptionFunction<T, R, E> function, BiFunction<T, Exception, RuntimeException> exceptionWrapper) {
+		return new Function<>() {
+			@Override
+			public R apply(T value) {
+				try {
+					return function.apply(value);
+				} catch (Exception e) {
+					throw exceptionWrapper.apply(value, e);
+				}
+			}
+		};
 	}
 
 	static class ConstantOperator<R> extends ConstantFunction<R, R> implements UnaryOperator<R> {
