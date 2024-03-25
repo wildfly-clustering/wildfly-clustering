@@ -16,19 +16,19 @@ import org.wildfly.clustering.server.registry.Registry;
  * @param <M> the group member type
  * @author Paul Ferraro
  */
-public class RegistryGroupMemberMapper<M extends GroupMember> implements Function<M, String> {
+public class SessionAffinityRegistryGroupMemberMapper<M extends GroupMember> implements Function<M, String> {
 
 	private final Registry<M, String, Void> registry;
 	private final String localKey;
 
-	RegistryGroupMemberMapper(Registry<M, String, Void> registry) {
+	public SessionAffinityRegistryGroupMemberMapper(Registry<M, String, Void> registry) {
 		this.registry = registry;
 		this.localKey = registry.getEntry(registry.getGroup().getLocalMember()).getKey();
 	}
 
 	@Override
 	public String apply(M member) {
-		Map.Entry<String, Void> entry = this.registry.getEntry(member);
+		Map.Entry<String, Void> entry = (member != null) ? this.registry.getEntry(member) : null;
 		return (entry != null) ? entry.getKey() : this.localKey;
 	}
 }

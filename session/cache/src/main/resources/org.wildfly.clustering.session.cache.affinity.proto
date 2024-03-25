@@ -1,0 +1,10 @@
+package org.wildfly.clustering.session.cache.affinity;
+
+// IDs: 195 - 199
+
+/**
+ * @TypeId(195)
+ */
+message SessionAffinityRegistryEntry {
+	required	string	key	= 1;
+}
