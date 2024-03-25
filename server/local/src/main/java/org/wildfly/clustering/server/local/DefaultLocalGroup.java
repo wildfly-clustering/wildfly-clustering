@@ -22,7 +22,7 @@ class DefaultLocalGroup implements LocalGroup {
 	DefaultLocalGroup(String groupName, String memberName) {
 		this.name = groupName;
 		this.member = new DefaultLocalGroupMember(memberName);
-		this.membership = new SingletonMembership(this.member);
+		this.membership = GroupMembership.singleton(this.member);
 		this.factory = id -> this.member;
 	}
 
