@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.infinispan.remote;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.function.BiConsumer;
 
 import org.infinispan.client.hotrod.MetadataValue;
@@ -30,19 +31,19 @@ import com.github.benmanes.caffeine.cache.Caffeine;
  */
 public class SessionManagerNearCacheFactory implements NearCacheFactory {
 
-	private final Integer maxActiveSessions;
+	private final OptionalInt maxActiveSessions;
 
-	public SessionManagerNearCacheFactory(Integer maxActiveSessions) {
+	public SessionManagerNearCacheFactory(OptionalInt maxActiveSessions) {
 		this.maxActiveSessions = maxActiveSessions;
 	}
 
 	@Override
 	public <K, V> NearCache<K, V> createNearCache(NearCacheConfiguration config, BiConsumer<K, MetadataValue<V>> removedConsumer) {
-		EvictionListener<K, V> listener = (this.maxActiveSessions != null) ? new EvictionListener<>(removedConsumer, new InvalidationListener()) : null;
+		EvictionListener<K, V> listener = this.maxActiveSessions.isPresent() ? new EvictionListener<>(removedConsumer, new InvalidationListener()) : null;
 		Caffeine<Object, Object> builder = Caffeine.newBuilder();
 		if (listener != null) {
 			builder.executor(Runnable::run)
-					.maximumWeight(this.maxActiveSessions.longValue())
+					.maximumWeight(this.maxActiveSessions.getAsInt())
 					.weigher(new SimpleKeyWeigher(SessionCreationMetaDataKey.class::isInstance))
 					.removalListener(listener);
 		}
