@@ -81,7 +81,9 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
 		this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
 		CacheInvoker.retrying(this.cache).invoke(this);
-		this.cache.addListener(this, new KeyFilter<>(Address.class), null);
+		if (!this.group.isSingleton()) {
+			this.cache.addListener(this, new KeyFilter<>(Address.class), null);
+		}
 	}
 
 	@Override
@@ -94,7 +96,9 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 
 	@Override
 	public void close() {
-		this.cache.removeListener(this);
+		if (!this.group.isSingleton()) {
+			this.cache.removeListener(this);
+		}
 		Address localAddress = this.cache.getCacheManager().getAddress();
 		try (TransactionBatch batch = this.batcher.createBatch()) {
 			// If this remove fails, the entry will be auto-removed on topology change by the new primary owner
@@ -113,6 +117,9 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 
 	@Override
 	public Registration register(RegistryListener<K, V> listener) {
+		if (this.group.isSingleton()) {
+			return Registration.EMPTY;
+		}
 		this.listeners.computeIfAbsent(listener, this.executorServiceFactory);
 		return () -> this.unregister(listener);
 	}
