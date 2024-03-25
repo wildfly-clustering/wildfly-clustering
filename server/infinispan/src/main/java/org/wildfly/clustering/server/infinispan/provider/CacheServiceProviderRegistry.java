@@ -74,8 +74,8 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 		this.cache = config.getCache();
 		this.batcher = config.getBatcher();
 		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
-		this.cache.addListener(this);
 		this.invoker = CacheInvoker.retrying(this.cache);
+		this.cache.addListener(this);
 	}
 
 	@Override
@@ -168,6 +168,9 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<T, Set<Address>> event) {
+		// A singleton group does not care about topology changes
+		if (this.group.isSingleton()) return CompletableFuture.completedStage(null);
+
 		ConsistentHash previousHash = event.getWriteConsistentHashAtStart();
 		List<Address> previousMembers = previousHash.getMembers();
 		ConsistentHash hash = event.getWriteConsistentHashAtEnd();
