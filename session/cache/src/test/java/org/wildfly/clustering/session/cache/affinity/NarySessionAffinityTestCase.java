@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache.affinity;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
@@ -21,17 +22,50 @@ public class NarySessionAffinityTestCase {
 
 	@Test
 	public void test() {
-		test(null);
-		test("affinity");
+		GroupMember primary = mock(GroupMember.class);
+		GroupMember backup = mock(GroupMember.class);
+		GroupMember local = mock(GroupMember.class);
+
+		Map<String, List<GroupMember>> affinity = Map.of("session", List.of(primary, backup, local));
+		Map<GroupMember, String> mapping = Map.of(primary, "foo", backup, "bar", local, "qux");
+		UnaryOperator<String> sessionAffinity = new NarySessionAffinity<>(affinity::get, mapping::get, () -> "#");
+
+		assertEquals("foo#bar#qux", sessionAffinity.apply("session"));
 	}
 
-	static void test(String expected) {
-		GroupMember foo = mock(GroupMember.class);
-		GroupMember bar = mock(GroupMember.class);
-		Map<String, GroupMember> affinity = Map.of("foo", foo, "bar", bar);
-		Map<GroupMember, String> mapping = Map.of(foo, "foo-server", bar, "bar-server");
-		UnaryOperator<String> sessionAffinity = new UnarySessionAffinity<>(affinity::get, mapping::get);
-		assertEquals("foo-server", sessionAffinity.apply("foo"));
-		assertEquals("bar-server", sessionAffinity.apply("bar"));
+	@Test
+	public void testDupes() {
+		GroupMember primary = mock(GroupMember.class);
+		GroupMember backup = mock(GroupMember.class);
+		GroupMember local = mock(GroupMember.class);
+
+		Map<String, List<GroupMember>> affinity = Map.of("session", List.of(primary, backup, local));
+		Map<GroupMember, String> mapping = Map.of(primary, "foo", backup, "bar", local, "bar");
+		UnaryOperator<String> sessionAffinity = new NarySessionAffinity<>(affinity::get, mapping::get, () -> "-");
+
+		assertEquals("foo-bar", sessionAffinity.apply("session"));
+	}
+
+	@Test
+	public void testLimit() {
+		GroupMember primary = mock(GroupMember.class);
+		GroupMember backup = mock(GroupMember.class);
+		GroupMember local = mock(GroupMember.class);
+
+		Map<String, List<GroupMember>> affinity = Map.of("session", List.of(primary, backup, local));
+		Map<GroupMember, String> mapping = Map.of(primary, "foo", backup, "bar", local, "qux");
+		UnaryOperator<String> sessionAffinity = new NarySessionAffinity<>(affinity::get, mapping::get, new NarySessionAffinityConfiguration() {
+			@Override
+			public String getDelimiter() {
+				return ",";
+			}
+
+			@Override
+			public int getMaxMembers() {
+				return 2;
+			}
+		});
+
+		assertEquals("foo,bar", sessionAffinity.apply("session"));
 	}
 }
