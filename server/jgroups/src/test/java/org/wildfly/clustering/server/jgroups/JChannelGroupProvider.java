@@ -41,4 +41,11 @@ public class JChannelGroupProvider extends AutoCloseableProvider implements Grou
 	public String getName() {
 		return this.channel.getClusterName();
 	}
+
+	@Override
+	public void close() {
+		this.group.close();
+		this.channel.disconnect();
+		this.channel.close();
+	}
 }

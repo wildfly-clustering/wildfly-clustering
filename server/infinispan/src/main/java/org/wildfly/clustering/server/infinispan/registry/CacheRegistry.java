@@ -249,15 +249,15 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 					try {
 						switch (type) {
 							case CACHE_ENTRY_CREATED: {
-								listener.addedEntries(entries);
+								listener.added(entries);
 								break;
 							}
 							case CACHE_ENTRY_MODIFIED: {
-								listener.updatedEntries(entries);
+								listener.updated(entries);
 								break;
 							}
 							case CACHE_ENTRY_REMOVED: {
-								listener.removedEntries(entries);
+								listener.removed(entries);
 								break;
 							}
 							default: {

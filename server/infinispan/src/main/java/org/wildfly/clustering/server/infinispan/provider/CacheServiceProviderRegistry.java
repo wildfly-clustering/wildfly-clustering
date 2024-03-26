@@ -32,7 +32,8 @@ import org.infinispan.notifications.Listener.Observation;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
-import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.logging.Logger;
@@ -223,14 +224,22 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 	}
 
 	@CacheEntryCreated
+	public CompletionStage<Void> created(CacheEntryCreatedEvent<T, Set<Address>> event) {
+		return this.updated(event.getKey(), event.getValue());
+	}
+
 	@CacheEntryModified
-	public CompletionStage<Void> modified(CacheEntryEvent<T, Set<Address>> event) {
-		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.get(event.getKey());
+	public CompletionStage<Void> modified(CacheEntryModifiedEvent<T, Set<Address>> event) {
+		return !Objects.equals(event.getOldValue(), event.getNewValue()) ? this.updated(event.getKey(), event.getNewValue()) : CompletableFuture.completedFuture(null);
+	}
+
+	private CompletionStage<Void> updated(T service, Set<Address> providers) {
+		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.get(service);
 		if (entry != null) {
 			ServiceProviderListener<CacheContainerGroupMember> listener = entry.getKey();
 			if (listener != null) {
 				Executor executor = entry.getValue();
-				Set<CacheContainerGroupMember> members = this.map(event.getValue());
+				Set<CacheContainerGroupMember> members = this.map(providers);
 				try {
 					executor.execute(() -> {
 						try {

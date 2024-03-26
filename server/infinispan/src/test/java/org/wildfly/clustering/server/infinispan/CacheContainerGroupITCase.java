@@ -19,6 +19,6 @@ public class CacheContainerGroupITCase extends GroupITCase<Address, CacheContain
 	private static final Function<Address, JGroupsAddress> CAST = JGroupsAddress.class::cast;
 
 	public CacheContainerGroupITCase() {
-		super(CacheContainerGroupProvider::new, CAST.andThen(JGroupsAddress::getJGroupsAddress));
+		super(EmbeddedCacheManagerGroupProvider::new, CAST.andThen(JGroupsAddress::getJGroupsAddress));
 	}
 }
