@@ -45,6 +45,11 @@ public class CompositeSessionFactory<C, MV extends Contextual<SC>, AV, SC> exten
 	}
 
 	@Override
+	public Supplier<SC> getContextFactory() {
+		return this.contextFactory;
+	}
+
+	@Override
 	public Session<SC> createSession(String id, Map.Entry<MV, AV> entry, C context) {
 		MV metaDataValue = entry.getKey();
 		AV attributesValue = entry.getValue();
