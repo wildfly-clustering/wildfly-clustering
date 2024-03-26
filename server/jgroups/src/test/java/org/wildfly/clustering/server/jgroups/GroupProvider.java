@@ -21,4 +21,7 @@ public interface GroupProvider<A extends Comparable<A>, M extends GroupMember<A>
 	Group<A, M> getGroup();
 
 	String getName();
+
+	@Override
+	void close();
 }

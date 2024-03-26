@@ -19,19 +19,19 @@ public interface RegistryListener<K, V> {
 	 *
 	 * @param added a map of entries that have been added
 	 */
-	void addedEntries(Map<K, V> added);
+	void added(Map<K, V> added);
 
 	/**
 	 * Called when existing entries have been updated.
 	 *
 	 * @param updated a map of entries that have been updated
 	 */
-	void updatedEntries(Map<K, V> updated);
+	void updated(Map<K, V> updated);
 
 	/**
 	 * Called when entries have been removed.
 	 *
 	 * @param removed a map of entries that have been removed
 	 */
-	void removedEntries(Map<K, V> removed);
+	void removed(Map<K, V> removed);
 }
