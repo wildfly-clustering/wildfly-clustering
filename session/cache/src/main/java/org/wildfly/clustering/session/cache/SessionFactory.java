@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.BiCacheEntryCreator;
 import org.wildfly.clustering.cache.CacheEntryRemover;
@@ -29,6 +30,8 @@ public interface SessionFactory<C, MV, AV, SC> extends ImmutableSessionFactory<M
 	SessionMetaDataFactory<MV> getMetaDataFactory();
 	@Override
 	SessionAttributesFactory<C, AV> getAttributesFactory();
+
+	Supplier<SC> getContextFactory();
 
 	@Override
 	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> createEntry(String id, Duration context) {

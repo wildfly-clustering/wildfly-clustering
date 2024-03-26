@@ -91,6 +91,11 @@ public class ContextualSessionManager<C, B extends Batch> implements SessionMana
 	}
 
 	@Override
+	public Session<C> getDetachedSession(String id) {
+		return this.manager.getDetachedSession(id);
+	}
+
+	@Override
 	public Supplier<String> getIdentifierFactory() {
 		return this.manager.getIdentifierFactory();
 	}
