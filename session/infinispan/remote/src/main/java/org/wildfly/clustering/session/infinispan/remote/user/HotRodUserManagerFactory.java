@@ -42,7 +42,7 @@ public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, 
 	}
 
 	@Override
-	public <T> UserManager<C, T, D, S, TransactionBatch> createUserManager(UserManagerConfiguration<T, TransactionBatch> configuration) {
+	public <T> UserManager<C, T, D, S, TransactionBatch> createUserManager(UserManagerConfiguration<T> configuration) {
 		Marshaller<C, MarshalledValue<C, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller()));
 		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T> contextFactory = new HotRodUserContextFactory<>(this.configuration, marshaller, configuration.getTransientContextFactory());
 		UserSessionsFactory<Map<D, S>, D, S> sessionsFactory = new HotRodUserSessionsFactory<>(this.configuration);

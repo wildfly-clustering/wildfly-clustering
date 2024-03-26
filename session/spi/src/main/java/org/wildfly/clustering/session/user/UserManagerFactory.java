@@ -20,5 +20,5 @@ public interface UserManagerFactory<C, D, S, B extends Batch> {
 	 * @param configuration a user manager configuration
 	 * @return a new user manager
 	 */
-	<T> UserManager<C, T, D, S, B> createUserManager(UserManagerConfiguration<T, B> configuration);
+	<T> UserManager<C, T, D, S, B> createUserManager(UserManagerConfiguration<T> configuration);
 }
