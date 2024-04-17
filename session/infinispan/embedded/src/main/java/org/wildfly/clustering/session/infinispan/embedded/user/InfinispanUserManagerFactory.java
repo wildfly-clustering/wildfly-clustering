@@ -41,7 +41,7 @@ public class InfinispanUserManagerFactory<C, D, S> implements UserManagerFactory
 	}
 
 	@Override
-	public <T> UserManager<C, T, D, S, TransactionBatch> createUserManager(UserManagerConfiguration<T, TransactionBatch> configuration) {
+	public <T> UserManager<C, T, D, S, TransactionBatch> createUserManager(UserManagerConfiguration<T> configuration) {
 		Marshaller<C, MarshalledValue<C, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller()));
 		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T> contextFactory = new InfinispanUserContextFactory<>(this.configuration, marshaller, configuration.getTransientContextFactory());
 		UserSessionsFactory<Map<D, S>, D, S> sessionsFactory = new InfinispanUserSessionsFactory<>(this.configuration);

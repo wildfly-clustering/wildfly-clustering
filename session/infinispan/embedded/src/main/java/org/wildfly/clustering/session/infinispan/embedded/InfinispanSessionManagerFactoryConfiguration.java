@@ -4,16 +4,13 @@
  */
 package org.wildfly.clustering.session.infinispan.embedded;
 
-import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
-import org.wildfly.clustering.server.group.GroupMember;
+import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 
 /**
- * @param <GM> the group member type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionManagerFactoryConfiguration<GM extends GroupMember<Address>> extends EmbeddedCacheConfiguration {
+public interface InfinispanSessionManagerFactoryConfiguration extends EmbeddedCacheConfiguration {
 
-	GroupCommandDispatcherFactory<Address, GM> getCommandDispatcherFactory();
+	CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
 }

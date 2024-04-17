@@ -141,6 +141,74 @@ public interface Contextualizer {
 	 */
 	<V1, V2, R, E extends Exception> ExceptionBiFunction<V1, V2, R, E> contextualize(ExceptionBiFunction<V1, V2, R, E> function);
 
+	Contextualizer NONE = new Contextualizer() {
+
+		@Override
+		public Runnable contextualize(Runnable runner) {
+			return runner;
+		}
+
+		@Override
+		public <E extends Exception> ExceptionRunnable<E> contextualize(ExceptionRunnable<E> runner) {
+			return runner;
+		}
+
+		@Override
+		public <T> Callable<T> contextualize(Callable<T> caller) {
+			return caller;
+		}
+
+		@Override
+		public <T> Supplier<T> contextualize(Supplier<T> supplier) {
+			return supplier;
+		}
+
+		@Override
+		public <T, E extends Exception> ExceptionSupplier<T, E> contextualize(ExceptionSupplier<T, E> supplier) {
+			return supplier;
+		}
+
+		@Override
+		public <V> Consumer<V> contextualize(Consumer<V> consumer) {
+			return consumer;
+		}
+
+		@Override
+		public <V, E extends Exception> ExceptionConsumer<V, E> contextualize(ExceptionConsumer<V, E> consumer) {
+			return consumer;
+		}
+
+		@Override
+		public <V1, V2> BiConsumer<V1, V2> contextualize(BiConsumer<V1, V2> consumer) {
+			return consumer;
+		}
+
+		@Override
+		public <V1, V2, E extends Exception> ExceptionBiConsumer<V1, V2, E> contextualize(ExceptionBiConsumer<V1, V2, E> consumer) {
+			return consumer;
+		}
+
+		@Override
+		public <V, R> Function<V, R> contextualize(Function<V, R> function) {
+			return function;
+		}
+
+		@Override
+		public <V, R, E extends Exception> ExceptionFunction<V, R, E> contextualize(ExceptionFunction<V, R, E> function) {
+			return function;
+		}
+
+		@Override
+		public <V1, V2, R> BiFunction<V1, V2, R> contextualize(BiFunction<V1, V2, R> function) {
+			return function;
+		}
+
+		@Override
+		public <V1, V2, R, E extends Exception> ExceptionBiFunction<V1, V2, R, E> contextualize(ExceptionBiFunction<V1, V2, R, E> function) {
+			return function;
+		}
+	};
+
 	static <C> Contextualizer withContext(C context, ContextReference<C> reference) {
 		ContextualExecutor executor = ContextualExecutor.withContext(context, reference);
 		return new Contextualizer() {

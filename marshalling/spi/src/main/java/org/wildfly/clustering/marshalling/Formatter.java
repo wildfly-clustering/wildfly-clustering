@@ -5,13 +5,9 @@
 
 package org.wildfly.clustering.marshalling;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Base64;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * Formats an objects into a string representation and back again.
@@ -20,10 +16,10 @@ import java.util.function.Function;
  */
 public interface Formatter<T> {
 	/**
-	 * The implementation class of the target key of this format.
-	 * @return an implementation class
+	 * Returns the type of the formatted object.
+	 * @return the type of the formatted object.
 	 */
-	Class<T> getTargetClass();
+	Class<? extends T> getType();
 
 	/**
 	 * Parses the key from the specified string.
@@ -42,26 +38,27 @@ public interface Formatter<T> {
 	/**
 	 * Returns a wrapped formatter.
 	 * @param <U> the wrapped type
-	 * @param targetClass the wrapped type
-	 * @param wrapper the wrapper function
+	 * @param type the wrapped type
 	 * @param unwrapper the unwrapper function
+	 * @param wrapper the wrapper function
 	 * @return a wrapped formmater
 	 */
-	default <U> Formatter<U> wrap(Class<U> targetClass, Function<T, U> wrapper, Function<U, T> unwrapper) {
+	default <U> Formatter<U> wrap(Class<? extends U> type, Function<U, T> unwrapper, Function<T, U> wrapper) {
+		Formatter<T> formatter = this;
 		return new Formatter<>() {
 			@Override
-			public Class<U> getTargetClass() {
-				return targetClass;
+			public Class<? extends U> getType() {
+				return type;
 			}
 
 			@Override
 			public U parse(String value) {
-				return wrapper.apply(Formatter.this.parse(value));
+				return wrapper.apply(formatter.parse(value));
 			}
 
 			@Override
 			public String format(U value) {
-				return Formatter.this.format(unwrapper.apply(value));
+				return formatter.format(unwrapper.apply(value));
 			}
 		};
 	}
@@ -75,13 +72,13 @@ public interface Formatter<T> {
 		 * @return a wrapped formmater
 		 */
 		default <U> Formatter<U> wrap(Class<U> targetClass, Function<String, U> wrapper) {
-			return this.wrap(targetClass, wrapper, Object::toString);
+			return this.wrap(targetClass, Object::toString, wrapper);
 		}
 	}
 
 	Identity IDENTITY = new Identity() {
 		@Override
-		public Class<String> getTargetClass() {
+		public Class<String> getType() {
 			return String.class;
 		}
 
@@ -100,7 +97,7 @@ public interface Formatter<T> {
 		return new Formatter<>() {
 			@SuppressWarnings("unchecked")
 			@Override
-			public Class<T> getTargetClass() {
+			public Class<T> getType() {
 				return (Class<T>) value.getClass();
 			}
 
@@ -116,32 +113,41 @@ public interface Formatter<T> {
 		};
 	}
 
-	static <T> Formatter<T> serialized(Class<T> targetClass, Serializer<T> serializer) {
+	static <T, V1, V2> Formatter<T> joining(Class<? extends T> type, String delimiter, Formatter<V1> formatter1, Formatter<V2> formatter2, Function<T, V1> unwrapper1, Function<T, V2> unwrapper2, BiFunction<V1, V2, T> wrapper) {
 		return new Formatter<>() {
 			@Override
-			public Class<T> getTargetClass() {
-				return targetClass;
+			public Class<? extends T> getType() {
+				return type;
 			}
 
 			@Override
 			public T parse(String value) {
-				byte[] bytes = Base64.getDecoder().decode(value);
-				try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes))) {
-					return serializer.read(input);
-				} catch (IOException e) {
-					throw new IllegalArgumentException(e);
-				}
+				String[] values = value.split(Pattern.quote(delimiter));
+				return wrapper.apply(formatter1.parse(values[0]), formatter2.parse(values[1]));
 			}
 
 			@Override
-			public String format(T key) {
-				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-				try (DataOutputStream output = new DataOutputStream(bytes)) {
-					serializer.write(output, key);
-				} catch (IOException e) {
-					throw new IllegalArgumentException(e);
-				}
-				return Base64.getEncoder().encodeToString(bytes.toByteArray());
+			public String format(T value) {
+				return String.join(delimiter, formatter1.format(unwrapper1.apply(value)), formatter2.format(unwrapper2.apply(value)));
+			}
+		};
+	}
+
+	static <T> Formatter<T> joining(Class<? extends T> type, String delimiter, Function<T, String[]> unwrapper, Function<String[], T> wrapper) {
+		return new Formatter<>() {
+			@Override
+			public Class<? extends T> getType() {
+				return type;
+			}
+
+			@Override
+			public T parse(String value) {
+				return wrapper.apply(value.split(Pattern.quote(delimiter)));
+			}
+
+			@Override
+			public String format(T value) {
+				return String.join(delimiter, unwrapper.apply(value));
 			}
 		};
 	}
@@ -154,8 +160,8 @@ public interface Formatter<T> {
 		}
 
 		@Override
-		public Class<T> getTargetClass() {
-			return this.formatter.getTargetClass();
+		public Class<? extends T> getType() {
+			return this.formatter.getType();
 		}
 
 		@Override
@@ -166,6 +172,11 @@ public interface Formatter<T> {
 		@Override
 		public String format(T value) {
 			return this.formatter.format(value);
+		}
+
+		@Override
+		public <U> Formatter<U> wrap(Class<? extends U> type, Function<U, T> unwrapper, Function<T, U> wrapper) {
+			return this.formatter.wrap(type, unwrapper, wrapper);
 		}
 	}
 }

@@ -61,7 +61,7 @@ import org.wildfly.common.function.ExceptionRunnable;
  * @param <V> value type
  */
 @Listener(observation = Observation.POST)
-public class CacheRegistry<K, V> implements Registry<CacheContainerGroupMember, K, V>, ExceptionRunnable<CacheException> {
+public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, ExceptionRunnable<CacheException> {
 	private static final Logger LOGGER = Logger.getLogger(CacheRegistry.class);
 
 	private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
@@ -81,7 +81,9 @@ public class CacheRegistry<K, V> implements Registry<CacheContainerGroupMember, 
 		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
 		this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
 		CacheInvoker.retrying(this.cache).invoke(this);
-		this.cache.addListener(this, new KeyFilter<>(Address.class), null);
+		if (!this.group.isSingleton()) {
+			this.cache.addListener(this, new KeyFilter<>(Address.class), null);
+		}
 	}
 
 	@Override
@@ -94,7 +96,9 @@ public class CacheRegistry<K, V> implements Registry<CacheContainerGroupMember, 
 
 	@Override
 	public void close() {
-		this.cache.removeListener(this);
+		if (!this.group.isSingleton()) {
+			this.cache.removeListener(this);
+		}
 		Address localAddress = this.cache.getCacheManager().getAddress();
 		try (TransactionBatch batch = this.batcher.createBatch()) {
 			// If this remove fails, the entry will be auto-removed on topology change by the new primary owner
@@ -113,6 +117,9 @@ public class CacheRegistry<K, V> implements Registry<CacheContainerGroupMember, 
 
 	@Override
 	public Registration register(RegistryListener<K, V> listener) {
+		if (this.group.isSingleton()) {
+			return Registration.EMPTY;
+		}
 		this.listeners.computeIfAbsent(listener, this.executorServiceFactory);
 		return () -> this.unregister(listener);
 	}
@@ -242,15 +249,15 @@ public class CacheRegistry<K, V> implements Registry<CacheContainerGroupMember, 
 					try {
 						switch (type) {
 							case CACHE_ENTRY_CREATED: {
-								listener.addedEntries(entries);
+								listener.added(entries);
 								break;
 							}
 							case CACHE_ENTRY_MODIFIED: {
-								listener.updatedEntries(entries);
+								listener.updated(entries);
 								break;
 							}
 							case CACHE_ENTRY_REMOVED: {
-								listener.removedEntries(entries);
+								listener.removed(entries);
 								break;
 							}
 							default: {

@@ -7,7 +7,6 @@ package org.wildfly.clustering.session.cache.metadata.fine;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
@@ -22,7 +21,7 @@ public class DefaultSessionCreationMetaDataEntryMarshallerTestCase {
 
 	@Test
 	public void test() {
-		Consumer<DefaultSessionCreationMetaDataEntry<Object>> tester = new ProtoStreamTesterFactory(List.of(new FineSessionMetaDataSerializationContextInitializer())).createTester(DefaultSessionCreationMetaDataEntryMarshallerTestCase::assertEquals);
+		Consumer<DefaultSessionCreationMetaDataEntry<Object>> tester = new ProtoStreamTesterFactory(new FineSessionMetaDataSerializationContextInitializer()).createTester(DefaultSessionCreationMetaDataEntryMarshallerTestCase::assertEquals);
 
 		DefaultSessionCreationMetaDataEntry<Object> entry = new DefaultSessionCreationMetaDataEntry<>(Instant.now());
 

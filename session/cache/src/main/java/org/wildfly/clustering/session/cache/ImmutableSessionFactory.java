@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import org.wildfly.clustering.cache.BiLocator;
+import org.wildfly.clustering.cache.BiCacheEntryLocator;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
@@ -22,7 +22,7 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  * @param <AV> the session attribute value type
  * @author Paul Ferraro
  */
-public interface ImmutableSessionFactory<MV, AV> extends BiLocator<String, MV, AV> {
+public interface ImmutableSessionFactory<MV, AV> extends BiCacheEntryLocator<String, MV, AV> {
 
 	ImmutableSessionMetaDataFactory<MV> getMetaDataFactory();
 	ImmutableSessionAttributesFactory<AV> getAttributesFactory();

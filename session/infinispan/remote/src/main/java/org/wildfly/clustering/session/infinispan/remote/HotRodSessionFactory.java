@@ -20,7 +20,7 @@ import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
 import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.cache.Remover;
+import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
@@ -54,7 +54,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	private final Flag[] forceReturnFlags;
 	private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory;
 	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
-	private final Remover<String> attributesRemover;
+	private final CacheEntryRemover<String> attributesRemover;
 	private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
 	private final Executor executor;
 
@@ -87,7 +87,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 		Flag[] forceReturnFlags = this.forceReturnFlags;
 		ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = this.metaDataFactory;
 		ImmutableSessionAttributesFactory<AV> attributesFactory = this.attributesFactory;
-		Remover<String> attributesRemover = this.attributesRemover;
+		CacheEntryRemover<String> attributesRemover = this.attributesRemover;
 		Collection<Consumer<ImmutableSession>> listeners = this.listeners;
 		String id = event.getKey().getId();
 		Runnable task = new Runnable() {

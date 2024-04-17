@@ -76,6 +76,14 @@ public interface SessionManager<C, B extends Batch> extends Manager<String, B> {
 	CompletionStage<ImmutableSession> findImmutableSessionAsync(String id);
 
 	/**
+	 * Returns a detached session with the specified identifier.
+	 * A detached session is only valid if a session exists for the given identifier.
+	 * @param id the session identifier of the detached session
+	 * @return a detached session
+	 */
+	Session<C> getDetachedSession(String id);
+
+	/**
 	 * Returns statistics for this session manager.
 	 * @return an object from which statistics can be obtained.
 	 */

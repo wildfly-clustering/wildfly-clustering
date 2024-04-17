@@ -8,7 +8,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
@@ -18,7 +17,6 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.server.infinispan.expiration.AbstractExpirationScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerConfiguration;
-import org.wildfly.clustering.server.local.scheduler.ScheduledEntries;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
@@ -40,11 +38,6 @@ public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<
 			@Override
 			public String getName() {
 				return name;
-			}
-
-			@Override
-			public Supplier<ScheduledEntries<String, Instant>> getScheduledEntriesFactory() {
-				return ScheduledEntries::sorted;
 			}
 
 			@Override

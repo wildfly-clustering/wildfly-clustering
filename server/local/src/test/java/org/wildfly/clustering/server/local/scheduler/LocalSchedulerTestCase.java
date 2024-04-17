@@ -16,11 +16,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -34,9 +32,8 @@ public class LocalSchedulerTestCase {
 				return "test";
 			}
 
-			@Override
-			public Supplier<ScheduledEntries<UUID, Instant>> getScheduledEntriesFactory() {
-				return Functions.constantSupplier(entries);
+			public ScheduledEntries<UUID, Instant> getScheduledEntries() {
+				return entries;
 			}
 
 			@Override

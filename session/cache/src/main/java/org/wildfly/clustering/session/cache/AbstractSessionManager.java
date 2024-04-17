@@ -92,6 +92,11 @@ public abstract class AbstractSessionManager<C, MV, AV, SC, B extends Batch> imp
 	}
 
 	@Override
+	public Session<SC> getDetachedSession(String id) {
+		return new DetachedSession<>(this, id, this.factory.getContextFactory().get());
+	}
+
+	@Override
 	public SessionStatistics getStatistics() {
 		return this;
 	}
