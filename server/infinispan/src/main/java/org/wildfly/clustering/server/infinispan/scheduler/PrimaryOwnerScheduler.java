@@ -16,11 +16,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.infinispan.remoting.transport.Address;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.dispatcher.Command;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.server.group.GroupMember;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.server.util.Invoker;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -29,18 +28,17 @@ import org.wildfly.common.function.ExceptionSupplier;
  * Scheduler decorator that schedules/cancels a given object on the primary owner.
  * @param <I> the identifier type of scheduled entries
  * @param <M> the meta data type
- * @param <GM> the group member type
  * @author Paul Ferraro
  */
-public class PrimaryOwnerScheduler<I, M, GM extends GroupMember<Address>> implements Scheduler<I, M>, Function<CompletionStage<Collection<I>>, Stream<I>> {
+public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M>, Function<CompletionStage<Collection<I>>, Stream<I>> {
 	private static final Logger LOGGER = org.jboss.logging.Logger.getLogger(PrimaryOwnerScheduler.class);
 
-	private final Function<I, GM> affinity;
-	private final CommandDispatcher<GM, CacheEntryScheduler<I, M>> dispatcher;
+	private final Function<I, CacheContainerGroupMember> affinity;
+	private final CommandDispatcher<CacheContainerGroupMember, CacheEntryScheduler<I, M>> dispatcher;
 	private final BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory;
 	private final Invoker invoker;
 
-	public PrimaryOwnerScheduler(PrimaryOwnerSchedulerConfiguration<I, M, GM> configuration) {
+	public PrimaryOwnerScheduler(PrimaryOwnerSchedulerConfiguration<I, M> configuration) {
 		this.scheduleCommandFactory = configuration.getScheduleCommandFactory();
 		this.affinity = configuration.getAffinity();
 		this.invoker = configuration.getInvoker();
@@ -81,12 +79,12 @@ public class PrimaryOwnerScheduler<I, M, GM extends GroupMember<Address>> implem
 	}
 
 	private <R> CompletionStage<R> executeOnPrimaryOwner(I id, Command<R, CacheEntryScheduler<I, M>, RuntimeException> command) throws IOException {
-		Function<I, GM> affinity = this.affinity;
-		CommandDispatcher<GM, CacheEntryScheduler<I, M>> dispatcher = this.dispatcher;
+		Function<I, CacheContainerGroupMember> affinity = this.affinity;
+		CommandDispatcher<CacheContainerGroupMember, CacheEntryScheduler<I, M>> dispatcher = this.dispatcher;
 		ExceptionSupplier<CompletionStage<R>, IOException> action = new ExceptionSupplier<>() {
 			@Override
 			public CompletionStage<R> get() throws IOException {
-				GM primaryOwner = affinity.apply(id);
+				CacheContainerGroupMember primaryOwner = affinity.apply(id);
 				LOGGER.tracef("Executing command %s on %s", command, primaryOwner);
 				// This should only go remote following a failover
 				return dispatcher.dispatchToMember(command, primaryOwner);
@@ -98,7 +96,7 @@ public class PrimaryOwnerScheduler<I, M, GM extends GroupMember<Address>> implem
 	@Override
 	public Stream<I> stream() {
 		try {
-			Map<GM, CompletionStage<Collection<I>>> results = this.dispatcher.dispatchToGroup(new EntriesCommand<>());
+			Map<CacheContainerGroupMember, CompletionStage<Collection<I>>> results = this.dispatcher.dispatchToGroup(new EntriesCommand<>());
 			return results.isEmpty() ? Stream.empty() : results.values().stream().map(this).flatMap(Function.identity()).distinct();
 		} catch (IOException e) {
 			return Stream.empty();

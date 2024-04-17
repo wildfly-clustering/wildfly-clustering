@@ -8,9 +8,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.jboss.marshalling.Externalizer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Formatter;
 import org.wildfly.clustering.marshalling.Serializer;
+import org.wildfly.clustering.marshalling.jboss.ExternalizerProvider;
+import org.wildfly.clustering.marshalling.jboss.SerializerExternalizer;
 
 /**
  * Marshalling externalizer for an {@link EmbeddedCacheManagerGroupMember}.
@@ -29,10 +32,26 @@ public enum EmbeddedCacheManagerGroupMemberSerializer implements Serializer<Embe
 		return new EmbeddedCacheManagerGroupMember(JGroupsAddressSerializer.INSTANCE.read(input));
 	}
 
+	@MetaInfServices(ExternalizerProvider.class)
+	public static class AddressGroupMemberExternalizerProvider implements ExternalizerProvider {
+		private final Externalizer externalizer = new SerializerExternalizer(INSTANCE);
+
+		@Override
+		public Class<?> getType() {
+			return EmbeddedCacheManagerGroupMember.class;
+		}
+
+		@Override
+		public Externalizer getExternalizer() {
+			return this.externalizer;
+		}
+	}
+
 	@MetaInfServices(Formatter.class)
 	public static class AddressGroupMemberFormatter extends Formatter.Provided<EmbeddedCacheManagerGroupMember> {
+
 		public AddressGroupMemberFormatter() {
-			super(Formatter.serialized(EmbeddedCacheManagerGroupMember.class, INSTANCE));
+			super(INSTANCE.toFormatter(EmbeddedCacheManagerGroupMember.class));
 		}
 	}
 }

@@ -21,17 +21,14 @@ public class UnarySessionAffinityTestCase {
 
 	@Test
 	public void test() {
-		test(null);
-		test("affinity");
-	}
-
-	static void test(String expected) {
 		GroupMember foo = mock(GroupMember.class);
 		GroupMember bar = mock(GroupMember.class);
-		Map<String, GroupMember> affinity = Map.of("foo", foo, "bar", bar);
-		Map<GroupMember, String> mapping = Map.of(foo, "foo-server", bar, "bar-server");
+
+		Map<String, GroupMember> affinity = Map.of("foo-session", foo, "bar-session", bar);
+		Map<GroupMember, String> mapping = Map.of(foo, "foo", bar, "bar");
 		UnaryOperator<String> sessionAffinity = new UnarySessionAffinity<>(affinity::get, mapping::get);
-		assertEquals("foo-server", sessionAffinity.apply("foo"));
-		assertEquals("bar-server", sessionAffinity.apply("bar"));
+
+		assertEquals("foo", sessionAffinity.apply("foo-session"));
+		assertEquals("bar", sessionAffinity.apply("bar-session"));
 	}
 }

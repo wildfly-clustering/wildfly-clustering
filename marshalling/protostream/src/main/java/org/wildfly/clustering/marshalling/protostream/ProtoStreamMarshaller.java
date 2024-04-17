@@ -6,6 +6,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -39,28 +40,28 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 	/**
 	 * Returns a new marshaller instance for a decorator of the type handled by this marshaller, created from the specified factory.
 	 * @param <V> the decorator type
-	 * @param targetClass the decorator instance type of the new marshaller
+	 * @param type the decorator instance type of the new marshaller
 	 * @param wrapper a function for creating the decorator from the value read by this marshaller.\
 	 * @return a new marshaller
 	 */
-	default <V extends T> ProtoStreamMarshaller<V> wrap(Class<V> targetClass, Function<T, V> wrapper) {
-		return wrap(targetClass, Functions.cast(Function.identity()), wrapper);
+	default <V extends T> ProtoStreamMarshaller<V> wrap(Class<? extends V> type, Function<T, V> wrapper) {
+		return wrap(type, Functions.cast(Function.identity()), wrapper);
 	}
 
 	/**
 	 * Returns a new marshaller instance for a wrapper, using the specified wrapper and unwrapper functions.
 	 * @param <V> the wrapper type
-	 * @param targetClass the target class of the new marshaller
+	 * @param type the target class of the new marshaller
 	 * @param unwrapper a function exposing the value of this marshalller from its wrapper
 	 * @param wrapper a function creating the wrapped instance from the value read by this marshaller.
 	 * @return a new marshaller
 	 */
-	default <V> ProtoStreamMarshaller<V> wrap(Class<V> targetClass, Function<V, T> unwrapper, Function<T, V> wrapper) {
+	default <V> ProtoStreamMarshaller<V> wrap(Class<? extends V> type, Function<V, T> unwrapper, Function<T, V> wrapper) {
 		ProtoStreamMarshaller<T> marshaller = this;
 		return new ProtoStreamMarshaller<>() {
 			@Override
 			public Class<? extends V> getJavaClass() {
-				return targetClass;
+				return type;
 			}
 
 			@Override
@@ -71,6 +72,11 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 			@Override
 			public void writeTo(ProtoStreamWriter writer, V value) throws IOException {
 				marshaller.writeTo(writer, unwrapper.apply(value));
+			}
+
+			@Override
+			public OptionalInt size(ProtoStreamSizeOperation operation, V value) {
+				return marshaller.size(operation, unwrapper.apply(value));
 			}
 		};
 	}
@@ -107,6 +113,11 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 			@Override
 			public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
 				// Nothing to write
+			}
+
+			@Override
+			public OptionalInt size(ProtoStreamSizeOperation operation, T value) {
+				return OptionalInt.of(0);
 			}
 		};
 	}

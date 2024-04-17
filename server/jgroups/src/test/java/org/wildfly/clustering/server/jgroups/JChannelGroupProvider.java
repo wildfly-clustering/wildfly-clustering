@@ -39,7 +39,7 @@ public class JChannelGroupProvider implements GroupProvider<Address, ChannelGrou
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		this.group.close();
 		this.channel.disconnect();
 		this.channel.close();

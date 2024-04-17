@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
@@ -20,10 +20,7 @@ public class JBossMarshallingTesterFactory implements MarshallingTesterFactory {
 
 	public JBossMarshallingTesterFactory() {
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
-		MarshallingConfiguration configuration = new MarshallingConfiguration();
-		configuration.setClassTable(new LoadedClassTable(loader));
-		configuration.setObjectTable(new LoadedObjectTable(loader));
-		this.marshaller = new JBossByteBufferMarshaller(MarshallingConfigurationRepository.from(configuration), loader);
+		this.marshaller = new JBossByteBufferMarshaller(MarshallingConfigurationBuilder.newInstance(new SimpleClassResolver(loader)).load(loader).build(), loader);
 	}
 
 	@Override

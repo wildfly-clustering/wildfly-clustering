@@ -6,7 +6,6 @@
 package org.wildfly.clustering.session.cache.affinity;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -14,7 +13,7 @@ import java.util.stream.Collectors;
 import org.wildfly.clustering.server.GroupMember;
 
 /**
- * Session affinity to a single member.
+ * Session affinity to multiple members.
  * @param <M> the group member type
  * @author Paul Ferraro
  */
@@ -23,17 +22,17 @@ public class NarySessionAffinity<M extends GroupMember> implements UnaryOperator
 	private Function<String, List<M>> affinity;
 	private Function<M, String> mapper;
 	private String delimiter;
-	private int maxServers;
+	private int maxMembers;
 
 	public NarySessionAffinity(Function<String, List<M>> affinity, Function<M, String> mapper, NarySessionAffinityConfiguration config) {
 		this.affinity = affinity;
 		this.mapper = mapper;
 		this.delimiter = config.getDelimiter();
-		this.maxServers = config.getMaxServers();
+		this.maxMembers = config.getMaxMembers();
 	}
 
 	@Override
 	public String apply(String id) {
-		return this.affinity.apply(id).stream().map(this.mapper).filter(Objects::nonNull).limit(this.maxServers).collect(Collectors.joining(this.delimiter));
+		return this.affinity.apply(id).stream().map(this.mapper).distinct().limit(this.maxMembers).collect(Collectors.joining(this.delimiter));
 	}
 }

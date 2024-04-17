@@ -32,7 +32,8 @@ import org.infinispan.notifications.Listener.Observation;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
-import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.logging.Logger;
@@ -59,7 +60,7 @@ import org.wildfly.common.function.ExceptionRunnable;
  * @param <T> the service identifier type
  */
 @Listener(observation = Observation.POST)
-public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T, CacheContainerGroupMember>, Registration {
+public class CacheServiceProviderRegistry<T> implements CacheContainerServiceProviderRegistry<T>, Registration {
 	private static final Logger LOGGER = Logger.getLogger(CacheServiceProviderRegistry.class);
 
 	private final Batcher<TransactionBatch> batcher;
@@ -74,8 +75,8 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 		this.cache = config.getCache();
 		this.batcher = config.getBatcher();
 		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
-		this.cache.addListener(this);
 		this.invoker = CacheInvoker.retrying(this.cache);
+		this.cache.addListener(this);
 	}
 
 	@Override
@@ -168,6 +169,9 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<T, Set<Address>> event) {
+		// A singleton group does not care about topology changes
+		if (this.group.isSingleton()) return CompletableFuture.completedStage(null);
+
 		ConsistentHash previousHash = event.getWriteConsistentHashAtStart();
 		List<Address> previousMembers = previousHash.getMembers();
 		ConsistentHash hash = event.getWriteConsistentHashAtEnd();
@@ -220,14 +224,22 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 	}
 
 	@CacheEntryCreated
+	public CompletionStage<Void> created(CacheEntryCreatedEvent<T, Set<Address>> event) {
+		return this.updated(event.getKey(), event.getValue());
+	}
+
 	@CacheEntryModified
-	public CompletionStage<Void> modified(CacheEntryEvent<T, Set<Address>> event) {
-		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.get(event.getKey());
+	public CompletionStage<Void> modified(CacheEntryModifiedEvent<T, Set<Address>> event) {
+		return !Objects.equals(event.getOldValue(), event.getNewValue()) ? this.updated(event.getKey(), event.getNewValue()) : CompletableFuture.completedFuture(null);
+	}
+
+	private CompletionStage<Void> updated(T service, Set<Address> providers) {
+		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.get(service);
 		if (entry != null) {
 			ServiceProviderListener<CacheContainerGroupMember> listener = entry.getKey();
 			if (listener != null) {
 				Executor executor = entry.getValue();
-				Set<CacheContainerGroupMember> members = this.map(event.getValue());
+				Set<CacheContainerGroupMember> members = this.map(providers);
 				try {
 					executor.execute(() -> {
 						try {
