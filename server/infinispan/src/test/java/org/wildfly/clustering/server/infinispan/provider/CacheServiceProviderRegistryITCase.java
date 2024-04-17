@@ -6,9 +6,12 @@
 package org.wildfly.clustering.server.infinispan.provider;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
+import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -35,25 +38,25 @@ public class CacheServiceProviderRegistryITCase {
 			assertEquals(Set.of(), registry1.getProviders(foo));
 			assertEquals(Set.of(), registry1.getProviders(bar));
 
-			ServiceProviderListener<CacheContainerGroupMember> fooListener = mock(ServiceProviderListener.class);
-			try (ServiceProviderRegistration<String, CacheContainerGroupMember> fooRegistration1 = registry1.register(foo, fooListener)) {
+			BlockingQueue<Set<CacheContainerGroupMember>> fooEvents = new LinkedBlockingQueue<>();
+			try (ServiceProviderRegistration<String, CacheContainerGroupMember> fooRegistration1 = registry1.register(foo, new CollectionServiceProviderListener(fooEvents))) {
 				assertSame(foo, fooRegistration1.getService());
 				assertEquals(Set.of(member1), fooRegistration1.getProviders());
 
 				assertEquals(Set.of(foo), registry1.getServices());
 				assertEquals(Set.of(member1), registry1.getProviders(foo));
 
-				verify(fooListener).providersChanged(Set.of(member1));
+				assertEquals(Set.of(member1), fooEvents.poll(5, TimeUnit.SECONDS));
 
-				ServiceProviderListener<CacheContainerGroupMember> barListener = mock(ServiceProviderListener.class);
-				try (ServiceProviderRegistration<String, CacheContainerGroupMember> barRegistration1 = registry1.register(bar, barListener)) {
+				BlockingQueue<Set<CacheContainerGroupMember>> barEvents = new LinkedBlockingQueue<>();
+				try (ServiceProviderRegistration<String, CacheContainerGroupMember> barRegistration1 = registry1.register(bar, new CollectionServiceProviderListener(barEvents))) {
 					assertSame(bar, barRegistration1.getService());
 					assertEquals(Set.of(member1), barRegistration1.getProviders());
 
 					assertEquals(Set.of(foo, bar), registry1.getServices());
 					assertEquals(Set.of(member1), registry1.getProviders(bar));
 
-					verify(barListener).providersChanged(Set.of(member1));
+					assertEquals(Set.of(member1), barEvents.poll(5, TimeUnit.SECONDS));
 
 					try (CacheContainerServiceProviderRegistryProvider<String> provider2 = new CacheContainerServiceProviderRegistryProvider<>(CLUSTER_NAME, MEMBER_2)) {
 						CacheContainerServiceProviderRegistry<String> registry2 = provider2.get();
@@ -70,12 +73,10 @@ public class CacheServiceProviderRegistryITCase {
 							assertEquals(Set.of(member1, member2), registry1.getProviders(foo));
 							assertEquals(Set.of(member1, member2), registry2.getProviders(foo));
 
-							verify(fooListener).providersChanged(Set.of(member1, member2));
+							assertEquals(Set.of(member1, member2), fooEvents.poll(5, TimeUnit.SECONDS));
 						}
 
-						Thread.sleep(100);
-
-						verify(fooListener, times(2)).providersChanged(Set.of(member1));
+						assertEquals(Set.of(member1), fooEvents.poll(5, TimeUnit.SECONDS));
 
 						// Validate closing registry without closing registration
 						ServiceProviderRegistration<String, CacheContainerGroupMember> barRegistration2 = registry2.register(bar);
@@ -85,31 +86,43 @@ public class CacheServiceProviderRegistryITCase {
 						assertEquals(Set.of(member1, member2), registry1.getProviders(bar));
 						assertEquals(Set.of(member1, member2), registry2.getProviders(bar));
 
-						verify(barListener).providersChanged(Set.of(member1, member2));
+						assertEquals(Set.of(member1, member2), barEvents.poll(5, TimeUnit.SECONDS));
 					}
-
-					Thread.sleep(100);
 
 					assertEquals(Set.of(foo, bar), registry1.getServices());
 					assertEquals(Set.of(member1), registry1.getProviders(foo));
 					assertEquals(Set.of(member1), registry1.getProviders(bar));
 
-					verifyNoMoreInteractions(fooListener);
-					verify(barListener, times(2)).providersChanged(Set.of(member1));
+					assertNull(fooEvents.poll(100, TimeUnit.MILLISECONDS));
+
+					assertEquals(Set.of(member1), barEvents.poll(5, TimeUnit.SECONDS));
 				}
 
 				assertEquals(Set.of(foo), registry1.getServices());
 				assertEquals(Set.of(member1), registry1.getProviders(foo));
 				assertEquals(Set.of(), registry1.getProviders(bar));
 
-				verifyNoMoreInteractions(barListener);
+				assertNull(barEvents.poll(100, TimeUnit.MILLISECONDS));
 			}
 
 			assertEquals(Set.of(), registry1.getServices());
 			assertEquals(Set.of(), registry1.getProviders(foo));
 			assertEquals(Set.of(), registry1.getProviders(bar));
 
-			verifyNoMoreInteractions(fooListener);
+			assertNull(fooEvents.poll(100, TimeUnit.MILLISECONDS));
+		}
+	}
+
+	private static class CollectionServiceProviderListener implements ServiceProviderListener<CacheContainerGroupMember> {
+		private final Collection<Set<CacheContainerGroupMember>> events;
+
+		CollectionServiceProviderListener(Collection<Set<CacheContainerGroupMember>> events) {
+			this.events = events;
+		}
+
+		@Override
+		public void providersChanged(Set<CacheContainerGroupMember> providers) {
+			this.events.add(providers);
 		}
 	}
 }
