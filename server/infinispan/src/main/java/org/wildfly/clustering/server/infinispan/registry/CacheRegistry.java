@@ -178,35 +178,39 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 			boolean restoreLocalEntry = !previousMembers.contains(localAddress);
 
 			if (!leftMembers.isEmpty() || restoreLocalEntry) {
-				this.executor.execute(() -> {
-					if (!leftMembers.isEmpty()) {
-						Map<K, V> removed = new HashMap<>();
-						try {
-							for (Address leftMember: leftMembers) {
-								Map.Entry<K, V> old = cache.remove(leftMember);
-								if (old != null) {
-									removed.put(old.getKey(), old.getValue());
+				try {
+					this.executor.execute(() -> {
+						if (!leftMembers.isEmpty()) {
+							Map<K, V> removed = new HashMap<>();
+							try {
+								for (Address leftMember: leftMembers) {
+									Map.Entry<K, V> old = cache.remove(leftMember);
+									if (old != null) {
+										removed.put(old.getKey(), old.getValue());
+									}
 								}
+							} catch (CacheException e) {
+								LOGGER.warn(e.getLocalizedMessage(), e);
 							}
-						} catch (CacheException e) {
-							LOGGER.warn(e.getLocalizedMessage(), e);
-						}
-						if (!removed.isEmpty()) {
-							this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
-						}
-					}
-					if (restoreLocalEntry) {
-						// If we were not a member at merge start, its mapping may have been lost and need to be recreated
-						try {
-							if (cache.put(localAddress, this.entry) == null) {
-								// Local cache events do not trigger notifications
-								this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, this.entry);
+							if (!removed.isEmpty()) {
+								this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
 							}
-						} catch (CacheException e) {
-							LOGGER.warn(e.getLocalizedMessage(), e);
 						}
-					}
-				});
+						if (restoreLocalEntry) {
+							// If we were not a member at merge start, its mapping may have been lost and need to be recreated
+							try {
+								if (cache.put(localAddress, this.entry) == null) {
+									// Local cache events do not trigger notifications
+									this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, this.entry);
+								}
+							} catch (CacheException e) {
+								LOGGER.warn(e.getLocalizedMessage(), e);
+							}
+						}
+					});
+				} catch (RejectedExecutionException e) {
+					// Executor was shutdown
+				}
 			}
 		}
 		return CompletableFuture.completedStage(null);

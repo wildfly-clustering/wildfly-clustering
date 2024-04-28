@@ -6,7 +6,9 @@
 package org.wildfly.clustering.cache.infinispan.embedded;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
+import org.infinispan.commons.IllegalLifecycleStateException;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.cache.infinispan.BasicCacheContainerConfiguration;
@@ -21,9 +23,20 @@ public interface EmbeddedCacheContainerConfiguration extends BasicCacheContainer
 
 	@Override
 	default Executor getExecutor() {
-		return this.getBlockingManager().asExecutor(this.getClass().getSimpleName());
+		Executor executor = this.getBlockingManager().asExecutor(this.getClass().getSimpleName());
+		return new Executor() {
+			@Override
+			public void execute(Runnable command) {
+				try {
+					executor.execute(command);
+				} catch (IllegalLifecycleStateException e) {
+					throw new RejectedExecutionException(e);
+				}
+			}
+		};
 	}
 
+	@SuppressWarnings({ "removal" })
 	default BlockingManager getBlockingManager() {
 		return this.getCacheContainer().getGlobalComponentRegistry().getComponent(BlockingManager.class);
 	}
