@@ -6,6 +6,7 @@
 package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 import jakarta.transaction.TransactionManager;
 
@@ -13,6 +14,7 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.commons.IllegalLifecycleStateException;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.BasicCacheConfiguration;
 
@@ -30,10 +32,20 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 		return this.getCache().getRemoteCacheContainer();
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	default Executor getExecutor() {
-		return this.getCache().getRemoteCacheManager().getAsyncExecutorService();
+		@SuppressWarnings("removal")
+		Executor executor = this.getCache().getRemoteCacheManager().getAsyncExecutorService();
+		return new Executor() {
+			@Override
+			public void execute(Runnable command) {
+				try {
+					executor.execute(command);
+				} catch (IllegalLifecycleStateException e) {
+					throw new RejectedExecutionException(e);
+				}
+			}
+		};
 	}
 
 	@Override

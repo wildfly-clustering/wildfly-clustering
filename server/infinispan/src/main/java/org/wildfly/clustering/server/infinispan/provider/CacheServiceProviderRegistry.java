@@ -202,22 +202,26 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 			if (!leftMembers.isEmpty() || !localServices.isEmpty()) {
 				Batcher<? extends TransactionBatch> batcher = this.batcher;
 				Invoker invoker = this.invoker;
-				this.executor.execute(() -> {
-					if (!leftMembers.isEmpty()) {
-						try (TransactionBatch batch = batcher.createBatch()) {
-							try (CloseableIterator<T> keys = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).keySet().iterator()) {
-								while (keys.hasNext()) {
-									cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).compute(keys.next(), new AddressSetRemoveFunction(leftMembers));
+				try {
+					this.executor.execute(() -> {
+						if (!leftMembers.isEmpty()) {
+							try (TransactionBatch batch = batcher.createBatch()) {
+								try (CloseableIterator<T> keys = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).keySet().iterator()) {
+									while (keys.hasNext()) {
+										cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).compute(keys.next(), new AddressSetRemoveFunction(leftMembers));
+									}
 								}
 							}
 						}
-					}
-					if (!localServices.isEmpty()) {
-						for (T localService : localServices) {
-							invoker.invoke(new RegisterLocalServiceTask(localService));
+						if (!localServices.isEmpty()) {
+							for (T localService : localServices) {
+								invoker.invoke(new RegisterLocalServiceTask(localService));
+							}
 						}
-					}
-				});
+					});
+				} catch (RejectedExecutionException e) {
+					// Executor was shutdown
+				}
 			}
 		}
 		return CompletableFuture.completedStage(null);
