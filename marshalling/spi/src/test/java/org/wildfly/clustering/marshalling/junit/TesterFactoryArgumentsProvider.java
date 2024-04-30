@@ -8,13 +8,11 @@ package org.wildfly.clustering.marshalling.junit;
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
-import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.AnnotationBasedArgumentsProvider;
 import org.junit.jupiter.params.provider.Arguments;
-import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.TesterFactory;
 
 /**
@@ -31,18 +29,7 @@ public class TesterFactoryArgumentsProvider extends AnnotationBasedArgumentsProv
 				throw new ServiceConfigurationError(factoryClass.getName());
 			}
 			while (factories.hasNext()) {
-				TesterFactory factory = factories.next();
-				builder.accept(Arguments.of(new TesterFactory() {
-					@Override
-					public <T> Tester<T> createTester(BiConsumer<T, T> assertion) {
-						return factory.createTester(assertion);
-					}
-
-					@Override
-					public String toString() {
-						return factory.toString();
-					}
-				}));
+				builder.accept(Arguments.of(factories.next()));
 			}
 		}
 		return builder.build();
