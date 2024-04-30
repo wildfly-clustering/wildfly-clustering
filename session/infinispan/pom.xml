@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-session</artifactId>
-		<version>2.0.1.Final-SNAPSHOT</version>
+		<version>3.0.0.CR2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-session-infinispan</artifactId>
