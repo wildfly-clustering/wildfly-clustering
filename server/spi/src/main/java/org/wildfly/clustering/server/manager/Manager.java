@@ -14,7 +14,7 @@ import org.wildfly.clustering.cache.batch.Batcher;
  * @param <B> the batch type
  * @author Paul Ferraro
  */
-public interface Manager<I, B extends Batch> extends ManagerConfiguration<I>, Restartable {
+public interface Manager<I, B extends Batch> extends ManagerConfiguration<I>, Service {
 
 	/**
 	 * Returns a batcher for use by users of this manager.

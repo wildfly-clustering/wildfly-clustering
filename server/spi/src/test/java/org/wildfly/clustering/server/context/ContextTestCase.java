@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.server.manager.Restartable;
+import org.wildfly.clustering.server.manager.Service;
 
 /**
  * Unit test for shared and unshared context implementations.
@@ -29,17 +29,17 @@ public class ContextTestCase {
 
 	@Test
 	public void shared() throws InterruptedException, ExecutionException {
-		Context<Integer, ManagedObject<Integer>> manager = ContextStrategy.SHARED.createContext(Restartable::start, Restartable::stop);
-		List<List<Future<ManagedObject<Integer>>>> keyFutures = new ArrayList<>(KEYS);
+		Context<Integer, ManagedService<Integer>> manager = ContextStrategy.SHARED.createContext(Service::start, Service::stop);
+		List<List<Future<ManagedService<Integer>>>> keyFutures = new ArrayList<>(KEYS);
 		ExecutorService executor = Executors.newFixedThreadPool(KEYS);
 		try {
 			for (int i = 0; i < KEYS; ++i) {
-				List<Future<ManagedObject<Integer>>> futures = new ArrayList<>(SIZE);
+				List<Future<ManagedService<Integer>>> futures = new ArrayList<>(SIZE);
 				keyFutures.add(futures);
 				for (int j = 0; j < SIZE; ++j) {
 					int key = i;
-					Callable<ManagedObject<Integer>> task = () -> {
-						try (ManagedObject<Integer> object = manager.computeIfAbsent(key, ManagedObject::new)) {
+					Callable<ManagedService<Integer>> task = () -> {
+						try (ManagedService<Integer> object = manager.computeIfAbsent(key, ManagedService::new)) {
 							assertTrue(object.isStarted());
 							assertFalse(object.isStopped());
 							Thread.sleep(10);
@@ -50,15 +50,15 @@ public class ContextTestCase {
 				}
 			}
 			// Wait until all tasks are finished
-			for (List<Future<ManagedObject<Integer>>> futures : keyFutures) {
-				for (Future<ManagedObject<Integer>> future : futures) {
+			for (List<Future<ManagedService<Integer>>> futures : keyFutures) {
+				for (Future<ManagedService<Integer>> future : futures) {
 					future.get();
 				}
 			}
 			// Verify
-			for (List<Future<ManagedObject<Integer>>> futures : keyFutures) {
-				for (Future<ManagedObject<Integer>> future : futures) {
-					ManagedObject<Integer> object = future.get();
+			for (List<Future<ManagedService<Integer>>> futures : keyFutures) {
+				for (Future<ManagedService<Integer>> future : futures) {
+					ManagedService<Integer> object = future.get();
 					assertTrue(object.isStarted(), object::toString);
 					assertTrue(object.isStopped(), object::toString);
 				}
@@ -70,14 +70,14 @@ public class ContextTestCase {
 
 	@Test
 	public void unshared() {
-		Context<String, ManagedObject<String>> context = ContextStrategy.UNSHARED.createContext(Restartable::start, Restartable::stop);
+		Context<String, ManagedService<String>> context = ContextStrategy.UNSHARED.createContext(Service::start, Service::stop);
 		@SuppressWarnings("resource")
-		ManagedObject<String> object = context.computeIfAbsent("foo", ManagedObject::new);
+		ManagedService<String> object = context.computeIfAbsent("foo", ManagedService::new);
 		try {
 			assertTrue(object.isStarted());
 			assertFalse(object.isStopped());
 
-			try (ManagedObject<String> object2 = context.computeIfAbsent("foo", ManagedObject::new)) {
+			try (ManagedService<String> object2 = context.computeIfAbsent("foo", ManagedService::new)) {
 				assertNotSame(object2, object);
 				assertTrue(object2.isStarted());
 				assertFalse(object2.isStopped());
@@ -93,13 +93,13 @@ public class ContextTestCase {
 		}
 	}
 
-	static class ManagedObject<I> implements Restartable, AutoCloseable {
+	static class ManagedService<I> implements Service, AutoCloseable {
 		private volatile boolean started = false;
 		private volatile boolean stopped = false;
 		private final I id;
 		private final Runnable closeTask;
 
-		ManagedObject(I id, Runnable closeTask) {
+		ManagedService(I id, Runnable closeTask) {
 			this.id = id;
 			this.closeTask = closeTask;
 		}
