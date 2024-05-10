@@ -13,7 +13,6 @@ import java.util.function.UnaryOperator;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.server.expiration.Expiration;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
@@ -27,10 +26,9 @@ import org.wildfly.clustering.session.SessionStatistics;
  * @param <MV> the session metadata value type
  * @param <AV> the session attribute value type
  * @param <SC> the session context type
- * @param <B> the batch type
  * @author Paul Ferraro
  */
-public abstract class AbstractSessionManager<C, MV, AV, SC, B extends Batch> implements SessionManager<SC, B>, SessionStatistics {
+public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
 	protected final Logger logger = Logger.getLogger(this.getClass());
 
 	private final SessionFactory<C, MV, AV, SC> factory;
@@ -38,13 +36,13 @@ public abstract class AbstractSessionManager<C, MV, AV, SC, B extends Batch> imp
 	private final Expiration expiration;
 	private final Supplier<String> identifierFactory;
 	private final C context;
-	private final Batcher<B> batcher;
+	private final Supplier<Batch> batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
 
-	protected AbstractSessionManager(SessionManagerConfiguration<C> configuration, CacheConfiguration<B> cacheConfiguration, SessionFactory<C, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {
+	protected AbstractSessionManager(SessionManagerConfiguration<C> configuration, CacheConfiguration cacheConfiguration, SessionFactory<C, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
-		this.batcher = cacheConfiguration.getBatcher();
+		this.batchFactory = cacheConfiguration.getBatchFactory();
 		this.expiration = configuration;
 		this.expirationListener = configuration.getExpirationListener();
 		this.factory = factory;
@@ -57,8 +55,8 @@ public abstract class AbstractSessionManager<C, MV, AV, SC, B extends Batch> imp
 	}
 
 	@Override
-	public Batcher<B> getBatcher() {
-		return this.batcher;
+	public Supplier<Batch> getBatchFactory() {
+		return this.batchFactory;
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
@@ -37,8 +38,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.cache.batch.Batcher;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
@@ -63,7 +63,7 @@ import org.wildfly.common.function.ExceptionRunnable;
 public class CacheServiceProviderRegistry<T> implements CacheContainerServiceProviderRegistry<T>, Registration {
 	private static final Logger LOGGER = Logger.getLogger(CacheServiceProviderRegistry.class);
 
-	private final Batcher<TransactionBatch> batcher;
+	private final Supplier<Batch> batchFactory;
 	private final ConcurrentMap<T, Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
 	private final Cache<T, Set<Address>> cache;
 	private final CacheContainerGroup group;
@@ -73,7 +73,7 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 	public CacheServiceProviderRegistry(CacheServiceProviderRegistryConfiguration config) {
 		this.group = config.getGroup();
 		this.cache = config.getCache();
-		this.batcher = config.getBatcher();
+		this.batchFactory = config.getBatchFactory();
 		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
 		this.invoker = CacheInvoker.retrying(this.cache);
 		this.cache.addListener(this);
@@ -127,7 +127,7 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 		this.invoker.invoke(new RegisterLocalServiceTask(service));
 		Address localAddress = this.cache.getCacheManager().getAddress();
 		return new DefaultServiceProviderRegistration<>(this, service, () -> {
-			try (TransactionBatch batch = this.batcher.createBatch()) {
+			try (Batch batch = this.batchFactory.get()) {
 				this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).compute(service, new AddressSetRemoveFunction(localAddress));
 			} finally {
 				Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> oldEntry = this.listeners.remove(service);
@@ -143,7 +143,7 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 
 	void registerLocal(T service) {
 		Address localAddress = this.cache.getCacheManager().getAddress();
-		try (TransactionBatch batch = this.batcher.createBatch()) {
+		try (Batch batch = this.batchFactory.get()) {
 			this.register(localAddress, service);
 		}
 	}
@@ -200,12 +200,10 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 			Set<T> localServices = !previousMembers.contains(localAddress) ? this.listeners.keySet() : Collections.emptySet();
 
 			if (!leftMembers.isEmpty() || !localServices.isEmpty()) {
-				Batcher<? extends TransactionBatch> batcher = this.batcher;
-				Invoker invoker = this.invoker;
 				try {
 					this.executor.execute(() -> {
 						if (!leftMembers.isEmpty()) {
-							try (TransactionBatch batch = batcher.createBatch()) {
+							try (Batch batch = this.batchFactory.get()) {
 								try (CloseableIterator<T> keys = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).keySet().iterator()) {
 									while (keys.hasNext()) {
 										cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).compute(keys.next(), new AddressSetRemoveFunction(leftMembers));
@@ -215,7 +213,7 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 						}
 						if (!localServices.isEmpty()) {
 							for (T localService : localServices) {
-								invoker.invoke(new RegisterLocalServiceTask(localService));
+								this.invoker.invoke(new RegisterLocalServiceTask(localService));
 							}
 						}
 					});

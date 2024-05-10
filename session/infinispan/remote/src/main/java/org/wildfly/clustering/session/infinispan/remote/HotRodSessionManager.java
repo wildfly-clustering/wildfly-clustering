@@ -6,9 +6,9 @@ package org.wildfly.clustering.session.infinispan.remote;
 
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import org.wildfly.clustering.cache.batch.Batcher;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -25,10 +25,10 @@ import org.wildfly.common.function.Functions;
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC, TransactionBatch> {
+public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
 	private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
 	private final Consumer<ImmutableSession> expirationListener;
-	private final Batcher<TransactionBatch> batcher;
+	private final Supplier<Batch> batchFactory;
 
 	private volatile Registration expirationListenerRegistration;
 
@@ -36,7 +36,7 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 		super(configuration, hotrod, factory, Functions.discardingConsumer());
 		this.expirationListenerRegistrar = hotrod.getExpirationListenerRegistrar();
 		this.expirationListener = configuration.getExpirationListener();
-		this.batcher = hotrod.getBatcher();
+		this.batchFactory = hotrod.getBatchFactory();
 	}
 
 	@Override
@@ -52,8 +52,8 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 	}
 
 	@Override
-	public Batcher<TransactionBatch> getBatcher() {
-		return this.batcher;
+	public Supplier<Batch> getBatchFactory() {
+		return this.batchFactory;
 	}
 
 	@Override

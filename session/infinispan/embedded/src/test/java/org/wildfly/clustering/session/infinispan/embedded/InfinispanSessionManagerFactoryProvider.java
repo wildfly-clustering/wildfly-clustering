@@ -14,7 +14,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.infinispan.util.concurrent.IsolationLevel;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.AutoCloseableProvider;
 import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
@@ -36,7 +35,7 @@ import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
  * @param <C> the session manager context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseableProvider implements SessionManagerFactoryProvider<C, TransactionBatch> {
+public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseableProvider implements SessionManagerFactoryProvider<C> {
 	private static final String CONTAINER_NAME = "container";
 	private static final String SERVER_NAME = "server";
 	private static final String DEPLOYMENT_NAME_PATTERN = "%s-%s-%s.war";
@@ -66,7 +65,7 @@ public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseablePro
 	}
 
 	@Override
-	public <SC> SessionManagerFactory<C, SC, TransactionBatch> createSessionManagerFactory(Supplier<SC> contextFactory) {
+	public <SC> SessionManagerFactory<C, SC> createSessionManagerFactory(Supplier<SC> contextFactory) {
 		CacheContainerCommandDispatcherFactory commandDispatcherFactory = new EmbeddedCacheManagerCommandDispatcherFactory<>(new ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration() {
 			@Override
 			public EmbeddedCacheManager getCacheContainer() {

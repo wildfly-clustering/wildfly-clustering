@@ -13,7 +13,6 @@ import java.util.function.Function;
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.CacheKey;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
@@ -68,27 +67,27 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC, TransactionBatch>, Runnable {
+public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC>, Runnable {
 	private final Scheduler<String, ExpirationMetaData> scheduler;
 	private final SessionFactory<C, ContextualSessionMetaDataEntry<SC>, ?, SC> factory;
 	private final BiConsumer<Locality, Locality> scheduleTask;
 	private final ListenerRegistration schedulerListenerRegistration;
 	private final EmbeddedCacheConfiguration configuration;
-	private final Function<SessionManagerConfiguration<C>, Registrar<SessionManager<SC, TransactionBatch>>> managerRegistrarFactory;
+	private final Function<SessionManagerConfiguration<C>, Registrar<SessionManager<SC>>> managerRegistrarFactory;
 
 	public <S, L> InfinispanSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, InfinispanSessionManagerFactoryConfiguration infinispan) {
 		this.configuration = infinispan;
-		SessionAttributeActivationNotifierFactory<S, C, L, SC, TransactionBatch> notifierFactory = new SessionAttributeActivationNotifierFactory<>(sessionProvider, listenerProvider);
+		SessionAttributeActivationNotifierFactory<S, C, L, SC> notifierFactory = new SessionAttributeActivationNotifierFactory<>(sessionProvider, listenerProvider);
 		CacheProperties properties = infinispan.getCacheProperties();
 		SessionMetaDataFactory<ContextualSessionMetaDataEntry<SC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(infinispan);
 		this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, notifierFactory, infinispan), properties, configuration.getSessionContextFactory());
 		ExpiredSessionRemover<C, ?, ?, SC> remover = new ExpiredSessionRemover<>(this.factory);
 		this.managerRegistrarFactory = new Function<>() {
 			@Override
-			public Registrar<SessionManager<SC, TransactionBatch>> apply(SessionManagerConfiguration<C> managerConfiguration) {
+			public Registrar<SessionManager<SC>> apply(SessionManagerConfiguration<C> managerConfiguration) {
 				return new Registrar<>() {
 					@Override
-					public Registration register(SessionManager<SC, TransactionBatch> manager) {
+					public Registration register(SessionManager<SC> manager) {
 						Registration contextRegistration = notifierFactory.register(Map.entry(managerConfiguration.getContext(), manager));
 						Registration expirationRegistration = remover.register(managerConfiguration.getExpirationListener());
 						return () -> {
@@ -100,7 +99,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 		};
 		Cache<? extends CacheKey<String>, ?> cache = infinispan.getCache();
-		CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(infinispan.getBatcher(), this.factory.getMetaDataFactory(), remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
+		CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(infinispan.getBatchFactory(), this.factory.getMetaDataFactory(), remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
 		CacheContainerCommandDispatcherFactory dispatcherFactory = infinispan.getCommandDispatcherFactory();
 		CacheContainerGroup group = dispatcherFactory.getGroup();
 		this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<String, ExpirationMetaData>() {
@@ -145,9 +144,9 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 	}
 
 	@Override
-	public SessionManager<SC, TransactionBatch> createSessionManager(SessionManagerConfiguration<C> configuration) {
+	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<C> configuration) {
 		IdentifierFactory<String> identifierFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), this.configuration.getCache());
-		Registrar<SessionManager<SC, TransactionBatch>> registrar = this.managerRegistrarFactory.apply(configuration);
+		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
 		InfinispanSessionManagerConfiguration<SC> infinispanConfiguration = new InfinispanSessionManagerConfiguration<>() {
 			@Override
 			public Scheduler<String, ExpirationMetaData> getExpirationScheduler() {
@@ -160,7 +159,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public Registrar<SessionManager<SC, TransactionBatch>> getRegistrar() {
+			public Registrar<SessionManager<SC>> getRegistrar() {
 				return registrar;
 			}
 

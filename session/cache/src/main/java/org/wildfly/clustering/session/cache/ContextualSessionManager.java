@@ -14,7 +14,6 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.server.context.Context;
 import org.wildfly.clustering.server.context.ContextFactory;
 import org.wildfly.clustering.server.context.Contextual;
@@ -27,12 +26,11 @@ import org.wildfly.common.function.Functions;
 /**
  * A concurrent session manager, that can share session references across concurrent threads.
  * @param <C> the session context type
- * @param <B> the batch type
  * @author Paul Ferraro
  */
-public class ContextualSessionManager<C, B extends Batch> implements SessionManager<C, B> {
+public class ContextualSessionManager<C> implements SessionManager<C> {
 
-	private final SessionManager<C, B> manager;
+	private final SessionManager<C> manager;
 	private final Context<String, CompletionStage<ContextualSession<C>>> sessionContext;
 	private final BiFunction<String, Runnable, CompletionStage<ContextualSession<C>>> sessionCreator;
 	private final BiFunction<String, Runnable, CompletionStage<ContextualSession<C>>> sessionFinder;
@@ -49,7 +47,7 @@ public class ContextualSessionManager<C, B extends Batch> implements SessionMana
 		}
 	};
 
-	public ContextualSessionManager(SessionManager<C, B> manager, ContextFactory contextFactory) {
+	public ContextualSessionManager(SessionManager<C> manager, ContextFactory contextFactory) {
 		this.manager = manager;
 		this.sessionCreator = new BiFunction<>() {
 			@Override
@@ -111,8 +109,8 @@ public class ContextualSessionManager<C, B extends Batch> implements SessionMana
 	}
 
 	@Override
-	public Batcher<B> getBatcher() {
-		return this.manager.getBatcher();
+	public Supplier<Batch> getBatchFactory() {
+		return this.manager.getBatchFactory();
 	}
 
 	@Override
