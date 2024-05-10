@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.session.user;
 
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.manager.Manager;
 
 /**
@@ -14,9 +13,8 @@ import org.wildfly.clustering.server.manager.Manager;
  * @param <T> the transient user context type
  * @param <D> the deployment identifier type
  * @param <S> the session identifier type
- * @param <B> the batch type
  */
-public interface UserManager<C, T, D, S, B extends Batch> extends Manager<String, B> {
+public interface UserManager<C, T, D, S> extends Manager<String> {
 	/**
 	 * Creates a new user with the specified identifier and context.
 	 * @param id a unique user identifier

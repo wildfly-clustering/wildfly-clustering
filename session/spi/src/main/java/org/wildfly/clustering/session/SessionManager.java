@@ -7,15 +7,13 @@ package org.wildfly.clustering.session;
 
 import java.util.concurrent.CompletionStage;
 
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.manager.Manager;
 
 /**
  * @author Paul Ferraro
  * @param <C> the session context type
- * @param <B> the batch type
  */
-public interface SessionManager<C, B extends Batch> extends Manager<String, B> {
+public interface SessionManager<C> extends Manager<String> {
 
 	/**
 	 * Creates a session using the specified identifier.

@@ -4,31 +4,40 @@
  */
 package org.wildfly.clustering.cache.batch;
 
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+
 /**
- * Exposes a mechanism to close a batch, and potentially discard it.
+ * Instruments the batching of cache operations.
+ * Write-only cache operations invoked while this batch is active (i.e. not suspended) will defer invocation until {@link Batch#close()}.
+ * Calling {@link Batch#discard()} will cause {@link Batch#close()} to undo previous write operations and discard any accumulated write-only operations (similar to setRollbackOnly() semantics).
  * @author Paul Ferraro
  */
 public interface Batch extends AutoCloseable {
 
 	/**
-	 * The possible states of a batch.
+	 * Suspends this batch.
+	 * @return a suspended batch
 	 */
-	enum State {
-		/**
-		 * The initial state of a batch.
-		 * A batch remains active until it is discarded or closed.
-		 */
-		ACTIVE,
-		/**
-		 * Indicates that an active batch was discarded, but not yet closed.
-		 * An active batch moves to this state following {@link Batch#discard()}.
-		 */
-		DISCARDED,
-		/**
-		 * The terminal state of a batch.
-		 * A batch moves to this state following {@link Batch#close()}.
-		 */
-		CLOSED
+	SuspendedBatch suspend();
+
+	/**
+	 * Suspends this batch until {@link BatchContext#close}.
+	 * @return a suspended batch context
+	 */
+	default BatchContext<SuspendedBatch> suspendWithContext() {
+		SuspendedBatch suspended = this.suspend();
+		return new BatchContext<>() {
+			@Override
+			public SuspendedBatch get() {
+				return suspended;
+			}
+
+			@Override
+			public void close() {
+				suspended.resume();
+			}
+		};
 	}
 
 	/**
@@ -37,35 +46,82 @@ public interface Batch extends AutoCloseable {
 	void discard();
 
 	/**
-	 * Returns the state of this batch.
-	 * @return the state of this batch.
-	 */
-	State getState();
-
-	/**
 	 * Indicates whether or not this batch is active.
 	 * @return true, if this batch is active, false otherwise.
 	 */
-	default boolean isActive() {
-		return this.getState() == State.ACTIVE;
-	}
+	boolean isActive();
 
 	/**
-	 * Indicates whether or not this batch was discarded.
+	 * Indicates whether or not this batch will be discarded.
 	 * @return true, if this batch was discarded, false otherwise.
 	 */
-	default boolean isDiscarded() {
-		return this.getState() == State.DISCARDED;
-	}
+	boolean isDiscarding();
 
 	/**
 	 * Indicates whether or not this batch was closed.
 	 * @return true, if this batch was closed, false otherwise.
 	 */
-	default boolean isClosed() {
-		return this.getState() == State.CLOSED;
-	}
+	boolean isClosed();
 
 	@Override
 	void close();
+
+	/**
+	 * Returns a factory for creating no-op batches.
+	 * @return a batch factory
+	 */
+	static Supplier<Batch> factory() {
+		AtomicReference<Batch> reference = new AtomicReference<>();
+		BatchContext<Batch> resumedBatchContext = new BatchContext<>() {
+			@Override
+			public Batch get() {
+				return reference.getPlain();
+			}
+
+			@Override
+			public void close() {
+			}
+		};
+		SuspendedBatch suspendedBatch = new SuspendedBatch() {
+			@Override
+			public Batch resume() {
+				return reference.getPlain();
+			}
+
+			@Override
+			public BatchContext<Batch> resumeWithContext() {
+				return resumedBatchContext;
+			}
+		};
+		reference.setPlain(new Batch() {
+			@Override
+			public SuspendedBatch suspend() {
+				return suspendedBatch;
+			}
+
+			@Override
+			public void discard() {
+			}
+
+			@Override
+			public boolean isActive() {
+				return true;
+			}
+
+			@Override
+			public boolean isDiscarding() {
+				return false;
+			}
+
+			@Override
+			public boolean isClosed() {
+				return false;
+			}
+
+			@Override
+			public void close() {
+			}
+		});
+		return reference::getPlain;
+	}
 }

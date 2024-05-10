@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.wildfly.clustering.server.local.LocalGroup;
-import org.wildfly.clustering.server.local.LocalGroupMember;
+import org.wildfly.clustering.server.Group;
+import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistry;
@@ -17,42 +17,41 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistry;
 /**
  * Factory that provides a non-clustered {@link ServiceProviderRegistration} implementation.
  * @param <T> the service provider type
+ * @param <M> the group member type
  * @author Paul Ferraro
  */
-public interface LocalServiceProviderRegistry<T> extends ServiceProviderRegistry<T, LocalGroupMember> {
+public class LocalServiceProviderRegistry<T, M extends GroupMember> implements ServiceProviderRegistry<T, M> {
+
+	private final Set<T> services = ConcurrentHashMap.newKeySet();
+	private final Group<M> group;
+
+	public LocalServiceProviderRegistry(Group<M> group) {
+		this.group = group;
+	}
 
 	@Override
-	LocalGroup getGroup();
+	public Group<M> getGroup() {
+		return this.group;
+	}
 
-	static <T> LocalServiceProviderRegistry<T> of(LocalGroup group) {
-		Set<T> services = ConcurrentHashMap.newKeySet();
-		return new LocalServiceProviderRegistry<>() {
+	@Override
+	public ServiceProviderRegistration<T, M> register(T service) {
+		this.services.add(service);
+		return new DefaultServiceProviderRegistration<>(this, service, () -> this.services.remove(service));
+	}
 
-			@Override
-			public LocalGroup getGroup() {
-				return group;
-			}
+	@Override
+	public ServiceProviderRegistration<T, M> register(T service, ServiceProviderListener<M> listener) {
+		return this.register(service);
+	}
 
-			@Override
-			public ServiceProviderRegistration<T, LocalGroupMember> register(T service) {
-				services.add(service);
-				return new DefaultServiceProviderRegistration<>(this, service, () -> services.remove(service));
-			}
+	@Override
+	public Set<M> getProviders(T service) {
+		return services.contains(service) ? Set.of(this.group.getLocalMember()) : Set.of();
+	}
 
-			@Override
-			public ServiceProviderRegistration<T, LocalGroupMember> register(T service, ServiceProviderListener<LocalGroupMember> listener) {
-				return this.register(service);
-			}
-
-			@Override
-			public Set<LocalGroupMember> getProviders(T service) {
-				return services.contains(service) ? Set.of(group.getLocalMember()) : Set.of();
-			}
-
-			@Override
-			public Set<T> getServices() {
-				return Collections.unmodifiableSet(services);
-			}
-		};
+	@Override
+	public Set<T> getServices() {
+		return Collections.unmodifiableSet(this.services);
 	}
 }

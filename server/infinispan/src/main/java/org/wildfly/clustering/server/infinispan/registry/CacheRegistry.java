@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
@@ -40,8 +41,7 @@ import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.cache.batch.Batcher;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.KeyFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
@@ -66,7 +66,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 
 	private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
 	private final Cache<Address, Map.Entry<K, V>> cache;
-	private final Batcher<TransactionBatch> batcher;
+	private final Supplier<Batch> batchFactory;
 	private final CacheContainerGroup group;
 	private final Runnable closeTask;
 	private final Map.Entry<K, V> entry;
@@ -75,7 +75,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 
 	public CacheRegistry(CacheRegistryConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
 		this.cache = config.getCache();
-		this.batcher = config.getBatcher();
+		this.batchFactory = config.getBatchFactory();
 		this.group = config.getGroup();
 		this.closeTask = closeTask;
 		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
@@ -89,7 +89,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 	@Override
 	public void run() {
 		Address localAddress = this.cache.getCacheManager().getAddress();
-		try (TransactionBatch batch = this.batcher.createBatch()) {
+		try (Batch batch = this.batchFactory.get()) {
 			this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(localAddress, this.entry);
 		}
 	}
@@ -100,7 +100,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 			this.cache.removeListener(this);
 		}
 		Address localAddress = this.cache.getCacheManager().getAddress();
-		try (TransactionBatch batch = this.batcher.createBatch()) {
+		try (Batch batch = this.batchFactory.get()) {
 			// If this remove fails, the entry will be auto-removed on topology change by the new primary owner
 			this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(localAddress);
 		} catch (CacheException e) {

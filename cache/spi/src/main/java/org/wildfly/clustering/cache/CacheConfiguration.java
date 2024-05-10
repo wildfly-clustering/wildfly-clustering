@@ -5,17 +5,17 @@
 
 package org.wildfly.clustering.cache;
 
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
 
 /**
  * Encapsulates the generic configuration of a cache.
- * @param <B> the batch type
  * @author Paul Ferraro
  */
-public interface CacheConfiguration<B extends Batch> {
+public interface CacheConfiguration {
 
 	CacheProperties getCacheProperties();
 
-	Batcher<B> getBatcher();
+	Supplier<Batch> getBatchFactory();
 }
