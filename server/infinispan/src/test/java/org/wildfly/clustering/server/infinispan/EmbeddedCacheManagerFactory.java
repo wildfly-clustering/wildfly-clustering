@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import javax.sql.DataSource;
+
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
@@ -76,6 +78,10 @@ public class EmbeddedCacheManagerFactory implements BiFunction<String, ClassLoad
 
 			@Override
 			public void addChannelListener(ChannelListener listener) {
+			}
+
+			@Override
+			public void setDataSource(DataSource dataSource) {
 			}
 		};
 		try {
