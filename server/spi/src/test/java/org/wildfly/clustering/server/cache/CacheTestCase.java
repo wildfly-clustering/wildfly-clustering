@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.server.context;
+package org.wildfly.clustering.server.cache;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,14 +22,14 @@ import org.wildfly.clustering.server.manager.Service;
  * Unit test for shared and unshared context implementations.
  * @author Paul Ferraro
  */
-public class ContextTestCase {
+public class CacheTestCase {
 
 	private static final int KEYS = 10;
 	private static final int SIZE = 100;
 
 	@Test
 	public void shared() throws InterruptedException, ExecutionException {
-		Context<Integer, ManagedService<Integer>> manager = ContextStrategy.SHARED.createContext(Service::start, Service::stop);
+		Cache<Integer, ManagedService<Integer>> manager = CacheStrategy.CONCURRENT.createCache(Service::start, Service::stop);
 		List<List<Future<ManagedService<Integer>>>> keyFutures = new ArrayList<>(KEYS);
 		ExecutorService executor = Executors.newFixedThreadPool(KEYS);
 		try {
@@ -70,7 +70,7 @@ public class ContextTestCase {
 
 	@Test
 	public void unshared() {
-		Context<String, ManagedService<String>> context = ContextStrategy.UNSHARED.createContext(Service::start, Service::stop);
+		Cache<String, ManagedService<String>> context = CacheStrategy.NONE.createCache(Service::start, Service::stop);
 		@SuppressWarnings("resource")
 		ManagedService<String> object = context.computeIfAbsent("foo", ManagedService::new);
 		try {
