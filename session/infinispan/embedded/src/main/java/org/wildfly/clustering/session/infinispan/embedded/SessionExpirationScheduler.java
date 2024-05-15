@@ -28,7 +28,7 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  */
 public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<String> {
 	private static final Logger LOGGER = Logger.getLogger(SessionExpirationScheduler.class);
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class);
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, SessionExpirationScheduler.class.getClassLoader());
 
 	private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
 

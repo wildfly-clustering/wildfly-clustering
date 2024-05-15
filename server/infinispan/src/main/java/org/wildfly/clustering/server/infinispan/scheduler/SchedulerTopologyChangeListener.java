@@ -42,7 +42,7 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
  */
 @Listener
 public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements ListenerRegistrar {
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class);
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class, SchedulerTopologyChangeListener.class.getClassLoader());
 
 	private final Cache<K, V> cache;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY);

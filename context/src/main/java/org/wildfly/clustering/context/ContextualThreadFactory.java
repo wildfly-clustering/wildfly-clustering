@@ -18,7 +18,7 @@ public class ContextualThreadFactory<C> implements ThreadFactory {
 	private final Contextualizer contextualizer;
 
 	public ContextualThreadFactory(ThreadFactory factory, C targetContext, ThreadContextReference<C> reference) {
-		this(factory, targetContext, reference, Contextualizer.withContext(targetContext, reference));
+		this(factory, targetContext, reference, Contextualizer.withContextProvider(reference.provide(targetContext)));
 	}
 
 	ContextualThreadFactory(ThreadFactory factory, C targetContext, ThreadContextReference<C> reference, Contextualizer contextualizer) {

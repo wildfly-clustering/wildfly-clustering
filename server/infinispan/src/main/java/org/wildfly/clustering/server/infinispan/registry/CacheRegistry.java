@@ -71,7 +71,14 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 	private final Runnable closeTask;
 	private final Map.Entry<K, V> entry;
 	private final Executor executor;
-	private final Function<RegistryListener<K, V>, ExecutorService> executorServiceFactory = listener -> new DefaultExecutorService(listener.getClass(), ExecutorServiceFactory.SINGLE_THREAD);
+	private final Function<RegistryListener<K, V>, ExecutorService> executorServiceFactory = new Function<>() {
+		@Override
+		public ExecutorService apply(RegistryListener<K, V> listener) {
+			java.security.PrivilegedAction<ClassLoader> action = Thread.currentThread()::getContextClassLoader;
+			ClassLoader loader = java.security.AccessController.doPrivileged(action);
+			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, loader);
+		}
+	};
 
 	public CacheRegistry(CacheRegistryConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
 		this.cache = config.getCache();

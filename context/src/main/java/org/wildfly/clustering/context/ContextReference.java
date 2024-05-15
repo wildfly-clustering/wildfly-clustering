@@ -27,4 +27,21 @@ public interface ContextReference<C> extends Supplier<C>, Consumer<C> {
 			}
 		};
 	}
+
+	default Supplier<Context> provide(C context) {
+		ContextReference<C> reference = this;
+		return new Supplier<>() {
+			@Override
+			public Context get() {
+				C currentContext = reference.get();
+				reference.accept(context);
+				return new Context() {
+					@Override
+					public void close() {
+						reference.accept(currentContext);
+					}
+				};
+			}
+		};
+	}
 }

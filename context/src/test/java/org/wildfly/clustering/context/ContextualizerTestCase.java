@@ -28,7 +28,7 @@ public class ContextualizerTestCase {
 		Object result = new Object();
 		AtomicReference<Object> resultRef = new AtomicReference<>();
 		ContextReference<Object> contextRef = new AtomicContextReference<>(original);
-		Contextualizer contextualizer = Contextualizer.withContext(target, contextRef);
+		Contextualizer contextualizer = Contextualizer.withContextProvider(contextRef.provide(target));
 
 		Runnable runner = new Runnable() {
 			@Override
