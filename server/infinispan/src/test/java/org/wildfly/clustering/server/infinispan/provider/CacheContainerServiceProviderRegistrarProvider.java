@@ -17,16 +17,16 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroupProvider;
 import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupProvider;
 
 /**
- * Provides a {@link CacheContainerServiceProviderRegistry} to an integration test.
+ * Provides a {@link CacheContainerServiceProviderRegistrar} to an integration test.
  * @author Paul Ferraro
  * @param <T> service type
  */
-public class CacheContainerServiceProviderRegistryProvider<T> extends AutoCloseableProvider implements Supplier<CacheContainerServiceProviderRegistry<T>> {
+public class CacheContainerServiceProviderRegistrarProvider<T> extends AutoCloseableProvider implements Supplier<CacheContainerServiceProviderRegistrar<T>> {
 	private static final String CACHE_NAME = "registry";
 
-	private final CacheServiceProviderRegistry<T> registry;
+	private final CacheServiceProviderRegistrar<T> registrar;
 
-	public CacheContainerServiceProviderRegistryProvider(String clusterName, String memberName) throws Exception {
+	public CacheContainerServiceProviderRegistrarProvider(String clusterName, String memberName) throws Exception {
 		CacheContainerGroupProvider provider = new EmbeddedCacheManagerGroupProvider(clusterName, memberName);
 		this.accept(provider::close);
 
@@ -38,7 +38,7 @@ public class CacheContainerServiceProviderRegistryProvider<T> extends AutoClosea
 		cache.start();
 		this.accept(cache::stop);
 
-		this.registry = new CacheServiceProviderRegistry<>(new CacheServiceProviderRegistryConfiguration() {
+		this.registrar = new CacheServiceProviderRegistrar<>(new CacheServiceProviderRegistrarConfiguration() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public <K, V> Cache<K, V> getCache() {
@@ -55,11 +55,11 @@ public class CacheContainerServiceProviderRegistryProvider<T> extends AutoClosea
 				return provider.getGroup();
 			}
 		});
-		this.accept(this.registry::close);
+		this.accept(this.registrar::close);
 	}
 
 	@Override
-	public CacheContainerServiceProviderRegistry<T> get() {
-		return this.registry;
+	public CacheContainerServiceProviderRegistrar<T> get() {
+		return this.registrar;
 	}
 }

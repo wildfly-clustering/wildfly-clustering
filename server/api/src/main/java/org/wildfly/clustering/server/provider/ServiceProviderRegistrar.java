@@ -18,7 +18,7 @@ import org.wildfly.clustering.server.Registrar;
  * @param <T> the service type
  * @param <M> the member type
  */
-public interface ServiceProviderRegistry<T, M extends GroupMember> extends Registrar<T> {
+public interface ServiceProviderRegistrar<T, M extends GroupMember> extends Registrar<T> {
 
 	/**
 	 * Returns the group with which to register service providers.
