@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryListener;
 
 /**
@@ -29,7 +30,7 @@ public class CacheRegistryITCase {
 		Map.Entry<String, UUID> entry1 = Map.entry("foo", UUID.randomUUID());
 		Map.Entry<String, UUID> entry2 = Map.entry("bar", UUID.randomUUID());
 		try (CacheContainerRegistryProvider<String, UUID> provider1 = new CacheContainerRegistryProvider<>(CLUSTER_NAME, MEMBER_1)) {
-			try (CacheContainerRegistry<String, UUID> registry1 = provider1.apply(entry1)) {
+			try (Registry<CacheContainerGroupMember, String, UUID> registry1 = provider1.apply(entry1)) {
 				CacheContainerGroupMember member1 = registry1.getGroup().getLocalMember();
 				assertEquals(entry1, registry1.getEntry(member1));
 				assertEquals(Map.ofEntries(entry1), registry1.getEntries());
@@ -40,7 +41,7 @@ public class CacheRegistryITCase {
 					verifyNoInteractions(listener);
 
 					try (CacheContainerRegistryProvider<String, UUID> provider2 = new CacheContainerRegistryProvider<>(CLUSTER_NAME, MEMBER_2)) {
-						try (CacheContainerRegistry<String, UUID> registry2 = provider2.apply(entry2)) {
+						try (Registry<CacheContainerGroupMember, String, UUID> registry2 = provider2.apply(entry2)) {
 							CacheContainerGroupMember member2 = registry2.getGroup().getLocalMember();
 
 							assertEquals(entry1, registry1.getEntry(member1));
