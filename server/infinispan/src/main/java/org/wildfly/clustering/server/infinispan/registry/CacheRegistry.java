@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.server.infinispan.registry;
 
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,7 +85,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 		this.group = config.getGroup();
 		this.closeTask = closeTask;
 		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
-		this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
+		this.entry = entry;
 		CacheInvoker.retrying(this.cache).invoke(this);
 		if (!this.group.isSingleton()) {
 			this.cache.addListener(this, new KeyFilter<>(Address.class), null);
