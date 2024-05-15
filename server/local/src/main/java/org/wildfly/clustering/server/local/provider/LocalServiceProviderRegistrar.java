@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderListener;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistry;
 
 /**
  * Factory that provides a non-clustered {@link ServiceProviderRegistration} implementation.
@@ -20,12 +20,12 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistry;
  * @param <M> the group member type
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistry<T, M extends GroupMember> implements ServiceProviderRegistry<T, M> {
+public class LocalServiceProviderRegistrar<T, M extends GroupMember> implements ServiceProviderRegistrar<T, M> {
 
 	private final Set<T> services = ConcurrentHashMap.newKeySet();
 	private final Group<M> group;
 
-	public LocalServiceProviderRegistry(Group<M> group) {
+	public LocalServiceProviderRegistrar(Group<M> group) {
 		this.group = group;
 	}
 

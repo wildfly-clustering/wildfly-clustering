@@ -10,7 +10,6 @@ import java.util.Map;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.Registrar;
-import org.wildfly.clustering.server.Registration;
 
 /**
  * Registry of entries specific to a group member.
@@ -19,7 +18,7 @@ import org.wildfly.clustering.server.Registration;
  * @param <V> the type of the registry entry value
  * @author Paul Ferraro
  */
-public interface Registry<M extends GroupMember, K, V> extends Registrar<RegistryListener<K, V>>, Registration {
+public interface Registry<M extends GroupMember, K, V> extends Registrar<RegistryListener<K, V>>, AutoCloseable {
 
 	/**
 	 * Returns the group associated with this factory.
@@ -42,4 +41,7 @@ public interface Registry<M extends GroupMember, K, V> extends Registrar<Registr
 	 * @return the registry entry of the specified group member, or null if undefined.
 	 */
 	Map.Entry<K, V> getEntry(M member);
+
+	@Override
+	void close();
 }

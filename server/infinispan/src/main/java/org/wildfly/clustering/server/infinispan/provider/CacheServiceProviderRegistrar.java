@@ -42,26 +42,25 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
-import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.util.CacheInvoker;
 import org.wildfly.clustering.server.local.provider.DefaultServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderListener;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.util.Invoker;
 import org.wildfly.common.function.ExceptionRunnable;
 
 /**
- * Infinispan {@link Cache} based {@link ServiceProviderRegistry}.
+ * Infinispan {@link Cache} based {@link ServiceProviderRegistrar}.
  * This factory can create multiple {@link ServiceProviderRegistration} instances, all of which share the same {@link Cache} instance.
  * @author Paul Ferraro
  * @param <T> the service identifier type
  */
 @Listener(observation = Observation.POST)
-public class CacheServiceProviderRegistry<T> implements CacheContainerServiceProviderRegistry<T>, Registration {
-	private static final Logger LOGGER = Logger.getLogger(CacheServiceProviderRegistry.class);
+public class CacheServiceProviderRegistrar<T> implements CacheContainerServiceProviderRegistrar<T>, AutoCloseable {
+	private static final Logger LOGGER = Logger.getLogger(CacheServiceProviderRegistrar.class);
 
 	private final Supplier<Batch> batchFactory;
 	private final ConcurrentMap<T, Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
@@ -70,7 +69,7 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 	private final Invoker invoker;
 	private final Executor executor;
 
-	public CacheServiceProviderRegistry(CacheServiceProviderRegistryConfiguration config) {
+	public CacheServiceProviderRegistrar(CacheServiceProviderRegistrarConfiguration config) {
 		this.group = config.getGroup();
 		this.cache = config.getCache();
 		this.batchFactory = config.getBatchFactory();
@@ -269,7 +268,7 @@ public class CacheServiceProviderRegistry<T> implements CacheContainerServicePro
 
 		@Override
 		public void run() {
-			CacheServiceProviderRegistry.this.registerLocal(this.localService);
+			CacheServiceProviderRegistrar.this.registerLocal(this.localService);
 		}
 	}
 }

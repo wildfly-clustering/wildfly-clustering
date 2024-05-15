@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.BiCacheEntryCreator;
 import org.wildfly.clustering.cache.CacheEntryRemover;
-import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
@@ -25,7 +24,7 @@ import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public interface SessionFactory<C, MV, AV, SC> extends ImmutableSessionFactory<MV, AV>, BiCacheEntryCreator<String, MV, AV, Duration>, CacheEntryRemover<String>, Registration {
+public interface SessionFactory<C, MV, AV, SC> extends ImmutableSessionFactory<MV, AV>, BiCacheEntryCreator<String, MV, AV, Duration>, CacheEntryRemover<String>, AutoCloseable {
 	@Override
 	SessionMetaDataFactory<MV> getMetaDataFactory();
 	@Override

@@ -16,10 +16,10 @@ import org.wildfly.clustering.server.local.LocalGroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 
 /**
- * Unit test for {@link LocalServiceProviderRegistry}.
+ * Unit test for {@link LocalServiceProviderRegistrar}.
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistryTestCase {
+public class LocalServiceProviderRegistrarTestCase {
 
 	@Test
 	public void test() {
@@ -28,42 +28,42 @@ public class LocalServiceProviderRegistryTestCase {
 
 		doReturn(localMember).when(group).getLocalMember();
 
-		LocalServiceProviderRegistry<String, LocalGroupMember> registry = new LocalServiceProviderRegistry<>(group);
+		LocalServiceProviderRegistrar<String, LocalGroupMember> registrar = new LocalServiceProviderRegistrar<>(group);
 
-		Assertions.assertSame(group, registry.getGroup());
+		Assertions.assertSame(group, registrar.getGroup());
 
-		Assertions.assertEquals(Set.of(), registry.getServices());
-		Assertions.assertEquals(Set.of(), registry.getProviders("foo"));
-		Assertions.assertEquals(Set.of(), registry.getProviders("bar"));
+		Assertions.assertEquals(Set.of(), registrar.getServices());
+		Assertions.assertEquals(Set.of(), registrar.getProviders("foo"));
+		Assertions.assertEquals(Set.of(), registrar.getProviders("bar"));
 
-		ServiceProviderRegistration<String, LocalGroupMember> foo = registry.register("foo");
+		ServiceProviderRegistration<String, LocalGroupMember> foo = registrar.register("foo");
 
 		Assertions.assertEquals("foo", foo.getService());
 		Assertions.assertEquals(Set.of(localMember), foo.getProviders());
 
-		Assertions.assertEquals(Set.of("foo"), registry.getServices());
-		Assertions.assertEquals(Set.of(localMember), registry.getProviders("foo"));
-		Assertions.assertEquals(Set.of(), registry.getProviders("bar"));
+		Assertions.assertEquals(Set.of("foo"), registrar.getServices());
+		Assertions.assertEquals(Set.of(localMember), registrar.getProviders("foo"));
+		Assertions.assertEquals(Set.of(), registrar.getProviders("bar"));
 
-		ServiceProviderRegistration<String, LocalGroupMember> bar = registry.register("bar");
+		ServiceProviderRegistration<String, LocalGroupMember> bar = registrar.register("bar");
 
 		Assertions.assertEquals("bar", bar.getService());
 		Assertions.assertEquals(Set.of(localMember), bar.getProviders());
 
-		Assertions.assertEquals(Set.of("foo", "bar"), registry.getServices());
-		Assertions.assertEquals(Set.of(localMember), registry.getProviders("foo"));
-		Assertions.assertEquals(Set.of(localMember), registry.getProviders("bar"));
+		Assertions.assertEquals(Set.of("foo", "bar"), registrar.getServices());
+		Assertions.assertEquals(Set.of(localMember), registrar.getProviders("foo"));
+		Assertions.assertEquals(Set.of(localMember), registrar.getProviders("bar"));
 
 		foo.close();
 
-		Assertions.assertEquals(Set.of("bar"), registry.getServices());
-		Assertions.assertEquals(Set.of(), registry.getProviders("foo"));
-		Assertions.assertEquals(Set.of(localMember), registry.getProviders("bar"));
+		Assertions.assertEquals(Set.of("bar"), registrar.getServices());
+		Assertions.assertEquals(Set.of(), registrar.getProviders("foo"));
+		Assertions.assertEquals(Set.of(localMember), registrar.getProviders("bar"));
 
 		bar.close();
 
-		Assertions.assertEquals(Set.of(), registry.getServices());
-		Assertions.assertEquals(Set.of(), registry.getProviders("foo"));
-		Assertions.assertEquals(Set.of(), registry.getProviders("bar"));
+		Assertions.assertEquals(Set.of(), registrar.getServices());
+		Assertions.assertEquals(Set.of(), registrar.getProviders("foo"));
+		Assertions.assertEquals(Set.of(), registrar.getProviders("bar"));
 	}
 }

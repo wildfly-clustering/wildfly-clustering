@@ -8,10 +8,10 @@ import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfigurati
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 
 /**
- * Configuration for a {@link CacheServiceProviderRegistry}.
+ * Configuration for a {@link CacheServiceProviderRegistrar}.
  * @author Paul Ferraro
  */
-public interface CacheServiceProviderRegistryConfiguration extends EmbeddedCacheConfiguration {
+public interface CacheServiceProviderRegistrarConfiguration extends EmbeddedCacheConfiguration {
 	Object getId();
 	CacheContainerGroup getGroup();
 }
