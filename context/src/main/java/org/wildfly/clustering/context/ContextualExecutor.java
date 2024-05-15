@@ -172,71 +172,47 @@ public interface ContextualExecutor extends Executor {
 	 */
 	<V1, V2, R, E extends Exception> R execute(ExceptionBiFunction<V1, V2, R, E> function, V1 value1, V2 value2) throws E;
 
-	static <C> ContextualExecutor withContext(C context, ContextReference<C> reference) {
+	static ContextualExecutor withContextProvider(Supplier<Context> provider) {
 		return new ContextualExecutor() {
 			@Override
 			public <E extends Exception> void execute(ExceptionRunnable<E> runner) throws E {
-				C currentContext = reference.get();
-				reference.accept(context);
-				try {
+				try (Context context = provider.get()) {
 					runner.run();
-				} finally {
-					reference.accept(currentContext);
 				}
 			}
 
 			@Override
-			public <T, E extends Exception> T execute(ExceptionSupplier<T, E> supplier) throws E {
-				C currentContext = reference.get();
-				reference.accept(context);
-				try {
-					return supplier.get();
-				} finally {
-					reference.accept(currentContext);
-				}
-			}
-
-			@Override
-			public <T, E extends Exception> void execute(ExceptionConsumer<T, E> consumer, T value) throws E {
-				C currentContext = reference.get();
-				reference.accept(context);
-				try {
+			public <V, E extends Exception> void execute(ExceptionConsumer<V, E> consumer, V value) throws E {
+				try (Context context = provider.get()) {
 					consumer.accept(value);
-				} finally {
-					reference.accept(currentContext);
 				}
 			}
 
 			@Override
 			public <T, V, E extends Exception> void execute(ExceptionBiConsumer<T, V, E> consumer, T value1, V value2) throws E {
-				C currentContext = reference.get();
-				reference.accept(context);
-				try {
+				try (Context context = provider.get()) {
 					consumer.accept(value1, value2);
-				} finally {
-					reference.accept(currentContext);
 				}
 			}
 
 			@Override
-			public <T, R, E extends Exception> R execute(ExceptionFunction<T, R, E> function, T value) throws E {
-				C currentContext = reference.get();
-				reference.accept(context);
-				try {
+			public <T, E extends Exception> T execute(ExceptionSupplier<T, E> supplier) throws E {
+				try (Context context = provider.get()) {
+					return supplier.get();
+				}
+			}
+
+			@Override
+			public <V, R, E extends Exception> R execute(ExceptionFunction<V, R, E> function, V value) throws E {
+				try (Context context = provider.get()) {
 					return function.apply(value);
-				} finally {
-					reference.accept(currentContext);
 				}
 			}
 
 			@Override
 			public <V1, V2, R, E extends Exception> R execute(ExceptionBiFunction<V1, V2, R, E> function, V1 value1, V2 value2) throws E {
-				C currentContext = reference.get();
-				reference.accept(context);
-				try {
+				try (Context context = provider.get()) {
 					return function.apply(value1, value2);
-				} finally {
-					reference.accept(currentContext);
 				}
 			}
 		};

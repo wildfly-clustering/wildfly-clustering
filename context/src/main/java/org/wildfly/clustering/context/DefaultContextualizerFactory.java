@@ -22,7 +22,7 @@ public enum DefaultContextualizerFactory implements ContextualizerFactory {
 		this.factories.add(new ContextualizerFactory() {
 			@Override
 			public Contextualizer createContextualizer(ClassLoader loader) {
-				return Contextualizer.withContext(loader, ContextClassLoaderReference.INSTANCE);
+				return Contextualizer.withContextProvider(ContextClassLoaderReference.INSTANCE.provide(loader));
 			}
 		});
 		ServiceLoader.load(ContextualizerFactory.class, ContextualizerFactory.class.getClassLoader()).forEach(this.factories::add);

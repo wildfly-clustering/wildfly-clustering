@@ -15,13 +15,4 @@ public interface ContextualizerFactory {
 	 * @return a contextualizer
 	 */
 	Contextualizer createContextualizer(ClassLoader loader);
-
-	/**
-	 * Creates a {@link Contextualizer} for the {@link ClassLoader} of the specified {@link Class}.
-	 * @param targetClass a class from which to obtain a class loader
-	 * @return a contextualizer
-	 */
-	default Contextualizer createContextualizer(Class<?> targetClass) {
-		return this.createContextualizer(targetClass.getClassLoader());
-	}
 }
