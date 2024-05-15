@@ -18,7 +18,7 @@ import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
-import org.wildfly.clustering.server.context.ContextStrategy;
+import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -42,8 +42,8 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.session.cache.CachedSessionManager;
 import org.wildfly.clustering.session.cache.CompositeSessionFactory;
-import org.wildfly.clustering.session.cache.ContextualSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.IdentityMarshallerSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
@@ -173,7 +173,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 				return identifierFactory;
 			}
 		};
-		return new ContextualSessionManager<>(new InfinispanSessionManager<>(configuration, infinispanConfiguration, this.factory), this.configuration.getCacheProperties().isTransactional() ? ContextStrategy.UNSHARED : ContextStrategy.SHARED);
+		return new CachedSessionManager<>(new InfinispanSessionManager<>(configuration, infinispanConfiguration, this.factory), this.configuration.getCacheProperties().isTransactional() ? CacheStrategy.NONE : CacheStrategy.CONCURRENT);
 	}
 
 	private <S, L> SessionAttributesFactory<C, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory, EmbeddedCacheConfiguration infinispan) {

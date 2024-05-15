@@ -10,13 +10,13 @@ import java.util.function.Consumer;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.server.Registrar;
-import org.wildfly.clustering.server.context.ContextStrategy;
+import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.cache.ContextualSessionManager;
+import org.wildfly.clustering.session.cache.CachedSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
@@ -54,7 +54,7 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 
 	@Override
 	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<C> configuration) {
-		return new ContextualSessionManager<>(new HotRodSessionManager<>(configuration, this.factory, this), ContextStrategy.SHARED);
+		return new CachedSessionManager<>(new HotRodSessionManager<>(configuration, this.factory, this), CacheStrategy.CONCURRENT);
 	}
 
 	@Override
