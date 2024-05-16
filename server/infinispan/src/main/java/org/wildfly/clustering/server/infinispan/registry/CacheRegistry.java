@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -145,7 +144,11 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 	@Override
 	public Map<K, V> getEntries() {
 		Set<Address> addresses = this.group.getMembership().getMembers().stream().map(CacheContainerGroupMember::getAddress).collect(Collectors.toUnmodifiableSet());
-		return this.cache.getAdvancedCache().getAll(addresses).values().stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+		Map<K, V> result = new HashMap<>();
+		for (Map.Entry<K, V> entry : this.cache.getAdvancedCache().getAll(addresses).values()) {
+			result.put(entry.getKey(), entry.getValue());
+		}
+		return Collections.unmodifiableMap(result);
 	}
 
 	@Override
