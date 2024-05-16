@@ -5,67 +5,26 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
 
 import org.infinispan.protostream.BaseMarshaller;
-import org.infinispan.protostream.DescriptorParserException;
-import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.config.Configuration;
-import org.infinispan.protostream.descriptors.Descriptor;
-import org.infinispan.protostream.descriptors.EnumDescriptor;
-import org.infinispan.protostream.descriptors.FileDescriptor;
-import org.infinispan.protostream.descriptors.GenericDescriptor;
+import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.impl.SerializationContextImpl;
+import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
  * Decorates {@link SerializationContextImpl}, ensuring that all registered marshallers implement {@link ProtoStreamMarshaller}.
  * We have to use the decorator pattern since SerializationContextImpl is final.
  * @author Paul Ferraro
  */
-public class DefaultSerializationContext implements SerializationContext {
+public class DefaultSerializationContext extends NativeSerializationContext implements SerializationContext {
 
-	private final org.infinispan.protostream.SerializationContext context = new SerializationContextImpl(Configuration.builder().build());
+	private final org.infinispan.protostream.SerializationContext context;
 
-	@Override
-	public Configuration getConfiguration() {
-		return this.context.getConfiguration();
-	}
-
-	@Override
-	public Map<String, FileDescriptor> getFileDescriptors() {
-		return this.context.getFileDescriptors();
-	}
-
-	@Override
-	public Map<String, GenericDescriptor> getGenericDescriptors() {
-		return this.context.getGenericDescriptors();
-	}
-
-	@Override
-	public Descriptor getMessageDescriptor(String fullTypeName) {
-		return this.context.getMessageDescriptor(fullTypeName);
-	}
-
-	@Override
-	public EnumDescriptor getEnumDescriptor(String fullTypeName) {
-		return this.context.getEnumDescriptor(fullTypeName);
-	}
-
-	@Override
-	public boolean canMarshall(Class<?> javaClass) {
-		return this.context.canMarshall(javaClass);
-	}
-
-	@Override
-	public boolean canMarshall(String fullTypeName) {
-		return this.context.canMarshall(fullTypeName);
-	}
-
-	@Override
-	public boolean canMarshall(Object object) {
-		return this.context.canMarshall(object);
+	public DefaultSerializationContext(org.infinispan.protostream.SerializationContext context) {
+		super(context);
+		this.context = context;
 	}
 
 	@Override
@@ -84,68 +43,71 @@ public class DefaultSerializationContext implements SerializationContext {
 		return (ProtoStreamMarshaller<T>) this.context.getMarshaller(clazz);
 	}
 
-	@Deprecated
-	@Override
-	public String getTypeNameById(Integer typeId) {
-		return this.context.getTypeNameById(typeId);
-	}
-
-	@Deprecated
-	@Override
-	public Integer getTypeIdByName(String fullTypeName) {
-		return this.context.getTypeIdByName(fullTypeName);
-	}
-
-	@Override
-	public GenericDescriptor getDescriptorByTypeId(Integer typeId) {
-		return this.context.getDescriptorByTypeId(typeId);
-	}
-
-	@Override
-	public GenericDescriptor getDescriptorByName(String fullTypeName) {
-		return this.context.getDescriptorByName(fullTypeName);
-	}
-
-	@Override
-	public void registerProtoFiles(FileDescriptorSource source) throws DescriptorParserException {
-		this.context.registerProtoFiles(source);
-	}
-
-	@Override
-	public void unregisterProtoFile(String fileName) {
-		this.context.unregisterProtoFile(fileName);
-	}
-
-	@Override
-	public void unregisterProtoFiles(Set<String> fileNames) {
-		this.context.unregisterProtoFiles(fileNames);
-	}
-
 	@Override
 	public void registerMarshaller(ProtoStreamMarshaller<?> marshaller) {
 		this.context.registerMarshaller(marshaller);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void unregisterMarshaller(BaseMarshaller<?> marshaller) {
-		this.context.unregisterMarshaller(marshaller);
-	}
+	public void registerMarshaller(BaseMarshaller<?> marshaller) {
+		if (marshaller instanceof ProtoStreamMarshaller) {
+			this.registerMarshaller((ProtoStreamMarshaller<?>) marshaller);
+		} else if (marshaller instanceof ProtobufTagMarshaller) {
+			// Adapt native ProtobufTagMarshaller to ProtoStreamMarshaller interface
+			ProtobufTagMarshaller<Object> nativeMarshaller = (ProtobufTagMarshaller<Object>) marshaller;
+			this.registerMarshaller(new ProtoStreamMarshaller<>() {
+				@Override
+				public Class<? extends Object> getJavaClass() {
+					return nativeMarshaller.getJavaClass();
+				}
 
-	@Deprecated
-	@Override
-	public void registerMarshallerProvider(MarshallerProvider provider) {
-		this.context.registerMarshallerProvider(provider);
-	}
+				@Override
+				public String getTypeName() {
+					return nativeMarshaller.getTypeName();
+				}
 
-	@Deprecated
-	@Override
-	public void unregisterMarshallerProvider(MarshallerProvider provider) {
-		this.context.unregisterMarshallerProvider(provider);
+				@Override
+				public Object readFrom(ProtoStreamReader reader) throws IOException {
+					// Override default implementation
+					// Native marshallers do not support shared references
+					return this.read((ReadContext) reader);
+				}
+
+				@Override
+				public void writeTo(ProtoStreamWriter writer, Object value) throws IOException {
+					// Override default implementation
+					// Native marshallers do not support shared references
+					this.write((TagWriterImpl) ((WriteContext) writer).getWriter(), value);
+				}
+
+				@Override
+				public Object read(ReadContext context) throws IOException {
+					return nativeMarshaller.read(context);
+				}
+
+				@Override
+				public void write(WriteContext context, Object value) throws IOException {
+					nativeMarshaller.write(context, value);
+				}
+			});
+		} else if (marshaller instanceof org.infinispan.protostream.EnumMarshaller) {
+			// Adapt native EnumMarshaller to ProtoStreamMarshaller interface
+			this.registerMarshaller(new EnumMarshaller<>((Class<Enum>) marshaller.getJavaClass()) {
+				@Override
+				public String getTypeName() {
+					return marshaller.getTypeName();
+				}
+			});
+		} else {
+			// Reject MessageMarshaller implementations
+			throw new IllegalArgumentException(marshaller.getTypeName());
+		}
 	}
 
 	@Override
 	public void registerMarshallerProvider(org.infinispan.protostream.SerializationContext.InstanceMarshallerProvider<?> provider) {
-		if (!(provider instanceof InstanceMarshallerProvider)) {
+		if (!(provider instanceof SerializationContext.InstanceMarshallerProvider)) {
 			throw new IllegalArgumentException();
 		}
 		this.context.registerMarshallerProvider(provider);
@@ -153,7 +115,7 @@ public class DefaultSerializationContext implements SerializationContext {
 
 	@Override
 	public void unregisterMarshallerProvider(org.infinispan.protostream.SerializationContext.InstanceMarshallerProvider<?> provider) {
-		if (!(provider instanceof InstanceMarshallerProvider)) {
+		if (!(provider instanceof SerializationContext.InstanceMarshallerProvider)) {
 			throw new IllegalArgumentException();
 		}
 		this.context.unregisterMarshallerProvider(provider);
