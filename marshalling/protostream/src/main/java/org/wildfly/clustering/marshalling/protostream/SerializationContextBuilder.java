@@ -8,10 +8,14 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
+import org.infinispan.protostream.config.Configuration;
+import org.infinispan.protostream.impl.SerializationContextImpl;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 import org.wildfly.clustering.marshalling.protostream.math.MathSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.net.NetSerializationContextInitializer;
@@ -33,7 +37,18 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	 * @return a new builder
 	 */
 	static SerializationContextBuilder<SerializationContextInitializer> newInstance(ClassLoaderMarshaller marshaller) {
-		return new DefaultSerializationContextBuilder(marshaller);
+		return newInstance(marshaller, DefaultSerializationContext::new);
+	}
+
+	/**
+	 * Constructs a builder of a {@link SerializationContext} using a default set of initializers.
+	 * @param marshaller the marshaller used to write/resolve a ClassLoader
+	 * @param wrapper a serialization context wrapper
+	 * @return a new builder
+	 */
+	static SerializationContextBuilder<SerializationContextInitializer> newInstance(ClassLoaderMarshaller marshaller, Function<org.infinispan.protostream.SerializationContext, SerializationContext> wrapper) {
+		// Don't register WrappedMessage marshaller
+		return new DefaultSerializationContextBuilder(wrapper.apply(new SerializationContextImpl(Configuration.builder().build())), marshaller);
 	}
 
 	/**
@@ -41,15 +56,25 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	 * @return a new builder
 	 */
 	static SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer> newInstance() {
-		return new NativeSerializationContextBuilder();
+		return newInstance(UnaryOperator.identity());
+	}
+
+	/**
+	 * Constructs a builder of a native {@link SerializationContext}.
+	 * @param wrapper a serialization context wrapper
+	 * @return a new builder
+	 */
+	static SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer> newInstance(UnaryOperator<org.infinispan.protostream.SerializationContext> wrapper) {
+		return new NativeSerializationContextBuilder(wrapper.apply(ProtobufUtil.newSerializationContext(Configuration.builder().build())));
 	}
 
 	class DefaultSerializationContextBuilder implements SerializationContextBuilder<SerializationContextInitializer> {
 		private static final String PROTOSTREAM_BASE_PACKAGE_NAME = org.infinispan.protostream.BaseMarshaller.class.getPackage().getName();
 
-		private final SerializationContext context = new DefaultSerializationContext();
+		private final SerializationContext context;
 
-		DefaultSerializationContextBuilder(ClassLoaderMarshaller marshaller) {
+		DefaultSerializationContextBuilder(SerializationContext context, ClassLoaderMarshaller marshaller) {
+			this.context = context;
 			// Load default schemas first, so they can be referenced by loader-specific schemas
 			this.register(new LangSerializationContextInitializer(marshaller));
 			this.register(new AnySerializationContextInitializer());
@@ -120,7 +145,11 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	}
 
 	class NativeSerializationContextBuilder implements SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer> {
-		private final org.infinispan.protostream.SerializationContext context = ProtobufUtil.newSerializationContext();
+		private final org.infinispan.protostream.SerializationContext context;
+
+		NativeSerializationContextBuilder(org.infinispan.protostream.SerializationContext context) {
+			this.context = context;
+		}
 
 		@Override
 		public SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer> register(org.infinispan.protostream.SerializationContextInitializer initializer) {
