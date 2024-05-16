@@ -8,16 +8,15 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import org.infinispan.client.hotrod.RemoteCache;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.server.Registrar;
-import org.wildfly.clustering.server.context.ContextStrategy;
+import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.cache.ContextualSessionManager;
+import org.wildfly.clustering.session.cache.CachedSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
@@ -39,7 +38,7 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC, TransactionBatch>, HotRodSessionManagerConfiguration {
+public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC>, HotRodSessionManagerConfiguration {
 
 	private final RemoteCacheConfiguration configuration;
 	private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
@@ -54,8 +53,8 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 	}
 
 	@Override
-	public SessionManager<SC, TransactionBatch> createSessionManager(SessionManagerConfiguration<C> configuration) {
-		return new ContextualSessionManager<>(new HotRodSessionManager<>(configuration, this.factory, this), ContextStrategy.SHARED);
+	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<C> configuration) {
+		return new CachedSessionManager<>(new HotRodSessionManager<>(configuration, this.factory, this), CacheStrategy.CONCURRENT);
 	}
 
 	@Override

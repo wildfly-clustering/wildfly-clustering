@@ -17,8 +17,7 @@ import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
-import org.wildfly.clustering.cache.batch.Batcher;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
@@ -42,15 +41,15 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC, TransactionBatch> {
+public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
 
-	private final Batcher<TransactionBatch> batcher;
+	private final Supplier<Batch> batcher;
 	private final Cache<Key<String>, ?> cache;
 	private final CacheProperties properties;
 	private final IdentifierFactory<String> identifierFactory;
 	private final Scheduler<String, ExpirationMetaData> expirationScheduler;
 	private final Runnable startTask;
-	private final Registrar<SessionManager<SC, TransactionBatch>> registrar;
+	private final Registrar<SessionManager<SC>> registrar;
 
 	private volatile Registration registration;
 
@@ -66,7 +65,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 		this.cache = infinispanConfiguration.getCache();
 		this.properties = infinispanConfiguration.getCacheProperties();
 		this.identifierFactory = infinispanConfiguration.getIdentifierFactory();
-		this.batcher = infinispanConfiguration.getBatcher();
+		this.batcher = infinispanConfiguration.getBatchFactory();
 		this.expirationScheduler = infinispanConfiguration.getExpirationScheduler();
 		this.registrar = infinispanConfiguration.getRegistrar();
 		this.startTask = infinispanConfiguration.getStartTask();
@@ -95,7 +94,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 	}
 
 	@Override
-	public Batcher<TransactionBatch> getBatcher() {
+	public Supplier<Batch> getBatchFactory() {
 		return this.batcher;
 	}
 

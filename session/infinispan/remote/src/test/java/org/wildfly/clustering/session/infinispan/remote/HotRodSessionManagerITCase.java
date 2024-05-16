@@ -17,7 +17,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerConfigurator;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -29,7 +28,7 @@ import org.wildfly.clustering.session.cache.SessionManagerITCase;
  * Session manager integration test using an Infinispan server container.
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerITCase extends SessionManagerITCase<TransactionBatch, HotRodSessionManagerParameters> {
+public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessionManagerParameters> {
 
 	@RegisterExtension
 	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();

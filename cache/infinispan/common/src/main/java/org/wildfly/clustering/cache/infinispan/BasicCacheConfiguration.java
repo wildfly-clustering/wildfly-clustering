@@ -5,20 +5,21 @@
 
 package org.wildfly.clustering.cache.infinispan;
 
+import java.util.function.Supplier;
+
 import jakarta.transaction.TransactionManager;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.api.BasicCache;
 import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.CacheProperties;
-import org.wildfly.clustering.cache.batch.Batcher;
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionalBatcher;
 
 /**
  * @author Paul Ferraro
  */
-public interface BasicCacheConfiguration extends CacheConfiguration<TransactionBatch>, BasicCacheContainerConfiguration {
+public interface BasicCacheConfiguration extends CacheConfiguration, BasicCacheContainerConfiguration {
 
 	<K, V> BasicCache<K, V> getCache();
 
@@ -26,7 +27,9 @@ public interface BasicCacheConfiguration extends CacheConfiguration<TransactionB
 
 	CacheProperties getCacheProperties();
 
-	default Batcher<TransactionBatch> getBatcher() {
-		return new TransactionalBatcher<>(this.getCache().getName(), this.getTransactionManager(), CacheException::new);
+	@Override
+	default Supplier<Batch> getBatchFactory() {
+		TransactionManager tm = this.getTransactionManager();
+		return (tm != null) ? TransactionBatch.factory(this.getCache().getName(), tm, CacheException::new) : Batch.factory();
 	}
 }

@@ -14,10 +14,8 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
-import org.wildfly.clustering.server.context.Context;
-import org.wildfly.clustering.server.context.ContextFactory;
-import org.wildfly.clustering.server.context.Contextual;
+import org.wildfly.clustering.server.cache.Cache;
+import org.wildfly.clustering.server.cache.CacheFactory;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -27,15 +25,14 @@ import org.wildfly.common.function.Functions;
 /**
  * A concurrent session manager, that can share session references across concurrent threads.
  * @param <C> the session context type
- * @param <B> the batch type
  * @author Paul Ferraro
  */
-public class ContextualSessionManager<C, B extends Batch> implements SessionManager<C, B> {
+public class CachedSessionManager<C> implements SessionManager<C> {
 
-	private final SessionManager<C, B> manager;
-	private final Context<String, CompletionStage<ContextualSession<C>>> sessionContext;
-	private final BiFunction<String, Runnable, CompletionStage<ContextualSession<C>>> sessionCreator;
-	private final BiFunction<String, Runnable, CompletionStage<ContextualSession<C>>> sessionFinder;
+	private final SessionManager<C> manager;
+	private final Cache<String, CompletionStage<CacheableSession<C>>> sessionCache;
+	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionCreator;
+	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionFinder;
 	private final UnaryOperator<Session<C>> validator = new UnaryOperator<>() {
 		@Override
 		public Session<C> apply(Session<C> session) {
@@ -49,40 +46,40 @@ public class ContextualSessionManager<C, B extends Batch> implements SessionMana
 		}
 	};
 
-	public ContextualSessionManager(SessionManager<C, B> manager, ContextFactory contextFactory) {
+	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
 		this.manager = manager;
 		this.sessionCreator = new BiFunction<>() {
 			@Override
-			public CompletionStage<ContextualSession<C>> apply(String id, Runnable closeTask) {
-				return manager.createSessionAsync(id).thenApply(session -> new ContextualSessionRegistration<>(session, closeTask));
+			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
+				return manager.createSessionAsync(id).thenApply(session -> new CachedSession<>(session, closeTask));
 			}
 		};
-		Function<Runnable, ContextualSession<C>> empty = closeTask -> {
+		Function<Runnable, CacheableSession<C>> empty = closeTask -> {
 			closeTask.run();
 			return null;
 		};
 		this.sessionFinder = new BiFunction<>() {
 			@Override
-			public CompletionStage<ContextualSession<C>> apply(String id, Runnable closeTask) {
-				return manager.findSessionAsync(id).thenApply(session -> (session != null) ? new ContextualSessionRegistration<>(session, closeTask) : empty.apply(closeTask));
+			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
+				return manager.findSessionAsync(id).thenApply(session -> (session != null) ? new CachedSession<>(session, closeTask) : empty.apply(closeTask));
 			}
 		};
-		this.sessionContext = contextFactory.createContext(Functions.discardingConsumer(), new Consumer<CompletionStage<ContextualSession<C>>>() {
+		this.sessionCache = cacheFactory.createCache(Functions.discardingConsumer(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
-			public void accept(CompletionStage<ContextualSession<C>> future) {
-				future.thenAccept(session -> Optional.ofNullable(session).ifPresent(Contextual::end));
+			public void accept(CompletionStage<CacheableSession<C>> future) {
+				future.thenAccept(session -> Optional.ofNullable(session).map(Supplier::get).ifPresent(Session::close));
 			}
 		});
 	}
 
 	@Override
 	public CompletionStage<Session<C>> createSessionAsync(String id) {
-		return this.sessionContext.computeIfAbsent(id, this.sessionCreator).thenApply(Function.identity());
+		return this.sessionCache.computeIfAbsent(id, this.sessionCreator).thenApply(Function.identity());
 	}
 
 	@Override
 	public CompletionStage<Session<C>> findSessionAsync(String id) {
-		return this.sessionContext.computeIfAbsent(id, this.sessionFinder).thenApply(this.validator);
+		return this.sessionCache.computeIfAbsent(id, this.sessionFinder).thenApply(this.validator);
 	}
 
 	@Override
@@ -111,8 +108,8 @@ public class ContextualSessionManager<C, B extends Batch> implements SessionMana
 	}
 
 	@Override
-	public Batcher<B> getBatcher() {
-		return this.manager.getBatcher();
+	public Supplier<Batch> getBatchFactory() {
+		return this.manager.getBatchFactory();
 	}
 
 	@Override

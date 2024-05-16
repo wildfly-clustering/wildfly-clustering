@@ -8,7 +8,7 @@ package org.wildfly.clustering.server.manager;
 import java.util.function.Supplier;
 
 /**
- * Configuration of a state manager.
+ * Configuration of a manager of distributed state.
  * @param <I> the identifier type
  * @author Paul Ferraro
  */

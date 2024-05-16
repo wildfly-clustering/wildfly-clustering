@@ -7,12 +7,10 @@ package org.wildfly.clustering.session.cache.attributes;
 
 import java.util.Map;
 
-import org.wildfly.clustering.server.Registration;
-
 /**
  * @author Paul Ferraro
  */
-public interface SessionAttributes extends Map<String, Object>, Registration {
+public interface SessionAttributes extends Map<String, Object>, AutoCloseable {
 
 	@Override
 	default int size() {
@@ -47,4 +45,7 @@ public interface SessionAttributes extends Map<String, Object>, Registration {
 	default void clear() {
 		this.keySet().stream().forEach(this::remove);
 	}
+
+	@Override
+	void close();
 }

@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.server.Registration;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 
@@ -19,7 +18,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  * Allows safe invocation of tasks that require resources not otherwise available after {@link #close()} to block a service from stopping.
  * @author Paul Ferraro
  */
-public interface BlockingExecutor extends Executor, Registration {
+public interface BlockingExecutor extends Executor, AutoCloseable {
 
 	/**
 	 * Executes the specified runner, but only if the executor was not already closed.
@@ -47,6 +46,9 @@ public interface BlockingExecutor extends Executor, Registration {
 	 * @throws E if the task execution failed
 	 */
 	<R, E extends Exception> Optional<R> execute(ExceptionSupplier<R, E> executeTask) throws E;
+
+	@Override
+	void close();
 
 	/**
 	 * Creates new blocking executor that runs the specified task upon {@link #close()}.

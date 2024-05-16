@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
@@ -21,17 +20,16 @@ import org.wildfly.clustering.session.user.UserManager;
  * @param <SV> the user sessions value type
  * @param <D> the deployment type
  * @param <S> the session type
- * @param <B> the batch type
  */
-public class DefaultUserManager<CV, C, T, SV, D, S, B extends Batch> implements UserManager<C, T, D, S, B> {
+public class DefaultUserManager<CV, C, T, SV, D, S> implements UserManager<C, T, D, S> {
 
 	private final UserFactory<CV, C, T, SV, D, S> factory;
-	private final Batcher<B> batcher;
+	private final Supplier<Batch> batchFactory;
 	private final IdentifierFactory<String> identifierFactory;
 
-	public DefaultUserManager(UserFactory<CV, C, T, SV, D, S> factory, IdentifierFactory<String> identifierFactory, Batcher<B> batcher) {
+	public DefaultUserManager(UserFactory<CV, C, T, SV, D, S> factory, IdentifierFactory<String> identifierFactory, Supplier<Batch> batchFactory) {
 		this.factory = factory;
-		this.batcher = batcher;
+		this.batchFactory = batchFactory;
 		this.identifierFactory = identifierFactory;
 	}
 
@@ -48,8 +46,8 @@ public class DefaultUserManager<CV, C, T, SV, D, S, B extends Batch> implements 
 	}
 
 	@Override
-	public Batcher<B> getBatcher() {
-		return this.batcher;
+	public Supplier<Batch> getBatchFactory() {
+		return this.batchFactory;
 	}
 
 	@Override

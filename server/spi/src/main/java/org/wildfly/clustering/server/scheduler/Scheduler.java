@@ -7,15 +7,13 @@ package org.wildfly.clustering.server.scheduler;
 
 import java.util.stream.Stream;
 
-import org.wildfly.clustering.server.Registration;
-
 /**
  * A task scheduler.
  * @param <I> the scheduled entry identifier type
  * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
-public interface Scheduler<I, M> extends Registration {
+public interface Scheduler<I, M> extends AutoCloseable {
 	/**
 	 * Schedules a task for the object with the specified identifier, using the specified metaData
 	 * @param id an object identifier
@@ -43,4 +41,7 @@ public interface Scheduler<I, M> extends Registration {
 	default boolean contains(I id) {
 		return this.stream().anyMatch(id::equals);
 	}
+
+	@Override
+	void close();
 }

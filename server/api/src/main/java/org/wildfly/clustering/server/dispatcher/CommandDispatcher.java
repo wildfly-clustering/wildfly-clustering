@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.Registration;
 
 /**
  * Dispatches commands for execution on members of a group.
@@ -18,7 +17,7 @@ import org.wildfly.clustering.server.Registration;
  * @param <C> the command context type
  * @author Paul Ferraro
  */
-public interface CommandDispatcher<M extends GroupMember, C> extends Registration {
+public interface CommandDispatcher<M extends GroupMember, C> extends AutoCloseable {
 
 	/**
 	 * Returns the context with which this dispatcher was created.
@@ -62,4 +61,7 @@ public interface CommandDispatcher<M extends GroupMember, C> extends Registratio
 	 * @throws IOException if the command could not be sent
 	 */
 	<R, E extends Exception> Map<M, CompletionStage<R>> dispatchToGroup(Command<R, ? super C, E> command, Set<M> excluding) throws IOException;
+
+	@Override
+	void close();
 }

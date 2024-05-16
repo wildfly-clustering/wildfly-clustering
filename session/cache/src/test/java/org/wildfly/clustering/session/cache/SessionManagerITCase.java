@@ -44,18 +44,17 @@ import org.wildfly.common.function.Functions;
 
 /**
  * Session manager integration tests.
- * @param <B> the batch type
  * @param <P> the parameters type
  * @author Paul Ferraro
  */
-public abstract class SessionManagerITCase<B extends Batch, P extends SessionManagerParameters> {
+public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 	private static final String DEPLOYMENT_CONTEXT = "deployment";
 	private static final Supplier<AtomicReference<String>> SESSION_CONTEXT_FACTORY = AtomicReference::new;
 
-	private final ExceptionBiFunction<P, String, SessionManagerFactoryProvider<String, B>, Exception> factory;
+	private final ExceptionBiFunction<P, String, SessionManagerFactoryProvider<String>, Exception> factory;
 
-	protected SessionManagerITCase(ExceptionBiFunction<P, String, SessionManagerFactoryProvider<String, B>, Exception> factory) {
+	protected SessionManagerITCase(ExceptionBiFunction<P, String, SessionManagerFactoryProvider<String>, Exception> factory) {
 		this.factory = factory;
 	}
 
@@ -63,13 +62,13 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
-		try (SessionManagerFactoryProvider<String, B> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-				SessionManager<AtomicReference<String>, B> manager1 = factory1.createSessionManager(managerConfig1);
+		try (SessionManagerFactoryProvider<String> provider1 = this.factory.apply(parameters, "member1")) {
+			try (SessionManagerFactory<String, AtomicReference<String>> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
+				SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
 				manager1.start();
-				try (SessionManagerFactoryProvider<String, B> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
+				try (SessionManagerFactoryProvider<String> provider2 = this.factory.apply(parameters, "member2")) {
+					try (SessionManagerFactory<String, AtomicReference<String>> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
+						SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
 
 						String sessionId = manager1.getIdentifierFactory().get();
@@ -111,13 +110,13 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
-		try (SessionManagerFactoryProvider<String, B> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-				SessionManager<AtomicReference<String>, B> manager1 = factory1.createSessionManager(managerConfig1);
+		try (SessionManagerFactoryProvider<String> provider1 = this.factory.apply(parameters, "member1")) {
+			try (SessionManagerFactory<String, AtomicReference<String>> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
+				SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
 				manager1.start();
-				try (SessionManagerFactoryProvider<String, B> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
+				try (SessionManagerFactoryProvider<String> provider2 = this.factory.apply(parameters, "member2")) {
+					try (SessionManagerFactory<String, AtomicReference<String>> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
+						SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
 
 						String sessionId = manager1.getIdentifierFactory().get();
@@ -162,13 +161,13 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
-		try (SessionManagerFactoryProvider<String, B> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>, B> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-				SessionManager<AtomicReference<String>, B> manager1 = factory1.createSessionManager(managerConfig1);
+		try (SessionManagerFactoryProvider<String> provider1 = this.factory.apply(parameters, "member1")) {
+			try (SessionManagerFactory<String, AtomicReference<String>> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
+				SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
 				manager1.start();
-				try (SessionManagerFactoryProvider<String, B> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>, B> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-						SessionManager<AtomicReference<String>, B> manager2 = factory2.createSessionManager(managerConfig2);
+				try (SessionManagerFactoryProvider<String> provider2 = this.factory.apply(parameters, "member2")) {
+					try (SessionManagerFactory<String, AtomicReference<String>> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
+						SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
 						manager2.start();
 
 						String sessionId = manager1.getIdentifierFactory().get();
@@ -220,7 +219,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		}
 	}
 
-	private void createSession(SessionManager<AtomicReference<String>, B> manager, String sessionId, Map<String, Object> attributes) {
+	private void createSession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
 		this.requestSession(manager, manager::createSession, sessionId, session -> {
 			assertTrue(session.getMetaData().isNew());
 			this.verifySessionMetaData(session);
@@ -230,7 +229,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		});
 	}
 
-	private void verifySession(SessionManager<AtomicReference<String>, B> manager, String sessionId, Map<String, Object> attributes) {
+	private void verifySession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
 		this.requestSession(manager, sessionId, session -> {
 			assertFalse(session.getMetaData().isNew());
 			this.verifySessionMetaData(session);
@@ -238,7 +237,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		});
 	}
 
-	private void updateSession(SessionManager<AtomicReference<String>, B> manager, String sessionId, Map<String, Map.Entry<Object, Object>> attributes) {
+	private void updateSession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Map.Entry<Object, Object>> attributes) {
 		this.requestSession(manager, sessionId, session -> {
 			assertNotNull(session);
 			assertEquals(sessionId, session.getId());
@@ -248,7 +247,7 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		});
 	}
 
-	private void invalidateSession(SessionManager<AtomicReference<String>, B> manager, String sessionId) {
+	private void invalidateSession(SessionManager<AtomicReference<String>> manager, String sessionId) {
 		this.requestSession(manager, sessionId, session -> {
 			session.invalidate();
 			assertFalse(session.isValid());
@@ -257,13 +256,13 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		});
 	}
 
-	private void requestSession(SessionManager<AtomicReference<String>, B> manager, String sessionId, Consumer<Session<AtomicReference<String>>> action) {
+	private void requestSession(SessionManager<AtomicReference<String>> manager, String sessionId, Consumer<Session<AtomicReference<String>>> action) {
 		this.requestSession(manager, manager::findSession, sessionId, action);
 	}
 
-	private void requestSession(SessionManager<AtomicReference<String>, B> manager, Function<String, Session<AtomicReference<String>>> sessionFactory, String sessionId, Consumer<Session<AtomicReference<String>>> action) {
+	private void requestSession(SessionManager<AtomicReference<String>> manager, Function<String, Session<AtomicReference<String>>> sessionFactory, String sessionId, Consumer<Session<AtomicReference<String>>> action) {
 		Instant start = Instant.now();
-		try (B batch = manager.getBatcher().createBatch()) {
+		try (Batch batch = manager.getBatchFactory().get()) {
 			try (Session<AtomicReference<String>> session = sessionFactory.apply(sessionId)) {
 				assertNotNull(session);
 				assertEquals(sessionId, session.getId());
@@ -333,8 +332,8 @@ public abstract class SessionManagerITCase<B extends Batch, P extends SessionMan
 		}
 	}
 
-	private void verifyNoSession(SessionManager<AtomicReference<String>, B> manager, String sessionId) {
-		try (B batch = manager.getBatcher().createBatch()) {
+	private void verifyNoSession(SessionManager<AtomicReference<String>> manager, String sessionId) {
+		try (Batch batch = manager.getBatchFactory().get()) {
 			try (Session<AtomicReference<String>> session = manager.findSession(sessionId)) {
 				assertNull(session);
 			}

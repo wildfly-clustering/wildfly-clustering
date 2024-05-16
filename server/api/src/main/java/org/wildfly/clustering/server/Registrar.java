@@ -11,6 +11,7 @@ package org.wildfly.clustering.server;
  * @param <T> the type of object to be registered
  */
 public interface Registrar<T> {
+
 	/**
 	 * Registers an object.  The object is unregistered when the generated {@link Registration} is closed.
 	 * @param object an object to register

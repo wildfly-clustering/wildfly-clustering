@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.session.infinispan.embedded;
 
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
@@ -21,6 +20,6 @@ public interface InfinispanSessionManagerConfiguration<SC> extends EmbeddedCache
 
 	Scheduler<String, ExpirationMetaData> getExpirationScheduler();
 	Runnable getStartTask();
-	Registrar<SessionManager<SC, TransactionBatch>> getRegistrar();
+	Registrar<SessionManager<SC>> getRegistrar();
 	IdentifierFactory<String> getIdentifierFactory();
 }

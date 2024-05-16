@@ -20,20 +20,19 @@ import org.wildfly.clustering.session.cache.metadata.DetachedSessionMetaData;
  * Detached session implementation, for use outside the context of a request.
  * @author Paul Ferraro
  * @param <C> the session context
- * @param <B> the batch type
  */
-public class DetachedSession<C, B extends Batch> extends AbstractImmutableSession implements Session<C> {
+public class DetachedSession<C> extends AbstractImmutableSession implements Session<C> {
 
-	private final SessionManager<C, B> manager;
+	private final SessionManager<C> manager;
 	private final C context;
 	private final SessionMetaData metaData;
 	private final Map<String, Object> attributes;
 
-	public DetachedSession(SessionManager<C, B> manager, String id, C context) {
+	public DetachedSession(SessionManager<C> manager, String id, C context) {
 		super(id);
 		this.manager = manager;
 		this.context = context;
-		Supplier<B> batchFactory = this::getBatch;
+		Supplier<Batch> batchFactory = this::getBatch;
 		Supplier<Session<C>> sessionFactory = this::getSession;
 		this.metaData = new DetachedSessionMetaData<>(batchFactory, sessionFactory);
 		this.attributes = new DetachedSessionAttributes<>(batchFactory, sessionFactory);
@@ -56,14 +55,14 @@ public class DetachedSession<C, B extends Batch> extends AbstractImmutableSessio
 
 	@Override
 	public boolean isValid() {
-		try (B batch = this.getBatch()) {
+		try (Batch batch = this.getBatch()) {
 			return this.manager.findImmutableSession(this.getId()) != null;
 		}
 	}
 
 	@Override
 	public void invalidate() {
-		try (B batch = this.getBatch()) {
+		try (Batch batch = this.getBatch()) {
 			try (Session<C> session = this.getSession()) {
 				session.invalidate();
 			}
@@ -79,7 +78,7 @@ public class DetachedSession<C, B extends Batch> extends AbstractImmutableSessio
 		return Optional.ofNullable(this.manager.findSession(this.getId())).orElseThrow(IllegalStateException::new);
 	}
 
-	private B getBatch() {
-		return this.manager.getBatcher().createBatch();
+	private Batch getBatch() {
+		return this.manager.getBatchFactory().get();
 	}
 }

@@ -5,20 +5,20 @@
 
 package org.wildfly.clustering.server.manager;
 
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
 
 /**
  * A manager of server-side state.
  * @param <I> the identifier type
- * @param <B> the batch type
  * @author Paul Ferraro
  */
-public interface Manager<I, B extends Batch> extends ManagerConfiguration<I>, Restartable {
+public interface Manager<I> extends ManagerConfiguration<I>, Service {
 
 	/**
 	 * Returns a batcher for use by users of this manager.
 	 * @return a batcher
 	 */
-	Batcher<B> getBatcher();
+	Supplier<Batch> getBatchFactory();
 }

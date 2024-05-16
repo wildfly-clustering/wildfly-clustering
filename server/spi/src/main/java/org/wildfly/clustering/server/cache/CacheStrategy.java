@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.server.context;
+package org.wildfly.clustering.server.cache;
 
 import java.util.Map;
 import java.util.Optional;
@@ -13,19 +13,19 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
- * Implementations for creating contexts.
+ * Generic level-one cache implementations.
  * @author Paul Ferraro
  */
-public enum ContextStrategy implements ContextFactory {
+public enum CacheStrategy implements CacheFactory {
 	/**
-	 * Creates an unshared context, where state is always "absent".
-	 * {@link Context#computeIfAbsent(Object, BiFunction)} will always creates its value from the specified factory.
+	 * Creates a zero-capacity cache, where entries are always "absent".
+	 * {@link Cache#computeIfAbsent(Object, BiFunction)} will always creates its value from the specified factory.
 	 * Intended for use when some other mechanism already ensures mutually exclusive access to the requested state.
 	 */
-	UNSHARED() {
+	NONE() {
 		@Override
-		public <K, V> Context<K, V> createContext(Consumer<V> startTask, Consumer<V> stopTask) {
-			return new Context<>() {
+		public <K, V> Cache<K, V> createCache(Consumer<V> startTask, Consumer<V> stopTask) {
+			return new Cache<>() {
 				@Override
 				public V computeIfAbsent(K key, BiFunction<K, Runnable, V> factory) {
 					AtomicReference<V> reference = new AtomicReference<>();
@@ -40,12 +40,12 @@ public enum ContextStrategy implements ContextFactory {
 		}
 	},
 	/**
-	 * Creates a context storing sharable references.
-	 * Concurrent {@link Context#computeIfAbsent(Object, BiFunction)} invocations for the same key will reference the same state, until all references are closed.
+	 * Creates a cache of entries in use by concurrent threads.
+	 * Cache entries are auto-removed when the last requestor invokes {@link Runnable#run()} on the {@link Runnable} with which it was created.
 	 */
-	SHARED() {
+	CONCURRENT() {
 		@Override
-		public <K, V> Context<K, V> createContext(Consumer<V> startTask, Consumer<V> stopTask) {
+		public <K, V> Cache<K, V> createCache(Consumer<V> startTask, Consumer<V> stopTask) {
 			BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> addFunction = new BiFunction<>() {
 				@Override
 				public Map.Entry<Integer, AtomicReference<V>> apply(K id, Map.Entry<Integer, AtomicReference<V>> entry) {
@@ -66,7 +66,7 @@ public enum ContextStrategy implements ContextFactory {
 					return Map.entry(count - 1, reference);
 				}
 			};
-			return new Context<>() {
+			return new Cache<>() {
 				private final Map<K, Map.Entry<Integer, AtomicReference<V>>> entries = new ConcurrentHashMap<>();
 
 				@Override

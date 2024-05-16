@@ -7,7 +7,6 @@ package org.wildfly.clustering.session.cache.attributes;
 
 import org.wildfly.clustering.cache.CacheEntryCreator;
 import org.wildfly.clustering.cache.CacheEntryRemover;
-import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
 /**
@@ -16,6 +15,9 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
  * @param <V> the marshalled value type
  * @author Paul Ferraro
  */
-public interface SessionAttributesFactory<C, V> extends ImmutableSessionAttributesFactory<V>, CacheEntryCreator<String, V, Void>, CacheEntryRemover<String>, Registration {
+public interface SessionAttributesFactory<C, V> extends ImmutableSessionAttributesFactory<V>, CacheEntryCreator<String, V, Void>, CacheEntryRemover<String>, AutoCloseable {
 	SessionAttributes createSessionAttributes(String id, V value, ImmutableSessionMetaData metaData, C context);
+
+	@Override
+	void close();
 }
