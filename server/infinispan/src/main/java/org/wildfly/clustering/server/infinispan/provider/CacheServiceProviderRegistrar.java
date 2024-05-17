@@ -73,7 +73,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		this.group = config.getGroup();
 		this.cache = config.getCache();
 		this.batchFactory = config.getBatchFactory();
-		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
+		this.executor = config.getExecutor();
 		this.invoker = CacheInvoker.retrying(this.cache);
 		this.cache.addListener(this);
 	}
