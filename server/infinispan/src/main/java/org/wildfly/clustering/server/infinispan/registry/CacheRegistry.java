@@ -81,7 +81,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 		this.batchFactory = config.getBatchFactory();
 		this.group = config.getGroup();
 		this.closeTask = closeTask;
-		this.executor = config.getBlockingManager().asExecutor(this.getClass().getName());
+		this.executor = config.getExecutor();
 		this.entry = entry;
 		CacheInvoker.retrying(this.cache).invoke(this);
 		if (!this.group.isSingleton()) {
