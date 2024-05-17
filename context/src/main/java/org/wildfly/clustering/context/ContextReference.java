@@ -7,6 +7,8 @@ package org.wildfly.clustering.context;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.wildfly.common.function.Functions;
+
 /**
  * Reference to some context.
  * @param <C> the context type
@@ -28,20 +30,25 @@ public interface ContextReference<C> extends Supplier<C>, Consumer<C> {
 		};
 	}
 
-	default Supplier<Context> provide(C context) {
-		ContextReference<C> reference = this;
-		return new Supplier<>() {
+	/**
+	 * Returns a context provider for the specified value.
+	 * @param target the target context
+	 * @return a context provider
+	 */
+	default Supplier<Context> provide(C target) {
+		return (target != null) ? new Supplier<>() {
 			@Override
 			public Context get() {
-				C currentContext = reference.get();
-				reference.accept(context);
+				C existing = ContextReference.this.get();
+				if (existing == target) return Context.EMPTY;
+				ContextReference.this.accept(target);
 				return new Context() {
 					@Override
 					public void close() {
-						reference.accept(currentContext);
+						ContextReference.this.accept(existing);
 					}
 				};
 			}
-		};
+		} : Functions.constantSupplier(Context.EMPTY);
 	}
 }
