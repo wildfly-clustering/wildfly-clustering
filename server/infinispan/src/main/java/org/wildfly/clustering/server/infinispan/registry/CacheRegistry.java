@@ -47,10 +47,8 @@ import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.infinispan.util.CacheInvoker;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryListener;
-import org.wildfly.common.function.ExceptionRunnable;
 
 /**
  * Clustered {@link Registry} backed by an Infinispan cache.
@@ -59,7 +57,7 @@ import org.wildfly.common.function.ExceptionRunnable;
  * @param <V> value type
  */
 @Listener(observation = Observation.POST)
-public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, ExceptionRunnable<CacheException> {
+public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 	private static final Logger LOGGER = Logger.getLogger(CacheRegistry.class);
 
 	private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
@@ -77,23 +75,18 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 	};
 
 	public CacheRegistry(CacheRegistryConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
-		this.cache = config.getCache();
+		this.cache = config.getWriteOnlyCache();
 		this.batchFactory = config.getBatchFactory();
 		this.group = config.getGroup();
 		this.closeTask = closeTask;
 		this.executor = config.getExecutor();
 		this.entry = entry;
-		CacheInvoker.retrying(this.cache).invoke(this);
-		if (!this.group.isSingleton()) {
-			this.cache.addListener(this, new KeyFilter<>(Address.class), null);
-		}
-	}
-
-	@Override
-	public void run() {
 		Address localAddress = this.cache.getCacheManager().getAddress();
 		try (Batch batch = this.batchFactory.get()) {
-			this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(localAddress, this.entry);
+			this.cache.put(localAddress, this.entry);
+		}
+		if (!this.group.isSingleton()) {
+			this.cache.addListener(this, new KeyFilter<>(Address.class), null);
 		}
 	}
 
