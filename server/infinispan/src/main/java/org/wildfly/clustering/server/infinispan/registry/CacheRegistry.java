@@ -72,9 +72,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V>, Except
 	private final Function<RegistryListener<K, V>, ExecutorService> executorServiceFactory = new Function<>() {
 		@Override
 		public ExecutorService apply(RegistryListener<K, V> listener) {
-			java.security.PrivilegedAction<ClassLoader> action = Thread.currentThread()::getContextClassLoader;
-			ClassLoader loader = java.security.AccessController.doPrivileged(action);
-			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, loader);
+			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader());
 		}
 	};
 

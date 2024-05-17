@@ -112,13 +112,11 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 
 	@Override
 	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service, ServiceProviderListener<CacheContainerGroupMember> listener) {
-		java.security.PrivilegedAction<ClassLoader> action = Thread.currentThread()::getContextClassLoader;
-		ClassLoader loader = java.security.AccessController.doPrivileged(action);
 		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> newEntry = new AbstractMap.SimpleEntry<>(listener, null);
 		// Only create executor for new registrations
 		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.computeIfAbsent(service, key -> {
 			if (listener != null) {
-				newEntry.setValue(new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, loader));
+				newEntry.setValue(new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader()));
 			}
 			return newEntry;
 		});

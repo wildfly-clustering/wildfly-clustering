@@ -34,9 +34,7 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 	private final Function<T, ExecutorService> executorFactory = new Function<>() {
 		@Override
 		public ExecutorService apply(T listener) {
-			java.security.PrivilegedAction<ClassLoader> action = Thread.currentThread()::getContextClassLoader;
-			ClassLoader loader = java.security.AccessController.doPrivileged(action);
-			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, loader);
+			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader());
 		}
 	};
 

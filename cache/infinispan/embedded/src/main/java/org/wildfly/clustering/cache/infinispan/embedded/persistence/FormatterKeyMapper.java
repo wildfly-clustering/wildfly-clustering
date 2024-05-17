@@ -7,7 +7,6 @@ package org.wildfly.clustering.cache.infinispan.embedded.persistence;
 
 import static org.wildfly.common.Assert.checkNotNullParam;
 
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
@@ -40,13 +39,7 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 
 	public FormatterKeyMapper() {
 		List<Formatter<?>> formatters = new LinkedList<>();
-		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				ServiceLoader.load(Formatter.class, FormatterKeyMapper.this.getClass().getClassLoader()).forEach(formatters::add);
-				return null;
-			}
-		});
+		ServiceLoader.load(Formatter.class, FormatterKeyMapper.this.getClass().getClassLoader()).forEach(formatters::add);
 		this.formatters = new ArrayList<>(DEFAULT_FORMATTERS.size() + formatters.size());
 		this.formatters.addAll(DEFAULT_FORMATTERS);
 		this.formatters.addAll(formatters);
