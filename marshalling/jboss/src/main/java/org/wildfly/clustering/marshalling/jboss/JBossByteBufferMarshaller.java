@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -19,6 +18,7 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
+import org.wildfly.clustering.marshalling.AbstractByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.IndexSerializer;
 
@@ -26,12 +26,11 @@ import org.wildfly.clustering.marshalling.IndexSerializer;
  * A {@link ByteBufferMarshaller} based on JBoss Marshalling.
  * @author Paul Ferraro
  */
-public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
+public class JBossByteBufferMarshaller extends AbstractByteBufferMarshaller {
 
 	private final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader());
 	private final MarshallingConfigurationRepository repository;
 	private final MarshallingConfiguration configuration;
-	private final WeakReference<ClassLoader> loader;
 
 	/**
 	 * Creates a versioned marshaller supporting multiple marshalling configurations.
@@ -52,15 +51,13 @@ public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
 	}
 
 	private JBossByteBufferMarshaller(MarshallingConfigurationRepository repository, MarshallingConfiguration configuration, ClassLoader loader) {
+		super(loader);
 		this.repository = repository;
 		this.configuration = configuration;
-		this.loader = new WeakReference<>(loader);
 	}
 
 	@Override
 	public Object readFrom(InputStream input) throws IOException {
-		// Weld deserialization is still dependency on TCCL
-		ClassLoader loader = setThreadContextClassLoader(this.loader.get());
 		try (SimpleDataInput data = new SimpleDataInput(Marshalling.createByteInput(input))) {
 			MarshallingConfiguration configuration = this.configuration;
 			if (this.repository != null) {
@@ -82,14 +79,11 @@ public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
 			InvalidObjectException exception = new InvalidObjectException(e.getMessage());
 			exception.initCause(e);
 			throw exception;
-		} finally {
-			setThreadContextClassLoader(loader);
 		}
 	}
 
 	@Override
 	public void writeTo(OutputStream output, Object value) throws IOException {
-		ClassLoader loader = setThreadContextClassLoader(this.loader.get());
 		try (SimpleDataOutput data = new SimpleDataOutput(Marshalling.createByteOutput(output))) {
 			if (this.repository != null) {
 				IndexSerializer.UNSIGNED_BYTE.writeInt(data, this.repository.getCurrentVersion());
@@ -99,8 +93,6 @@ public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
 				marshaller.writeObject(value);
 				marshaller.finish();
 			}
-		} finally {
-			setThreadContextClassLoader(loader);
 		}
 	}
 
@@ -120,11 +112,5 @@ public class JBossByteBufferMarshaller implements ByteBufferMarshaller {
 	@Override
 	public String toString() {
 		return "JBossMarshalling";
-	}
-
-	private static ClassLoader setThreadContextClassLoader(ClassLoader loader) {
-		ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(loader);
-		return currentLoader;
 	}
 }
