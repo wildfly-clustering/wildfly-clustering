@@ -10,6 +10,12 @@ package org.wildfly.clustering.context;
  * @author Paul Ferraro
  */
 public interface Context extends AutoCloseable {
+	Context EMPTY = new Context() {
+		@Override
+		public void close() {
+		}
+	};
+
 	@Override
 	void close();
 }
