@@ -10,8 +10,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
+import org.wildfly.clustering.context.Context;
+import org.wildfly.common.function.Functions;
 
 /**
  * Marshals an object to and from a {@link ByteBuffer}.
@@ -38,27 +41,31 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 
 	@Override
 	default Object read(ByteBuffer buffer) throws IOException {
-		try (InputStream input = new ByteBufferInputStream(buffer)) {
-			return this.readFrom(input);
+		try (Context context = this.getContextProvider().get()) {
+			try (InputStream input = new ByteBufferInputStream(buffer)) {
+				return this.readFrom(input);
+			}
 		}
 	}
 
 	@Override
 	default ByteBuffer write(Object object) throws IOException {
-		OptionalInt size = this.size(object);
-		try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
-			this.writeTo(output, object);
-			ByteBuffer buffer = output.getBuffer();
-			if (size.isPresent()) {
-				int predictedSize = size.getAsInt();
-				int actualSize = buffer.limit() - buffer.arrayOffset();
-				if (predictedSize < actualSize) {
-					LOGGER.debugf("Buffer size prediction too small for %s (%s), predicted = %d, actual = %d", object, (object != null) ? object.getClass().getCanonicalName() : null, predictedSize, actualSize);
+		try (Context context = this.getContextProvider().get()) {
+			OptionalInt size = this.size(object);
+			try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
+				this.writeTo(output, object);
+				ByteBuffer buffer = output.getBuffer();
+				if (size.isPresent()) {
+					int predictedSize = size.getAsInt();
+					int actualSize = buffer.limit() - buffer.arrayOffset();
+					if (predictedSize < actualSize) {
+						LOGGER.debugf("Buffer size prediction too small for %s (%s), predicted = %d, actual = %d", object, (object != null) ? object.getClass().getCanonicalName() : null, predictedSize, actualSize);
+					}
+				} else {
+					LOGGER.tracef("Buffer size prediction missing for %s (%s)", object, (object != null) ? object.getClass().getCanonicalName() : null);
 				}
-			} else {
-				LOGGER.tracef("Buffer size prediction missing for %s (%s)", object, (object != null) ? object.getClass().getCanonicalName() : null);
+				return buffer;
 			}
-			return buffer;
 		}
 	}
 
@@ -69,5 +76,13 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 	 */
 	default OptionalInt size(Object object) {
 		return OptionalInt.empty();
+	}
+
+	/**
+	 * Returns a provider of context to use during read/write operations.
+	 * @return a context provider
+	 */
+	default Supplier<Context> getContextProvider() {
+		return Functions.constantSupplier(Context.EMPTY);
 	}
 }
