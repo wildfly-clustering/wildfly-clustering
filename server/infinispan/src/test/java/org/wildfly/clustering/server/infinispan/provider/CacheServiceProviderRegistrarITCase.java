@@ -89,11 +89,11 @@ public class CacheServiceProviderRegistrarITCase {
 						assertEquals(Set.of(member1, member2), barEvents.poll(5, TimeUnit.SECONDS));
 					}
 
+					assertNull(fooEvents.poll(100, TimeUnit.MILLISECONDS));
+
 					assertEquals(Set.of(foo, bar), registrar1.getServices());
 					assertEquals(Set.of(member1), registrar1.getProviders(foo));
 					assertEquals(Set.of(member1), registrar1.getProviders(bar));
-
-					assertNull(fooEvents.poll(100, TimeUnit.MILLISECONDS));
 
 					assertEquals(Set.of(member1), barEvents.poll(5, TimeUnit.SECONDS));
 				}
