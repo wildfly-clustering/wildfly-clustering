@@ -15,19 +15,15 @@ import org.jboss.threads.JBossThreadFactory;
  */
 public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 
-	public DefaultThreadFactory(Class<?> targetClass) {
-		this(targetClass, () -> new ThreadGroup(targetClass.getSimpleName()));
+	public DefaultThreadFactory(Class<?> targetClass, ClassLoader loader) {
+		this(() -> new ThreadGroup(targetClass.getSimpleName()), loader);
 	}
 
-	public DefaultThreadFactory(Class<?> targetClass, Supplier<ThreadGroup> threadGroup) {
-		this(new JBossThreadFactory(threadGroup.get(), Boolean.FALSE, null, "%G - %t", null, null), targetClass);
+	public DefaultThreadFactory(Supplier<ThreadGroup> threadGroup, ClassLoader loader) {
+		this(new JBossThreadFactory(threadGroup.get(), Boolean.FALSE, null, "%G - %t", null, null), loader);
 	}
 
-	public DefaultThreadFactory(ThreadFactory factory) {
-		this(factory, factory.getClass());
-	}
-
-	private DefaultThreadFactory(ThreadFactory factory, Class<?> targetClass) {
-		super(factory, targetClass.getClassLoader(), ContextClassLoaderReference.INSTANCE);
+	public DefaultThreadFactory(ThreadFactory factory, ClassLoader loader) {
+		super(factory, loader, ContextClassLoaderReference.INSTANCE);
 	}
 }

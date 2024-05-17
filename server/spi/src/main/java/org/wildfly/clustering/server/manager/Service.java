@@ -6,18 +6,18 @@
 package org.wildfly.clustering.server.manager;
 
 /**
- * Implemented by objects that can be restarted.
+ * A restartable service.
  * @author Paul Ferraro
  */
-public interface Restartable {
+public interface Service {
 
 	/**
-	 * Starts this object.
+	 * Starts this service.
 	 */
 	void start();
 
 	/**
-	 * Stops this object.
+	 * Stops this service.
 	 */
 	void stop();
 }

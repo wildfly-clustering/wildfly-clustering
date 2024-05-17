@@ -8,10 +8,10 @@ package org.wildfly.clustering.server.manager;
 import java.util.function.Supplier;
 
 /**
- * A factory for creating identifiers.
+ * A service that creating identifiers for a manager.
  * @param <I> the identifier type
  * @author Paul Ferraro
  */
-public interface IdentifierFactory<I> extends Supplier<I>, Restartable {
+public interface IdentifierFactory<I> extends Supplier<I>, Service {
 
 }

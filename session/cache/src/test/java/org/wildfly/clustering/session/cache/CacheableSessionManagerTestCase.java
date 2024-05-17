@@ -13,8 +13,7 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
-import org.wildfly.clustering.server.context.ContextStrategy;
+import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -23,16 +22,16 @@ import org.wildfly.clustering.session.SessionStatistics;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 
 /**
- * Unit test for {@link ContextualSessionManager}.
+ * Unit test for {@link CachedSessionManager}.
  * @author Paul Ferraro
  */
-public class ContextualSessionManagerTestCase {
+public class CacheableSessionManagerTestCase {
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void findSession() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.SHARED);
+		SessionManager<Void> manager = mock(SessionManager.class);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.CONCURRENT);
 		Session<Void> expected1 = mock(Session.class);
 		Session<Void> expected2 = mock(Session.class);
 		String id = "foo";
@@ -81,8 +80,8 @@ public class ContextualSessionManagerTestCase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void findInvalidSession() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.SHARED);
+		SessionManager<Void> manager = mock(SessionManager.class);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.CONCURRENT);
 		Session<Void> expected1 = mock(Session.class);
 		String id = "foo";
 		SessionMetaData metaData1 = mock(SessionMetaData.class);
@@ -111,8 +110,8 @@ public class ContextualSessionManagerTestCase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void createSession() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.SHARED);
+		SessionManager<Void> manager = mock(SessionManager.class);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.CONCURRENT);
 		Session<Void> expected1 = mock(Session.class);
 		Session<Void> expected2 = mock(Session.class);
 		String id = "foo";
@@ -160,8 +159,8 @@ public class ContextualSessionManagerTestCase {
 
 	@Test
 	public void getIdentifierFactory() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.UNSHARED);
+		SessionManager<Void> manager = mock(SessionManager.class);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.NONE);
 		Supplier<String> expected = mock(Supplier.class);
 
 		when(manager.getIdentifierFactory()).thenReturn(expected);
@@ -173,8 +172,8 @@ public class ContextualSessionManagerTestCase {
 
 	@Test
 	public void start() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.UNSHARED);
+		SessionManager<Void> manager = mock(SessionManager.class);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.NONE);
 
 		subject.start();
 
@@ -183,8 +182,8 @@ public class ContextualSessionManagerTestCase {
 
 	@Test
 	public void stop() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.UNSHARED);
+		SessionManager<Void> manager = mock(SessionManager.class);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.NONE);
 
 		subject.stop();
 
@@ -193,9 +192,9 @@ public class ContextualSessionManagerTestCase {
 
 	@Test
 	public void getStatistics() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
+		SessionManager<Void> manager = mock(SessionManager.class);
 		SessionStatistics statistics = mock(SessionStatistics.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.UNSHARED);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.NONE);
 
 		when(manager.getStatistics()).thenReturn(statistics);
 
@@ -204,21 +203,21 @@ public class ContextualSessionManagerTestCase {
 
 	@Test
 	public void getBatcher() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.UNSHARED);
-		Batcher<Batch> expected = mock(Batcher.class);
+		SessionManager<Void> manager = mock(SessionManager.class);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.NONE);
+		Supplier<Batch> expected = mock(Supplier.class);
 
-		when(manager.getBatcher()).thenReturn(expected);
+		when(manager.getBatchFactory()).thenReturn(expected);
 
-		Batcher<Batch> result = subject.getBatcher();
+		Supplier<Batch> result = subject.getBatchFactory();
 
 		assertSame(expected, result);
 	}
 
 	@Test
 	public void findImmutableSession() {
-		SessionManager<Void, Batch> manager = mock(SessionManager.class);
-		SessionManager<Void, Batch> subject = new ContextualSessionManager<>(manager, ContextStrategy.UNSHARED);
+		SessionManager<Void> manager = mock(SessionManager.class);
+		SessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.NONE);
 		ImmutableSession expected = mock(ImmutableSession.class);
 		String id = "foo";
 

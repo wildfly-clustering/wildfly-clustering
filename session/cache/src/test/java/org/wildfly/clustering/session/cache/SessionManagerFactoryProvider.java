@@ -7,16 +7,14 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.session.SessionManagerFactory;
 
 /**
  * Provides a session manager factory to the session manager integration test.
  * @param <C> the session context type
- * @param <B> the batch type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryProvider<C, B extends Batch> extends AutoCloseable {
+public interface SessionManagerFactoryProvider<C> extends AutoCloseable {
 
-	<SC> SessionManagerFactory<C, SC, B> createSessionManagerFactory(Supplier<SC> contextFactory);
+	<SC> SessionManagerFactory<C, SC> createSessionManagerFactory(Supplier<SC> contextFactory);
 }

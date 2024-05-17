@@ -6,7 +6,6 @@ package org.wildfly.clustering.session.infinispan.embedded.user;
 
 import java.util.Map;
 
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -32,7 +31,7 @@ import org.wildfly.clustering.session.user.UserManagerFactory;
  * @param <S> the session type
  * @author Paul Ferraro
  */
-public class InfinispanUserManagerFactory<C, D, S> implements UserManagerFactory<C, D, S, TransactionBatch> {
+public class InfinispanUserManagerFactory<C, D, S> implements UserManagerFactory<C, D, S> {
 
 	private final EmbeddedCacheConfiguration configuration;
 
@@ -41,12 +40,12 @@ public class InfinispanUserManagerFactory<C, D, S> implements UserManagerFactory
 	}
 
 	@Override
-	public <T> UserManager<C, T, D, S, TransactionBatch> createUserManager(UserManagerConfiguration<T> configuration) {
+	public <T> UserManager<C, T, D, S> createUserManager(UserManagerConfiguration<T> configuration) {
 		Marshaller<C, MarshalledValue<C, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller()));
 		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T> contextFactory = new InfinispanUserContextFactory<>(this.configuration, marshaller, configuration.getTransientContextFactory());
 		UserSessionsFactory<Map<D, S>, D, S> sessionsFactory = new InfinispanUserSessionsFactory<>(this.configuration);
 		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory);
 		IdentifierFactory<String> identifierFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), this.configuration.getCache());
-		return new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatcher());
+		return new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatchFactory());
 	}
 }

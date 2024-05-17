@@ -9,27 +9,28 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.wildfly.clustering.server.Group;
+import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.Registration;
-import org.wildfly.clustering.server.local.LocalGroup;
-import org.wildfly.clustering.server.local.LocalGroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryListener;
 
 /**
  * Local {@link Registry}.
+ * @param <M> the group member type
  * @param <K> the registry key type
  * @param <V> the registry value type
  * @author Paul Ferraro
  */
-public class LocalRegistry<K, V> implements Registry<LocalGroupMember, K, V> {
+public class LocalRegistry<M extends GroupMember, K, V> implements Registry<M, K, V> {
 
-	private final LocalGroup group;
+	private final Group<M> group;
 	private final Runnable closeTask;
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final Map.Entry<K, V> entry;
 	private final Map<K, V> entries;
 
-	public LocalRegistry(LocalGroup group, Map.Entry<K, V> entry, Runnable closeTask) {
+	public LocalRegistry(Group<M> group, Map.Entry<K, V> entry, Runnable closeTask) {
 		this.group = group;
 		this.entry = entry;
 		this.entries = Collections.singletonMap(entry.getKey(), entry.getValue());
@@ -42,7 +43,7 @@ public class LocalRegistry<K, V> implements Registry<LocalGroupMember, K, V> {
 	}
 
 	@Override
-	public LocalGroup getGroup() {
+	public Group<M> getGroup() {
 		return this.group;
 	}
 
@@ -52,7 +53,7 @@ public class LocalRegistry<K, V> implements Registry<LocalGroupMember, K, V> {
 	}
 
 	@Override
-	public Map.Entry<K, V> getEntry(LocalGroupMember member) {
+	public Map.Entry<K, V> getEntry(M member) {
 		return !this.closed.get() && this.group.getLocalMember().equals(member) ? this.entry : null;
 	}
 

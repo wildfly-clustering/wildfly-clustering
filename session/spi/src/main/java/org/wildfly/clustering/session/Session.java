@@ -4,14 +4,12 @@
  */
 package org.wildfly.clustering.session;
 
-import org.wildfly.clustering.server.Registration;
-
 /**
  * Represents a session.
  * @author Paul Ferraro
  * @param <C> the session context type
  */
-public interface Session<C> extends ImmutableSession, Registration {
+public interface Session<C> extends ImmutableSession, AutoCloseable {
 	@Override
 	SessionMetaData getMetaData();
 
@@ -27,4 +25,7 @@ public interface Session<C> extends ImmutableSession, Registration {
 	 * @return a local context
 	 */
 	C getContext();
+
+	@Override
+	void close();
 }

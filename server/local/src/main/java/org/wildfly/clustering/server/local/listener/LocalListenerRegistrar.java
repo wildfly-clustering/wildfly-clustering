@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.context.DefaultExecutorService;
@@ -30,6 +31,12 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 
 	private final Map<T, ExecutorService> listeners = new ConcurrentHashMap<>();
 	private final Duration shutdownTimeout;
+	private final Function<T, ExecutorService> executorFactory = new Function<>() {
+		@Override
+		public ExecutorService apply(T listener) {
+			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader());
+		}
+	};
 
 	public LocalListenerRegistrar(Duration shutdownTimeout) {
 		this.shutdownTimeout = shutdownTimeout;
@@ -37,7 +44,7 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 
 	@Override
 	public Registration register(T listener) {
-		this.listeners.computeIfAbsent(listener, l -> new DefaultExecutorService(l.getClass(), ExecutorServiceFactory.SINGLE_THREAD));
+		this.listeners.computeIfAbsent(listener, this.executorFactory);
 		return () -> this.unregister(listener);
 	}
 

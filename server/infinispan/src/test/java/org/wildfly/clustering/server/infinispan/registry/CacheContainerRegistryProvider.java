@@ -7,6 +7,7 @@ package org.wildfly.clustering.server.infinispan.registry;
 
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
@@ -15,19 +16,22 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.wildfly.clustering.server.AutoCloseableProvider;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupProvider;
 import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupProvider;
+import org.wildfly.clustering.server.registry.Registry;
+import org.wildfly.clustering.server.registry.RegistryFactory;
 
 /**
- * Provides a {@link CacheContainerRegistry} to an integration test.
+ * Provides a {@link Registry} to an integration test.
  * @author Paul Ferraro
  * @param <K> the registry key type
  * @param <V> the registry value type
  */
-public class CacheContainerRegistryProvider<K, V> extends AutoCloseableProvider implements Function<Map.Entry<K, V>, CacheContainerRegistry<K, V>> {
+public class CacheContainerRegistryProvider<K, V> extends AutoCloseableProvider implements Function<Map.Entry<K, V>, Registry<CacheContainerGroupMember, K, V>> {
 	private static final String CACHE_NAME = "registry";
 
-	private final CacheContainerRegistryFactory<K, V> factory;
+	private final RegistryFactory<CacheContainerGroupMember, K, V> factory;
 
 	@SuppressWarnings("resource")
 	public CacheContainerRegistryProvider(String clusterName, String memberName) throws Exception {
@@ -54,11 +58,16 @@ public class CacheContainerRegistryProvider<K, V> extends AutoCloseableProvider 
 				return provider.getGroup();
 			}
 		};
-		this.factory = CacheContainerRegistryFactory.singleton((entry, closeTask) -> new CacheRegistry<>(config, entry, closeTask));
+		this.factory = RegistryFactory.singleton(new BiFunction<>() {
+			@Override
+			public Registry<CacheContainerGroupMember, K, V> apply(Map.Entry<K, V> entry, Runnable closeTask) {
+				return new CacheRegistry<>(config, entry, closeTask);
+			}
+		});
 	}
 
 	@Override
-	public CacheContainerRegistry<K, V> apply(Map.Entry<K, V> entry) {
+	public Registry<CacheContainerGroupMember, K, V> apply(Map.Entry<K, V> entry) {
 		return this.factory.createRegistry(new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()));
 	}
 }

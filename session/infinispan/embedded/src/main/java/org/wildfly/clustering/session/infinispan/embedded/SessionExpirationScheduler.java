@@ -8,11 +8,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.server.infinispan.expiration.AbstractExpirationScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalScheduler;
@@ -29,11 +28,11 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  */
 public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<String> {
 	private static final Logger LOGGER = Logger.getLogger(SessionExpirationScheduler.class);
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class);
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, SessionExpirationScheduler.class.getClassLoader());
 
 	private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
 
-	public SessionExpirationScheduler(String name, Batcher<TransactionBatch> batcher, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Predicate<String> remover, Duration closeTimeout) {
+	public SessionExpirationScheduler(String name, Supplier<Batch> batchFactory, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Predicate<String> remover, Duration closeTimeout) {
 		this(new LocalSchedulerConfiguration<>() {
 			@Override
 			public String getName() {
@@ -42,7 +41,7 @@ public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<
 
 			@Override
 			public Predicate<String> getTask() {
-				return new SessionRemoveTask(batcher, remover);
+				return new SessionRemoveTask(batchFactory, remover);
 			}
 
 			@Override
@@ -76,18 +75,18 @@ public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<
 	}
 
 	private static class SessionRemoveTask implements Predicate<String> {
-		private final Batcher<TransactionBatch> batcher;
+		private final Supplier<Batch> batchFactory;
 		private final Predicate<String> remover;
 
-		SessionRemoveTask(Batcher<TransactionBatch> batcher, Predicate<String> remover) {
-			this.batcher = batcher;
+		SessionRemoveTask(Supplier<Batch> batchFactory, Predicate<String> remover) {
+			this.batchFactory = batchFactory;
 			this.remover = remover;
 		}
 
 		@Override
 		public boolean test(String id) {
 			LOGGER.debugf("Expiring session %s", id);
-			try (Batch batch = this.batcher.createBatch()) {
+			try (Batch batch = this.batchFactory.get()) {
 				try {
 					return this.remover.test(id);
 				} catch (RuntimeException e) {

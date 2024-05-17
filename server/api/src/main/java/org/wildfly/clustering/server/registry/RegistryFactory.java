@@ -5,6 +5,8 @@
 package org.wildfly.clustering.server.registry;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 
 import org.wildfly.clustering.server.GroupMember;
 
@@ -24,4 +26,18 @@ public interface RegistryFactory<M extends GroupMember, K, V> {
 	 * @return a registry
 	 */
 	Registry<M, K, V> createRegistry(Map.Entry<K, V> entry);
+
+	static <M extends GroupMember, K, V> RegistryFactory<M, K, V> singleton(BiFunction<Map.Entry<K, V>, Runnable, Registry<M, K, V>> factory) {
+		AtomicReference<Map.Entry<K, V>> reference = new AtomicReference<>();
+		return new RegistryFactory<>() {
+			@Override
+			public Registry<M, K, V> createRegistry(Map.Entry<K, V> entry) {
+				// Ensure only one registry is created at a time
+				if (!reference.compareAndSet(null, entry)) {
+					throw new IllegalStateException();
+				}
+				return factory.apply(entry, () -> reference.set(null));
+			}
+		};
+	}
 }

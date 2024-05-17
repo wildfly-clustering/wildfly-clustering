@@ -4,18 +4,14 @@
  */
 package org.wildfly.clustering.cache.batch;
 
+import java.util.function.Supplier;
+
+import org.wildfly.clustering.context.Context;
+
 /**
  * Handles batch context switching.
- * @param <B> the batch type
  * @author Paul Ferraro
+ * @param <B> the batch type of this context
  */
-public interface BatchContext<B extends Batch> extends AutoCloseable {
-	/**
-	 * Returns the batch associated with this batch context.
-	 * @return the batch associated with this batch context.
-	 */
-	B getBatch();
-
-	@Override
-	void close();
+public interface BatchContext<B> extends Supplier<B>, Context {
 }

@@ -7,7 +7,6 @@ package org.wildfly.clustering.session.infinispan.remote.user;
 
 import java.util.Map;
 
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -33,7 +32,7 @@ import org.wildfly.clustering.session.user.UserManagerFactory;
  * @param <S> the session type
  * @author Paul Ferraro
  */
-public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, D, S, TransactionBatch> {
+public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, D, S> {
 
 	private final RemoteCacheConfiguration configuration;
 
@@ -42,12 +41,12 @@ public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, 
 	}
 
 	@Override
-	public <T> UserManager<C, T, D, S, TransactionBatch> createUserManager(UserManagerConfiguration<T> configuration) {
+	public <T> UserManager<C, T, D, S> createUserManager(UserManagerConfiguration<T> configuration) {
 		Marshaller<C, MarshalledValue<C, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller()));
 		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T> contextFactory = new HotRodUserContextFactory<>(this.configuration, marshaller, configuration.getTransientContextFactory());
 		UserSessionsFactory<Map<D, S>, D, S> sessionsFactory = new HotRodUserSessionsFactory<>(this.configuration);
 		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory);
 		IdentifierFactory<String> identifierFactory = new SimpleIdentifierFactory<>(configuration.getIdentifierFactory());
-		return new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatcher());
+		return new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatchFactory());
 	}
 }

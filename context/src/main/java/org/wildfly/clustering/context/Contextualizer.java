@@ -209,8 +209,8 @@ public interface Contextualizer {
 		}
 	};
 
-	static <C> Contextualizer withContext(C context, ContextReference<C> reference) {
-		ContextualExecutor executor = ContextualExecutor.withContext(context, reference);
+	static Contextualizer withContextProvider(Supplier<Context> provider) {
+		ContextualExecutor executor = ContextualExecutor.withContextProvider(provider);
 		return new Contextualizer() {
 			@Override
 			public Runnable contextualize(Runnable runner) {
