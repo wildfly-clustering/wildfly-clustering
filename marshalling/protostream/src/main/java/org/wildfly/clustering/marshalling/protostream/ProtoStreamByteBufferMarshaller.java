@@ -17,16 +17,21 @@ import org.infinispan.protostream.ProtobufTagMarshaller.ReadContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
 import org.infinispan.protostream.impl.TagReaderImpl;
 import org.infinispan.protostream.impl.TagWriterImpl;
-import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.AbstractByteBufferMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
+public class ProtoStreamByteBufferMarshaller extends AbstractByteBufferMarshaller {
 
 	private final ImmutableSerializationContext context;
 
 	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context) {
+		this(context, null);
+	}
+
+	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context, ClassLoader loader) {
+		super(loader);
 		this.context = context;
 	}
 
