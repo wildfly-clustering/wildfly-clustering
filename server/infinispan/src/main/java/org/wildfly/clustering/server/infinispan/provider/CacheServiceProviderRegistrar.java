@@ -24,7 +24,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
@@ -44,13 +43,10 @@ import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.infinispan.util.CacheInvoker;
 import org.wildfly.clustering.server.local.provider.DefaultServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.server.util.Invoker;
-import org.wildfly.common.function.ExceptionRunnable;
 
 /**
  * Infinispan {@link Cache} based {@link ServiceProviderRegistrar}.
@@ -66,15 +62,13 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	private final ConcurrentMap<T, Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
 	private final Cache<T, Set<Address>> cache;
 	private final CacheContainerGroup group;
-	private final Invoker invoker;
 	private final Executor executor;
 
 	public CacheServiceProviderRegistrar(CacheServiceProviderRegistrarConfiguration config) {
 		this.group = config.getGroup();
-		this.cache = config.getCache();
+		this.cache = config.getWriteOnlyCache();
 		this.batchFactory = config.getBatchFactory();
 		this.executor = config.getExecutor();
-		this.invoker = CacheInvoker.retrying(this.cache);
 		this.cache.addListener(this);
 	}
 
@@ -82,13 +76,9 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	public void close() {
 		this.cache.removeListener(this);
 		// Cleanup any unclosed registrations
-		for (Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> entry : this.listeners.values()) {
-			ExecutorService executor = entry.getValue();
-			if (executor != null) {
-				this.shutdown(executor);
-			}
+		for (T service : this.listeners.keySet()) {
+			this.unregisterLocal(service);
 		}
-		this.listeners.clear();
 	}
 
 	private void shutdown(ExecutorService executor) {
@@ -107,7 +97,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 
 	@Override
 	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service) {
-		return this.register(service, null);
+		return this.register(service, (ServiceProviderListener<CacheContainerGroupMember>) null);
 	}
 
 	@Override
@@ -123,32 +113,40 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		if (entry != newEntry) {
 			throw new IllegalArgumentException(service.toString());
 		}
-		this.invoker.invoke(new RegisterLocalServiceTask(service));
-		Address localAddress = this.cache.getCacheManager().getAddress();
-		return new DefaultServiceProviderRegistration<>(this, service, () -> {
-			try (Batch batch = this.batchFactory.get()) {
-				this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).compute(service, new AddressSetRemoveFunction(localAddress));
-			} finally {
-				Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> oldEntry = this.listeners.remove(service);
-				if (oldEntry != null) {
-					ExecutorService executor = oldEntry.getValue();
-					if (executor != null) {
-						this.shutdown(executor);
-					}
-				}
-			}
-		});
+		this.registerLocal(service);
+		return new DefaultServiceProviderRegistration<>(this, service, () -> this.unregisterLocal(service));
 	}
 
 	void registerLocal(T service) {
 		Address localAddress = this.cache.getCacheManager().getAddress();
 		try (Batch batch = this.batchFactory.get()) {
-			this.register(localAddress, service);
+			this.register(service, localAddress);
 		}
 	}
 
-	void register(Address address, T service) {
-		this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).compute(service, new AddressSetAddFunction(address));
+	void register(T service, Address address) {
+		this.cache.compute(service, new AddressSetAddFunction(address));
+	}
+
+	void unregisterLocal(T service) {
+		try {
+			Address localAddress = this.cache.getCacheManager().getAddress();
+			try (Batch batch = this.batchFactory.get()) {
+				this.unregister(service, Set.of(localAddress));
+			}
+		} finally {
+			Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> oldEntry = this.listeners.remove(service);
+			if (oldEntry != null) {
+				ExecutorService executor = oldEntry.getValue();
+				if (executor != null) {
+					this.shutdown(executor);
+				}
+			}
+		}
+	}
+
+	void unregister(T service, Set<Address> addresses) {
+		this.cache.compute(service, new AddressSetRemoveFunction(addresses));
 	}
 
 	@Override
@@ -205,14 +203,14 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 							try (Batch batch = this.batchFactory.get()) {
 								try (CloseableIterator<T> keys = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).keySet().iterator()) {
 									while (keys.hasNext()) {
-										cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).compute(keys.next(), new AddressSetRemoveFunction(leftMembers));
+										this.unregister(keys.next(), leftMembers);
 									}
 								}
 							}
 						}
 						if (!localServices.isEmpty()) {
 							for (T localService : localServices) {
-								this.invoker.invoke(new RegisterLocalServiceTask(localService));
+								this.registerLocal(localService);
 							}
 						}
 					});
@@ -255,18 +253,5 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 			}
 		}
 		return CompletableFuture.completedStage(null);
-	}
-
-	private class RegisterLocalServiceTask implements ExceptionRunnable<CacheException> {
-		private final T localService;
-
-		RegisterLocalServiceTask(T localService) {
-			this.localService = localService;
-		}
-
-		@Override
-		public void run() {
-			CacheServiceProviderRegistrar.this.registerLocal(this.localService);
-		}
 	}
 }
