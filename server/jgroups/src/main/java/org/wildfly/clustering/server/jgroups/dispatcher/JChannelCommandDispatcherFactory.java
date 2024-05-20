@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
@@ -44,7 +43,6 @@ import org.wildfly.common.function.Functions;
  * @author Paul Ferraro
  */
 public class JChannelCommandDispatcherFactory implements ChannelCommandDispatcherFactory, RequestHandler, Runnable {
-	private static final Optional<Object> NO_SUCH_SERVICE = Optional.of(ServiceResponse.NO_SUCH_SERVICE);
 	private static final ExceptionSupplier<Object, Exception> NO_SUCH_SERVICE_SUPPLIER = Functions.constantExceptionSupplier(ServiceResponse.NO_SUCH_SERVICE);
 
 	private final JChannelGroup group;
@@ -133,7 +131,7 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 		return new ExceptionSupplier<>() {
 			@Override
 			public Object get() throws Exception {
-				return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE);
+				return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(ServiceResponse.NO_SUCH_SERVICE);
 			}
 		};
 	}
