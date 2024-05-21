@@ -71,13 +71,13 @@ public class ThreadLocalTransactionBatch<E extends RuntimeException> implements 
 	@Override
 	public boolean isActive() {
 		int status = this.getStatus();
-		return (status == Status.STATUS_ACTIVE) && active;
+		return (status == Status.STATUS_ACTIVE) && this.active;
 	}
 
 	@Override
 	public boolean isDiscarding() {
 		int status = this.getStatus();
-		return ((status == Status.STATUS_ACTIVE) && !active) || (status == Status.STATUS_MARKED_ROLLBACK);
+		return ((status == Status.STATUS_ACTIVE) && !this.active) || (status == Status.STATUS_MARKED_ROLLBACK);
 	}
 
 	@Override
