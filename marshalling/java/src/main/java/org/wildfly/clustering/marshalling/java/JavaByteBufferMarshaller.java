@@ -12,6 +12,7 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.Serializable;
 
+import org.wildfly.clustering.marshalling.AbstractByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.Serializer;
 
@@ -19,15 +20,16 @@ import org.wildfly.clustering.marshalling.Serializer;
  * A {@link ByteBufferMarshaller} based on Java serialization.
  * @author Paul Ferraro
  */
-public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
+public class JavaByteBufferMarshaller extends AbstractByteBufferMarshaller {
 	private final Serializer<ClassLoader> classLoaderSerializer;
 	private final ObjectInputFilter filter;
 
 	public JavaByteBufferMarshaller(ClassLoader loader, ObjectInputFilter filter) {
-		this(Serializer.of(loader), filter);
+		this(Serializer.of(loader), loader, filter);
 	}
 
-	public JavaByteBufferMarshaller(Serializer<ClassLoader> classLoaderSerializer, ObjectInputFilter filter) {
+	public JavaByteBufferMarshaller(Serializer<ClassLoader> classLoaderSerializer, ClassLoader loader, ObjectInputFilter filter) {
+		super(loader);
 		this.classLoaderSerializer = classLoaderSerializer;
 		this.filter = filter;
 	}

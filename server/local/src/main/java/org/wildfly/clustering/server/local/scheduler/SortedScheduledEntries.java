@@ -39,7 +39,7 @@ class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
 				int result = entry1.getValue().compareTo(entry2.getValue());
 				if (result != 0) return result;
 				// Compare by key hash
-				for (ToIntFunction<K> hashFunction : hashFunctions) {
+				for (ToIntFunction<K> hashFunction : this.hashFunctions) {
 					result = Integer.compare(hashFunction.applyAsInt(key1), hashFunction.applyAsInt(key2));
 					if (result != 0) return result;
 				}

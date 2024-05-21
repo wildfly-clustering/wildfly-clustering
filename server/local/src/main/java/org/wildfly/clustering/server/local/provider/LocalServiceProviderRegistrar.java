@@ -47,7 +47,7 @@ public class LocalServiceProviderRegistrar<T, M extends GroupMember> implements 
 
 	@Override
 	public Set<M> getProviders(T service) {
-		return services.contains(service) ? Set.of(this.group.getLocalMember()) : Set.of();
+		return this.services.contains(service) ? Set.of(this.group.getLocalMember()) : Set.of();
 	}
 
 	@Override
