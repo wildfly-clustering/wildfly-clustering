@@ -37,7 +37,7 @@
 
 		<!-- Compile dependency versions -->
 		<!--version.dev.failsafe>3.3.2</version.dev.failsafe-->
-		<version.org.infinispan>15.0.3.Final</version.org.infinispan>
+		<version.org.infinispan>15.0.4.Final</version.org.infinispan>
 		<version.org.jboss.logging>3.6.0.Final</version.org.jboss.logging>
 		<version.org.jboss.marshalling>2.1.4.Final</version.org.jboss.marshalling>
 		<version.org.jboss.threads>3.6.1.Final</version.org.jboss.threads>
