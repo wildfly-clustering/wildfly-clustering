@@ -72,10 +72,10 @@ public interface MarshallingConfigurationBuilder extends MarshallerConfiguration
 				this.classTables.add(new IdentityClassTable(new ArrayList<>(this.externalizers.keySet())));
 				this.objectTables.add(new IdentityObjectTable(new ArrayList<>(this.externalizers.values())));
 			}
-			this.configuration.setClassExternalizerFactory(new MappingClassExternalizerFactory(externalizers));
-			this.configuration.setClassTable(new ChainingClassTable(classTables.build().toArray(ClassTable[]::new)));
-			this.configuration.setObjectTable(new ChainingObjectTable(objectTables.build().toArray(ObjectTable[]::new)));
-			return configuration;
+			this.configuration.setClassExternalizerFactory(new MappingClassExternalizerFactory(this.externalizers));
+			this.configuration.setClassTable(new ChainingClassTable(this.classTables.build().toArray(ClassTable[]::new)));
+			this.configuration.setObjectTable(new ChainingObjectTable(this.objectTables.build().toArray(ObjectTable[]::new)));
+			return this.configuration;
 		}
 	}
 }
