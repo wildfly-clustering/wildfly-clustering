@@ -38,7 +38,7 @@ public interface CacheContainerGroup extends Group<Address, CacheContainerGroupM
 
 			@Override
 			public GroupMembership<CacheContainerGroupMember> getMembership() {
-				return membership;
+				return this.membership;
 			}
 
 			@Override

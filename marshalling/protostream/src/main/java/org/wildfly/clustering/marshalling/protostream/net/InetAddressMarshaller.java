@@ -7,6 +7,7 @@ package org.wildfly.clustering.marshalling.protostream.net;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -16,7 +17,6 @@ import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.common.net.Inet;
 
 /**
  * Marshaller for an {@link InetAddress}.
@@ -71,7 +71,7 @@ public enum InetAddressMarshaller implements FieldSetMarshaller.Simple<InetAddre
 	@Override
 	public void writeTo(ProtoStreamWriter writer, InetAddress address) throws IOException {
 		// Determine host name without triggering reverse lookup
-		String hostName = Inet.getHostNameIfResolved(address);
+		String hostName = resolvedHostName(address);
 		// Marshal as host name, if possible
 		if (hostName != null) {
 			if (!hostName.equals(DEFAULT.getHostName())) {
@@ -85,4 +85,8 @@ public enum InetAddressMarshaller implements FieldSetMarshaller.Simple<InetAddre
 		}
 	}
 
+	private static String resolvedHostName(InetAddress address) {
+		InetSocketAddress socketAddress = new InetSocketAddress(address, 0);
+		return (socketAddress.toString().lastIndexOf('/') > 0) ? socketAddress.getHostString() : null;
+	}
 }
