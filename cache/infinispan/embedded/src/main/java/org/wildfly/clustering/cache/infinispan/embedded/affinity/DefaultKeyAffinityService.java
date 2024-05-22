@@ -7,7 +7,6 @@ package org.wildfly.clustering.cache.infinispan.embedded.affinity;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -223,11 +223,13 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 		KeyDistribution distribution = this.distributionFactory.apply(this.cache, hash);
 		KeyRegistry<K> registry = new ConsistentHashKeyRegistry<>(hash, this.filter, this);
 		Set<Address> addresses = registry.getAddresses();
-		List<Future<?>> futures = !addresses.isEmpty() ? new ArrayList<>(addresses.size()) : Collections.emptyList();
+		List<Future<?>> futures = !addresses.isEmpty() ? new ArrayList<>(addresses.size()) : List.of();
 		try {
 			for (Address address : addresses) {
 				BlockingQueue<K> keys = registry.getKeys(address);
-				futures.add(CompletableFuture.runAsync(new GenerateKeysTask<>(this.generator, distribution, address, keys), this.executor));
+				FutureTask<Void> task = new FutureTask<>(new GenerateKeysTask<>(this.generator, distribution, address, keys), null);
+				futures.add(task);
+				this.executor.execute(task);
 			}
 			KeyAffinityState<K> previousState = this.currentState.getAndSet(new KeyAffinityState<K>() {
 				@Override
