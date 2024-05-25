@@ -19,7 +19,7 @@ class Reflect {
 		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Void run() {
-				ServiceLoader.load(targetClass, targetClass.getClassLoader()).forEach(consumer);
+				ServiceLoader.load(targetClass, loader).forEach(consumer);
 				return null;
 			}
 		});
