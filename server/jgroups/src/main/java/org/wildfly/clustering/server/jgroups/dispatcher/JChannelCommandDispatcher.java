@@ -103,9 +103,10 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 					try {
 						ServiceRequest<R, MC> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), address, this.options, this.marshallingContext);
 						Message message = this.createMessage(buffer, address);
-						CompletionStage<R> future = request.send(message);
-						future.whenComplete(new PruneCancellationTask<>(results, member));
-						results.put(member, future);
+						CompletionStage<R> result = request.send(message);
+						// Don't chain - we want returned stage to throw a CancellationException when necessary.
+						result.whenComplete(new PruneCancellationTask<>(results, member));
+						results.put(member, result);
 					} catch (IOException e) {
 						// Cancel previously dispatched messages
 						for (CompletionStage<R> result : results.values()) {
