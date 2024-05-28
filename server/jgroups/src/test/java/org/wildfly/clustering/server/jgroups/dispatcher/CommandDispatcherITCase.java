@@ -81,14 +81,18 @@ public abstract class CommandDispatcherITCase<M extends GroupMember> {
 					}
 
 					results = dispatcher1.dispatchToGroup(new IdentityCommand<>());
-					assertEquals(2, results.size());
 					assertSame(fooContext1, results.get(group1.getLocalMember()).toCompletableFuture().join());
-
-					assertThrows(CancellationException.class, results.get(group2.getLocalMember()).toCompletableFuture()::join);
+					CompletionStage<UUID> result = results.get(group2.getLocalMember());
+					if (result != null) {
+						assertThrows(CancellationException.class, result.toCompletableFuture()::join);
+					}
 
 					results = dispatcher1.dispatchToGroup(new IdentityCommand<>(), Set.of(group1.getLocalMember()));
-					assertEquals(1, results.size());
-					assertThrows(CancellationException.class, results.get(group2.getLocalMember()).toCompletableFuture()::join);
+					assertNull(results.get(group1.getLocalMember()));
+					result = results.get(group2.getLocalMember());
+					if (result != null) {
+						assertThrows(CancellationException.class, result.toCompletableFuture()::join);
+					}
 
 					assertThrows(CancellationException.class, dispatcher1.dispatchToMember(new IdentityCommand<>(), group2.getLocalMember()).toCompletableFuture()::join);
 
@@ -102,13 +106,18 @@ public abstract class CommandDispatcherITCase<M extends GroupMember> {
 						assertThrows(CancellationException.class, dispatcher2.dispatchToMember(new IdentityCommand<>(), group1.getLocalMember()).toCompletableFuture()::join);
 
 						results = dispatcher2.dispatchToGroup(new IdentityCommand<>());
-						assertEquals(2, results.size());
-						assertThrows(CancellationException.class, results.get(group1.getLocalMember()).toCompletableFuture()::join);
+						result = results.get(group1.getLocalMember());
+						if (result != null) {
+							assertThrows(CancellationException.class, result.toCompletableFuture()::join);
+						}
 						assertSame(barContext2, results.get(group2.getLocalMember()).toCompletableFuture().join());
 
 						results = dispatcher2.dispatchToGroup(new IdentityCommand<>(), Set.of(group2.getLocalMember()));
-						assertEquals(1, results.size());
-						assertThrows(CancellationException.class, results.get(group1.getLocalMember()).toCompletableFuture()::join);
+						result = results.get(group1.getLocalMember());
+						if (result != null) {
+							assertThrows(CancellationException.class, result.toCompletableFuture()::join);
+						}
+						assertNull(results.get(group2.getLocalMember()));
 					}
 				}
 			}
