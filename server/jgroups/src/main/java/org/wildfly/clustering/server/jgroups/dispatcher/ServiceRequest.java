@@ -53,7 +53,7 @@ public class ServiceRequest<T, C> extends UnicastRequest<T> {
 		if (exceptional) {
 			this.completeExceptionally((Throwable) value);
 		} else if (value instanceof ServiceResponse) {
-			this.completeExceptionally(new CancellationException());
+			this.cancel(false);
 		} else {
 			MarshalledValue<T, C> marshalledValue = (MarshalledValue<T, C>) value;
 			try {
@@ -67,7 +67,10 @@ public class ServiceRequest<T, C> extends UnicastRequest<T> {
 
 	@Override
 	public boolean completeExceptionally(Throwable exception) {
-		return super.completeExceptionally((exception instanceof SuspectedException) ? new CancellationException() : exception);
+		if (exception instanceof SuspectedException) {
+			return this.cancel(true);
+		}
+		return super.completeExceptionally(exception);
 	}
 
 	@Override
