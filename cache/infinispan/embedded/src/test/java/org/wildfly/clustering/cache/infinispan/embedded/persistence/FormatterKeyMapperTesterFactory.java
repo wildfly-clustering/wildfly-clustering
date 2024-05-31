@@ -14,7 +14,7 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices(FormatterTesterFactory.class)
 public class FormatterKeyMapperTesterFactory implements FormatterTesterFactory {
 
-	private final TwoWayKey2StringMapper mapper = new FormatterKeyMapper();
+	private final TwoWayKey2StringMapper mapper = FormatterKeyMapper.load(Thread.currentThread().getContextClassLoader());
 
 	@Override
 	public TwoWayKey2StringMapper getMapper() {
