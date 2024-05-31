@@ -29,7 +29,7 @@ public interface FormatterTesterFactory extends TesterFactory {
 				Assertions.assertTrue(mapper.isSupportedType(keyClass), key::toString);
 				String string = mapper.getStringMapping(key);
 
-				System.out.println(String.format("%s\t%s\t%s\t%d", mapper.getClass().getSimpleName(), keyClass.getCanonicalName(), key, string.length()));
+				System.out.println(String.format("%s\t%s\t%s\t%s", mapper.getClass().getSimpleName(), keyClass.getCanonicalName(), key, string));
 
 				@SuppressWarnings("unchecked")
 				T remappedKey = (T) mapper.getKeyMapping(string);

@@ -7,10 +7,10 @@ package org.wildfly.clustering.cache.infinispan.embedded.persistence;
 
 import static org.wildfly.common.Assert.checkNotNullParam;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.UUID;
@@ -33,18 +33,16 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 			Formatter.IDENTITY.wrap(Long.class, Long::valueOf),
 			Formatter.IDENTITY.wrap(UUID.class, UUID::fromString));
 
+	public static TwoWayKey2StringMapper load(ClassLoader loader) {
+		List<Formatter<?>> formatters = new LinkedList<>();
+		formatters.addAll(DEFAULT_FORMATTERS);
+		ServiceLoader.load(Formatter.class, loader).forEach(formatters::add);
+		return new FormatterKeyMapper(formatters);
+	}
+
 	private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
 	private final List<Formatter<?>> formatters;
 	private final int padding;
-
-	public FormatterKeyMapper() {
-		List<Formatter<?>> formatters = new LinkedList<>();
-		ServiceLoader.load(Formatter.class, FormatterKeyMapper.this.getClass().getClassLoader()).forEach(formatters::add);
-		this.formatters = new ArrayList<>(DEFAULT_FORMATTERS.size() + formatters.size());
-		this.formatters.addAll(DEFAULT_FORMATTERS);
-		this.formatters.addAll(formatters);
-		this.padding = this.padding();
-	}
 
 	public FormatterKeyMapper(List<? extends Formatter<?>> formatters) {
 		this.formatters = List.copyOf(formatters);
@@ -72,7 +70,7 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 		}
 		@SuppressWarnings("unchecked")
 		Formatter<Object> formatter = (Formatter<Object>) this.formatters.get(index);
-		return String.format("%0" + this.padding + "X%s", index, formatter.format(key));
+		return String.format(Locale.ROOT, "%0" + this.padding + "X%s", index, formatter.format(key));
 	}
 
 	@Override
