@@ -28,7 +28,7 @@ public class LocalServiceProviderRegistrarTestCase {
 
 		doReturn(localMember).when(group).getLocalMember();
 
-		LocalServiceProviderRegistrar<String, LocalGroupMember> registrar = new LocalServiceProviderRegistrar<>(group);
+		LocalServiceProviderRegistrar<String> registrar = LocalServiceProviderRegistrar.of(group);
 
 		Assertions.assertSame(group, registrar.getGroup());
 
