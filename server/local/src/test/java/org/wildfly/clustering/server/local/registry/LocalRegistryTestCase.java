@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
-import org.wildfly.clustering.server.registry.Registry;
 
 /**
  * Unit test for {@link LocalRegistry}.
@@ -31,7 +30,7 @@ public class LocalRegistryTestCase {
 
 		doReturn(localMember).when(group).getLocalMember();
 
-		Registry<LocalGroupMember, String, String> registry = new LocalRegistry<>(group, entry, closeTask);
+		LocalRegistry<String, String> registry = LocalRegistry.of(group, entry, closeTask);
 
 		Assertions.assertSame(group, registry.getGroup());
 		Assertions.assertSame(entry, registry.getEntry(localMember));
