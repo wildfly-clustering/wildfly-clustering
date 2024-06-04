@@ -9,58 +9,55 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.wildfly.clustering.server.Group;
-import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.local.LocalGroup;
+import org.wildfly.clustering.server.local.LocalGroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryListener;
 
 /**
  * Local {@link Registry}.
- * @param <M> the group member type
  * @param <K> the registry key type
  * @param <V> the registry value type
  * @author Paul Ferraro
  */
-public class LocalRegistry<M extends GroupMember, K, V> implements Registry<M, K, V> {
-
-	private final Group<M> group;
-	private final Runnable closeTask;
-	private final AtomicBoolean closed = new AtomicBoolean(false);
-	private final Map.Entry<K, V> entry;
-	private final Map<K, V> entries;
-
-	public LocalRegistry(Group<M> group, Map.Entry<K, V> entry, Runnable closeTask) {
-		this.group = group;
-		this.entry = entry;
-		this.entries = Collections.singletonMap(entry.getKey(), entry.getValue());
-		this.closeTask = closeTask;
-	}
+public interface LocalRegistry<K, V> extends Registry<LocalGroupMember, K, V> {
 
 	@Override
-	public Registration register(RegistryListener<K, V> object) {
-		return Registration.EMPTY;
-	}
+	LocalGroup getGroup();
 
-	@Override
-	public Group<M> getGroup() {
-		return this.group;
-	}
+	Map.Entry<K, V> getEntry(LocalGroupMember member);
 
-	@Override
-	public Map<K, V> getEntries() {
-		return !this.closed.get() ? this.entries : Map.of();
-	}
+	static <K, V> LocalRegistry<K, V> of(LocalGroup group, Map.Entry<K, V> entry, Runnable closeTask) {
+		Map<K, V> entries = Collections.singletonMap(entry.getKey(), entry.getValue());
+		AtomicBoolean closed = new AtomicBoolean(false);
+		return new LocalRegistry<>() {
+			@Override
+			public LocalGroup getGroup() {
+				return group;
+			}
 
-	@Override
-	public Map.Entry<K, V> getEntry(M member) {
-		return !this.closed.get() && this.group.getLocalMember().equals(member) ? this.entry : null;
-	}
+			@Override
+			public Registration register(RegistryListener<K, V> object) {
+				return Registration.EMPTY;
+			}
 
-	@Override
-	public void close() {
-		if (this.closed.compareAndSet(false, true)) {
-			this.closeTask.run();
-		}
+			@Override
+			public Map<K, V> getEntries() {
+				return !closed.get() ? entries : Map.of();
+			}
+
+			@Override
+			public Map.Entry<K, V> getEntry(LocalGroupMember member) {
+				return !closed.get() && group.getLocalMember().equals(member) ? entry : null;
+			}
+
+			@Override
+			public void close() {
+				if (closed.compareAndSet(false, true)) {
+					closeTask.run();
+				}
+			}
+		};
 	}
 }
