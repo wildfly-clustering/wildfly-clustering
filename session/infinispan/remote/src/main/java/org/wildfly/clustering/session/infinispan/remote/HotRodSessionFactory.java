@@ -79,6 +79,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	@Override
 	public void close() {
 		this.creationMetaDataCache.removeClientListener(this);
+		super.close();
 	}
 
 	@ClientCacheEntryExpired
