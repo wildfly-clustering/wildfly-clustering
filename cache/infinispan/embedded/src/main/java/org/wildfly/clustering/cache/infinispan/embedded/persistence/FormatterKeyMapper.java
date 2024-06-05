@@ -34,30 +34,21 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 			Formatter.IDENTITY.wrap(Long.class, Long::valueOf),
 			Formatter.IDENTITY.wrap(UUID.class, UUID::fromString));
 
-	public static List<Formatter<?>> loadFormatters(ClassLoader loader) {
-		List<Formatter<?>> formatters = new LinkedList<>();
-		formatters.addAll(DEFAULT_FORMATTERS);
-		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				ServiceLoader.load(Formatter.class, loader).forEach(formatters::add);
-				return null;
-			}
-		});
-		return List.copyOf(formatters);
-	}
-
 	private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
 	private final List<Formatter<?>> formatters;
 	private final int padding;
 
 	public FormatterKeyMapper() {
-		this.formatters = loadFormatters(java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
+		List<Formatter<?>> formatters = new LinkedList<>();
+		formatters.addAll(DEFAULT_FORMATTERS);
+		java.security.AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
-			public ClassLoader run() {
-				return FormatterKeyMapper.this.getClass().getClassLoader();
+			public Void run() {
+				ServiceLoader.load(Formatter.class, FormatterKeyMapper.this.getClass().getClassLoader()).forEach(formatters::add);
+				return null;
 			}
-		}));
+		});
+		this.formatters = List.copyOf(formatters);
 		this.padding = this.padding();
 	}
 
