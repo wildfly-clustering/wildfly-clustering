@@ -43,7 +43,7 @@ public class CompositeSessionMetaData extends CompositeImmutableSessionMetaData 
 
 	@Override
 	public void setLastAccess(Instant startTime, Instant endTime) {
-		if (!endTime.isAfter(startTime)) {
+		if (startTime.isAfter(endTime)) {
 			throw new IllegalStateException();
 		}
 		Instant creationTime = this.creationMetaData.getCreationTime();
