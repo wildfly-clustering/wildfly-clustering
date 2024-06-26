@@ -4,9 +4,9 @@
  */
 package org.wildfly.clustering.session.spec.container.servlet;
 
-import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionIdListener;
+import jakarta.servlet.annotation.WebListener;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionIdListener;
 
 /**
  * Detects support (or lack thereof) for HttpSessionIdListener notifications in Spring Session.
