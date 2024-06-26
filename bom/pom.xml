@@ -119,11 +119,6 @@
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-session-spec-servlet-3.1</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-session-spec-servlet-4.0</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -242,12 +237,6 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-session-infinispan-remote</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>wildfly-clustering-session-spec-servlet-3.1</artifactId>
 				<version>${project.version}</version>
 				<classifier>tests</classifier>
 			</dependency>
