@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
+import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
@@ -68,9 +69,9 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 	}
 
 	static class WebContainerImpl implements DeploymentContainer {
-		private final Container container;
+		private final Container<ContainerConfiguration> container;
 
-		WebContainerImpl(Container container) {
+		WebContainerImpl(Container<ContainerConfiguration> container) {
 			this.container = container;
 		}
 
