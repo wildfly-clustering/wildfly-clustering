@@ -22,7 +22,7 @@ import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
- * Scheduler that uses a single scheduled task in concert with an {@link ScheduledEntries}.
+ * Scheduler that uses a single scheduled task in concert with a {@link ScheduledEntries}.
  * @param <T> the scheduled entry identifier type
  * @author Paul Ferraro
  */
@@ -54,19 +54,24 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	public void schedule(T id, Instant instant) {
 		LOGGER.tracef("Scheduling %s on local %s scheduler for %s", id, this.name, instant);
 		this.entries.add(id, instant);
+		// Reschedule next task if this item is now the earliest task
+		// This can only be the case if the ScheduledEntries is sorted
 		if (this.entries.isSorted()) {
 			this.rescheduleIfEarlier(instant);
 		}
+		// Schedule the next task if nothing is currently scheduled.
 		this.scheduleIfAbsent();
 	}
 
 	@Override
 	public void cancel(T id) {
 		LOGGER.tracef("Canceling %s on local %s scheduler", id, this.name);
+		// Cancel scheduled task if this item was currently scheduled
 		if (this.entries.isSorted()) {
 			this.cancelIfPresent(id);
 		}
 		this.entries.remove(id);
+		// Ensure a new item is scheduled
 		if (this.entries.isSorted()) {
 			this.scheduleIfAbsent();
 		}
@@ -99,10 +104,12 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
 	@Override
 	public void run() {
+		// Iterate over ScheduledEntries until we encounter a future entry
 		Iterator<Map.Entry<T, Instant>> entries = this.entries.iterator();
 		while (entries.hasNext()) {
 			if (Thread.currentThread().isInterrupted() || this.executor.isShutdown()) return;
 			Map.Entry<T, Instant> entry = entries.next();
+			// If this is a future entry, break out of loop
 			if (entry.getValue().isAfter(Instant.now())) break;
 			T key = entry.getKey();
 			LOGGER.tracef("Executing task for %s on local %s scheduler", key, this.name);
@@ -111,6 +118,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 				entries.remove();
 			}
 		}
+		// Schedule next task
 		synchronized (this) {
 			this.futureEntry = this.scheduleFirst();
 		}
