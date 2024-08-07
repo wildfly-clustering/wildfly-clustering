@@ -64,7 +64,8 @@ public class CoarseSessionAttributes extends AbstractSessionAttributes {
 	public Object get(Object key) {
 		Object value = this.attributes.get(key);
 		if (value != null) {
-			if (!this.immutability.test(value)) {
+			// Bypass immutability check if session is already dirty
+			if (!this.dirty.get() && !this.immutability.test(value)) {
 				this.dirty.set(true);
 			}
 		}
