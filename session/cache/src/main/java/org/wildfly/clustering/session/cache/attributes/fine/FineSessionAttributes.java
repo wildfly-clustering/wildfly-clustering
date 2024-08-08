@@ -58,8 +58,9 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 
 		if (value != null) {
 			// If the object is mutable, we need to mutate this value on close
-			if (!this.immutability.test(value)) {
-				synchronized (this.updates) {
+			synchronized (this.updates) {
+				// Bypass immutability check if attribute already updates on close
+				if (!this.updates.containsKey(name) && !this.immutability.test(value)) {
 					this.updates.put(name, value);
 				}
 			}
