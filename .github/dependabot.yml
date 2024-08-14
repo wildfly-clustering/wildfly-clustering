@@ -5,7 +5,5 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency-name: javax.servlet:javax.servlet-api
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: jakarta.servlet:jakarta.servlet-api
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
