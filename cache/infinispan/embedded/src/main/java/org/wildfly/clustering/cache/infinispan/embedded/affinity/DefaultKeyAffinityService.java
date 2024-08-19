@@ -69,7 +69,6 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
 	private volatile int queueSize = DEFAULT_QUEUE_SIZE;
 	private volatile Duration timeout = Duration.ofMillis(100L);
-	private volatile boolean started = false;
 
 	private interface KeyAffinityState<K> {
 		KeyDistribution getDistribution();
@@ -119,41 +118,37 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
 	@Override
 	public boolean isStarted() {
-		return this.started;
+		return this.currentState.get() != null;
 	}
 
 	@Override
 	public void start() {
 		this.accept(this.currentConsistentHash.apply(this.cache));
 		this.cache.addListener(this);
-		this.started = true;
 	}
 
 	@Override
 	public void stop() {
-		this.started = false;
 		this.cache.removeListener(this);
+		this.currentState.set(null);
 	}
 
 	@Override
 	public K getCollocatedKey(K otherKey) {
-		KeyAffinityState<K> currentState = this.currentState.get();
-		if (currentState == null) {
-			// Not yet started!
-			throw new IllegalStateException();
-		}
-		return this.getCollocatedKey(currentState, otherKey);
+		return this.getCollocatedKey(this.currentState.get(), otherKey);
 	}
 
 	private K getCollocatedKey(KeyAffinityState<K> state, K otherKey) {
-		K key = this.poll(state.getRegistry(), state.getDistribution().getPrimaryOwner(otherKey));
-		if (key != null) {
-			return key;
-		}
-		KeyAffinityState<K> currentState = this.currentState.get();
-		// If state is out-dated, retry
-		if (state != currentState) {
-			return this.getCollocatedKey(currentState, otherKey);
+		if (state != null) {
+			K key = this.poll(state.getRegistry(), state.getDistribution().getPrimaryOwner(otherKey));
+			if (key != null) {
+				return key;
+			}
+			KeyAffinityState<K> currentState = this.currentState.get();
+			// If state is out-dated, retry
+			if (state != currentState) {
+				return this.getCollocatedKey(currentState, otherKey);
+			}
 		}
 		LOGGER.debugf("Could not obtain pre-generated key with same affinity as %s -- generating random key", otherKey);
 		return this.generator.getKey();
@@ -164,23 +159,20 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 		if (!this.filter.test(address)) {
 			throw new IllegalArgumentException(address.toString());
 		}
-		KeyAffinityState<K> currentState = this.currentState.get();
-		if (currentState == null) {
-			// Not yet started!
-			throw new IllegalStateException();
-		}
-		return this.getKeyForAddress(currentState, address);
+		return this.getKeyForAddress(this.currentState.get(), address);
 	}
 
 	private K getKeyForAddress(KeyAffinityState<K> state, Address address) {
-		K key = this.poll(state.getRegistry(), address);
-		if (key != null) {
-			return key;
-		}
-		KeyAffinityState<K> currentState = this.currentState.get();
-		// If state is out-dated, retry
-		if (state != currentState) {
-			return this.getKeyForAddress(currentState, address);
+		if (state != null) {
+			K key = this.poll(state.getRegistry(), address);
+			if (key != null) {
+				return key;
+			}
+			KeyAffinityState<K> currentState = this.currentState.get();
+			// If state is out-dated, retry
+			if (state != currentState) {
+				return this.getKeyForAddress(currentState, address);
+			}
 		}
 		LOGGER.debugf("Could not obtain pre-generated key with affinity for %s -- generating random key", address);
 		return this.generator.getKey();
