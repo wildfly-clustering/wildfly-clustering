@@ -49,7 +49,16 @@ public class DefaultKeyAffinityServiceTestCase {
 			Address remote = mock(Address.class);
 			Address standby = mock(Address.class);
 			Address ignored = mock(Address.class);
+			UUID random = UUID.randomUUID();
 			KeyAffinityService<UUID> service = new DefaultKeyAffinityService<>(cache, generator, address -> (address != ignored), executor, c -> hash, (c, h) -> distribution);
+
+			doReturn(random).when(generator).getKey();
+
+			// Validate that service returns random key when not started
+			assertSame(random, service.getKeyForAddress(local));
+			assertSame(random, service.getKeyForAddress(remote));
+			assertSame(random, service.getKeyForAddress(standby));
+			assertThrows(IllegalArgumentException.class, () -> service.getKeyForAddress(ignored));
 
 			List<Address> members = List.of(local, remote, ignored, standby);
 
@@ -75,9 +84,6 @@ public class DefaultKeyAffinityServiceTestCase {
 				when(distribution.getPrimaryOwner(key)).thenReturn(members.get(segment));
 			}
 
-			assertThrows(IllegalStateException.class, () -> service.getKeyForAddress(local));
-			assertThrows(IllegalStateException.class, () -> service.getKeyForAddress(remote));
-			assertThrows(IllegalStateException.class, () -> service.getKeyForAddress(standby));
 			// This should throw IAE, since address does not pass filter
 			assertThrows(IllegalArgumentException.class, () -> service.getKeyForAddress(ignored));
 
