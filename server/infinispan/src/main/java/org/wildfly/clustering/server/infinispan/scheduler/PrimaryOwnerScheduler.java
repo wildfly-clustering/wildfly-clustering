@@ -15,13 +15,14 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import io.github.resilience4j.core.functions.CheckedFunction;
+import io.github.resilience4j.retry.Retry;
+
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.server.dispatcher.Command;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.clustering.server.util.Invoker;
-import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.clustering.server.util.MapEntry;
 
 /**
  * Scheduler decorator that schedules/cancels a given object on the primary owner.
@@ -33,25 +34,35 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M>, Function<Co
 	private static final Logger LOGGER = Logger.getLogger(PrimaryOwnerScheduler.class);
 
 	private final String name;
-	private final Function<I, CacheContainerGroupMember> affinity;
 	private final CommandDispatcher<CacheContainerGroupMember, CacheEntryScheduler<I, M>> dispatcher;
-	private final BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory;
-	private final Invoker invoker;
+	private final CheckedFunction<Map.Entry<I, M>, CompletionStage<Void>> primaryOwnerSchedule;
+	private final CheckedFunction<I, CompletionStage<Void>> primaryOwnerCancel;
+	private final CheckedFunction<I, CompletionStage<Boolean>> primaryOwnerContains;
 
 	public PrimaryOwnerScheduler(PrimaryOwnerSchedulerConfiguration<I, M> configuration) {
 		this.name = configuration.getName();
-		this.scheduleCommandFactory = configuration.getScheduleCommandFactory();
-		this.affinity = configuration.getAffinity();
-		this.invoker = configuration.getInvoker();
 		CacheEntryScheduler<I, M> scheduler = configuration.getScheduler();
 		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, scheduler, scheduler.getClass().getClassLoader());
+		Function<I, CacheContainerGroupMember> affinity = configuration.getAffinity();
+		Retry retry = Retry.of(configuration.getName(), configuration.getRetryConfig());
+		BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory = configuration.getScheduleCommandFactory();
+		this.primaryOwnerSchedule = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, new Function<>() {
+			@Override
+			public PrimaryOwnerCommand<I, M, Void> apply(Map.Entry<I, M> entry) {
+				return scheduleCommandFactory.apply(entry.getKey(), entry.getValue());
+			}
+		}));
+		this.primaryOwnerCancel = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, CancelCommand::new));
+		this.primaryOwnerContains = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, ContainsCommand::new));
 	}
 
 	@Override
 	public void schedule(I id, M metaData) {
 		try {
-			this.executeOnPrimaryOwner(id, this.scheduleCommandFactory.apply(id, metaData));
-		} catch (IOException e) {
+			this.primaryOwnerSchedule.apply(MapEntry.of(id, metaData)).toCompletableFuture().join();
+		} catch (CancellationException e) {
+			// Ignore
+		} catch (Throwable e) {
 			LOGGER.warn(id.toString(), e);
 		}
 	}
@@ -59,39 +70,24 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M>, Function<Co
 	@Override
 	public void cancel(I id) {
 		try {
-			this.executeOnPrimaryOwner(id, new CancelCommand<>(id)).toCompletableFuture().join();
-		} catch (IOException | CompletionException e) {
-			LOGGER.warn(id.toString(), e);
+			this.primaryOwnerCancel.apply(id).toCompletableFuture().join();
 		} catch (CancellationException e) {
 			// Ignore
+		} catch (Throwable e) {
+			LOGGER.warn(id.toString(), e);
 		}
 	}
 
 	@Override
 	public boolean contains(I id) {
 		try {
-			return this.executeOnPrimaryOwner(id, new ContainsCommand<>(id)).toCompletableFuture().join();
-		} catch (IOException | CompletionException e) {
-			LOGGER.warn(id.toString(), e);
-			return false;
+			return this.primaryOwnerContains.apply(id).toCompletableFuture().join();
 		} catch (CancellationException e) {
 			return false;
+		} catch (Throwable e) {
+			LOGGER.warn(id.toString(), e);
+			return false;
 		}
-	}
-
-	private <R> CompletionStage<R> executeOnPrimaryOwner(I id, Command<R, CacheEntryScheduler<I, M>, RuntimeException> command) throws IOException {
-		Function<I, CacheContainerGroupMember> affinity = this.affinity;
-		CommandDispatcher<CacheContainerGroupMember, CacheEntryScheduler<I, M>> dispatcher = this.dispatcher;
-		ExceptionSupplier<CompletionStage<R>, IOException> action = new ExceptionSupplier<>() {
-			@Override
-			public CompletionStage<R> get() throws IOException {
-				CacheContainerGroupMember primaryOwner = affinity.apply(id);
-				LOGGER.tracef("Executing command %s on %s", command, primaryOwner);
-				// This should only go remote following a failover
-				return dispatcher.dispatchToMember(command, primaryOwner);
-			}
-		};
-		return this.invoker.invoke(action);
 	}
 
 	@Override
@@ -121,5 +117,26 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M>, Function<Co
 		LOGGER.tracef("Closing command dispatcher for %s primary-owner scheduler", this.name);
 		this.dispatcher.close();
 		this.dispatcher.getContext().close();
+	}
+
+	private static class PrimaryOwnerCommandExecutionFunction<I, M, T, R> implements CheckedFunction<T, CompletionStage<R>> {
+		private final CommandDispatcher<CacheContainerGroupMember, CacheEntryScheduler<I, M>> dispatcher;
+		private final Function<I, CacheContainerGroupMember> affinity;
+		private final Function<T, PrimaryOwnerCommand<I, M, R>> commandFactory;
+
+		PrimaryOwnerCommandExecutionFunction(CommandDispatcher<CacheContainerGroupMember, CacheEntryScheduler<I, M>> dispatcher, Function<I, CacheContainerGroupMember> affinity, Function<T, PrimaryOwnerCommand<I, M, R>> commandFactory) {
+			this.dispatcher = dispatcher;
+			this.affinity = affinity;
+			this.commandFactory = commandFactory;
+		}
+
+		@Override
+		public CompletionStage<R> apply(T value) throws IOException {
+			PrimaryOwnerCommand<I, M, R> command = this.commandFactory.apply(value);
+			CacheContainerGroupMember primaryOwner = this.affinity.apply(command.getId());
+			LOGGER.tracef("Executing command %s on %s", command, primaryOwner);
+			// This should only go remote following a failover
+			return this.dispatcher.dispatchToMember(command, primaryOwner);
+		}
 	}
 }

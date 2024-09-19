@@ -10,6 +10,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import io.github.resilience4j.retry.RetryConfig;
+
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.CacheKey;
@@ -33,10 +35,8 @@ import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleLocalKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
-import org.wildfly.clustering.server.infinispan.util.CacheInvoker;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.clustering.server.util.Invoker;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
@@ -129,8 +129,8 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public Invoker getInvoker() {
-				return CacheInvoker.retrying(cache);
+			public RetryConfig getRetryConfig() {
+				return infinispan.getRetryConfig();
 			}
 		});
 

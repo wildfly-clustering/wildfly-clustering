@@ -5,21 +5,13 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
-import org.wildfly.clustering.server.dispatcher.Command;
-
 /**
  * Command that scheduled an entry.
  * @param <I> the identifier type of the entry to schedule
  * @param <M> the meta data type of the entry to schedule
  * @author Paul Ferraro
  */
-public interface ScheduleCommand<I, M> extends  Command<Void, CacheEntryScheduler<I, M>, RuntimeException> {
-
-	/**
-	 * Returns the identifier of the element to be scheduled.
-	 * @return the identifier of the element to be scheduled.
-	 */
-	I getId();
+public interface ScheduleCommand<I, M> extends PrimaryOwnerCommand<I, M, Void> {
 
 	/**
 	 * Returns the meta data of the element to be scheduled.
