@@ -56,6 +56,11 @@ public class DefaultUserManager<CV, C, T, SV, D, S> implements UserManager<C, T,
 	}
 
 	@Override
+	public boolean isStarted() {
+		return this.identifierFactory.isStarted();
+	}
+
+	@Override
 	public void start() {
 		this.identifierFactory.start();
 	}

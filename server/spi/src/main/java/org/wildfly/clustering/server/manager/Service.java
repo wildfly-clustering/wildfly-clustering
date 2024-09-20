@@ -10,6 +10,11 @@ package org.wildfly.clustering.server.manager;
  * @author Paul Ferraro
  */
 public interface Service {
+	/**
+	 * Indicates whether or not this service is started.
+	 * @return true, if this service is started, false otherwise
+	 */
+	boolean isStarted();
 
 	/**
 	 * Starts this service.

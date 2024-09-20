@@ -98,6 +98,11 @@ public class CachedSessionManager<C> implements SessionManager<C> {
 	}
 
 	@Override
+	public boolean isStarted() {
+		return this.manager.isStarted();
+	}
+
+	@Override
 	public void start() {
 		this.manager.start();
 	}

@@ -43,6 +43,11 @@ public class AffinityIdentifierFactory<I> implements IdentifierFactory<I>, KeyGe
 	}
 
 	@Override
+	public boolean isStarted() {
+		return this.affinity.isStarted();
+	}
+
+	@Override
 	public void start() {
 		this.affinity.start();
 	}
