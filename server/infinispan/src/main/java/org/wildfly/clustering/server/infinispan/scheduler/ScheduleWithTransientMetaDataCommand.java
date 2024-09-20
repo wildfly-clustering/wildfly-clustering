@@ -11,13 +11,12 @@ package org.wildfly.clustering.server.infinispan.scheduler;
  * @param <M> the meta data type of the entry to schedule
  * @author Paul Ferraro
  */
-public class ScheduleWithTransientMetaDataCommand<I, M> implements ScheduleCommand<I, M> {
+public class ScheduleWithTransientMetaDataCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Void> implements ScheduleCommand<I, M> {
 
-	private final I id;
 	private final transient M metaData;
 
 	public ScheduleWithTransientMetaDataCommand(I id, M metaData) {
-		this.id = id;
+		super(id);
 		this.metaData = metaData;
 	}
 
@@ -26,17 +25,7 @@ public class ScheduleWithTransientMetaDataCommand<I, M> implements ScheduleComma
 	}
 
 	@Override
-	public I getId() {
-		return this.id;
-	}
-
-	@Override
 	public M getMetaData() {
 		return this.metaData;
-	}
-
-	@Override
-	public String toString() {
-		return String.format("%s[%s]", this.getClass().getSimpleName(), this.id);
 	}
 }

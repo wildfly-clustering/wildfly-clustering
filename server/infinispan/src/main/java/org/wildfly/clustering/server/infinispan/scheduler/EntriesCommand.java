@@ -16,7 +16,7 @@ import org.wildfly.clustering.server.dispatcher.Command;
  * @param <M> the meta data type
  * @author Paul Ferraro
  */
-public class EntriesCommand<I, M> implements  Command<Collection<I>, CacheEntryScheduler<I, M>, RuntimeException> {
+public class EntriesCommand<I, M> implements Command<Collection<I>, CacheEntryScheduler<I, M>, RuntimeException> {
 
 	@Override
 	public Collection<I> execute(CacheEntryScheduler<I, M> scheduler) {

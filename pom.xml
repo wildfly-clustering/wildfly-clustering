@@ -37,7 +37,7 @@
 		<version.net.jcip>1.0</version.net.jcip>
 
 		<!-- Compile dependency versions -->
-		<!--version.dev.failsafe>3.3.2</version.dev.failsafe-->
+		<version.io.github.resilience4j>2.2.0</version.io.github.resilience4j>
 		<version.org.infinispan>15.0.8.Final</version.org.infinispan>
 		<version.org.jboss.logging>3.6.1.Final</version.org.jboss.logging>
 		<version.org.jboss.marshalling>2.2.1.Final</version.org.jboss.marshalling>
@@ -62,7 +62,6 @@
 		<module>arquillian</module>
 		<module>cache</module>
 		<module>context</module>
-		<module>coverage</module>
 		<module>marshalling</module>
 		<module>server</module>
 		<module>session</module>
@@ -127,11 +126,11 @@
 			</dependency>
 
 			<!-- Compile dependencies -->
-			<!--dependency>
-				<groupId>dev.failsafe</groupId>
-				<artifactId>failsafe</artifactId>
-				<version>${version.dev.failsafe}</version>
-			</dependency-->
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-retry</artifactId>
+				<version>${version.io.github.resilience4j}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.jboss.logging</groupId>
 				<artifactId>jboss-logging</artifactId>
@@ -251,6 +250,9 @@
 						<goals>
 							<goal>test-jar</goal>
 						</goals>
+						<configuration>
+							<skipIfEmpty>true</skipIfEmpty>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -258,9 +260,27 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<detectLinks>true</detectLinks>
 					<detectJavaApiLink>true</detectJavaApiLink>
+					<sourceFileExcludes>org/wildfly/clustering/cache/infinispan/embedded/*/WildflyClustering*Impl.java</sourceFileExcludes>
 				</configuration>
+				<executions>
+					<execution>
+						<id>javadoc</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>javadoc-aggregate</id>
+						<inherited>false</inherited>
+						<goals>
+							<goal>aggregate-jar</goal>
+						</goals>
+						<configuration>
+							<excludePackageNames>org.wildfly.clustering.session.spec.servlet</excludePackageNames>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -293,6 +313,24 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<id>jacoco</id>
+						<reports>
+							<report>report</report>
+							<report>report-integration</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
 
 	<repositories>
 		<repository>

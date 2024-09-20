@@ -5,14 +5,13 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
-import java.time.Duration;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import io.github.resilience4j.retry.RetryConfig;
+
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
-import org.wildfly.clustering.server.util.Invoker;
 
 /**
  * Encapsulates configuration of a {@link PrimaryOwnerScheduler}.
@@ -34,7 +33,5 @@ public interface PrimaryOwnerSchedulerConfiguration<I, M> {
 		return ScheduleWithTransientMetaDataCommand::new;
 	}
 
-	default Invoker getInvoker() {
-		return Invoker.retrying(List.of(Duration.ZERO, Duration.ofMillis(10), Duration.ofMillis(100)));
-	}
+	RetryConfig getRetryConfig();
 }

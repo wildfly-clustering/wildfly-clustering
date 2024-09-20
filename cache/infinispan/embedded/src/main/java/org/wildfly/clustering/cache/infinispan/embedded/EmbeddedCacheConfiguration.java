@@ -5,9 +5,17 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.time.Duration;
+
 import jakarta.transaction.TransactionManager;
 
+import io.github.resilience4j.core.IntervalFunction;
+import io.github.resilience4j.retry.RetryConfig;
+
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.wildfly.clustering.cache.CacheProperties;
@@ -84,5 +92,25 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 */
 	default <K, V> Cache<K, V> getSilentWriteCache() {
 		return this.<K, V>getCache().getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LISTENER_NOTIFICATION);
+	}
+
+	/**
+	 * Returns a retry configuration suitable for operations on this cache.
+	 * @return a retry configuration
+	 */
+	default RetryConfig getRetryConfig() {
+		Cache<?, ?> cache = this.getCache();
+		long timeout = cache.getCacheConfiguration().locking().lockAcquisitionTimeout();
+		int attempts = 1;
+		// Calculate the number of attempts
+		for (long interval = timeout; interval > 1; interval /= 10) {
+			attempts += 1;
+		}
+		return RetryConfig.custom()
+				.maxAttempts(attempts)
+				.failAfterMaxAttempts(true)
+				.intervalFunction(IntervalFunction.ofExponentialBackoff(Duration.ofMillis(1), 10.0))
+				.retryExceptions(CacheException.class, IOException.class, UncheckedIOException.class)
+				.build();
 	}
 }

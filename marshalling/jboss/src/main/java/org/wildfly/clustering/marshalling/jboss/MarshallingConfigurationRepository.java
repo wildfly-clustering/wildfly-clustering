@@ -23,7 +23,6 @@ public interface MarshallingConfigurationRepository {
 
 	/**
 	 * Returns the marshalling configuration for the current version.
-	 * @param version a version
 	 * @return a marshalling configuration
 	 */
 	MarshallingConfiguration getCurrentMarshallingConfiguration();

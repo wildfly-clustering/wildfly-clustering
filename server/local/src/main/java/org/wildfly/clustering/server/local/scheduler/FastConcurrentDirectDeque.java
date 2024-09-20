@@ -1484,7 +1484,6 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 	 * <p>The {@code Spliterator} reports {@link Spliterator#CONCURRENT},
 	 * {@link Spliterator#ORDERED}, and {@link Spliterator#NONNULL}.
 	 *
-	 * @implNote
 	 * The {@code Spliterator} implements {@code trySplit} to permit limited
 	 * parallelism.
 	 *
