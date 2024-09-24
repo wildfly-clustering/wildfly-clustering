@@ -6,4 +6,31 @@ updates:
       interval: "daily"
     ignore:
       - dependency-name: jakarta.servlet:jakarta.servlet-api
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+  - package-ecosystem: "maven"
+    directory: "/session/spec/servlet/4.0"
+    schedule:
+      interval: "daily"
+    ignore:
+      - dependency-name: jakarta.servlet:jakarta.servlet-api
+        versions: "[5.0,)"
+  - package-ecosystem: "maven"
+    directory: "/session/spec/servlet/5.0"
+    schedule:
+      interval: "daily"
+    ignore:
+      - dependency-name: jakarta.servlet:jakarta.servlet-api
+        versions: "[6.0,)"
+  - package-ecosystem: "maven"
+    directory: "/session/spec/servlet/6.0"
+    schedule:
+      interval: "daily"
+    ignore:
+      - dependency-name: jakarta.servlet:jakarta.servlet-api
+        versions: "[6.1,)"
+  - package-ecosystem: "maven"
+    directory: "/session/spec/servlet/6.1"
+    schedule:
+      interval: "daily"
+    ignore:
+      - dependency-name: jakarta.servlet:jakarta.servlet-api
+        versions: "[6.2,)"
