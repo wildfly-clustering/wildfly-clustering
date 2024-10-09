@@ -22,7 +22,7 @@ public class EmbeddedCacheEntryMutatorFactory<K, V> implements CacheEntryMutator
 	private final CacheProperties properties;
 
 	public EmbeddedCacheEntryMutatorFactory(Cache<K, V> cache) {
-		this(cache, new EmbeddedCacheProperties(cache.getCacheConfiguration()));
+		this(cache, new EmbeddedCacheProperties(cache));
 	}
 
 	public EmbeddedCacheEntryMutatorFactory(Cache<K, V> cache, CacheProperties properties) {

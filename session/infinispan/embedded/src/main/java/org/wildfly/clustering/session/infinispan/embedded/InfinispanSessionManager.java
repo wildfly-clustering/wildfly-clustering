@@ -6,6 +6,7 @@ package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -51,7 +52,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 	private final Runnable startTask;
 	private final Registrar<SessionManager<SC>> registrar;
 
-	private volatile Registration registration;
+	private final AtomicReference<Registration> registration = new AtomicReference<>();
 
 	public InfinispanSessionManager(SessionManagerConfiguration<C> configuration, InfinispanSessionManagerConfiguration<SC> infinispanConfiguration, SessionFactory<C, MV, AV, SC> factory) {
 		super(configuration, infinispanConfiguration, factory, new Consumer<>() {
@@ -72,25 +73,31 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 	}
 
 	@Override
+	public boolean isStarted() {
+		return this.identifierFactory.isStarted();
+	}
+
+	@Override
 	public void start() {
-		this.registration = this.registrar.register(this);
+		this.registration.set(this.registrar.register(this));
 		this.identifierFactory.start();
 		this.startTask.run();
 	}
 
 	@Override
 	public void stop() {
-		if (!this.properties.isPersistent()) {
-			PersistenceConfiguration persistence = this.cache.getCacheConfiguration().persistence();
-			// Don't passivate sessions on stop if we will purge the store on startup
-			if (persistence.passivation() && !persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
-				try (Stream<Key<String>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet().stream()) {
-					stream.filter(SessionMetaDataKeyFilter.INSTANCE).forEach(this.cache::evict);
+		try (Registration registration = this.registration.getAndSet(null)) {
+			if (!this.properties.isPersistent()) {
+				PersistenceConfiguration persistence = this.cache.getCacheConfiguration().persistence();
+				// Don't passivate sessions on stop if we will purge the store on startup
+				if (persistence.passivation() && !persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
+					try (Stream<Key<String>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet().stream()) {
+						stream.filter(SessionMetaDataKeyFilter.INSTANCE).forEach(this.cache::evict);
+					}
 				}
 			}
+			this.identifierFactory.stop();
 		}
-		this.identifierFactory.stop();
-		this.registration.close();
 	}
 
 	@Override

@@ -109,6 +109,11 @@ public class CacheTestCase {
 		}
 
 		@Override
+		public boolean isStarted() {
+			return this.started;
+		}
+
+		@Override
 		public void start() {
 			this.started = true;
 		}
@@ -116,10 +121,6 @@ public class CacheTestCase {
 		@Override
 		public void stop() {
 			this.stopped = true;
-		}
-
-		boolean isStarted() {
-			return this.started;
 		}
 
 		boolean isStopped() {

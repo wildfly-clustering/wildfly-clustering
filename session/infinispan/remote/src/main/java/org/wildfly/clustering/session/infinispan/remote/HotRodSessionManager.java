@@ -4,7 +4,9 @@
  */
 package org.wildfly.clustering.session.infinispan.remote;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -30,7 +32,7 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 	private final Consumer<ImmutableSession> expirationListener;
 	private final Supplier<Batch> batchFactory;
 
-	private volatile Registration expirationListenerRegistration;
+	private AtomicReference<Registration> expirationListenerRegistration = new AtomicReference<>();
 
 	public HotRodSessionManager(SessionManagerConfiguration<C> configuration, SessionFactory<C, MV, AV, SC> factory, HotRodSessionManagerConfiguration hotrod) {
 		super(configuration, hotrod, factory, Functions.discardingConsumer());
@@ -40,15 +42,18 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 	}
 
 	@Override
+	public boolean isStarted() {
+		return this.expirationListenerRegistration.get() != null;
+	}
+
+	@Override
 	public void start() {
-		this.expirationListenerRegistration = this.expirationListenerRegistrar.register(this.expirationListener);
+		this.expirationListenerRegistration.set(this.expirationListenerRegistrar.register(this.expirationListener));
 	}
 
 	@Override
 	public void stop() {
-		if (this.expirationListenerRegistration != null) {
-			this.expirationListenerRegistration.close();
-		}
+		Optional.ofNullable(this.expirationListenerRegistration.getAndSet(null)).ifPresent(Registration::close);
 	}
 
 	@Override

@@ -28,6 +28,11 @@ public class SimpleIdentifierFactory<I> implements IdentifierFactory<I> {
 	}
 
 	@Override
+	public boolean isStarted() {
+		return true;
+	}
+
+	@Override
 	public void start() {
 		// Do nothing
 	}

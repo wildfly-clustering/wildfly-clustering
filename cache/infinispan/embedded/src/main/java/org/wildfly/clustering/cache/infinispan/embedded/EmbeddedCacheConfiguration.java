@@ -41,7 +41,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 
 	@Override
 	default CacheProperties getCacheProperties() {
-		return new EmbeddedCacheProperties(this.getCache().getCacheConfiguration());
+		return new EmbeddedCacheProperties(this.getCache());
 	}
 
 	/**

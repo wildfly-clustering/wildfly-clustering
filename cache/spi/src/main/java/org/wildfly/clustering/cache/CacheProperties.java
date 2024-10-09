@@ -39,4 +39,10 @@ public interface CacheProperties {
 	 * @return true, if this cache is transactional, false otherwise.
 	 */
 	boolean isTransactional();
+
+	/**
+	 * Indicates whether or not the cache is active.
+	 * @return true, if this cache is active, false otherwise.
+	 */
+	boolean isActive();
 }
