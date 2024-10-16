@@ -13,25 +13,25 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * ProtoStream marshaller for a {@link ScheduleWithMetaDataCommand}.
+ * ProtoStream marshaller for a {@link ScheduleCommand}.
  * @param <I> the identifier type of the entry to schedule
  * @param <M> the meta data type of the entry to schedule
  * @author Paul Ferraro
  */
-public class ScheduleWithMetaDataCommandMarshaller<I, M> implements ProtoStreamMarshaller<ScheduleWithMetaDataCommand<I, M>> {
+public class ScheduleCommandMarshaller<I, M> implements ProtoStreamMarshaller<ScheduleCommand<I, M>> {
 
 	private static final byte ID_INDEX = 1;
 	private static final byte META_DATA_INDEX = 2;
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends ScheduleWithMetaDataCommand<I, M>> getJavaClass() {
-		return (Class<ScheduleWithMetaDataCommand<I, M>>) (Class<?>) ScheduleWithMetaDataCommand.class;
+	public Class<? extends ScheduleCommand<I, M>> getJavaClass() {
+		return (Class<ScheduleCommand<I, M>>) (Class<?>) ScheduleCommand.class;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ScheduleWithMetaDataCommand<I, M> readFrom(ProtoStreamReader reader) throws IOException {
+	public ScheduleCommand<I, M> readFrom(ProtoStreamReader reader) throws IOException {
 		I id = null;
 		M metaData = null;
 		while (!reader.isAtEnd()) {
@@ -47,16 +47,16 @@ public class ScheduleWithMetaDataCommandMarshaller<I, M> implements ProtoStreamM
 					reader.skipField(tag);
 			}
 		}
-		return new ScheduleWithMetaDataCommand<>(id, metaData);
+		return new ScheduleCommand<>(id, metaData);
 	}
 
 	@Override
-	public void writeTo(ProtoStreamWriter writer, ScheduleWithMetaDataCommand<I, M> command) throws IOException {
+	public void writeTo(ProtoStreamWriter writer, ScheduleCommand<I, M> command) throws IOException {
 		I id = command.getId();
 		if (id != null) {
 			writer.writeAny(ID_INDEX, id);
 		}
-		M metaData = command.getMetaData();
+		M metaData = command.getPersistentMetaData();
 		if (metaData != null) {
 			writer.writeAny(META_DATA_INDEX, metaData);
 		}

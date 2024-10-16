@@ -11,20 +11,24 @@ package org.wildfly.clustering.server.infinispan.scheduler;
  * @param <M> the meta data type of the entry to schedule
  * @author Paul Ferraro
  */
-public interface ScheduleCommand<I, M> extends PrimaryOwnerCommand<I, M, Void> {
+public class ScheduleCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Void> {
 
-	/**
-	 * Returns the meta data of the element to be scheduled.
-	 * @return the meta data of the element to be scheduled.
-	 */
-	M getMetaData();
+	private final M metaData;
+
+	ScheduleCommand(I id, M metaData) {
+		super(id);
+		this.metaData = metaData;
+	}
+
+	protected M getPersistentMetaData() {
+		return this.metaData;
+	}
 
 	@Override
-	default Void execute(CacheEntryScheduler<I, M> scheduler) {
+	public Void execute(CacheEntryScheduler<I, M> scheduler) {
 		I id = this.getId();
-		M metaData = this.getMetaData();
-		if (metaData != null) {
-			scheduler.schedule(id, metaData);
+		if (this.metaData != null) {
+			scheduler.schedule(id, this.metaData);
 		} else {
 			scheduler.schedule(id);
 		}

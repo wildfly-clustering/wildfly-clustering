@@ -226,6 +226,26 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<annotationProcessorPath>
+							<groupId>org.kohsuke.metainf-services</groupId>
+							<artifactId>metainf-services</artifactId>
+						</annotationProcessorPath>
+						<annotationProcessorPath>
+							<groupId>org.infinispan</groupId>
+							<artifactId>infinispan-component-processor</artifactId>
+						</annotationProcessorPath>
+						<annotationProcessorPath>
+							<groupId>org.infinispan.protostream</groupId>
+							<artifactId>protostream-processor</artifactId>
+						</annotationProcessorPath>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<executions>
 					<execution>

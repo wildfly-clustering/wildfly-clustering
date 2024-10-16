@@ -11,21 +11,14 @@ package org.wildfly.clustering.server.infinispan.scheduler;
  * @param <M> the meta data type of the entry to schedule
  * @author Paul Ferraro
  */
-public class ScheduleWithTransientMetaDataCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Void> implements ScheduleCommand<I, M> {
-
-	private final transient M metaData;
+public class ScheduleWithTransientMetaDataCommand<I, M> extends ScheduleCommand<I, M> {
 
 	public ScheduleWithTransientMetaDataCommand(I id, M metaData) {
-		super(id);
-		this.metaData = metaData;
-	}
-
-	ScheduleWithTransientMetaDataCommand(I id) {
-		this(id, null);
+		super(id, metaData);
 	}
 
 	@Override
-	public M getMetaData() {
-		return this.metaData;
+	protected M getPersistentMetaData() {
+		return null;
 	}
 }

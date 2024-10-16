@@ -16,26 +16,18 @@ message CancelCommand {
 /**
  * @TypeId(181)
  */
-message ScheduleWithTransientMetaDataCommand {
+message ScheduleCommand {
 	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
 }
 
 /**
  * @TypeId(182)
  */
-message ScheduleWithMetaDataCommand {
-	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
-	org.wildfly.clustering.marshalling.protostream.Any	metaData	 = 2;
-}
-
-/**
- * @TypeId(183)
- */
 message EntriesCommand {
 }
 
 /**
- * @TypeId(184)
+ * @TypeId(183)
  */
 message ContainsCommand {
 	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
