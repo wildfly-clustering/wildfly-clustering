@@ -19,6 +19,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.config.Configuration;
 import org.infinispan.protostream.impl.SerializationContextImpl;
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 import org.wildfly.clustering.marshalling.protostream.math.MathSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.net.NetSerializationContextInitializer;
@@ -72,6 +73,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	}
 
 	class DefaultSerializationContextBuilder implements SerializationContextBuilder<SerializationContextInitializer> {
+		private static final Logger LOGGER = Logger.getLogger(DefaultSerializationContextBuilder.class);
 		private static final String PROTOSTREAM_BASE_PACKAGE_NAME = org.infinispan.protostream.BaseMarshaller.class.getPackage().getName();
 
 		private final SerializationContext context;
@@ -117,6 +119,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 						SerializationContextInitializer initializer = remaining.next();
 						try {
 							this.register(initializer);
+							LOGGER.debugf("Registering marshallers/schemas from %s", initializer.getClass().getName());
 							remaining.remove();
 						} catch (DescriptorParserException e) {
 							// Descriptor might fail to parse due to ordering issues
@@ -135,6 +138,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 		private void loadNative(ClassLoader loader) {
 			for (org.infinispan.protostream.SerializationContextInitializer initializer : loadAll(org.infinispan.protostream.SerializationContextInitializer.class, loader)) {
 				if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
+					LOGGER.debugf("Registering native marshallers/schemas from %s", initializer.getClass().getName());
 					initializer.registerSchema(this.context);
 					initializer.registerMarshallers(this.context);
 				}
