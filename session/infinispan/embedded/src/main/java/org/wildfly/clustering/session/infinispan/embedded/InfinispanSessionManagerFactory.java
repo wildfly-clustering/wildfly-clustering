@@ -26,7 +26,7 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
-import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommandFactory;
+import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactory;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerScheduler;
@@ -125,7 +125,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 
 			@Override
 			public BiFunction<String, ExpirationMetaData, ScheduleCommand<String, ExpirationMetaData>> getScheduleCommandFactory() {
-				return properties.isTransactional() ? new ScheduleWithExpirationMetaDataCommandFactory<>() : ScheduleWithTransientMetaDataCommand::new;
+				return properties.isTransactional() ? ScheduleWithExpirationMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
 			}
 
 			@Override

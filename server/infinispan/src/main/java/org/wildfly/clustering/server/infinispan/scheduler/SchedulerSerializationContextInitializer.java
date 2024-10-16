@@ -22,8 +22,7 @@ public class SchedulerSerializationContextInitializer extends AbstractSerializat
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(Scalar.ANY.toMarshaller(CancelCommand.class, CancelCommand::getId, CancelCommand::new));
 		context.registerMarshaller(Scalar.ANY.toMarshaller(ContainsCommand.class, ContainsCommand::getId, ContainsCommand::new));
-		context.registerMarshaller(Scalar.ANY.toMarshaller(ScheduleWithTransientMetaDataCommand.class, ScheduleWithTransientMetaDataCommand::getId, ScheduleWithTransientMetaDataCommand::new));
-		context.registerMarshaller(new ScheduleWithMetaDataCommandMarshaller<>());
+		context.registerMarshaller(new ScheduleCommandMarshaller<>());
 		context.registerMarshaller(ProtoStreamMarshaller.of(new EntriesCommand<>()));
 	}
 }
