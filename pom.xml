@@ -41,7 +41,6 @@
 		<version.org.infinispan>15.0.10.Final</version.org.infinispan>
 		<version.org.jboss.logging>3.6.1.Final</version.org.jboss.logging>
 		<version.org.jboss.marshalling>2.2.1.Final</version.org.jboss.marshalling>
-		<version.org.jboss.threads>3.8.0.Final</version.org.jboss.threads>
 		<version.org.jgroups>5.3.13.Final</version.org.jgroups>
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
 		<version.org.wildfly.common>1.7.0.Final</version.org.wildfly.common>
@@ -140,11 +139,6 @@
 				<groupId>org.jboss.marshalling</groupId>
 				<artifactId>jboss-marshalling</artifactId>
 				<version>${version.org.jboss.marshalling}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.threads</groupId>
-				<artifactId>jboss-threads</artifactId>
-				<version>${version.org.jboss.threads}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jgroups</groupId>
@@ -283,6 +277,17 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>@{project.version}</tagNameFormat>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

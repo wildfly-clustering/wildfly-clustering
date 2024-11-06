@@ -19,8 +19,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jboss.threads</groupId>
-			<artifactId>jboss-threads</artifactId>
+			<groupId>org.wildfly.common</groupId>
+			<artifactId>wildfly-common</artifactId>
 		</dependency>
 	</dependencies>
 </project>
