@@ -10,7 +10,7 @@
 		<groupId>org.jboss</groupId>
 		<artifactId>jboss-parent</artifactId>
 		<version>47</version>
-		<relativePath />
+		<relativePath/>
 	</parent>
 
 	<groupId>org.wildfly.clustering</groupId>

@@ -36,7 +36,7 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 		private final AtomicLong index = new AtomicLong();
 		private final ThreadGroup group;
 
-		public ThreadGroupThreadFactory(ThreadGroup group) {
+		ThreadGroupThreadFactory(ThreadGroup group) {
 			this.group = group;
 		}
 
