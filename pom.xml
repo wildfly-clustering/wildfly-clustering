@@ -36,11 +36,11 @@
 		<version.net.jcip>1.0</version.net.jcip>
 
 		<!-- Compile dependency versions -->
-		<version.org.infinispan>14.0.32.Final</version.org.infinispan>
+		<version.org.infinispan>14.0.33.Final</version.org.infinispan>
 		<version.org.jboss.logging>3.6.1.Final</version.org.jboss.logging>
 		<version.org.jboss.marshalling>2.2.1.Final</version.org.jboss.marshalling>
 		<version.org.jboss.threads>3.6.1.Final</version.org.jboss.threads>
-		<version.org.jgroups>5.2.28.Final</version.org.jgroups>
+		<version.org.jgroups>5.2.29.Final</version.org.jgroups>
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
 		<version.org.wildfly.common>1.7.0.Final</version.org.wildfly.common>
 

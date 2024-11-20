@@ -62,11 +62,6 @@ public class EmbeddedCacheManagerGroupProvider implements CacheContainerGroupPro
 	}
 
 	@Override
-	public String getName() {
-		return CONTAINER_NAME;
-	}
-
-	@Override
 	public void close() {
 		try {
 			this.manager.close();

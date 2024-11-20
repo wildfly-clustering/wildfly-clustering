@@ -25,14 +25,12 @@ import org.wildfly.clustering.server.group.GroupMember;
  */
 public class EmbeddedCacheManagerGroup<A extends Comparable<A>, M extends GroupMember<A>> implements CacheContainerGroup {
 
-	private final String name;
 	private final Group<A, M> group;
 	private final Function<M, CacheContainerGroupMember> wrapper;
 	private final CacheContainerGroupMemberFactory factory;
 	private final CacheContainerGroupMember localMember;
 
 	public EmbeddedCacheManagerGroup(EmbeddedCacheManagerGroupConfiguration<A, M> configuration) {
-		this.name = configuration.getCacheContainer().getCacheManagerConfiguration().cacheManagerName();
 		this.group = configuration.getGroup();
 		this.factory = new EmbeddedCacheManagerGroupMemberFactory(configuration);
 		this.wrapper = configuration.getAddressWrapper().<M>compose(GroupMember::getAddress).andThen(this.factory::createGroupMember);
@@ -41,7 +39,7 @@ public class EmbeddedCacheManagerGroup<A extends Comparable<A>, M extends GroupM
 
 	@Override
 	public String getName() {
-		return this.name;
+		return this.group.getName();
 	}
 
 	@Override
