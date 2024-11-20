@@ -63,7 +63,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 			Group<A, M> group1 = provider1.getGroup();
 			JChannel channel1 = provider1.getChannel();
 
-			assertSame(provider1.getName(), group1.getName());
+			assertSame(channel1.getClusterName(), group1.getName());
 			assertEquals(MEMBER_NAMES[0], group1.getLocalMember().getName());
 			assertFalse(group1.isSingleton());
 			this.validate(channel1, group1);
@@ -129,7 +129,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 
 					Group<A, M> group2 = provider2.getGroup();
 
-					assertSame(provider2.getName(), group2.getName());
+					assertSame(channel2.getClusterName(), group2.getName());
 					assertEquals(MEMBER_NAMES[1], group2.getLocalMember().getName());
 					assertFalse(group2.isSingleton());
 
@@ -167,7 +167,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 
 						Group<A, M> group3 = provider3.getGroup();
 
-						assertSame(provider3.getName(), group3.getName());
+						assertSame(channel3.getClusterName(), group3.getName());
 						assertEquals(MEMBER_NAMES[2], group3.getLocalMember().getName());
 						assertFalse(group3.isSingleton());
 
