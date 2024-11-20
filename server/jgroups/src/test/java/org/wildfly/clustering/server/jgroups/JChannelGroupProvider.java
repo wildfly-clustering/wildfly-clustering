@@ -34,11 +34,6 @@ public class JChannelGroupProvider implements GroupProvider<Address, ChannelGrou
 	}
 
 	@Override
-	public String getName() {
-		return this.channel.getClusterName();
-	}
-
-	@Override
 	public void close() {
 		this.group.close();
 		this.channel.disconnect();
