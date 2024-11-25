@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jboss.marshalling.ClassTable;
@@ -169,13 +168,13 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 	private static List<Class<?>> findSerializableClasses(Class<?> targetClass) {
 		Class<?>[] childClasses = targetClass.getDeclaredClasses();
 		// Include any non-public serializable components/replacements
-		return (childClasses.length > 0) ? Stream.concat(Stream.of(targetClass), Stream.of(childClasses).filter(Serializable.class::isAssignableFrom)).collect(Collectors.toList()) : List.of(targetClass);
+		return (childClasses.length > 0) ? Stream.concat(Stream.of(targetClass), Stream.of(childClasses).filter(Serializable.class::isAssignableFrom)).toList() : List.of(targetClass);
 	}
 
 	private final ClassTable table;
 
 	DefaultClassTableProvider(List<Class<?>> classes) {
-		this.table = new IdentityClassTable(classes.stream().map(DefaultClassTableProvider::findSerializableClasses).flatMap(List::stream).collect(Collectors.toList()));
+		this.table = new IdentityClassTable(classes.stream().map(DefaultClassTableProvider::findSerializableClasses).flatMap(List::stream).toList());
 	}
 
 	@Override

@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
@@ -57,7 +56,7 @@ public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActiv
 	}
 
 	private void notify(Function<L, Consumer<S>> factory) {
-		List<L> listeners = this.session.getAttributes().values().stream().map(this.listenerProvider::asEventListener).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+		List<L> listeners = this.session.getAttributes().values().stream().map(this.listenerProvider::asEventListener).filter(Optional::isPresent).map(Optional::get).toList();
 		if (!listeners.isEmpty()) {
 			S session = this.sessionProvider.asSession(this.session, this.context);
 			for (L listener : listeners) {
