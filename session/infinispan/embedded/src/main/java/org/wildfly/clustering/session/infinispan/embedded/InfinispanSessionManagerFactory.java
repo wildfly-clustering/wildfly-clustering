@@ -173,7 +173,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 				return identifierFactory;
 			}
 		};
-		return new CachedSessionManager<>(new InfinispanSessionManager<>(configuration, infinispanConfiguration, this.factory), this.configuration.getCacheProperties().isTransactional() ? CacheStrategy.NONE : CacheStrategy.CONCURRENT);
+		return new CachedSessionManager<>(new InfinispanSessionManager<>(configuration, infinispanConfiguration, this.factory), CacheStrategy.CONCURRENT);
 	}
 
 	private <S, L> SessionAttributesFactory<C, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory, EmbeddedCacheConfiguration infinispan) {
