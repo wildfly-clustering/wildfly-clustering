@@ -5,19 +5,13 @@
 
 package org.wildfly.clustering.session.cache;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +20,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -94,7 +87,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 							this.verifyNoSession(manager1, sessionId);
 							this.verifyNoSession(manager2, sessionId);
 
-							assertTrue(expiredSessions.isEmpty());
+							assertThat(expiredSessions).isEmpty();
 						} finally {
 							manager2.stop();
 						}
@@ -126,6 +119,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 							this.createSession(manager1, sessionId, Map.of("value", value));
 
+							Instant start = Instant.now();
 							// Trigger a number of concurrent sequences of requests for the same session
 							CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
 							for (int i = 0; i < threads; ++i) {
@@ -133,20 +127,42 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 									for (int j = 0; j < requests; ++j) {
 										this.requestSession(manager1, sessionId, session -> {
 											AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
-											assertNotNull(v);
+											assertThat(v).isNotNull();
 											v.incrementAndGet();
 										});
 									}
 								}), Functions.discardingBiConsumer());
 							}
 							future.join();
+							Instant stop = Instant.now();
+							Duration concurrentDuration = Duration.between(start, stop);
 
 							// Verify integrity of value on other manager
-							AtomicInteger expected = new AtomicInteger(threads * requests);
 							this.requestSession(manager2, sessionId, session -> {
-								// N.B. AtomicInteger does not implement equals(...)
-								this.verifySessionAttribute(session, "value", expected, (value1, value2) -> value1.get() == value2.get());
+								assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests);
 							});
+
+							start = Instant.now();
+							// Trigger sequences of the same number of requests for the same session
+							for (int i = 0; i < threads; ++i) {
+								for (int j = 0; j < requests; ++j) {
+									this.requestSession(manager1, sessionId, session -> {
+										AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
+										assertThat(v).isNotNull();
+										v.incrementAndGet();
+									});
+								}
+							}
+							stop = Instant.now();
+							Duration serialDuration = Duration.between(start, stop);
+
+							// Verify integrity of value on other manager
+							this.requestSession(manager2, sessionId, session -> {
+								assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests * 2);
+							});
+
+							// Ensure that concurrent requests complete faster than same number of serial requests
+							assertThat(concurrentDuration).isLessThan(serialDuration);
 
 							this.invalidateSession(manager2, sessionId);
 						} finally {
@@ -203,16 +219,16 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 							try {
 								Instant start = Instant.now();
 								ImmutableSession expiredSession = expiredSessions.poll(expirationDuration.getSeconds(), TimeUnit.SECONDS);
-								assertNotNull(expiredSession, () -> String.format("No expiration event received within %s seconds", expirationDuration.getSeconds()));
+								assertThat(expiredSession).as("No expiration event received within %s seconds", expirationDuration.getSeconds()).isNotNull();
 								System.out.println(String.format("Received expiration event for %s after %s", expiredSession.getId(), Duration.between(start, Instant.now())));
-								assertEquals(sessionId, expiredSession.getId());
-								assertFalse(expiredSession.isValid());
-								assertFalse(expiredSession.getMetaData().isNew());
-								assertTrue(expiredSession.getMetaData().isExpired());
-								assertFalse(expiredSession.getMetaData().isImmortal());
+								assertThat(sessionId).isEqualTo(expiredSession.getId());
+								assertThat(expiredSession.isValid()).isFalse();
+								assertThat(expiredSession.getMetaData().isNew()).isFalse();
+								assertThat(expiredSession.getMetaData().isExpired()).isTrue();
+								assertThat(expiredSession.getMetaData().isImmortal()).isFalse();
 								this.verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
 
-								assertEquals(0, expiredSessions.size(), expiredSessions.toString());
+								assertThat(expiredSessions).isEmpty();
 							} catch (InterruptedException e) {
 								Thread.currentThread().interrupt();
 							}
@@ -232,7 +248,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 	private void createSession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
 		this.requestSession(manager, manager::createSession, sessionId, session -> {
-			assertTrue(session.getMetaData().isNew());
+			assertThat(session.getMetaData().isNew()).isTrue();
 			this.verifySessionMetaData(session);
 			this.verifySessionAttributes(session, Map.of());
 			this.updateSessionAttributes(session, attributes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> new AbstractMap.SimpleEntry<>(null, entry.getValue()))));
@@ -242,7 +258,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 	private void verifySession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
 		this.requestSession(manager, sessionId, session -> {
-			assertFalse(session.getMetaData().isNew());
+			assertThat(session.getMetaData().isNew()).isFalse();
 			this.verifySessionMetaData(session);
 			this.verifySessionAttributes(session, attributes);
 		});
@@ -250,9 +266,9 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 	private void updateSession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Map.Entry<Object, Object>> attributes) {
 		this.requestSession(manager, sessionId, session -> {
-			assertNotNull(session);
-			assertEquals(sessionId, session.getId());
-			assertFalse(session.getMetaData().isNew());
+			assertThat(session).isNotNull();
+			assertThat(session.getId()).isEqualTo(sessionId);
+			assertThat(session.getMetaData().isNew()).isFalse();
 			this.verifySessionMetaData(session);
 			this.updateSessionAttributes(session, attributes);
 		});
@@ -261,9 +277,9 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	private void invalidateSession(SessionManager<AtomicReference<String>> manager, String sessionId) {
 		this.requestSession(manager, sessionId, session -> {
 			session.invalidate();
-			assertFalse(session.isValid());
-			assertThrows(IllegalStateException.class, () -> session.getAttributes(), session.getClass().getName());
-			assertThrows(IllegalStateException.class, () -> session.getMetaData(), session.getClass().getName());
+			assertThat(session.isValid()).isFalse();
+			assertThatThrownBy(() -> session.getAttributes()).isInstanceOf(IllegalStateException.class);
+			assertThatThrownBy(() -> session.getMetaData()).isInstanceOf(IllegalStateException.class);
 		});
 	}
 
@@ -275,8 +291,8 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		Instant start = Instant.now();
 		try (Batch batch = manager.getBatchFactory().get()) {
 			try (Session<AtomicReference<String>> session = sessionFactory.apply(sessionId)) {
-				assertNotNull(session);
-				assertEquals(sessionId, session.getId());
+				assertThat(session).isNotNull();
+				assertThat(session.getId()).isEqualTo(sessionId);
 				action.accept(session);
 				// Post-request processing
 				if (session.isValid()) {
@@ -284,14 +300,14 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 					Instant end = Instant.now();
 					metaData.setLastAccess(start, end);
 					// Once last-access is set, session should no longer be "new"
-					assertFalse(metaData.isNew());
+					assertThat(metaData.isNew()).isFalse();
 					// Skip these assertions during concurrent session access
 					// We would otherwise require memory synchronization to validate
 					if (!(Thread.currentThread() instanceof ForkJoinWorkerThread)) {
 						// Validate last-access times are within precision bounds
-						assertEquals(0L, Duration.between(metaData.getLastAccessStartTime(), start).getSeconds(), Duration.between(metaData.getLastAccessStartTime(), start).toString());
-						assertEquals(0L, Duration.between(metaData.getLastAccessStartTime(), start).truncatedTo(ChronoUnit.MILLIS).getNano(), Duration.between(metaData.getLastAccessStartTime(), start).toString());
-						assertEquals(0L, Duration.between(end, metaData.getLastAccessEndTime()).getSeconds(), Duration.between(end, metaData.getLastAccessEndTime()).toString());
+						assertThat(Duration.between(metaData.getLastAccessStartTime(), start).getSeconds()).isEqualTo(0);
+						assertThat(Duration.between(metaData.getLastAccessStartTime(), start).truncatedTo(ChronoUnit.MILLIS).getNano()).isEqualTo(0);
+						assertThat(Duration.between(end, metaData.getLastAccessEndTime()).getSeconds()).isEqualTo(0);
 					}
 				}
 			}
@@ -299,35 +315,29 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	}
 
 	private void verifySessionMetaData(Session<AtomicReference<String>> session) {
-		assertTrue(session.isValid());
+		assertThat(session.isValid()).isTrue();
 		SessionMetaData metaData = session.getMetaData();
-		assertFalse(metaData.isImmortal(), metaData.toString());
-		assertFalse(metaData.isExpired(), metaData.toString());
+		assertThat(metaData.isImmortal()).isFalse();
+		assertThat(metaData.isExpired()).isFalse();
 		if (metaData.isNew()) {
-			assertNull(metaData.getLastAccessStartTime());
-			assertNull(metaData.getLastAccessEndTime());
+			assertThat(metaData.getLastAccessStartTime()).isNull();
+			assertThat(metaData.getLastAccessEndTime()).isNull();
 		} else {
-			assertNotNull(metaData.getLastAccessStartTime());
-			assertNotNull(metaData.getLastAccessEndTime());
+			assertThat(metaData.getLastAccessStartTime()).isNotNull();
+			assertThat(metaData.getLastAccessEndTime()).isNotNull();
 			// For the request following session creation, the last access time will precede the creation time, but this duration should be tiny
 			if (metaData.getLastAccessStartTime().isBefore(metaData.getCreationTime())) {
-				assertEquals(0, Duration.between(metaData.getLastAccessStartTime(), metaData.getCreationTime()).getSeconds(), metaData.toString());
+				assertThat(Duration.between(metaData.getLastAccessStartTime(), metaData.getCreationTime()).getSeconds()).isEqualTo(0);
 			}
-			assertTrue(metaData.getLastAccessStartTime().isBefore(metaData.getLastAccessEndTime()), metaData.toString());
+			assertThat(metaData.getLastAccessStartTime()).isBefore(metaData.getLastAccessEndTime());
 		}
 	}
 
 	private void verifySessionAttributes(ImmutableSession session, Map<String, Object> attributes) {
-		assertTrue(session.getAttributes().keySet().containsAll(attributes.keySet()));
+		assertThat(session.getAttributes().keySet()).containsAll(attributes.keySet());
 		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-			this.verifySessionAttribute(session, entry.getKey(), entry.getValue(), Objects::equals);
+			assertThat(session.getAttributes().get(entry.getKey())).isEqualTo(entry.getValue());
 		}
-	}
-
-	private <T> void verifySessionAttribute(ImmutableSession session, String name, T expected, BiPredicate<T, T> equals) {
-		@SuppressWarnings("unchecked")
-		T value = (T) session.getAttributes().get(name);
-		assertTrue(equals.test(expected, value), () -> String.format("Expected %s, Actual %s", expected, value));
 	}
 
 	private void updateSessionAttributes(Session<AtomicReference<String>> session, Map<String, Map.Entry<Object, Object>> attributes) {
@@ -336,9 +346,9 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 			Object expected = entry.getValue().getKey();
 			Object value = entry.getValue().getValue();
 			if (value != null) {
-				assertEquals(expected, session.getAttributes().put(name, value));
+				assertThat(session.getAttributes().put(name, value)).isEqualTo(expected);
 			} else {
-				assertEquals(expected, session.getAttributes().remove(name));
+				assertThat(session.getAttributes().remove(name)).isEqualTo(expected);
 			}
 		}
 	}
@@ -346,7 +356,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	private void verifyNoSession(SessionManager<AtomicReference<String>> manager, String sessionId) {
 		try (Batch batch = manager.getBatchFactory().get()) {
 			try (Session<AtomicReference<String>> session = manager.findSession(sessionId)) {
-				assertNull(session);
+				assertThat(session).isNull();
 			}
 		}
 	}
