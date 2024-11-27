@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -81,7 +83,13 @@ public interface MarshallingConfigurationBuilder extends MarshallerConfiguration
 		}
 
 		static <T> void loadAll(Class<T> targetClass, ClassLoader loader, Consumer<T> consumer) {
-			ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).forEach(consumer);
+			AccessController.doPrivileged(new PrivilegedAction<>() {
+				@Override
+				public Void run() {
+					ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).forEach(consumer);
+					return null;
+				}
+			});
 		}
 	}
 }
