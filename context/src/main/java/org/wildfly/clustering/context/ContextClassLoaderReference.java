@@ -4,6 +4,9 @@
  */
 package org.wildfly.clustering.context;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 /**
  * Thread-aware reference for a context {@link ClassLoader}.
  * @author Paul Ferraro
@@ -13,11 +16,22 @@ public enum ContextClassLoaderReference implements ThreadContextReference<ClassL
 
 	@Override
 	public ClassLoader apply(Thread thread) {
-		return thread.getContextClassLoader();
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public ClassLoader run() {
+				return thread.getContextClassLoader();
+			}
+		});
 	}
 
 	@Override
 	public void accept(Thread thread, ClassLoader loader) {
-		thread.setContextClassLoader(loader);
+		AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public Void run() {
+				thread.setContextClassLoader(loader);
+				return null;
+			}
+		});
 	}
 }

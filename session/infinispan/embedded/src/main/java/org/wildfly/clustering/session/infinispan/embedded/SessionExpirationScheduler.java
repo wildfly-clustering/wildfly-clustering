@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.session.infinispan.embedded;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ThreadFactory;
@@ -28,7 +30,12 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  */
 public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<String> {
 	private static final Logger LOGGER = Logger.getLogger(SessionExpirationScheduler.class);
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, SessionExpirationScheduler.class.getClassLoader());
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, AccessController.doPrivileged(new PrivilegedAction<>() {
+		@Override
+		public ClassLoader run() {
+			return SessionExpirationScheduler.class.getClassLoader();
+		}
+	}));
 
 	private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
 

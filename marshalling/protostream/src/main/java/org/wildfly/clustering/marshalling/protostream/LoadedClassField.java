@@ -6,6 +6,8 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.io.InvalidClassException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import org.infinispan.protostream.descriptors.WireType;
 
@@ -56,7 +58,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
 	@Override
 	public void writeTo(ProtoStreamWriter writer, Class<?> targetClass) throws IOException {
 		Scalar.STRING.writeTo(writer, targetClass.getName());
-		writer.createFieldSetWriter(this.loaderMarshaller, this.loaderIndex).writeFields(targetClass.getClassLoader());
+		writer.createFieldSetWriter(this.loaderMarshaller, this.loaderIndex).writeFields(getClassLoader(targetClass));
 	}
 
 	@Override
@@ -72,5 +74,14 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
 	@Override
 	public WireType getWireType() {
 		return WireType.LENGTH_DELIMITED;
+	}
+
+	private static ClassLoader getClassLoader(Class<?> targetClass) {
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public ClassLoader run() {
+				return targetClass.getClassLoader();
+			}
+		});
 	}
 }

@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -179,6 +181,11 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	}
 
 	static <T> List<T> loadAll(Class<T> targetClass, ClassLoader loader) {
-		return ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).toList();
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public List<T> run() {
+				return ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).toList();
+			}
+		});
 	}
 }
