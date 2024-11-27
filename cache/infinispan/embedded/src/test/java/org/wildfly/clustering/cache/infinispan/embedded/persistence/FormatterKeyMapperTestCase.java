@@ -8,7 +8,6 @@ package org.wildfly.clustering.cache.infinispan.embedded.persistence;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
@@ -83,6 +82,6 @@ public class FormatterKeyMapperTestCase {
 
 	@SuppressWarnings("unchecked")
 	private static List<? extends Formatter<?>> createPersistenceList(int size) {
-		return IntStream.range(0, size).mapToObj(index -> Formatter.IDENTITY.wrap((Class<Type>) Type.values()[index].getClass(), Type::name, value -> Type.valueOf(value))).collect(Collectors.toList());
+		return IntStream.range(0, size).mapToObj(index -> Formatter.IDENTITY.wrap((Class<Type>) Type.values()[index].getClass(), Type::name, value -> Type.valueOf(value))).toList();
 	}
 }

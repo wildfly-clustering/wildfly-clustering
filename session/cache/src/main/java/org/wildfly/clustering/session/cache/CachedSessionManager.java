@@ -13,13 +13,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.cache.Cache;
 import org.wildfly.clustering.server.cache.CacheFactory;
-import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.session.SessionStatistics;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -27,9 +24,8 @@ import org.wildfly.common.function.Functions;
  * @param <C> the session context type
  * @author Paul Ferraro
  */
-public class CachedSessionManager<C> implements SessionManager<C> {
+public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 
-	private final SessionManager<C> manager;
 	private final Cache<String, CompletionStage<CacheableSession<C>>> sessionCache;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionCreator;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionFinder;
@@ -47,7 +43,7 @@ public class CachedSessionManager<C> implements SessionManager<C> {
 	};
 
 	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
-		this.manager = manager;
+		super(manager);
 		this.sessionCreator = new BiFunction<>() {
 			@Override
 			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
@@ -80,45 +76,5 @@ public class CachedSessionManager<C> implements SessionManager<C> {
 	@Override
 	public CompletionStage<Session<C>> findSessionAsync(String id) {
 		return this.sessionCache.computeIfAbsent(id, this.sessionFinder).thenApply(this.validator);
-	}
-
-	@Override
-	public CompletionStage<ImmutableSession> findImmutableSessionAsync(String id) {
-		return this.manager.findImmutableSessionAsync(id);
-	}
-
-	@Override
-	public Session<C> getDetachedSession(String id) {
-		return this.manager.getDetachedSession(id);
-	}
-
-	@Override
-	public Supplier<String> getIdentifierFactory() {
-		return this.manager.getIdentifierFactory();
-	}
-
-	@Override
-	public boolean isStarted() {
-		return this.manager.isStarted();
-	}
-
-	@Override
-	public void start() {
-		this.manager.start();
-	}
-
-	@Override
-	public void stop() {
-		this.manager.stop();
-	}
-
-	@Override
-	public Supplier<Batch> getBatchFactory() {
-		return this.manager.getBatchFactory();
-	}
-
-	@Override
-	public SessionStatistics getStatistics() {
-		return this.manager.getStatistics();
 	}
 }

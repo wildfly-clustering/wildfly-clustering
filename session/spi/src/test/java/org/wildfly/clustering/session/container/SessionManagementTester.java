@@ -23,7 +23,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import org.wildfly.clustering.arquillian.Deployment;
 
@@ -54,7 +53,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 	public void test(List<Deployment> deployments) {
 		HttpClient client = this.configuration.getHttpClientConfigurator().apply(HttpClient.newBuilder()).cookieHandler(new CookieManager()).executor(this.executor).build();
 
-		List<URI> endpoints = deployments.stream().map(this.configuration::locateEndpoint).collect(Collectors.toList());
+		List<URI> endpoints = deployments.stream().map(this.configuration::locateEndpoint).toList();
 
 		for (URI uri : endpoints) {
 			// Verify no current session

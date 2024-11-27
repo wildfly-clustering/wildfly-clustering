@@ -41,7 +41,6 @@
 		<version.org.infinispan>15.0.10.Final</version.org.infinispan>
 		<version.org.jboss.logging>3.6.1.Final</version.org.jboss.logging>
 		<version.org.jboss.marshalling>2.2.1.Final</version.org.jboss.marshalling>
-		<version.org.jboss.threads>3.8.0.Final</version.org.jboss.threads>
 		<version.org.jgroups>5.3.13.Final</version.org.jgroups>
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
 		<version.org.wildfly.common>1.7.0.Final</version.org.wildfly.common>
@@ -49,6 +48,7 @@
 		<!-- Test dependency versions -->
 		<version.io.undertow>2.3.18.Final</version.io.undertow>
 		<version.org.apache.tomcat>11.0.1</version.org.apache.tomcat>
+		<version.org.assertj>3.26.3</version.org.assertj>
 		<version.org.jacoco>0.8.12</version.org.jacoco>
 		<version.org.jboss.arquillian>1.9.1.Final</version.org.jboss.arquillian>
 		<version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
@@ -82,6 +82,13 @@
 			</dependency>
 
 			<!-- BOM dependencies -->
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-bom</artifactId>
+				<version>${version.org.assertj}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 			<dependency>
 				<groupId>org.infinispan</groupId>
 				<artifactId>infinispan-bom</artifactId>
@@ -142,11 +149,6 @@
 				<version>${version.org.jboss.marshalling}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.threads</groupId>
-				<artifactId>jboss-threads</artifactId>
-				<version>${version.org.jboss.threads}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jgroups</groupId>
 				<artifactId>jgroups</artifactId>
 				<version>${version.org.jgroups}</version>
@@ -182,6 +184,11 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -283,6 +290,17 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>@{project.version}</tagNameFormat>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

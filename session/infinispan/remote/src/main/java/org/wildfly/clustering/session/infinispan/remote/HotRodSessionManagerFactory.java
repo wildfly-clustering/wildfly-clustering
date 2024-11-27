@@ -4,6 +4,7 @@
  */
 package org.wildfly.clustering.session.infinispan.remote;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -54,7 +55,10 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 
 	@Override
 	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<C> configuration) {
-		return new CachedSessionManager<>(new HotRodSessionManager<>(configuration, this.factory, this), CacheStrategy.CONCURRENT);
+		AtomicReference<SessionManager<SC>> reference = new AtomicReference<>();
+		SessionManager<SC> manager = new CachedSessionManager<>(new HotRodSessionManager<>(reference::getPlain, configuration, this.factory, this), CacheStrategy.CONCURRENT);
+		reference.setPlain(manager);
+		return manager;
 	}
 
 	@Override

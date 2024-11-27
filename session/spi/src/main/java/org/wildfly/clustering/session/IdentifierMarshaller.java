@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HexFormat;
 
 import org.wildfly.clustering.marshalling.Marshaller;
 
@@ -56,8 +57,6 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	 * Specific optimization for hex-encoded identifiers (e.g. Tomcat).
 	 */
 	HEX() {
-		// JDK17
-/*
 		private final HexFormat format = HexFormat.of().withUpperCase();
 
 		@Override
@@ -72,38 +71,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 		public ByteBuffer write(String value) throws IOException {
 			return ByteBuffer.wrap(this.format.parseHex(value));
 		}
-*/
-		@Override
-		public String read(ByteBuffer buffer) throws IOException {
-			if (!buffer.hasArray()) {
-				throw new IllegalArgumentException(buffer.toString());
-			}
-			int offset = buffer.arrayOffset();
-			int length = buffer.limit() - offset;
-			StringBuilder builder = new StringBuilder(length * 2);
-			while (buffer.hasRemaining()) {
-				byte b = buffer.get();
-				builder.append(Character.toUpperCase(Character.forDigit((b >> 4) & 0xf, 16)));
-				builder.append(Character.toUpperCase(Character.forDigit(b & 0xf, 16)));
-			}
-			return builder.toString();
-		}
-
-		@Override
-		public ByteBuffer write(String value) throws IOException {
-			if (value.length() % 2 != 0) {
-				throw new IllegalArgumentException(value);
-			}
-			byte[] bytes = new byte[value.length() / 2];
-			for (int i = 0; i < bytes.length; ++i) {
-				int index = i * 2;
-				int high = Character.digit(value.charAt(index), 16) << 4;
-				int low = Character.digit(value.charAt(index + 1), 16);
-				bytes[i] = (byte) (high + low);
-			}
-			return ByteBuffer.wrap(bytes);
-		}
-	},
+	}
 	;
 
 	@Override

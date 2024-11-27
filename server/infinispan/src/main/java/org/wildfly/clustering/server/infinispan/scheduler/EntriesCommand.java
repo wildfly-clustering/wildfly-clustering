@@ -6,7 +6,6 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import org.wildfly.clustering.server.dispatcher.Command;
 
@@ -20,7 +19,7 @@ public class EntriesCommand<I, M> implements Command<Collection<I>, CacheEntrySc
 
 	@Override
 	public Collection<I> execute(CacheEntryScheduler<I, M> scheduler) {
-		return scheduler.stream().collect(Collectors.toList());
+		return scheduler.stream().toList();
 	}
 
 	@Override

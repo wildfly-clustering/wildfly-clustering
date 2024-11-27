@@ -12,7 +12,6 @@ import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -180,6 +179,6 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	}
 
 	static <T> List<T> loadAll(Class<T> targetClass, ClassLoader loader) {
-		return ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).collect(Collectors.toList());
+		return ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).toList();
 	}
 }
