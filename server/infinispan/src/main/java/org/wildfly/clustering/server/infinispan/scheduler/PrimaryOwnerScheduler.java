@@ -6,6 +6,8 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -42,7 +44,12 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M>, Function<Co
 	public PrimaryOwnerScheduler(PrimaryOwnerSchedulerConfiguration<I, M> configuration) {
 		this.name = configuration.getName();
 		CacheEntryScheduler<I, M> scheduler = configuration.getScheduler();
-		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, scheduler, scheduler.getClass().getClassLoader());
+		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, scheduler, AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public ClassLoader run() {
+				return scheduler.getClass().getClassLoader();
+			}
+		}));
 		Function<I, CacheContainerGroupMember> affinity = configuration.getAffinity();
 		Retry retry = Retry.of(configuration.getName(), configuration.getRetryConfig());
 		BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory = configuration.getScheduleCommandFactory();
