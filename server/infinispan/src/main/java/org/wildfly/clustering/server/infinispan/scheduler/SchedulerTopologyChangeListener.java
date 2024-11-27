@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -44,7 +46,12 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
 @Listener
 public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements ListenerRegistrar {
 	private static final Logger LOGGER = Logger.getLogger(SchedulerTopologyChangeListener.class);
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class, SchedulerTopologyChangeListener.class.getClassLoader());
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class, AccessController.doPrivileged(new PrivilegedAction<>() {
+		@Override
+		public ClassLoader run() {
+			return SchedulerTopologyChangeListener.class.getClassLoader();
+		}
+	}));
 
 	private final Cache<K, V> cache;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY);
