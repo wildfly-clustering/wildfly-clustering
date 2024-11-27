@@ -6,6 +6,7 @@ package org.wildfly.clustering.session.infinispan.embedded;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -173,7 +174,10 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 				return identifierFactory;
 			}
 		};
-		return new CachedSessionManager<>(new InfinispanSessionManager<>(configuration, infinispanConfiguration, this.factory), CacheStrategy.CONCURRENT);
+		AtomicReference<SessionManager<SC>> reference = new AtomicReference<>();
+		SessionManager<SC> manager = new CachedSessionManager<>(new InfinispanSessionManager<>(reference::getPlain, configuration, infinispanConfiguration, this.factory), CacheStrategy.CONCURRENT);
+		reference.setPlain(manager);
+		return manager;
 	}
 
 	private <S, L> SessionAttributesFactory<C, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory, EmbeddedCacheConfiguration infinispan) {

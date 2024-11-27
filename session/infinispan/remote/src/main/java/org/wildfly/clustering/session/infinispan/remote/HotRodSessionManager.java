@@ -14,6 +14,7 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
@@ -34,8 +35,8 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 
 	private AtomicReference<Registration> expirationListenerRegistration = new AtomicReference<>();
 
-	public HotRodSessionManager(SessionManagerConfiguration<C> configuration, SessionFactory<C, MV, AV, SC> factory, HotRodSessionManagerConfiguration hotrod) {
-		super(configuration, hotrod, factory, Functions.discardingConsumer());
+	public HotRodSessionManager(Supplier<SessionManager<SC>> manager, SessionManagerConfiguration<C> configuration, SessionFactory<C, MV, AV, SC> factory, HotRodSessionManagerConfiguration hotrod) {
+		super(manager, configuration, hotrod, factory, Functions.discardingConsumer());
 		this.expirationListenerRegistrar = hotrod.getExpirationListenerRegistrar();
 		this.expirationListener = configuration.getExpirationListener();
 		this.batchFactory = hotrod.getBatchFactory();

@@ -31,6 +31,7 @@ import org.wildfly.clustering.session.SessionStatistics;
 public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
 	protected final Logger logger = Logger.getLogger(this.getClass());
 
+	private final Supplier<SessionManager<SC>> manager;
 	private final SessionFactory<C, MV, AV, SC> factory;
 	private final Consumer<ImmutableSession> expirationListener;
 	private final Expiration expiration;
@@ -39,14 +40,20 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 	private final Supplier<Batch> batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
 
-	protected AbstractSessionManager(SessionManagerConfiguration<C> configuration, CacheConfiguration cacheConfiguration, SessionFactory<C, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {
+	protected AbstractSessionManager(Supplier<SessionManager<SC>> manager, SessionManagerConfiguration<C> configuration, CacheConfiguration cacheConfiguration, SessionFactory<C, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {
+		this.manager = manager;
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
 		this.batchFactory = cacheConfiguration.getBatchFactory();
 		this.expiration = configuration;
 		this.expirationListener = configuration.getExpirationListener();
 		this.factory = factory;
-		this.wrapper = session -> new ManagedSession<>(this, session, sessionCloseTask);
+		this.wrapper = new UnaryOperator<>() {
+			@Override
+			public Session<SC> apply(Session<SC> session) {
+				return new ManagedSession<>(new AttachedSession<>(session, sessionCloseTask), new DetachedSession<>(manager.get(), session.getId(), session.getContext()));
+			}
+		};
 	}
 
 	@Override
@@ -91,7 +98,7 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 
 	@Override
 	public Session<SC> getDetachedSession(String id) {
-		return new DetachedSession<>(this, id, this.factory.getContextFactory().get());
+		return new DetachedSession<>(this.manager.get(), id, this.factory.getContextFactory().get());
 	}
 
 	@Override

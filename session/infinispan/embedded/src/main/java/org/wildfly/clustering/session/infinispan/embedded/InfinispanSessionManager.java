@@ -44,6 +44,7 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
  */
 public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
 
+	private final Supplier<SessionManager<SC>> manager;
 	private final Supplier<Batch> batcher;
 	private final Cache<Key<String>, ?> cache;
 	private final CacheProperties properties;
@@ -54,8 +55,8 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 
 	private final AtomicReference<Registration> registration = new AtomicReference<>();
 
-	public InfinispanSessionManager(SessionManagerConfiguration<C> configuration, InfinispanSessionManagerConfiguration<SC> infinispanConfiguration, SessionFactory<C, MV, AV, SC> factory) {
-		super(configuration, infinispanConfiguration, factory, new Consumer<>() {
+	public InfinispanSessionManager(Supplier<SessionManager<SC>> manager, SessionManagerConfiguration<C> configuration, InfinispanSessionManagerConfiguration<SC> infinispanConfiguration, SessionFactory<C, MV, AV, SC> factory) {
+		super(manager, configuration, infinispanConfiguration, factory, new Consumer<>() {
 			@Override
 			public void accept(ImmutableSession session) {
 				if (session.isValid()) {
@@ -63,6 +64,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 				}
 			}
 		});
+		this.manager = manager;
 		this.cache = infinispanConfiguration.getCache();
 		this.properties = infinispanConfiguration.getCacheProperties();
 		this.identifierFactory = infinispanConfiguration.getIdentifierFactory();
@@ -79,7 +81,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 
 	@Override
 	public void start() {
-		this.registration.set(this.registrar.register(this));
+		this.registration.set(this.registrar.register(this.manager.get()));
 		this.identifierFactory.start();
 		this.startTask.run();
 	}
