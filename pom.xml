@@ -279,28 +279,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>prepare-release</id>
-						<goals>
-							<goal>prepare</goal>
-						</goals>
-						<configuration>
-							<arguments>-P jboss-release</arguments>
-							<autoVersionSubmodules>true</autoVersionSubmodules>
-							<tagNameFormat>@{project.version}</tagNameFormat>
-						</configuration>
-					</execution>
-					<execution>
-						<id>perform-release</id>
-						<goals>
-							<goal>perform</goal>
-						</goals>
-						<configuration>
-							<arguments>-Pjboss-release -DskipITs</arguments>
-						</configuration>
-					</execution>
-				</executions>
+				<configuration>
+					<arguments combine.self="override"/>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<tagNameFormat>@{project.version}</tagNameFormat>
+					<preparationProfiles>jboss-release</preparationProfiles>
+					<releaseProfiles>quickly,jboss-release</releaseProfiles>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -363,6 +348,15 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+		<profile>
+			<id>quickly</id>
+			<properties>
+				<checkstyle.skip>true</checkstyle.skip>
+				<skipTests>true</skipTests>
+				<skipITs>true</skipITs>
+				<arguments>-DskipITs -DskipTests -Dcheckstyle.skip=true</arguments>
+			</properties>
 		</profile>
 		<profile>
 			<id>coverage</id>

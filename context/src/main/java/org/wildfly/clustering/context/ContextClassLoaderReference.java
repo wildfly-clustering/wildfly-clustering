@@ -16,6 +16,9 @@ public enum ContextClassLoaderReference implements ThreadContextReference<ClassL
 
 	@Override
 	public ClassLoader apply(Thread thread) {
+		if (System.getSecurityManager() == null) {
+			return thread.getContextClassLoader();
+		}
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
@@ -26,12 +29,16 @@ public enum ContextClassLoaderReference implements ThreadContextReference<ClassL
 
 	@Override
 	public void accept(Thread thread, ClassLoader loader) {
-		AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				thread.setContextClassLoader(loader);
-				return null;
-			}
-		});
+		if (System.getSecurityManager() == null) {
+			thread.setContextClassLoader(loader);
+		} else {
+			AccessController.doPrivileged(new PrivilegedAction<>() {
+				@Override
+				public Void run() {
+					thread.setContextClassLoader(loader);
+					return null;
+				}
+			});
+		}
 	}
 }
