@@ -55,6 +55,9 @@ public class ObjectOutputStream extends java.io.ObjectOutputStream {
 	}
 
 	private static ClassLoader getClassLoader(Class<?> targetClass) {
+		if (System.getSecurityManager() == null) {
+			return targetClass.getClassLoader();
+		}
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
