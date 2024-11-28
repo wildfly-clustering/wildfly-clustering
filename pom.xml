@@ -286,10 +286,28 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<tagNameFormat>@{project.version}</tagNameFormat>
-				</configuration>
+				<executions>
+					<execution>
+						<id>prepare-release</id>
+						<goals>
+							<goal>prepare</goal>
+						</goals>
+						<configuration>
+							<arguments>-P jboss-release</arguments>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+							<tagNameFormat>@{project.version}</tagNameFormat>
+						</configuration>
+					</execution>
+					<execution>
+						<id>perform-release</id>
+						<goals>
+							<goal>perform</goal>
+						</goals>
+						<configuration>
+							<arguments>-Pjboss-release -DskipITs</arguments>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
