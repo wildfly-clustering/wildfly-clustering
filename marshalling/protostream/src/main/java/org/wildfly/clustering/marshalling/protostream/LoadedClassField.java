@@ -77,6 +77,9 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
 	}
 
 	private static ClassLoader getClassLoader(Class<?> targetClass) {
+		if (System.getSecurityManager() == null) {
+			return targetClass.getClassLoader();
+		}
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
