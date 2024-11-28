@@ -45,7 +45,7 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 		AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Void run() {
-				ServiceLoader.load(Formatter.class, this.getClass().getClassLoader()).forEach(formatters::add);
+				ServiceLoader.load(Formatter.class, FormatterKeyMapper.this.getClass().getClassLoader()).forEach(formatters::add);
 				return null;
 			}
 		});
