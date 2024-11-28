@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-bom</artifactId>
-		<version>4.0.3.Final-SNAPSHOT</version>
+		<version>4.0.3.Final</version>
 		<relativePath>bom</relativePath>
 	</parent>
 
@@ -22,7 +22,7 @@
 		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering.git</connection>
 		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering.git</developerConnection>
 		<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
-		<tag>4.0.0.Final</tag>
+		<tag>4.0.3.Final</tag>
 	</scm>
 
 	<properties>
@@ -280,7 +280,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
-					<arguments combine.self="override"/>
+					<arguments combine.self="override" />
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>@{project.version}</tagNameFormat>
 					<preparationProfiles>jboss-release</preparationProfiles>
