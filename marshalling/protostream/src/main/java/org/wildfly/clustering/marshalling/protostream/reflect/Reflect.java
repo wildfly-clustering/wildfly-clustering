@@ -10,6 +10,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,6 +23,18 @@ import java.util.List;
 final class Reflect {
 
 	static Field findField(Class<?> sourceClass, Class<?> fieldType) {
+		if (System.getSecurityManager() == null) {
+			return findFieldUnchecked(sourceClass, fieldType);
+		}
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public Field run() {
+				return findFieldUnchecked(sourceClass, fieldType);
+			}
+		});
+	}
+
+	private static Field findFieldUnchecked(Class<?> sourceClass, Class<?> fieldType) {
 		List<Field> assignableFields = new LinkedList<>();
 		Field[] fields = sourceClass.getDeclaredFields();
 		// Try first with precise type checking
@@ -52,10 +66,22 @@ final class Reflect {
 		if ((superClass == null) || (superClass == Object.class)) {
 			throw new IllegalArgumentException(fieldType.getName());
 		}
-		return findField(superClass, fieldType);
+		return findFieldUnchecked(superClass, fieldType);
 	}
 
 	static Method findMethod(Class<?> sourceClass, Class<?> returnType) {
+		if (System.getSecurityManager() == null) {
+			return findMethodUnchecked(sourceClass, returnType);
+		}
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public Method run() {
+				return findMethodUnchecked(sourceClass, returnType);
+			}
+		});
+	}
+
+	private static Method findMethodUnchecked(Class<?> sourceClass, Class<?> returnType) {
 		List<Method> matchingMethods = new LinkedList<>();
 		for (Method method : sourceClass.getDeclaredMethods()) {
 			if (!Modifier.isStatic(method.getModifiers()) && (method.getParameterCount() == 0) && (method.getReturnType() == returnType)) {
@@ -75,10 +101,22 @@ final class Reflect {
 		if ((superClass == null) || (superClass == Object.class)) {
 			throw new IllegalArgumentException(returnType.getName());
 		}
-		return findMethod(superClass, returnType);
+		return findMethodUnchecked(superClass, returnType);
 	}
 
 	static Method findMethod(Class<?> sourceClass, String methodName) {
+		if (System.getSecurityManager() == null) {
+			return findMethodUnchecked(sourceClass, methodName);
+		}
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public Method run() {
+				return findMethodUnchecked(sourceClass, methodName);
+			}
+		});
+	}
+
+	private static Method findMethodUnchecked(Class<?> sourceClass, String methodName) {
 		try {
 			Method method = sourceClass.getDeclaredMethod(methodName);
 			method.setAccessible(true);
@@ -89,6 +127,18 @@ final class Reflect {
 	}
 
 	static <T> Constructor<T> getConstructor(Class<T> sourceClass, Class<?>... parameterTypes) {
+		if (System.getSecurityManager() == null) {
+			return getConstructorUnchecked(sourceClass, parameterTypes);
+		}
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public Constructor<T> run() {
+				return getConstructorUnchecked(sourceClass, parameterTypes);
+			}
+		});
+	}
+
+	private static <T> Constructor<T> getConstructorUnchecked(Class<T> sourceClass, Class<?>... parameterTypes) {
 		try {
 			Constructor<T> constructor = sourceClass.getDeclaredConstructor(parameterTypes);
 			constructor.setAccessible(true);
@@ -99,6 +149,18 @@ final class Reflect {
 	}
 
 	static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
+		if (System.getSecurityManager() == null) {
+			return newInstanceUnchecked(constructor, parameters);
+		}
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public T run() {
+				return newInstanceUnchecked(constructor, parameters);
+			}
+		});
+	}
+
+	private static <T> T newInstanceUnchecked(Constructor<T> constructor, Object... parameters) {
 		try {
 			return constructor.newInstance(parameters);
 		} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
@@ -111,6 +173,18 @@ final class Reflect {
 	}
 
 	static <T> T getValue(Object source, Field field, Class<T> fieldType) {
+		if (System.getSecurityManager() == null) {
+			return getValueUnchecked(source, field, fieldType);
+		}
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public T run() {
+				return getValueUnchecked(source, field, fieldType);
+			}
+		});
+	}
+
+	private static <T> T getValueUnchecked(Object source, Field field, Class<T> fieldType) {
 		try {
 			return fieldType.cast(field.get(source));
 		} catch (IllegalAccessException e) {
@@ -119,6 +193,20 @@ final class Reflect {
 	}
 
 	static void setValue(Object source, Field field, Object value) {
+		if (System.getSecurityManager() == null) {
+			setValueUnchecked(source, field, value);
+		} else {
+			AccessController.doPrivileged(new PrivilegedAction<>() {
+				@Override
+				public Void run() {
+					setValueUnchecked(source, field, value);
+					return null;
+				}
+			});
+		}
+	}
+
+	private static void setValueUnchecked(Object source, Field field, Object value) {
 		try {
 			field.set(source, value);
 		} catch (IllegalAccessException e) {
@@ -131,6 +219,18 @@ final class Reflect {
 	}
 
 	static <T> T invoke(Object source, Method method, Class<T> returnClass) {
+		if (System.getSecurityManager() == null) {
+			return invokeUnchecked(source, method, returnClass);
+		}
+		return AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public T run() {
+				return invokeUnchecked(source, method, returnClass);
+			}
+		});
+	}
+
+	private static <T> T invokeUnchecked(Object source, Method method, Class<T> returnClass) {
 		try {
 			return returnClass.cast(method.invoke(source));
 		} catch (IllegalAccessException | InvocationTargetException e) {
