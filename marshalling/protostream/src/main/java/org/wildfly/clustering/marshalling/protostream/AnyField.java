@@ -8,8 +8,6 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.BitSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
@@ -115,7 +113,7 @@ enum AnyField implements Field<Object> {
 					reader.skipField(tag);
 				}
 			}
-			return Proxy.newProxyInstance(getClassLoader(handler.getClass()), interfaces.toArray(new Class<?>[0]), handler);
+			return Proxy.newProxyInstance(Privileged.getClassLoader(handler.getClass()), interfaces.toArray(new Class<?>[0]), handler);
 		}
 
 		@Override
@@ -136,18 +134,6 @@ enum AnyField implements Field<Object> {
 		@Override
 		public WireType getWireType() {
 			return WireType.LENGTH_DELIMITED;
-		}
-
-		private static ClassLoader getClassLoader(Class<?> targetClass) {
-			if (System.getSecurityManager() == null) {
-				return targetClass.getClassLoader();
-			}
-			return AccessController.doPrivileged(new PrivilegedAction<>() {
-				@Override
-				public ClassLoader run() {
-					return targetClass.getClassLoader();
-				}
-			});
 		}
 	}),
 	;

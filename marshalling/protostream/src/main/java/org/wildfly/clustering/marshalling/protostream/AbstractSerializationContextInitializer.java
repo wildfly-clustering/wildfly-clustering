@@ -21,17 +21,17 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 
 	protected AbstractSerializationContextInitializer() {
 		this.resourceName = this.getClass().getPackage().getName() + ".proto";
-		this.loader = this.getClass().getClassLoader();
+		this.loader = Privileged.getClassLoader(this.getClass());
 	}
 
 	protected AbstractSerializationContextInitializer(String resourceName) {
 		this.resourceName = resourceName;
-		this.loader = this.getClass().getClassLoader();
+		this.loader = Privileged.getClassLoader(this.getClass());
 	}
 
 	protected AbstractSerializationContextInitializer(String resourceName, Class<?> containingClass) {
 		this.resourceName = resourceName;
-		this.loader = containingClass.getClassLoader();
+		this.loader = Privileged.getClassLoader(containingClass);
 	}
 
 	@Override
