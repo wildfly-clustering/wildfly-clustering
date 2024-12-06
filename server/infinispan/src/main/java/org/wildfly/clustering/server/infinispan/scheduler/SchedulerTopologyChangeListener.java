@@ -18,10 +18,11 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.util.IntSet;
+import org.infinispan.commons.util.IntSets;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.notifications.Listener;
@@ -31,6 +32,7 @@ import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
@@ -41,10 +43,11 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
  * @param <I> the identifier type for cache keys
  * @param <K> the cache key type
  * @param <V> the cache value type
+ * @param <E> the scheduler entry type
  * @author Paul Ferraro
  */
 @Listener
-public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements ListenerRegistrar {
+public class SchedulerTopologyChangeListener<I, K extends Key<I>, V, E> implements ListenerRegistrar {
 	private static final Logger LOGGER = Logger.getLogger(SchedulerTopologyChangeListener.class);
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -57,14 +60,14 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 	private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY);
 	private final AtomicReference<Future<?>> scheduleTaskFuture = new AtomicReference<>();
 	private final Consumer<Locality> cancelTask;
-	private final BiConsumer<Locality, Locality> scheduleTask;
+	private final Consumer<CacheStreamFilter<E>> scheduleTask;
 	private final BlockingManager blocking;
 
-	public SchedulerTopologyChangeListener(Cache<K, V> cache, CacheEntryScheduler<I, ?> scheduler, BiConsumer<Locality, Locality> scheduleTask) {
+	public SchedulerTopologyChangeListener(Cache<K, V> cache, CacheEntryScheduler<I, ?> scheduler, Consumer<CacheStreamFilter<E>> scheduleTask) {
 		this(cache, scheduler::cancel, scheduleTask);
 	}
 
-	public SchedulerTopologyChangeListener(Cache<K, V> cache, Consumer<Locality> cancelTask, BiConsumer<Locality, Locality> scheduleTask) {
+	public SchedulerTopologyChangeListener(Cache<K, V> cache, Consumer<Locality> cancelTask, Consumer<CacheStreamFilter<E>> scheduleTask) {
 		this.cache = cache;
 		this.cancelTask = cancelTask;
 		this.scheduleTask = scheduleTask;
@@ -106,13 +109,13 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 				}
 				return this.blocking.runBlocking(() -> this.cancelTask.accept(Locality.forConsistentHash(cache, newHash)), this.getClass().getName());
 			}
-		} else {
+		} else if (!newSegments.isEmpty()) {
+			IntSet newlyOwnedSegments = IntSets.mutableCopyFrom(newSegments);
+			newlyOwnedSegments.removeAll(IntSets.from(oldSegments));
 			// If we have newly owned segments, then run schedule task
-			if (!oldSegments.containsAll(newSegments)) {
-				Locality oldLocality = Locality.forConsistentHash(cache, oldHash);
-				Locality newLocality = Locality.forConsistentHash(cache, newHash);
+			if (!newlyOwnedSegments.isEmpty()) {
 				try {
-					Future<?> future = this.scheduleTaskFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(oldLocality, newLocality)));
+					Future<?> future = this.scheduleTaskFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(CacheStreamFilter.segments(newlyOwnedSegments))));
 					if (future != null) {
 						future.cancel(true);
 					}
