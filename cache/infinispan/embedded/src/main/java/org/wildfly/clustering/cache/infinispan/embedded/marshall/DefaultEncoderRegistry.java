@@ -20,6 +20,7 @@ import org.infinispan.commons.dataconversion.Wrapper;
 import org.infinispan.commons.dataconversion.WrapperIds;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
+import org.wildfly.clustering.cache.function.Predicate;
 
 /**
  * Custom {@link EncoderRegistry} that supports transcoder removal.
@@ -49,7 +50,7 @@ public class DefaultEncoderRegistry implements EncoderRegistry {
 
 	@Override
 	public <T extends Transcoder> T getTranscoder(Class<T> targetClass) {
-		return targetClass.cast(this.transcoders.stream().filter(p -> p.getClass().equals(targetClass)).findAny().orElse(null));
+		return targetClass.cast(this.transcoders.stream().filter(Predicate.<Class<?>>same(targetClass).map(Object::getClass)).findAny().orElse(null));
 	}
 
 	@Override
@@ -93,7 +94,7 @@ public class DefaultEncoderRegistry implements EncoderRegistry {
 			}
 			return encoder;
 		}
-		org.infinispan.commons.dataconversion.Encoder encoder = this.encoders.values().stream().filter(e -> e.getClass().equals(encoderClass)).findFirst().orElse(null);
+		org.infinispan.commons.dataconversion.Encoder encoder = this.encoders.values().stream().filter(Predicate.<Class<?>>same(encoderClass).map(Object::getClass)).findFirst().orElse(null);
 		if (encoder == null) {
 			throw CONTAINER.encoderClassNotFound(encoderClass);
 		}
@@ -103,7 +104,7 @@ public class DefaultEncoderRegistry implements EncoderRegistry {
 	@Deprecated
 	@Override
 	public boolean isRegistered(Class<? extends org.infinispan.commons.dataconversion.Encoder> encoderClass) {
-		return this.encoders.values().stream().anyMatch(e -> e.getClass().equals(encoderClass));
+		return this.encoders.values().stream().anyMatch(Predicate.<Class<?>>same(encoderClass).map(Object::getClass));
 	}
 
 	@Deprecated
@@ -119,7 +120,7 @@ public class DefaultEncoderRegistry implements EncoderRegistry {
 			}
 			return wrapper;
 		}
-		Wrapper wrapper = this.wrappers.values().stream().filter(e -> e.getClass().equals(wrapperClass)).findAny().orElse(null);
+		Wrapper wrapper = this.wrappers.values().stream().filter(Predicate.<Class<?>>same(wrapperClass).map(Object::getClass)).findAny().orElse(null);
 		if (wrapper == null) {
 			throw CONTAINER.wrapperClassNotFound(wrapperClass);
 		}
