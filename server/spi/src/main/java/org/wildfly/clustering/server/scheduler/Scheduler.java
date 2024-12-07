@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.server.scheduler;
 
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -44,4 +45,85 @@ public interface Scheduler<I, M> extends AutoCloseable {
 
 	@Override
 	void close();
+
+	/**
+	 * Returns an inactive scheduler instance.
+	 * @param <I> the scheduled entry identifier type
+	 * @param <M> the scheduled entry metadata type
+	 * @return an inactive scheduler instance.
+	 */
+	static <I, M> Scheduler<I, M> inactive() {
+		return new InactiveScheduler<>();
+	}
+
+	/**
+	 * Returns a scheduler that delegates to a scheduler reference.
+	 * @param reference a scheduler reference
+	 * @param <I> the scheduled entry identifier type
+	 * @param <M> the scheduled entry metadata type
+	 * @return a scheduler that delegates to a scheduler reference.
+	 */
+	static <I, M> Scheduler<I, M> reference(Supplier<? extends Scheduler<I, M>> reference) {
+		return new ReferenceScheduler<>(reference);
+	}
+
+	class InactiveScheduler<I, M> implements Scheduler<I, M> {
+		protected InactiveScheduler() {
+		}
+
+		@Override
+		public void schedule(I id, M metaData) {
+		}
+
+		@Override
+		public void cancel(I id) {
+		}
+
+		@Override
+		public boolean contains(I id) {
+			return false;
+		}
+
+		@Override
+		public Stream<I> stream() {
+			return Stream.of();
+		}
+
+		@Override
+		public void close() {
+		}
+	}
+
+	class ReferenceScheduler<I, M> implements Scheduler<I, M> {
+		private final Supplier<? extends Scheduler<I, M>> reference;
+
+		protected ReferenceScheduler(Supplier<? extends Scheduler<I, M>> reference) {
+			this.reference = reference;
+		}
+
+		@Override
+		public void schedule(I id, M metaData) {
+			this.reference.get().schedule(id, metaData);
+		}
+
+		@Override
+		public void cancel(I id) {
+			this.reference.get().cancel(id);
+		}
+
+		@Override
+		public boolean contains(I id) {
+			return this.reference.get().contains(id);
+		}
+
+		@Override
+		public Stream<I> stream() {
+			return this.reference.get().stream();
+		}
+
+		@Override
+		public void close() {
+			this.reference.get().close();
+		}
+	}
 }

@@ -22,10 +22,10 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.CloseableIterator;
-import org.infinispan.context.Flag;
+import org.infinispan.commons.util.IntSets;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.Listener.Observation;
@@ -38,7 +38,6 @@ import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
@@ -182,17 +181,6 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 			Set<Address> leftMembers = new HashSet<>(previousMembers);
 			leftMembers.removeAll(members);
 
-			if (!leftMembers.isEmpty()) {
-				Locality locality = Locality.forConsistentHash(cache, hash);
-				// We're only interested in the entries for which we are the primary owner
-				Iterator<Address> addresses = leftMembers.iterator();
-				while (addresses.hasNext()) {
-					if (!locality.isLocal(addresses.next())) {
-						addresses.remove();
-					}
-				}
-			}
-
 			// If this is a merge after cluster split: Re-assert services for local member
 			Set<T> localServices = !previousMembers.contains(localAddress) ? this.listeners.keySet() : Collections.emptySet();
 
@@ -201,7 +189,9 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 					this.executor.execute(() -> {
 						if (!leftMembers.isEmpty()) {
 							try (Batch batch = this.batchFactory.get()) {
-								try (CloseableIterator<T> keys = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).keySet().iterator()) {
+								// Filter keys owned by the local member
+								try (Stream<T> stream = cache.getAdvancedCache().keySet().stream().filterKeySegments(IntSets.from(hash.getPrimarySegmentsForOwner(localAddress)))) {
+									Iterator<T> keys = stream.iterator();
 									while (keys.hasNext()) {
 										this.unregister(keys.next(), leftMembers);
 									}

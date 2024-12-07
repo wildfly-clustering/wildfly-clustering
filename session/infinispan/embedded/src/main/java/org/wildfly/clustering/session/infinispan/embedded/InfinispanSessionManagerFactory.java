@@ -7,8 +7,8 @@ package org.wildfly.clustering.session.infinispan.embedded;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.github.resilience4j.retry.RetryConfig;
@@ -17,7 +17,7 @@ import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.CacheKey;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
+import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
@@ -32,8 +32,8 @@ import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactor
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerConfiguration;
+import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCacheKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
-import org.wildfly.clustering.server.infinispan.scheduler.ScheduleLocalKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
@@ -71,7 +71,7 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC>, Runnable {
 	private final Scheduler<String, ExpirationMetaData> scheduler;
 	private final SessionFactory<C, ContextualSessionMetaDataEntry<SC>, ?, SC> factory;
-	private final BiConsumer<Locality, Locality> scheduleTask;
+	private final Consumer<CacheStreamFilter<CacheKey<String>>> scheduleTask;
 	private final ListenerRegistration schedulerListenerRegistration;
 	private final EmbeddedCacheConfiguration configuration;
 	private final Function<SessionManagerConfiguration<C>, Registrar<SessionManager<SC>>> managerRegistrarFactory;
@@ -99,7 +99,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 				};
 			}
 		};
-		Cache<? extends CacheKey<String>, ?> cache = infinispan.getCache();
+		Cache<CacheKey<String>, ?> cache = infinispan.getCache();
 		CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(cache.getName(), infinispan.getBatchFactory(), this.factory.getMetaDataFactory(), remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
 		CacheContainerCommandDispatcherFactory dispatcherFactory = infinispan.getCommandDispatcherFactory();
 		CacheContainerGroup group = dispatcherFactory.getGroup();
@@ -135,13 +135,13 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 		});
 
-		this.scheduleTask = new ScheduleLocalKeysTask<>(cache, SessionMetaDataKeyFilter.INSTANCE, localScheduler);
+		this.scheduleTask = new ScheduleCacheKeysTask<>(cache, SessionMetaDataKeyFilter.INSTANCE, localScheduler);
 		this.schedulerListenerRegistration = new SchedulerTopologyChangeListener<>(cache, localScheduler, this.scheduleTask).register();
 	}
 
 	@Override
 	public void run() {
-		this.scheduleTask.accept(Locality.of(false), Locality.forCurrentConsistentHash(this.configuration.getCache()));
+		this.scheduleTask.accept(CacheStreamFilter.local(this.configuration.getCache()));
 	}
 
 	@Override
