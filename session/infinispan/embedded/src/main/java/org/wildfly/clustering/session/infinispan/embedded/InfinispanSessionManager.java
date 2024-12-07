@@ -19,7 +19,7 @@ import org.infinispan.context.Flag;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
+import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
@@ -125,20 +125,19 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 
 	@Override
 	public Set<String> getActiveSessions() {
-		// Omit remote sessions (i.e. when using DIST mode) as well as passivated sessions
-		return this.getSessions(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD);
+		// Omit passivated sessions
+		return this.getLocalSessions(this.cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD));
 	}
 
 	@Override
 	public Set<String> getSessions() {
-		// Omit remote sessions (i.e. when using DIST mode)
-		return this.getSessions(Flag.CACHE_MODE_LOCAL);
+		return this.getLocalSessions(this.cache);
 	}
 
-	private Set<String> getSessions(Flag... flags) {
-		Locality locality = Locality.forCurrentConsistentHash(this.cache);
-		try (Stream<Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
-			return keys.filter(SessionMetaDataKeyFilter.INSTANCE.and(key -> locality.isLocal(key))).map(key -> key.getId()).collect(Collectors.toSet());
+	private Set<String> getLocalSessions(Cache<Key<String>, ?> cache) {
+		CacheStreamFilter<Key<String>> filter = CacheStreamFilter.local(cache);
+		try (Stream<Key<String>> keys = filter.apply(cache.keySet().stream())) {
+			return keys.filter(SessionMetaDataKeyFilter.INSTANCE).map(Key::getId).collect(Collectors.toSet());
 		}
 	}
 }
