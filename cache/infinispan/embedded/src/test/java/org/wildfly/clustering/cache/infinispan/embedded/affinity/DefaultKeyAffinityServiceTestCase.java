@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.affinity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -55,10 +55,10 @@ public class DefaultKeyAffinityServiceTestCase {
 			doReturn(random).when(generator).getKey();
 
 			// Validate that service returns random key when not started
-			assertSame(random, service.getKeyForAddress(local));
-			assertSame(random, service.getKeyForAddress(remote));
-			assertSame(random, service.getKeyForAddress(standby));
-			assertThrows(IllegalArgumentException.class, () -> service.getKeyForAddress(ignored));
+			assertThat(service.getKeyForAddress(local)).isSameAs(random);
+			assertThat(service.getKeyForAddress(remote)).isSameAs(random);
+			assertThat(service.getKeyForAddress(standby)).isSameAs(random);
+			assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> service.getKeyForAddress(ignored));
 
 			List<Address> members = List.of(local, remote, ignored, standby);
 
@@ -85,7 +85,7 @@ public class DefaultKeyAffinityServiceTestCase {
 			}
 
 			// This should throw IAE, since address does not pass filter
-			assertThrows(IllegalArgumentException.class, () -> service.getKeyForAddress(ignored));
+			assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> service.getKeyForAddress(ignored));
 
 			service.start();
 
@@ -94,25 +94,25 @@ public class DefaultKeyAffinityServiceTestCase {
 				for (int i = 0; i < iterations; ++i) {
 					UUID key = service.getKeyForAddress(local);
 					int segment = getSegment(key);
-					assertEquals(LOCAL_SEGMENT, segment);
+					assertThat(segment).isEqualTo(LOCAL_SEGMENT);
 
 					key = service.getCollocatedKey(key);
 					segment = getSegment(key);
-					assertEquals(LOCAL_SEGMENT, segment);
+					assertThat(segment).isEqualTo(LOCAL_SEGMENT);
 
 					key = service.getKeyForAddress(remote);
 					segment = getSegment(key);
-					assertEquals(REMOTE_SEGMENT, segment);
+					assertThat(segment).isEqualTo(REMOTE_SEGMENT);
 
 					key = service.getCollocatedKey(key);
 					segment = getSegment(key);
-					assertEquals(REMOTE_SEGMENT, segment);
+					assertThat(segment).isEqualTo(REMOTE_SEGMENT);
 				}
 
 				// This should return a random key
-				assertNotNull(service.getKeyForAddress(standby));
+				assertThat(service.getKeyForAddress(standby)).isNotNull();
 				// This should throw IAE, since address does not pass filter
-				assertThrows(IllegalArgumentException.class, () -> service.getKeyForAddress(ignored));
+				assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> service.getKeyForAddress(ignored));
 			} finally {
 				service.stop();
 			}

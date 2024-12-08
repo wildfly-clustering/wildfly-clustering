@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,7 +25,7 @@ public interface MarshallingTesterFactory extends TesterFactory {
 			@Override
 			public void accept(T subject) {
 				try {
-					assertTrue(marshaller.isMarshallable(subject), () -> Optional.ofNullable(subject).map(Object::toString).orElse(null));
+					assertThat(marshaller.isMarshallable(subject)).as(() -> Optional.ofNullable(subject).map(Object::toString).orElse(null)).isTrue();
 
 					OptionalInt size = marshaller.size(subject);
 					ByteBuffer buffer = marshaller.write(subject);
@@ -33,7 +33,7 @@ public interface MarshallingTesterFactory extends TesterFactory {
 					int bufferSize = buffer.limit() - buffer.arrayOffset();
 
 					if (size.isPresent()) {
-						assertEquals(size.getAsInt(), bufferSize);
+						assertThat(size).hasValue(bufferSize);
 					}
 
 					if (subject != null) {
@@ -53,18 +53,18 @@ public interface MarshallingTesterFactory extends TesterFactory {
 
 			@Override
 			public void reject(T subject) {
-				assertFalse(marshaller.isMarshallable(subject), subject::toString);
+				assertThat(marshaller.isMarshallable(subject)).as(subject::toString).isFalse();
 			}
 
 			@Override
 			public <E extends Throwable> void reject(T subject, Class<E> expected) {
-				assertTrue(marshaller.isMarshallable(subject), subject::toString);
+				assertThat(marshaller.isMarshallable(subject)).as(subject::toString).isTrue();
 				try {
 					ByteBuffer buffer = marshaller.write(subject);
 					// If we were able to marshal, expect failure to unmarshal
-					assertThrows(expected, () -> marshaller.read(buffer), subject::toString);
+					assertThatExceptionOfType(expected).as(subject::toString).isThrownBy(() -> marshaller.read(buffer));
 				} catch (IOException e) {
-					assertInstanceOf(expected, e);
+					assertThat(e).isInstanceOf(expected);
 				}
 			}
 		};

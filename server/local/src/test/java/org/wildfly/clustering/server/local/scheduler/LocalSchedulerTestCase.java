@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.local.scheduler;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
@@ -77,7 +77,7 @@ public class LocalSchedulerTestCase {
 			Thread.sleep(500);
 
 			// Verify that entry was removed from backing collection
-			assertTrue(entryList.isEmpty());
+			assertThat(entryList).isEmpty();
 		}
 	}
 
@@ -105,7 +105,7 @@ public class LocalSchedulerTestCase {
 			Thread.sleep(500);
 
 			// Verify that entry was not removed from backing collection
-			assertFalse(entryList.isEmpty());
+			assertThat(entryList).isNotEmpty();
 		}
 	}
 
@@ -132,7 +132,7 @@ public class LocalSchedulerTestCase {
 			Thread.sleep(500);
 
 			// Verify that entry was eventually removed from backing collection
-			assertTrue(entryList.isEmpty());
+			assertThat(entryList).isEmpty();
 		}
 	}
 

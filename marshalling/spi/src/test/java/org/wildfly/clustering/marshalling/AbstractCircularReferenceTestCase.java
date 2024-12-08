@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.function.Consumer;
 
@@ -33,15 +33,15 @@ public abstract class AbstractCircularReferenceTestCase {
 		self.addChild(Person.create("daughter"));
 
 		Consumer<Person> tester = this.factory.createTester((expected, actual) -> {
-			assertEquals(expected, actual);
-			assertEquals(expected.getParent(), actual.getParent());
-			assertEquals(expected.getChildren(), actual.getChildren());
+			assertThat(actual).isEqualTo(expected);
+			assertThat(actual.getParent()).isEqualTo(expected.getParent());
+			assertThat(actual.getChildren()).isEqualTo(expected.getChildren());
 			// Validate referential integrity
 			for (Person child : actual.getParent().getChildren()) {
-				assertSame(actual.getParent(), child.getParent());
+				assertThat(child.getParent()).isSameAs(actual.getParent());
 			}
 			for (Person child : actual.getChildren()) {
-				assertSame(actual, child.getParent());
+				assertThat(child.getParent()).isSameAs(actual);
 			}
 		});
 		tester.accept(self);

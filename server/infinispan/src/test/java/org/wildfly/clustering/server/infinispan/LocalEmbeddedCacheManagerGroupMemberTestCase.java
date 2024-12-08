@@ -5,9 +5,10 @@
 
 package org.wildfly.clustering.server.infinispan;
 
+import static org.assertj.core.api.Assertions.*;
+
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jgroups.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.cache.infinispan.embedded.persistence.FormatterTesterFactory;
@@ -30,15 +31,17 @@ public class LocalEmbeddedCacheManagerGroupMemberTestCase {
 
 	@Test
 	public void test() {
-		CacheContainerGroupMember member = new LocalEmbeddedCacheManagerGroupMember("foo");
-		Assertions.assertEquals("foo", member.getName());
-		Assertions.assertEquals(member, new LocalEmbeddedCacheManagerGroupMember("foo"));
-		Assertions.assertEquals(member.hashCode(), new LocalEmbeddedCacheManagerGroupMember("foo").hashCode());
-		Assertions.assertEquals(member, LocalGroupMember.of("foo"));
-		Assertions.assertEquals(member.hashCode(), LocalGroupMember.of("foo").hashCode());
-		Assertions.assertNotEquals(member, new EmbeddedCacheManagerGroupMember(new JGroupsAddress(UUID.randomUUID())));
-		Assertions.assertNotEquals(member, new JChannelGroupMember(UUID.randomUUID()));
-		Assertions.assertNotEquals(member, new LocalEmbeddedCacheManagerGroupMember("bar"));
-		Assertions.assertNotEquals(member, LocalGroupMember.of("bar"));
+		String name = "foo";
+		CacheContainerGroupMember member = new LocalEmbeddedCacheManagerGroupMember(name);
+
+		assertThat(member.getName()).isSameAs(name);
+		assertThat(member).hasSameHashCodeAs(name)
+				.isEqualTo(new LocalEmbeddedCacheManagerGroupMember(name))
+				.isEqualTo(LocalGroupMember.of(name))
+				.isNotEqualTo(new LocalEmbeddedCacheManagerGroupMember("bar"))
+				.isNotEqualTo(LocalGroupMember.of("bar"))
+				.isNotEqualTo(new EmbeddedCacheManagerGroupMember(new JGroupsAddress(UUID.randomUUID())))
+				.isNotEqualTo(new JChannelGroupMember(UUID.randomUUID()))
+				;
 	}
 }

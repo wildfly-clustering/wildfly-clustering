@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,13 +39,13 @@ public class IndexSerializerTestCase {
 		try {
 			builder.add(size(IndexSerializer.UNSIGNED_BYTE, index));
 		} catch (IndexOutOfBoundsException e) {
-			assertTrue(index > Byte.MAX_VALUE - Byte.MIN_VALUE);
+			assertThat(index).isGreaterThan(Byte.MAX_VALUE - Byte.MIN_VALUE);
 		}
 
 		try {
 			builder.add(size(IndexSerializer.UNSIGNED_SHORT, index));
 		} catch (IndexOutOfBoundsException e) {
-			assertTrue(index > Short.MAX_VALUE - Short.MIN_VALUE);
+			assertThat(index).isGreaterThan(Short.MAX_VALUE - Short.MIN_VALUE);
 		}
 
 		builder.add(size(IndexSerializer.VARIABLE, index));
@@ -53,7 +53,7 @@ public class IndexSerializerTestCase {
 		builder.add(size(IndexSerializer.INTEGER, index));
 
 		// Ensure that our IndexExternalizer.select(...) chooses the optimal externalizer
-		assertEquals(builder.build().min().getAsInt(), size(IndexSerializer.select(index), index));
+		assertThat(size(IndexSerializer.select(index), index)).isEqualTo(builder.build().min().getAsInt());
 	}
 
 	public static int size(IntSerializer externalizer, int index) throws IOException {
@@ -66,8 +66,7 @@ public class IndexSerializerTestCase {
 		byte[] externalizedBytes = externalizedOutput.toByteArray();
 
 		try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(externalizedBytes))) {
-			int result = externalizer.readInt(input);
-			assertEquals(index, result);
+			assertThat(externalizer.readInt(input)).isEqualTo(index);
 		}
 
 		return externalizedBytes.length;

@@ -5,11 +5,12 @@
 
 package org.wildfly.clustering.server.infinispan.expiration;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Consumer;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
@@ -25,14 +26,12 @@ public class SimpleExpirationMetaDataMarshallerTestCase {
 	@ParameterizedTest
 	@TesterFactorySource(ProtoStreamTesterFactory.class)
 	public void test(TesterFactory factory) {
-		Consumer<ExpirationMetaData> tester = factory.createTester(SimpleExpirationMetaDataMarshallerTestCase::assertEquals);
+		Consumer<ExpirationMetaData> tester = factory.createTester((expected, actual) -> {
+			assertThat(actual.getTimeout()).isEqualTo(expected.getTimeout());
+			assertThat(actual.getLastAccessTime()).isEqualTo(expected.getLastAccessTime());
+		});
 
 		tester.accept(new SimpleExpirationMetaData(Duration.ofMinutes(30), Instant.EPOCH));
 		tester.accept(new SimpleExpirationMetaData(Duration.ofSeconds(600), Instant.now()));
-	}
-
-	private static void assertEquals(ExpirationMetaData expected, ExpirationMetaData actual) {
-		Assertions.assertEquals(expected.getTimeout(), actual.getTimeout());
-		Assertions.assertEquals(expected.getLastAccessTime(), actual.getLastAccessTime());
 	}
 }

@@ -5,12 +5,11 @@
 
 package org.wildfly.clustering.server;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
-import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -43,7 +42,7 @@ public class GroupMembershipEventTestCase {
 			}
 		};
 
-		Assertions.assertEquals(Set.of(joined), event.getJoiners());
-		Assertions.assertEquals(Set.of(left), event.getLeavers());
+		assertThat(event.getJoiners()).containsExactly(joined);
+		assertThat(event.getLeavers()).containsExactly(left);
 	}
 }

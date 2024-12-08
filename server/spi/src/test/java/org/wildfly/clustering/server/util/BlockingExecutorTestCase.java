@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -75,12 +75,8 @@ public class BlockingExecutorTestCase {
 
 		doThrow(new Exception()).when(executeTask).run();
 
-		try {
-			executor.execute(executeTask);
-			fail("Should have thrown an exception");
-		} catch (Exception e) {
-			assertNotNull(e);
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> executor.execute(executeTask));
+
 		verify(closeTask, never()).run();
 		reset(executeTask);
 
@@ -116,8 +112,7 @@ public class BlockingExecutorTestCase {
 		Optional<Object> result = executor.execute(executeTask);
 
 		// Task should run
-		assertTrue(result.isPresent());
-		assertSame(expected, result.get());
+		assertThat(result).isPresent().containsSame(expected);
 		verify(closeTask, never()).run();
 		reset(executeTask);
 
@@ -135,7 +130,7 @@ public class BlockingExecutorTestCase {
 		result = executor.execute(executeTask);
 
 		// Task should no longer run since service is closed
-		assertFalse(result.isPresent());
+		assertThat(result).isEmpty();
 		verify(closeTask, never()).run();
 	}
 
@@ -154,19 +149,14 @@ public class BlockingExecutorTestCase {
 		Optional<Object> result = executor.execute(executeTask);
 
 		// Task should run
-		assertTrue(result.isPresent());
-		assertSame(expected, result.get());
+		assertThat(result).isPresent().containsSame(expected);
 		verify(closeTask, never()).run();
 		reset(executeTask);
 
 		doThrow(new Exception()).when(executeTask).get();
 
-		try {
-			executor.execute(executeTask);
-			fail("Should have thrown an exception");
-		} catch (Exception e) {
-			assertNotNull(e);
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> executor.execute(executeTask));
+
 		verify(closeTask, never()).run();
 		reset(executeTask);
 
@@ -183,7 +173,7 @@ public class BlockingExecutorTestCase {
 		result = executor.execute(executeTask);
 
 		// Task should no longer run since service is closed
-		assertFalse(result.isPresent());
+		assertThat(result).isEmpty();
 		verify(closeTask, never()).run();
 	}
 
