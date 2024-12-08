@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.affinity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.UUID;
@@ -32,7 +32,7 @@ public class SimpleKeyAffinityServiceTestCase {
 
 		UUID result = this.service.getKeyForAddress(address);
 
-		assertSame(key, result);
+		assertThat(result).isSameAs(key);
 	}
 
 	@Test
@@ -43,6 +43,6 @@ public class SimpleKeyAffinityServiceTestCase {
 
 		UUID result = this.service.getCollocatedKey(UUID.randomUUID());
 
-		assertSame(key, result);
+		assertThat(result).isSameAs(key);
 	}
 }

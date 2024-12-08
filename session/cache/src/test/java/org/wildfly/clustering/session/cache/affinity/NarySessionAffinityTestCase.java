@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache.affinity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class NarySessionAffinityTestCase {
 		Map<GroupMember, String> mapping = Map.of(primary, "foo", backup, "bar", local, "qux");
 		UnaryOperator<String> sessionAffinity = new NarySessionAffinity<>(affinity::get, mapping::get, () -> "#");
 
-		assertEquals("foo#bar#qux", sessionAffinity.apply("session"));
+		assertThat(sessionAffinity.apply("session")).isEqualTo("foo#bar#qux");
 	}
 
 	@Test
@@ -43,7 +43,7 @@ public class NarySessionAffinityTestCase {
 		Map<GroupMember, String> mapping = Map.of(primary, "foo", backup, "bar", local, "bar");
 		UnaryOperator<String> sessionAffinity = new NarySessionAffinity<>(affinity::get, mapping::get, () -> "-");
 
-		assertEquals("foo-bar", sessionAffinity.apply("session"));
+		assertThat(sessionAffinity.apply("session")).isEqualTo("foo-bar");
 	}
 
 	@Test
@@ -66,6 +66,6 @@ public class NarySessionAffinityTestCase {
 			}
 		});
 
-		assertEquals("foo,bar", sessionAffinity.apply("session"));
+		assertThat(sessionAffinity.apply("session")).isEqualTo("foo,bar");
 	}
 }

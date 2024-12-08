@@ -5,8 +5,7 @@
 
 package org.wildfly.clustering.cache.function;
 
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,81 +25,49 @@ public class FunctionTestCase {
 	@Test
 	public void set() {
 		Set<String> result = new SetAddFunction<>("foo").apply(null, null);
-		assertNotNull(result);
-		assertTrue(result.contains("foo"));
+		assertThat(result).isNotNull().containsExactly("foo");
 
 		Set<String> result2 = new SetAddFunction<>("bar").apply(null, result);
-		assertNotNull(result2);
-		assertNotSame(result, result2);
-		assertTrue(result2.contains("foo"));
-		assertTrue(result2.contains("bar"));
+		assertThat(result2).isNotNull().isNotSameAs(result).containsExactlyInAnyOrder("foo", "bar");
 
 		Set<String> result3 = new SetAddFunction<>(Set.of("baz", "qux")).apply(null, result2);
-		assertNotNull(result3);
-		assertNotSame(result2, result3);
-		assertTrue(result3.contains("foo"));
-		assertTrue(result3.contains("bar"));
-		assertTrue(result3.contains("baz"));
-		assertTrue(result3.contains("qux"));
+		assertThat(result3).isNotNull().isNotSameAs(result2).containsExactlyInAnyOrder("foo", "bar", "baz", "qux");
 
 		Set<String> result4 = new SetRemoveFunction<>("foo").apply(null, result3);
-		assertNotNull(result4);
-		assertNotSame(result3, result4);
-		assertFalse(result4.contains("foo"));
-		assertTrue(result4.contains("bar"));
-		assertTrue(result4.contains("baz"));
-		assertTrue(result4.contains("qux"));
+		assertThat(result4).isNotNull().isNotSameAs(result3).containsExactlyInAnyOrder("bar", "baz", "qux");
 
 		Set<String> result5 = new SetRemoveFunction<>(Set.of("bar", "baz")).apply(null, result4);
-		assertNotNull(result5);
-		assertNotSame(result4, result5);
-		assertFalse(result5.contains("foo"));
-		assertFalse(result5.contains("bar"));
-		assertFalse(result5.contains("baz"));
-		assertTrue(result5.contains("qux"));
+		assertThat(result5).isNotNull().isNotSameAs(result4).containsExactly("qux");
 
 		Set<String> result6 = new SetRemoveFunction<>("qux").apply(null, result5);
-		assertNull(result6);
+		assertThat(result6).isNull();
 	}
 
 	@Test
 	public void map() {
 		Map<String, String> result = new MapPutFunction<>("foo", "a").apply(null, null);
-		assertNotNull(result);
-		assertTrue(result.containsKey("foo"));
+		assertThat(result).isNotNull().containsExactlyEntriesOf(Map.of("foo", "a"));
 
 		Map<String, String> result2 = new MapPutFunction<>("bar", "b").apply(null, result);
-		assertNotNull(result2);
-		assertNotSame(result, result2);
-		assertTrue(result2.containsKey("foo"));
-		assertTrue(result2.containsKey("bar"));
+		assertThat(result2).isNotNull().isNotSameAs(result).containsExactlyInAnyOrderEntriesOf(Map.of("foo", "a", "bar", "b"));
 
 		Map<String, String> result3 = new MapRemoveFunction<String, String>("foo").apply(null, result2);
-		assertNotNull(result3);
-		assertNotSame(result2, result3);
-		assertFalse(result3.containsKey("foo"));
-		assertTrue(result3.containsKey("bar"));
+		assertThat(result3).isNotNull().isNotSameAs(result2).containsExactlyEntriesOf(Map.of("bar", "b"));
 
 		Map<String, String> result4 = new MapRemoveFunction<String, String>("bar").apply(null, result3);
-		assertNull(result4);
+		assertThat(result4).isNull();
 
 		Map<String, String> result5 = new MapComputeFunction<>(Map.of("foo", "a", "bar", "b")).apply(null, result4);
-		assertNotNull(result5);
-		assertEquals(2, result5.size());
-		assertEquals("a", result5.get("foo"));
-		assertEquals("b", result5.get("bar"));
+		assertThat(result5).isNotNull().containsExactlyInAnyOrderEntriesOf(Map.of("foo", "a", "bar", "b"));
 
 		Map<String, String> updates = new TreeMap<>();
 		updates.put("foo", null);
 		updates.put("bar", "c");
 		Map<String, String> result6 = new MapComputeFunction<>(updates).apply(null, result5);
-		assertNotNull(result6);
-		assertEquals(1, result6.size());
-		assertFalse(result6.containsKey("foo"));
-		assertEquals("c", result6.get("bar"));
+		assertThat(result6).isNotNull().containsExactlyEntriesOf(Map.of("bar", "c"));
 
 		Map<String, String> result7 = new MapComputeFunction<>(Collections.<String, String>singletonMap("bar", null)).apply(null, result6);
-		assertNull(result7);
+		assertThat(result7).isNull();
 	}
 
 	@ParameterizedTest

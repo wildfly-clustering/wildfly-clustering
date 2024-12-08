@@ -18,5 +18,5 @@ public interface GroupMembershipMergeEvent<M extends GroupMember> extends GroupM
 	 * Returns the group memberships that were merged.
 	 * @return a list of group memberships.
 	 */
-	List<? extends GroupMembership<M>> getPartitions();
+	List<GroupMembership<M>> getPartitions();
 }

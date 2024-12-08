@@ -5,21 +5,14 @@
 
 package org.wildfly.clustering.server.jgroups;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.jgroups.Address;
 import org.jgroups.JChannel;
@@ -63,16 +56,16 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 			Group<A, M> group1 = provider1.getGroup();
 			JChannel channel1 = provider1.getChannel();
 
-			assertSame(channel1.getClusterName(), group1.getName());
-			assertEquals(MEMBER_NAMES[0], group1.getLocalMember().getName());
-			assertFalse(group1.isSingleton());
+			assertThat(group1.getName()).isSameAs(channel1.getClusterName());
+			assertThat(group1.getLocalMember().getName()).isEqualTo(MEMBER_NAMES[0]);
+			assertThat(group1.isSingleton()).isFalse();
 			this.validate(channel1, group1);
 
 			GroupMembership<M> previousMembership = null;
 			GroupMembership<M> currentMembership = group1.getMembership();
 
-			assertEquals(group1.getLocalMember(), currentMembership.getCoordinator());
-			assertEquals(List.of(group1.getLocalMember()), currentMembership.getMembers());
+			assertThat(currentMembership.getCoordinator()).isEqualTo(group1.getLocalMember());
+			assertThat(currentMembership.getMembers()).containsExactly(group1.getLocalMember());
 
 			BlockingQueue<GroupMembershipEvent<M>> updateEvents = new LinkedBlockingQueue<>();
 			BlockingQueue<GroupMembershipEvent<M>> splitEvents = new LinkedBlockingQueue<>();
@@ -100,16 +93,15 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 				GroupMembershipEvent<M> splitEvent = splitEvents.poll();
 				GroupMembershipMergeEvent<M> mergeEvent = mergeEvents.poll();
 
-				assertNull(updateEvent);
-				assertNull(splitEvent);
-				assertNull(mergeEvent);
+				assertThat(updateEvent).isNull();
+				assertThat(splitEvent).isNull();
+				assertThat(mergeEvent).isNull();
 
 				try (GroupProvider<A, M> provider2 = this.factory.apply(CLUSTER_NAME, MEMBER_NAMES[1])) {
 					JChannel channel2 = provider2.getChannel();
 
 					// Verify cluster formation
-					assertEquals(channel1.getView(), channel2.getView());
-					assertEquals(2, channel1.getView().size());
+					assertThat(channel2.getView().getMembers()).containsExactly(channel1.getAddress(), channel2.getAddress());
 
 					Instant start = Instant.now();
 					updateEvent = updateEvents.poll(VIEW_CHANGE_DURATION.toSeconds(), TimeUnit.SECONDS);
@@ -117,37 +109,36 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 					splitEvent = splitEvents.poll();
 					mergeEvent = mergeEvents.poll();
 
-					assertNull(splitEvent);
-					assertNull(mergeEvent);
-					assertNotNull(updateEvent);
+					assertThat(updateEvent).isNotNull();
+					assertThat(splitEvent).isNull();
+					assertThat(mergeEvent).isNull();
 
 					previousMembership = currentMembership;
 					currentMembership = group1.getMembership();
 
-					assertEquals(previousMembership, updateEvent.getPreviousMembership());
-					assertEquals(currentMembership, updateEvent.getCurrentMembership());
+					assertThat(updateEvent.getPreviousMembership()).isEqualTo(previousMembership);
+					assertThat(updateEvent.getCurrentMembership()).isEqualTo(currentMembership);
 
 					Group<A, M> group2 = provider2.getGroup();
 
-					assertSame(channel2.getClusterName(), group2.getName());
-					assertEquals(MEMBER_NAMES[1], group2.getLocalMember().getName());
-					assertFalse(group2.isSingleton());
+					assertThat(group2.getName()).isSameAs(channel2.getClusterName());
+					assertThat(group2.getLocalMember().getName()).isEqualTo(MEMBER_NAMES[1]);
+					assertThat(group2.isSingleton()).isFalse();
 
 					this.validate(channel1, group1);
 					this.validate(channel2, group2);
 
 					GroupMembership<M> membership2 = group2.getMembership();
 
-					assertEquals(currentMembership, membership2);
-					assertEquals(currentMembership.getCoordinator(), membership2.getCoordinator());
-					assertEquals(currentMembership.getMembers(), membership2.getMembers());
+					assertThat(membership2).isEqualTo(currentMembership);
+					assertThat(membership2.getCoordinator()).isEqualTo(currentMembership.getCoordinator());
+					assertThat(membership2.getMembers()).containsExactlyElementsOf(currentMembership.getMembers());
 
 					try (GroupProvider<A, M> provider3 = this.factory.apply(CLUSTER_NAME, MEMBER_NAMES[2])) {
 						JChannel channel3 = provider3.getChannel();
 
 						// Verify cluster formation
-						assertEquals(channel1.getView(), channel3.getView());
-						assertEquals(3, channel1.getView().size());
+						assertThat(channel3.getView().getMembers()).containsExactly(channel1.getAddress(), channel2.getAddress(), channel3.getAddress());
 
 						start = Instant.now();
 						updateEvent = updateEvents.poll(VIEW_CHANGE_DURATION.toSeconds(), TimeUnit.SECONDS);
@@ -155,21 +146,21 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						splitEvent = splitEvents.poll();
 						mergeEvent = mergeEvents.poll();
 
-						assertNull(mergeEvent);
-						assertNull(splitEvent);
-						assertNotNull(updateEvent);
+						assertThat(updateEvent).isNotNull();
+						assertThat(splitEvent).isNull();
+						assertThat(mergeEvent).isNull();
 
 						previousMembership = currentMembership;
 						currentMembership = group1.getMembership();
 
-						assertEquals(previousMembership, updateEvent.getPreviousMembership());
-						assertEquals(currentMembership, updateEvent.getCurrentMembership());
+						assertThat(updateEvent.getPreviousMembership()).isEqualTo(previousMembership);
+						assertThat(updateEvent.getCurrentMembership()).isEqualTo(currentMembership);
 
 						Group<A, M> group3 = provider3.getGroup();
 
-						assertSame(channel3.getClusterName(), group3.getName());
-						assertEquals(MEMBER_NAMES[2], group3.getLocalMember().getName());
-						assertFalse(group3.isSingleton());
+						assertThat(group3.getName()).isSameAs(channel3.getClusterName());
+						assertThat(group3.getLocalMember().getName()).isEqualTo(MEMBER_NAMES[2]);
+						assertThat(group3.isSingleton()).isFalse();
 
 						this.validate(channel1, group1);
 						this.validate(channel2, group2);
@@ -177,9 +168,9 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 
 						GroupMembership<M> membership3 = group3.getMembership();
 
-						assertEquals(currentMembership, membership3);
-						assertEquals(currentMembership.getCoordinator(), membership3.getCoordinator());
-						assertEquals(currentMembership.getMembers(), membership3.getMembers());
+						assertThat(membership3).isEqualTo(currentMembership);
+						assertThat(membership3.getCoordinator()).isEqualTo(currentMembership.getCoordinator());
+						assertThat(membership3.getMembers()).containsExactlyElementsOf(currentMembership.getMembers());
 
 						System.out.println("Simulating network partition");
 						DISCARD discard1 = new DISCARD().discardAll(true);
@@ -191,9 +182,9 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						updateEvent = updateEvents.poll();
 						mergeEvent = mergeEvents.poll();
 
-						assertNull(mergeEvent);
-						assertNull(updateEvent);
-						assertNotNull(splitEvent);
+						assertThat(updateEvent).isNull();
+						assertThat(splitEvent).isNotNull();
+						assertThat(mergeEvent).isNull();
 
 						this.validate(channel1, group1);
 						this.validate(channel2, group2);
@@ -202,12 +193,10 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						previousMembership = currentMembership;
 						currentMembership = group1.getMembership();
 
-						assertEquals(previousMembership, splitEvent.getPreviousMembership());
-						assertEquals(currentMembership, splitEvent.getCurrentMembership());
-						assertEquals(1, currentMembership.getMembers().size());
-
-						assertEquals(group1.getLocalMember(), currentMembership.getCoordinator());
-						assertEquals(List.of(group1.getLocalMember()), currentMembership.getMembers());
+						assertThat(splitEvent.getPreviousMembership()).isEqualTo(previousMembership);
+						assertThat(splitEvent.getCurrentMembership()).isEqualTo(currentMembership);
+						assertThat(currentMembership.getMembers()).containsExactly(group1.getLocalMember());
+						assertThat(currentMembership.getCoordinator()).isEqualTo(group1.getLocalMember());
 
 						System.out.println("Resolving network partition");
 						channel1.getProtocolStack().removeProtocol(DISCARD.class);
@@ -218,9 +207,9 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						splitEvent = splitEvents.poll();
 						updateEvent = updateEvents.poll();
 
-						assertNull(updateEvent);
-						assertNull(splitEvent);
-						assertNotNull(mergeEvent);
+						assertThat(updateEvent).isNull();
+						assertThat(splitEvent).isNull();
+						assertThat(mergeEvent).isNotNull();
 
 						this.validate(channel1, group1);
 						this.validate(channel2, group2);
@@ -229,11 +218,10 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						previousMembership = currentMembership;
 						currentMembership = group1.getMembership();
 
-						assertEquals(previousMembership, mergeEvent.getPreviousMembership());
-						assertEquals(currentMembership, mergeEvent.getCurrentMembership());
-						assertEquals(3, currentMembership.getMembers().size());
-						assertEquals(2, mergeEvent.getPartitions().size());
-						assertTrue(mergeEvent.getPartitions().contains(previousMembership));
+						assertThat(mergeEvent.getPreviousMembership()).isEqualTo(previousMembership);
+						assertThat(mergeEvent.getCurrentMembership()).isEqualTo(currentMembership);
+						assertThat(currentMembership.getMembers()).containsExactlyInAnyOrder(group1.getLocalMember(), group2.getLocalMember(), group3.getLocalMember());
+						assertThat(mergeEvent.getPartitions()).hasSize(2).contains(previousMembership);
 					}
 
 					start = Instant.now();
@@ -242,9 +230,9 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 					splitEvent = splitEvents.poll();
 					mergeEvent = mergeEvents.poll();
 
-					assertNull(mergeEvent);
-					assertNull(splitEvent);
-					assertNotNull(updateEvent);
+					assertThat(updateEvent).isNotNull();
+					assertThat(splitEvent).isNull();
+					assertThat(mergeEvent).isNull();
 
 					this.validate(channel1, group1);
 					this.validate(channel2, group2);
@@ -252,10 +240,9 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 					previousMembership = currentMembership;
 					currentMembership = group1.getMembership();
 
-					assertEquals(previousMembership, updateEvent.getPreviousMembership());
-					assertEquals(currentMembership, updateEvent.getCurrentMembership());
-
-					assertEquals(2, currentMembership.getMembers().size());
+					assertThat(updateEvent.getPreviousMembership()).isEqualTo(previousMembership);
+					assertThat(updateEvent.getCurrentMembership()).isEqualTo(currentMembership);
+					assertThat(currentMembership.getMembers()).containsExactlyInAnyOrder(group1.getLocalMember(), group2.getLocalMember());
 				}
 
 				Instant start = Instant.now();
@@ -264,34 +251,32 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 				splitEvent = splitEvents.poll();
 				mergeEvent = mergeEvents.poll();
 
-				assertNull(splitEvent);
-				assertNull(mergeEvent);
-				assertNotNull(updateEvent);
+				assertThat(updateEvent).isNotNull();
+				assertThat(splitEvent).isNull();
+				assertThat(mergeEvent).isNull();
 
 				this.validate(channel1, group1);
 
 				previousMembership = currentMembership;
 				currentMembership = group1.getMembership();
 
-				assertEquals(previousMembership, updateEvent.getPreviousMembership());
-				assertEquals(currentMembership, updateEvent.getCurrentMembership());
-
-				assertEquals(group1.getLocalMember(), currentMembership.getCoordinator());
-				assertEquals(1, currentMembership.getMembers().size());
-				assertEquals(List.of(group1.getLocalMember()), currentMembership.getMembers());
+				assertThat(updateEvent.getPreviousMembership()).isEqualTo(previousMembership);
+				assertThat(updateEvent.getCurrentMembership()).isEqualTo(currentMembership);
+				assertThat(currentMembership.getCoordinator()).isEqualTo(group1.getLocalMember());
+				assertThat(currentMembership.getMembers()).containsExactly(group1.getLocalMember());
 			}
 		}
 	}
 
 	private void validate(JChannel channel, Group<A, M> group) {
 
-		assertEquals(channel.getName(), group.getLocalMember().getName());
-		assertEquals(channel.getAddress(), this.mapper.apply(group.getLocalMember().getAddress()));
+		assertThat(group.getLocalMember().getName()).isEqualTo(channel.getName());
+		assertThat(this.mapper.apply(group.getLocalMember().getAddress())).isEqualTo(channel.getAddress());
 
 		View view = channel.getView();
 		GroupMembership<M> membership = group.getMembership();
 
-		assertEquals(view.getCoord(), this.mapper.apply(membership.getCoordinator().getAddress()));
-		assertEquals(view.getMembers(), membership.getMembers().stream().map(GroupMember::getAddress).map(this.mapper).collect(Collectors.toUnmodifiableList()));
+		assertThat(this.mapper.apply(membership.getCoordinator().getAddress())).isEqualTo(view.getCoord());
+		assertThat(membership.getMembers().stream().map(GroupMember::getAddress).map(this.mapper).toList()).containsExactlyElementsOf(view.getMembers());
 	}
 }

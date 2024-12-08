@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -24,7 +22,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -482,38 +479,5 @@ public abstract class AbstractUtilTestCase {
 		TreeSet<Object> set = new TreeSet<>();
 		set.addAll(BASIS.keySet());
 		tester.accept(Collections.unmodifiableSortedSet(set));
-	}
-
-	static <T extends Collection<?>> void assertCollectionEquals(T expected, T actual) {
-		assertSame(expected.getClass(), actual.getClass());
-		assertEquals(expected.size(), actual.size());
-		assertTrue(expected.containsAll(actual));
-	}
-
-	static <T extends Map<?, ?>> void assertMapEquals(T expected, T actual) {
-		assertSame(expected.getClass(), actual.getClass());
-		assertEquals(expected.size(), actual.size());
-		assertTrue(expected.keySet().containsAll(actual.keySet()), actual.keySet()::toString);
-		for (Map.Entry<?, ?> entry : expected.entrySet()) {
-			assertEquals(entry.getValue(), actual.get(entry.getKey()));
-		}
-	}
-
-	static <T extends Map<?, ?>> void assertLinkedMapEquals(T expected, T actual) {
-		assertSame(expected.getClass(), actual.getClass());
-		assertEquals(expected.size(), actual.size());
-		// Change access order
-		expected.get(expected.keySet().iterator().next());
-		actual.get(actual.keySet().iterator().next());
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<?, ?>> expectedEntries = (Iterator<Map.Entry<?, ?>>) (Iterator<?>) expected.entrySet().iterator();
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<?, ?>> actualEntries = (Iterator<Map.Entry<?, ?>>) (Iterator<?>) actual.entrySet().iterator();
-		while (expectedEntries.hasNext() && actualEntries.hasNext()) {
-			Map.Entry<?, ?> expectedEntry = expectedEntries.next();
-			Map.Entry<?, ?> actualEntry = actualEntries.next();
-			assertEquals(expectedEntry.getKey(), actualEntry.getKey());
-			assertEquals(expectedEntry.getValue(), actualEntry.getValue());
-		}
 	}
 }

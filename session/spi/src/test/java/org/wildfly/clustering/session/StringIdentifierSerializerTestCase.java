@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.session;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -44,7 +44,7 @@ public class StringIdentifierSerializerTestCase {
 		for (int i = 0; i < 100; ++i) {
 			String id = generator.get();
 			ByteBuffer buffer = marshaller.write(id);
-			assertEquals(id, marshaller.read(buffer));
+			assertThat(marshaller.read(buffer)).isEqualTo(id);
 		}
 	}
 }

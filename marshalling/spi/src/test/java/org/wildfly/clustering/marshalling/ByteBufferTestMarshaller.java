@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -35,7 +35,7 @@ public class ByteBufferTestMarshaller<T> implements TestMarshaller<T> {
 		ByteBuffer buffer = this.marshaller.write(object);
 		OptionalInt size = this.marshaller.size(object);
 		if (size.isPresent()) {
-			assertEquals(buffer.remaining(), size.getAsInt());
+			assertThat(size).isEqualTo(buffer.remaining());
 		}
 		return buffer;
 	}

@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.server.local.registry;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -32,10 +33,10 @@ public class LocalRegistryTestCase {
 
 		LocalRegistry<String, String> registry = LocalRegistry.of(group, entry, closeTask);
 
-		Assertions.assertSame(group, registry.getGroup());
-		Assertions.assertSame(entry, registry.getEntry(localMember));
-		Assertions.assertNull(registry.getEntry(nonMember));
-		Assertions.assertEquals(Map.ofEntries(entry), registry.getEntries());
+		assertThat(registry.getGroup()).isSameAs(group);
+		assertThat(registry.getEntry(localMember)).isSameAs(entry);
+		assertThat(registry.getEntry(nonMember)).isNull();
+		assertThat(registry.getEntries()).containsExactly(entry);
 
 		verifyNoInteractions(closeTask);
 

@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.persistence;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -44,40 +44,40 @@ public class FormatterKeyMapperTestCase {
 	public void testSinglePadding() {
 		TwoWayKey2StringMapper mapper = new FormatterKeyMapper(createPersistenceList(16));
 
-		assertTrue(mapper.isSupportedType(Type.TYPE00.getClass()));
-		assertTrue(mapper.isSupportedType(Type.TYPE15.getClass()));
-		assertFalse(mapper.isSupportedType(Type.TYPE16.getClass()));
-		assertFalse(mapper.isSupportedType(Type.TYPE17.getClass()));
+		assertThat(mapper.isSupportedType(Type.TYPE00.getClass())).isTrue();
+		assertThat(mapper.isSupportedType(Type.TYPE15.getClass())).isTrue();
+		assertThat(mapper.isSupportedType(Type.TYPE16.getClass())).isFalse();
+		assertThat(mapper.isSupportedType(Type.TYPE17.getClass())).isFalse();
 
 		String result = mapper.getStringMapping(Type.TYPE00);
-		assertSame(Type.TYPE00, mapper.getKeyMapping(result));
-		assertEquals("0TYPE00", result);
+		assertThat(mapper.getKeyMapping(result)).isSameAs(Type.TYPE00);
+		assertThat(result).isEqualTo("0TYPE00");
 
 		result = mapper.getStringMapping(Type.TYPE15);
-		assertSame(Type.TYPE15, mapper.getKeyMapping(result));
-		assertEquals("FTYPE15", result);
+		assertThat(mapper.getKeyMapping(result)).isSameAs(Type.TYPE15);
+		assertThat(result).isEqualTo("FTYPE15");
 	}
 
 	@Test
 	public void testDoublePadding() {
 		TwoWayKey2StringMapper mapper = new FormatterKeyMapper(createPersistenceList(17));
 
-		assertTrue(mapper.isSupportedType(Type.TYPE00.getClass()));
-		assertTrue(mapper.isSupportedType(Type.TYPE15.getClass()));
-		assertTrue(mapper.isSupportedType(Type.TYPE16.getClass()));
-		assertFalse(mapper.isSupportedType(Type.TYPE17.getClass()));
+		assertThat(mapper.isSupportedType(Type.TYPE00.getClass())).isTrue();
+		assertThat(mapper.isSupportedType(Type.TYPE15.getClass())).isTrue();
+		assertThat(mapper.isSupportedType(Type.TYPE16.getClass())).isTrue();
+		assertThat(mapper.isSupportedType(Type.TYPE17.getClass())).isFalse();
 
 		String result = mapper.getStringMapping(Type.TYPE00);
-		assertSame(Type.TYPE00, mapper.getKeyMapping(result));
-		assertEquals("00TYPE00", result);
+		assertThat(mapper.getKeyMapping(result)).isSameAs(Type.TYPE00);
+		assertThat(result).isEqualTo("00TYPE00");
 
 		result = mapper.getStringMapping(Type.TYPE15);
-		assertSame(Type.TYPE15, mapper.getKeyMapping(result));
-		assertEquals("0FTYPE15", result);
+		assertThat(mapper.getKeyMapping(result)).isSameAs(Type.TYPE15);
+		assertThat(result).isEqualTo("0FTYPE15");
 
 		result = mapper.getStringMapping(Type.TYPE16);
-		assertSame(Type.TYPE16, mapper.getKeyMapping(result));
-		assertEquals("10TYPE16", result);
+		assertThat(mapper.getKeyMapping(result)).isSameAs(Type.TYPE16);
+		assertThat(result).isEqualTo("10TYPE16");
 	}
 
 	@SuppressWarnings("unchecked")

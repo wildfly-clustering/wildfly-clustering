@@ -5,12 +5,12 @@
 
 package org.wildfly.clustering.session.cache.affinity;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.AbstractMap;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
@@ -38,9 +38,9 @@ public class SessionAffinityRegistryGroupMemberMapperTestCase {
 
 		Function<GroupMember, String> mapper = new SessionAffinityRegistryGroupMemberMapper<>(registry);
 
-		Assertions.assertSame(localAffinity, mapper.apply(null));
-		Assertions.assertSame(localAffinity, mapper.apply(localMember));
-		Assertions.assertSame(localAffinity, mapper.apply(leftMember));
-		Assertions.assertSame(remoteAffinity, mapper.apply(remoteMember));
+		assertThat(mapper.apply(null)).isSameAs(localAffinity);
+		assertThat(mapper.apply(leftMember)).isSameAs(localAffinity);
+		assertThat(mapper.apply(leftMember)).isSameAs(localAffinity);
+		assertThat(mapper.apply(remoteMember)).isSameAs(remoteAffinity);
 	}
 }

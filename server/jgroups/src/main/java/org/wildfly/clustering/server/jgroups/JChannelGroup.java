@@ -130,7 +130,7 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 	}
 
 	private class DefaultGroupMembershipMergeEvent extends DefaultGroupMembershipEvent implements GroupMembershipMergeEvent<ChannelGroupMember> {
-		private final List<GroupMembership<ChannelGroupMember>> partitions;
+		private final List<org.wildfly.clustering.server.GroupMembership<ChannelGroupMember>> partitions;
 
 		DefaultGroupMembershipMergeEvent(View previousView, MergeView currentView) {
 			super(previousView, currentView);
@@ -138,7 +138,7 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 		}
 
 		@Override
-		public List<GroupMembership<ChannelGroupMember>> getPartitions() {
+		public List<org.wildfly.clustering.server.GroupMembership<ChannelGroupMember>> getPartitions() {
 			return this.partitions;
 		}
 	}

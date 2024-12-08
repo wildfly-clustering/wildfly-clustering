@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.function.Supplier;
@@ -27,11 +27,11 @@ public class SuppliedTestCase {
 
 		when(factory.get()).thenReturn(expected, other);
 
-		assertSame(expected, supplied.get(factory));
+		assertThat(supplied.get(factory)).isSameAs(expected);
 
 		verify(factory).get();
 
-		assertSame(expected, supplied.get(factory));
+		assertThat(supplied.get(factory)).isSameAs(expected);
 
 		verifyNoMoreInteractions(factory);
 	}
@@ -45,11 +45,11 @@ public class SuppliedTestCase {
 
 		when(factory.get()).thenReturn(expected, other);
 
-		assertSame(expected, supplied.get(factory));
+		assertThat(supplied.get(factory)).isSameAs(expected);
 
 		verify(factory).get();
 
-		assertSame(other, supplied.get(factory));
+		assertThat(supplied.get(factory)).isSameAs(other);
 
 		verify(factory, times(2)).get();
 	}

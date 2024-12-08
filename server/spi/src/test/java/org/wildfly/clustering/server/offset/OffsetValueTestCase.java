@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.offset;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -26,79 +26,79 @@ public class OffsetValueTestCase {
 		// Test from zero duration
 		OffsetValue<Duration> value = OffsetValue.from(Duration.ZERO);
 
-		assertTrue(value.getOffset().isZero());
-		assertSame(Duration.ZERO, value.getBasis());
-		assertSame(Duration.ZERO, value.get());
-		assertSame(backward, value.getOffset().apply(backward));
-		assertSame(Duration.ZERO, value.getOffset().apply(Duration.ZERO));
-		assertSame(forward, value.getOffset().apply(forward));
+		assertThat(value.getOffset().isZero()).isTrue();
+		assertThat(value.getBasis()).isSameAs(Duration.ZERO);
+		assertThat(value.get()).isSameAs(Duration.ZERO);
+		assertThat(value.getOffset().apply(backward)).isSameAs(backward);
+		assertThat(value.getOffset().apply(Duration.ZERO)).isSameAs(Duration.ZERO);
+		assertThat(value.getOffset().apply(forward)).isSameAs(forward);
 
 		value.set(forward);
 
-		assertFalse(value.getOffset().isZero());
-		assertSame(Duration.ZERO, value.getBasis());
-		assertEquals(forward, value.get());
-		assertEquals(Duration.ZERO, value.getOffset().apply(backward));
-		assertEquals(forward, value.getOffset().apply(Duration.ZERO));
+		assertThat(value.getOffset().isZero()).isFalse();
+		assertThat(value.getBasis()).isSameAs(Duration.ZERO);
+		assertThat(value.get()).isEqualTo(forward);
+		assertThat(value.getOffset().apply(backward)).isZero();
+		assertThat(value.getOffset().apply(Duration.ZERO)).isEqualTo(forward);
 
 		OffsetValue<Duration> rebaseValue = value.rebase();
 
-		assertTrue(rebaseValue.getOffset().isZero());
-		assertEquals(forward, rebaseValue.getBasis());
-		assertEquals(forward, rebaseValue.get());
-		assertEquals(Duration.ZERO, rebaseValue.getOffset().apply(Duration.ZERO));
-		assertEquals(forward, rebaseValue.getOffset().apply(forward));
+		assertThat(rebaseValue.getOffset().isZero()).isTrue();
+		assertThat(rebaseValue.getBasis()).isEqualTo(forward);
+		assertThat(rebaseValue.get()).isEqualTo(forward);
+		assertThat(rebaseValue.getOffset().apply(Duration.ZERO)).isZero();
+		assertThat(rebaseValue.getOffset().apply(forward)).isEqualTo(forward);
 
 		value.set(backward);
 
-		assertFalse(value.getOffset().isZero());
-		assertSame(Duration.ZERO, value.getBasis());
-		assertEquals(backward, value.get());
-		assertEquals(backward, value.getOffset().apply(Duration.ZERO));
-		assertEquals(Duration.ZERO, value.getOffset().apply(forward));
+		assertThat(value.getOffset().isZero()).isFalse();
+		assertThat(value.getBasis()).isSameAs(Duration.ZERO);
+		assertThat(value.get()).isEqualTo(backward);
+		assertThat(value.getOffset().apply(Duration.ZERO)).isEqualTo(backward);
+		assertThat(value.getOffset().apply(forward)).isZero();
 
 		// Verify rebase offset value reflects change in basis, but with unchanged offset
-		assertTrue(rebaseValue.getOffset().isZero());
-		assertEquals(value.get(), rebaseValue.getBasis());
-		assertEquals(value.get(), rebaseValue.get());
-		assertEquals(Duration.ZERO, rebaseValue.getOffset().apply(Duration.ZERO));
-		assertEquals(forward, rebaseValue.getOffset().apply(forward));
+		assertThat(rebaseValue.getOffset().isZero()).isTrue();
+		assertThat(rebaseValue.getBasis()).isEqualTo(value.get());
+		assertThat(rebaseValue.get()).isEqualTo(value.get());
+		assertThat(rebaseValue.getOffset().apply(Duration.ZERO)).isZero();
+		assertThat(rebaseValue.getOffset().apply(forward)).isEqualTo(forward);
 
 		// Test from positive duration
 		value = OffsetValue.from(forward);
 
-		assertTrue(value.getOffset().isZero());
-		assertSame(forward, value.getBasis());
-		assertSame(forward, value.get());
-		assertSame(backward, value.getOffset().apply(backward));
-		assertSame(Duration.ZERO, value.getOffset().apply(Duration.ZERO));
-		assertEquals(forward, value.getOffset().apply(forward));
+		assertThat(value.getOffset().isZero()).isTrue();
+		assertThat(value.getBasis()).isSameAs(forward);
+		assertThat(value.get()).isSameAs(forward);
+		assertThat(value.getOffset().apply(backward)).isSameAs(backward);
+		assertThat(value.getOffset().apply(Duration.ZERO)).isSameAs(Duration.ZERO);
+		assertThat(value.getOffset().apply(forward)).isEqualTo(forward);
 
 		value.set(Duration.ZERO);
 
-		assertFalse(value.getOffset().isZero());
-		assertSame(forward, value.getBasis());
-		assertSame(Duration.ZERO, value.get());
-		assertEquals(backward, value.getOffset().apply(Duration.ZERO));
-		assertEquals(Duration.ZERO, value.getOffset().apply(forward));
+		assertThat(value.getOffset().isZero()).isFalse();
+		assertThat(value.getBasis()).isSameAs(forward);
+		assertThat(value.get()).isSameAs(Duration.ZERO);
+		assertThat(value.getOffset().apply(Duration.ZERO)).isEqualTo(backward);
+		assertThat(value.getOffset().apply(forward)).isZero();
 
 		// Test negative duration
 		value = OffsetValue.from(backward);
 
-		assertTrue(value.getOffset().isZero());
-		assertSame(backward, value.getBasis());
-		assertSame(backward, value.get());
-		assertSame(backward, value.getOffset().apply(backward));
-		assertSame(Duration.ZERO, value.getOffset().apply(Duration.ZERO));
-		assertEquals(forward, value.getOffset().apply(forward));
+		assertThat(value.getOffset().isZero()).isTrue();
+		assertThat(value.getBasis()).isSameAs(backward);
+		assertThat(value.get()).isSameAs(backward);
+		assertThat(value.getOffset().apply(backward)).isSameAs(backward);
+		assertThat(value.getOffset().apply(Duration.ZERO)).isSameAs(Duration.ZERO);
+		assertThat(value.getOffset().apply(forward)).isEqualTo(forward);
 
 		value.set(Duration.ZERO);
 
-		assertFalse(value.getOffset().isZero());
-		assertSame(backward, value.getBasis());
-		assertSame(Duration.ZERO, value.get());
-		assertEquals(Duration.ZERO, value.getOffset().apply(backward));
-		assertEquals(forward, value.getOffset().apply(Duration.ZERO));
+		assertThat(value.getOffset().isZero()).isFalse();
+		assertThat(value.getBasis()).isSameAs(backward);
+		assertThat(value.get()).isSameAs(Duration.ZERO);
+		assertThat(value.getOffset().apply(backward)).isZero();
+		assertThat(value.getOffset().apply(Duration.ZERO)).isEqualTo(forward);
 	}
 
 	@Test
@@ -111,44 +111,44 @@ public class OffsetValueTestCase {
 
 		OffsetValue<Instant> value = OffsetValue.from(present);
 
-		assertTrue(value.getOffset().isZero());
-		assertSame(present, value.getBasis());
-		assertSame(present, value.get());
-		assertSame(past, value.getOffset().apply(past));
-		assertSame(present, value.getOffset().apply(present));
-		assertSame(future, value.getOffset().apply(future));
+		assertThat(value.getOffset().isZero()).isTrue();
+		assertThat(value.getBasis()).isSameAs(present);
+		assertThat(value.get()).isSameAs(present);
+		assertThat(value.getOffset().apply(past)).isSameAs(past);
+		assertThat(value.getOffset().apply(present)).isSameAs(present);
+		assertThat(value.getOffset().apply(future)).isSameAs(future);
 
 		value.set(future);
 
-		assertFalse(value.getOffset().isZero());
-		assertEquals(present, value.getBasis());
-		assertEquals(future, value.get());
-		assertEquals(present, value.getOffset().apply(past));
-		assertEquals(future, value.getOffset().apply(present));
+		assertThat(value.getOffset().isZero()).isFalse();
+		assertThat(value.getBasis()).isEqualTo(present);
+		assertThat(value.get()).isEqualTo(future);
+		assertThat(value.getOffset().apply(past)).isEqualTo(present);
+		assertThat(value.getOffset().apply(present)).isEqualTo(future);
 
 		OffsetValue<Instant> rebaseValue = value.rebase();
 
-		assertTrue(rebaseValue.getOffset().isZero());
-		assertEquals(future, rebaseValue.getBasis());
-		assertEquals(future, rebaseValue.get());
-		assertSame(past, rebaseValue.getOffset().apply(past));
-		assertSame(present, rebaseValue.getOffset().apply(present));
-		assertSame(future, rebaseValue.getOffset().apply(future));
+		assertThat(rebaseValue.getOffset().isZero()).isTrue();
+		assertThat(rebaseValue.getBasis()).isEqualTo(future);
+		assertThat(rebaseValue.get()).isEqualTo(future);
+		assertThat(rebaseValue.getOffset().apply(past)).isSameAs(past);
+		assertThat(rebaseValue.getOffset().apply(present)).isSameAs(present);
+		assertThat(rebaseValue.getOffset().apply(future)).isSameAs(future);
 
 		value.set(past);
 
-		assertFalse(value.getOffset().isZero());
-		assertEquals(present, value.getBasis());
-		assertEquals(past, value.get());
-		assertEquals(past, value.getOffset().apply(present));
-		assertEquals(present, value.getOffset().apply(future));
+		assertThat(value.getOffset().isZero()).isFalse();
+		assertThat(value.getBasis()).isEqualTo(present);
+		assertThat(value.get()).isEqualTo(past);
+		assertThat(value.getOffset().apply(present)).isEqualTo(past);
+		assertThat(value.getOffset().apply(future)).isEqualTo(present);
 
 		// Verify rebase offset value reflects change in basis, but with unchanged offset
-		assertTrue(rebaseValue.getOffset().isZero());
-		assertEquals(past, rebaseValue.getBasis());
-		assertEquals(past, rebaseValue.get());
-		assertSame(past, rebaseValue.getOffset().apply(past));
-		assertSame(present, rebaseValue.getOffset().apply(present));
-		assertSame(future, rebaseValue.getOffset().apply(future));
+		assertThat(rebaseValue.getOffset().isZero()).isTrue();
+		assertThat(rebaseValue.getBasis()).isEqualTo(past);
+		assertThat(rebaseValue.get()).isEqualTo(past);
+		assertThat(rebaseValue.getOffset().apply(past)).isSameAs(past);
+		assertThat(rebaseValue.getOffset().apply(present)).isSameAs(present);
+		assertThat(rebaseValue.getOffset().apply(future)).isSameAs(future);
 	}
 }

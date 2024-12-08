@@ -4,12 +4,15 @@
  */
 package org.wildfly.clustering.marshalling;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.assertj.core.api.AtomicBooleanAssert;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,14 +29,20 @@ public abstract class AbstractAtomicTestCase {
 
 	@Test
 	public void testAtomicBoolean() {
-		Consumer<AtomicBoolean> tester = this.factory.createTester(AtomicBoolean::get);
+		Consumer<AtomicBoolean> tester = this.factory.createTester(AtomicBooleanAssert::new, (assertion, expected) -> {
+			if (expected.get()) {
+				assertion.isTrue();
+			} else {
+				assertion.isFalse();
+			}
+		});
 		tester.accept(new AtomicBoolean(false));
 		tester.accept(new AtomicBoolean(true));
 	}
 
 	@Test
 	public void testAtomicInteger() {
-		Consumer<AtomicInteger> tester = this.factory.createTester(AtomicInteger::get);
+		Consumer<AtomicInteger> tester = this.factory.createTester((expected, actual) -> assertThat(actual).hasValue(expected.get()));
 		tester.accept(new AtomicInteger());
 		tester.accept(new AtomicInteger(Byte.MAX_VALUE));
 		tester.accept(new AtomicInteger(Integer.MAX_VALUE));
@@ -41,7 +50,7 @@ public abstract class AbstractAtomicTestCase {
 
 	@Test
 	public void testAtomicLong() {
-		Consumer<AtomicLong> tester = this.factory.createTester(AtomicLong::get);
+		Consumer<AtomicLong> tester = this.factory.createTester((expected, actual) -> assertThat(actual).hasValue(expected.get()));
 		tester.accept(new AtomicLong());
 		tester.accept(new AtomicLong(Short.MAX_VALUE));
 		tester.accept(new AtomicLong(Long.MAX_VALUE));
@@ -49,7 +58,7 @@ public abstract class AbstractAtomicTestCase {
 
 	@Test
 	public void testAtomicReference() {
-		Consumer<AtomicReference<Object>> tester = this.factory.createTester(AtomicReference::get);
+		Consumer<AtomicReference<Object>> tester = this.factory.createTester((expected, actual) -> assertThat(actual).hasValue(expected.get()));
 		tester.accept(new AtomicReference<>());
 		tester.accept(new AtomicReference<>(Boolean.TRUE));
 	}

@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.offset;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -26,21 +26,21 @@ public class OffsetTestCase {
 		// Test zero offset
 		Offset<Duration> offset = Offset.forDuration(Duration.ZERO);
 
-		assertSame(backward, offset.apply(backward));
-		assertSame(Duration.ZERO, offset.apply(Duration.ZERO));
-		assertSame(forward, offset.apply(forward));
+		assertThat(offset.apply(backward)).isSameAs(backward);
+		assertThat(offset.apply(Duration.ZERO)).isSameAs(Duration.ZERO);
+		assertThat(offset.apply(forward)).isSameAs(forward);
 
 		// Test positive offset
 		offset = Offset.forDuration(forward);
 
-		assertEquals(Duration.ZERO, offset.apply(backward));
-		assertEquals(forward, offset.apply(Duration.ZERO));
+		assertThat(offset.apply(backward)).isZero();
+		assertThat(offset.apply(Duration.ZERO)).isEqualTo(forward);
 
 		// Test negative offset
 		offset = Offset.forDuration(backward);
 
-		assertEquals(backward, offset.apply(Duration.ZERO));
-		assertEquals(Duration.ZERO, offset.apply(forward));
+		assertThat(offset.apply(Duration.ZERO)).isEqualTo(backward);
+		assertThat(offset.apply(forward)).isZero();
 	}
 
 	@Test
@@ -54,20 +54,20 @@ public class OffsetTestCase {
 		// Test zero offset
 		Offset<Instant> offset = Offset.forInstant(Duration.ZERO);
 
-		assertSame(past, offset.apply(past));
-		assertSame(present, offset.apply(present));
-		assertSame(future, offset.apply(future));
+		assertThat(offset.apply(past)).isSameAs(past);
+		assertThat(offset.apply(present)).isSameAs(present);
+		assertThat(offset.apply(future)).isSameAs(future);
 
 		// Test positive offset
 		offset = Offset.forInstant(forward);
 
-		assertEquals(present, offset.apply(past));
-		assertEquals(future, offset.apply(present));
+		assertThat(offset.apply(past)).isEqualTo(present);
+		assertThat(offset.apply(present)).isEqualTo(future);
 
 		// Test negative offset
 		offset = Offset.forInstant(backward);
 
-		assertEquals(past, offset.apply(present));
-		assertEquals(present, offset.apply(future));
+		assertThat(offset.apply(present)).isEqualTo(past);
+		assertThat(offset.apply(future)).isEqualTo(present);
 	}
 }

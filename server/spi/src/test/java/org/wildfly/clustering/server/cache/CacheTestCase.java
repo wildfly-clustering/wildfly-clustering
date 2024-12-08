@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.cache;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +40,8 @@ public class CacheTestCase {
 					int key = i;
 					Callable<ManagedService<Integer>> task = () -> {
 						try (ManagedService<Integer> object = manager.computeIfAbsent(key, ManagedService::new)) {
-							assertTrue(object.isStarted());
-							assertFalse(object.isStopped());
+							assertThat(object.isStarted()).as(object::toString).isTrue();
+							assertThat(object.isStopped()).as(object::toString).isFalse();
 							Thread.sleep(10);
 							return object;
 						}
@@ -59,8 +59,8 @@ public class CacheTestCase {
 			for (List<Future<ManagedService<Integer>>> futures : keyFutures) {
 				for (Future<ManagedService<Integer>> future : futures) {
 					ManagedService<Integer> object = future.get();
-					assertTrue(object.isStarted(), object::toString);
-					assertTrue(object.isStopped(), object::toString);
+					assertThat(object.isStarted()).as(object::toString).isTrue();
+					assertThat(object.isStopped()).as(object::toString).isTrue();
 				}
 			}
 		} finally {
@@ -74,22 +74,22 @@ public class CacheTestCase {
 		@SuppressWarnings("resource")
 		ManagedService<String> object = context.computeIfAbsent("foo", ManagedService::new);
 		try {
-			assertTrue(object.isStarted());
-			assertFalse(object.isStopped());
+			assertThat(object.isStarted()).isTrue();
+			assertThat(object.isStopped()).isFalse();
 
 			try (ManagedService<String> object2 = context.computeIfAbsent("foo", ManagedService::new)) {
-				assertNotSame(object2, object);
-				assertTrue(object2.isStarted());
-				assertFalse(object2.isStopped());
+				assertThat(object2).isNotSameAs(object);
+				assertThat(object2.isStarted()).isTrue();
+				assertThat(object2.isStopped()).isFalse();
 			}
 		} finally {
-			assertTrue(object.isStarted());
-			assertFalse(object.isStopped());
+			assertThat(object.isStarted()).isTrue();
+			assertThat(object.isStopped()).isFalse();
 
 			object.close();
 
-			assertTrue(object.isStarted());
-			assertTrue(object.isStopped());
+			assertThat(object.isStarted()).isTrue();
+			assertThat(object.isStopped()).isTrue();
 		}
 	}
 

@@ -5,11 +5,9 @@
 
 package org.wildfly.clustering.server.local.provider;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.Set;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
@@ -30,40 +28,40 @@ public class LocalServiceProviderRegistrarTestCase {
 
 		LocalServiceProviderRegistrar<String> registrar = LocalServiceProviderRegistrar.of(group);
 
-		Assertions.assertSame(group, registrar.getGroup());
+		assertThat(registrar.getGroup()).isSameAs(group);
 
-		Assertions.assertEquals(Set.of(), registrar.getServices());
-		Assertions.assertEquals(Set.of(), registrar.getProviders("foo"));
-		Assertions.assertEquals(Set.of(), registrar.getProviders("bar"));
+		assertThat(registrar.getServices()).isEmpty();
+		assertThat(registrar.getProviders("foo")).isEmpty();
+		assertThat(registrar.getProviders("bar")).isEmpty();
 
 		ServiceProviderRegistration<String, LocalGroupMember> foo = registrar.register("foo");
 
-		Assertions.assertEquals("foo", foo.getService());
-		Assertions.assertEquals(Set.of(localMember), foo.getProviders());
+		assertThat(foo.getService()).isEqualTo("foo");
+		assertThat(foo.getProviders()).containsExactly(localMember);
 
-		Assertions.assertEquals(Set.of("foo"), registrar.getServices());
-		Assertions.assertEquals(Set.of(localMember), registrar.getProviders("foo"));
-		Assertions.assertEquals(Set.of(), registrar.getProviders("bar"));
+		assertThat(registrar.getServices()).containsExactly("foo");
+		assertThat(registrar.getProviders("foo")).containsExactly(localMember);
+		assertThat(registrar.getProviders("bar")).isEmpty();
 
 		ServiceProviderRegistration<String, LocalGroupMember> bar = registrar.register("bar");
 
-		Assertions.assertEquals("bar", bar.getService());
-		Assertions.assertEquals(Set.of(localMember), bar.getProviders());
+		assertThat(bar.getService()).isEqualTo("bar");
+		assertThat(bar.getProviders()).containsExactly(localMember);
 
-		Assertions.assertEquals(Set.of("foo", "bar"), registrar.getServices());
-		Assertions.assertEquals(Set.of(localMember), registrar.getProviders("foo"));
-		Assertions.assertEquals(Set.of(localMember), registrar.getProviders("bar"));
+		assertThat(registrar.getServices()).containsExactlyInAnyOrder("foo", "bar");
+		assertThat(registrar.getProviders("foo")).containsExactly(localMember);
+		assertThat(registrar.getProviders("bar")).containsExactly(localMember);
 
 		foo.close();
 
-		Assertions.assertEquals(Set.of("bar"), registrar.getServices());
-		Assertions.assertEquals(Set.of(), registrar.getProviders("foo"));
-		Assertions.assertEquals(Set.of(localMember), registrar.getProviders("bar"));
+		assertThat(registrar.getServices()).containsExactly("bar");
+		assertThat(registrar.getProviders("foo")).isEmpty();
+		assertThat(registrar.getProviders("bar")).containsExactly(localMember);
 
 		bar.close();
 
-		Assertions.assertEquals(Set.of(), registrar.getServices());
-		Assertions.assertEquals(Set.of(), registrar.getProviders("foo"));
-		Assertions.assertEquals(Set.of(), registrar.getProviders("bar"));
+		assertThat(registrar.getServices()).isEmpty();
+		assertThat(registrar.getProviders("foo")).isEmpty();
+		assertThat(registrar.getProviders("bar")).isEmpty();
 	}
 }

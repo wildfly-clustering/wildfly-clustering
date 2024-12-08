@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.context;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -63,31 +63,31 @@ public class ContextualExecutorServiceTestCase {
 
 		List<Runnable> result = this.subject.shutdownNow();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	@Test
 	public void isShutdown() {
 		when(this.executor.isShutdown()).thenReturn(false, true);
 
-		assertFalse(this.subject.isShutdown());
-		assertTrue(this.subject.isShutdown());
+		assertThat(this.subject.isShutdown()).isFalse();
+		assertThat(this.subject.isShutdown()).isTrue();
 	}
 
 	@Test
 	public void isTerminated() {
 		when(this.executor.isTerminated()).thenReturn(false, true);
 
-		assertFalse(this.subject.isTerminated());
-		assertTrue(this.subject.isTerminated());
+		assertThat(this.subject.isTerminated()).isFalse();
+		assertThat(this.subject.isTerminated()).isTrue();
 	}
 
 	@Test
 	public void awaitTermination() throws InterruptedException {
 		when(this.executor.awaitTermination(10L, TimeUnit.MINUTES)).thenReturn(false, true);
 
-		assertFalse(this.subject.awaitTermination(10L, TimeUnit.MINUTES));
-		assertTrue(this.subject.awaitTermination(10L, TimeUnit.MINUTES));
+		assertThat(this.subject.awaitTermination(10L, TimeUnit.MINUTES)).isFalse();
+		assertThat(this.subject.awaitTermination(10L, TimeUnit.MINUTES)).isTrue();
 	}
 
 	@Test
@@ -101,7 +101,7 @@ public class ContextualExecutorServiceTestCase {
 
 		Future<Object> result = this.subject.submit(task);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	@Test
@@ -116,7 +116,7 @@ public class ContextualExecutorServiceTestCase {
 
 		Future<Object> result = this.subject.submit(task, param);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -132,7 +132,7 @@ public class ContextualExecutorServiceTestCase {
 
 		Future<?> result = this.subject.submit(task);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	@Test
@@ -155,13 +155,9 @@ public class ContextualExecutorServiceTestCase {
 
 		List<Future<Object>> result = this.subject.invokeAll(Arrays.asList(task1, task2, task3));
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
-		List<Callable<Object>> tasks = capturedTasks.getValue();
-		assertEquals(3, tasks.size());
-		assertSame(contextualTask1, tasks.get(0));
-		assertSame(contextualTask2, tasks.get(1));
-		assertSame(contextualTask3, tasks.get(2));
+		assertThat(capturedTasks.getValue()).isNotNull().containsExactly(contextualTask1, contextualTask2, contextualTask3);
 	}
 
 	@Test
@@ -184,13 +180,9 @@ public class ContextualExecutorServiceTestCase {
 
 		List<Future<Object>> result = this.subject.invokeAll(Arrays.asList(task1, task2, task3), 10L, TimeUnit.MINUTES);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
-		List<Callable<Object>> tasks = capturedTasks.getValue();
-		assertEquals(3, tasks.size());
-		assertSame(contextualTask1, tasks.get(0));
-		assertSame(contextualTask2, tasks.get(1));
-		assertSame(contextualTask3, tasks.get(2));
+		assertThat(capturedTasks.getValue()).isNotNull().containsExactly(contextualTask1, contextualTask2, contextualTask3);
 	}
 
 	@Test
@@ -212,13 +204,9 @@ public class ContextualExecutorServiceTestCase {
 
 		Object result = this.subject.invokeAny(Arrays.asList(task1, task2, task3));
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
-		List<Callable<Object>> tasks = capturedTasks.getValue();
-		assertEquals(3, tasks.size());
-		assertSame(contextualTask1, tasks.get(0));
-		assertSame(contextualTask2, tasks.get(1));
-		assertSame(contextualTask3, tasks.get(2));
+		assertThat(capturedTasks.getValue()).isNotNull().containsExactly(contextualTask1, contextualTask2, contextualTask3);
 	}
 
 	@Test
@@ -240,12 +228,8 @@ public class ContextualExecutorServiceTestCase {
 
 		Object result = this.subject.invokeAny(Arrays.asList(task1, task2, task3), 10L, TimeUnit.MINUTES);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
-		List<Callable<Object>> tasks = capturedTasks.getValue();
-		assertEquals(3, tasks.size());
-		assertSame(contextualTask1, tasks.get(0));
-		assertSame(contextualTask2, tasks.get(1));
-		assertSame(contextualTask3, tasks.get(2));
+		assertThat(capturedTasks.getValue()).isNotNull().containsExactly(contextualTask1, contextualTask2, contextualTask3);
 	}
 }

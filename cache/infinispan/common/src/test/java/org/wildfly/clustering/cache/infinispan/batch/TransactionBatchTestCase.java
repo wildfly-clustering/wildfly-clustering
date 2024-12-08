@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.cache.infinispan.batch;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import jakarta.transaction.Status;
@@ -45,7 +45,7 @@ public class TransactionBatchTestCase {
 		verify(existingBatch).interpose();
 		verifyNoInteractions(this.tm);
 
-		assertSame(existingBatch, result);
+		assertThat(result).isSameAs(existingBatch);
 	}
 
 	@Test
@@ -62,15 +62,15 @@ public class TransactionBatchTestCase {
 			verify(this.tm).begin();
 			verify(tx).registerSynchronization(capturedSync.capture());
 
-			assertSame(tx, batch.getTransaction());
-			assertSame(batch, ThreadLocalTransactionBatch.getCurrentBatch());
+			assertThat(batch.getTransaction()).isSameAs(tx);
+			assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch);
 		} finally {
 			capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
 		}
 
 		verify(tx).commit();
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 	}
 
 
@@ -85,14 +85,14 @@ public class TransactionBatchTestCase {
 			verify(this.tm).begin();
 			verify(tx).registerSynchronization(capturedSync.capture());
 
-			assertSame(tx, batch.getTransaction());
+			assertThat(batch.getTransaction()).isSameAs(tx);
 		} finally {
 			capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
 		}
 
 		verify(tx).commit();
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 	}
 
 	@Test
@@ -106,7 +106,7 @@ public class TransactionBatchTestCase {
 			verify(this.tm).begin();
 			verify(tx).registerSynchronization(capturedSync.capture());
 
-			assertSame(tx, batch.getTransaction());
+			assertThat(batch.getTransaction()).isSameAs(tx);
 
 			batch.discard();
 		} finally {
@@ -116,7 +116,7 @@ public class TransactionBatchTestCase {
 		verify(tx, never()).commit();
 		verify(tx).rollback();
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 	}
 
 	@Test
@@ -127,7 +127,7 @@ public class TransactionBatchTestCase {
 		doReturn(tx).when(this.tm).getTransaction();
 
 		try (TransactionBatch outerBatch = this.factory.get()) {
-			assertSame(tx, outerBatch.getTransaction());
+			assertThat(outerBatch.getTransaction()).isSameAs(tx);
 
 			verify(this.tm).suspend();
 			verify(this.tm).begin();
@@ -148,7 +148,7 @@ public class TransactionBatchTestCase {
 		verify(tx, never()).rollback();
 		verify(tx).commit();
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 	}
 
 	@Test
@@ -163,7 +163,7 @@ public class TransactionBatchTestCase {
 			verify(this.tm).begin();
 			verify(tx).registerSynchronization(capturedSync.capture());
 
-			assertSame(tx, outerBatch.getTransaction());
+			assertThat(outerBatch.getTransaction()).isSameAs(tx);
 
 			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
 			doReturn(tx).when(this.tm).getTransaction();
@@ -185,7 +185,7 @@ public class TransactionBatchTestCase {
 		verify(tx).rollback();
 		verify(tx, never()).commit();
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 	}
 
 	@Test
@@ -202,7 +202,7 @@ public class TransactionBatchTestCase {
 		verify(tx).registerSynchronization(capturedSync.capture());
 
 		try {
-			assertSame(tx, batch.getTransaction());
+			assertThat(batch.getTransaction()).isSameAs(tx);
 
 			doReturn(tx).when(this.tm).getTransaction();
 			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
@@ -224,7 +224,7 @@ public class TransactionBatchTestCase {
 		verify(tx, never()).rollback();
 		verify(tx).commit();
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 	}
 
 	@Test
@@ -240,7 +240,7 @@ public class TransactionBatchTestCase {
 		verify(tx).registerSynchronization(capturedSync.capture());
 
 		try {
-			assertSame(tx, batch.getTransaction());
+			assertThat(batch.getTransaction()).isSameAs(tx);
 
 			doReturn(tx).when(this.tm).getTransaction();
 			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
@@ -264,7 +264,7 @@ public class TransactionBatchTestCase {
 		verify(tx).rollback();
 		verify(tx, never()).commit();
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 	}
 
 	@Test
@@ -282,8 +282,8 @@ public class TransactionBatchTestCase {
 		verifyNoMoreInteractions(this.tm);
 		verify(tx).registerSynchronization(sync.capture());
 
-		assertSame(batch, ThreadLocalTransactionBatch.getCurrentBatch());
-		assertSame(tx, batch.getTransaction());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch);
+		assertThat(batch.getTransaction()).isSameAs(tx);
 
 		batch.close();
 
@@ -291,9 +291,9 @@ public class TransactionBatchTestCase {
 		verifyNoMoreInteractions(this.tm);
 		sync.getValue().afterCompletion(Status.STATUS_COMMITTED);
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 
-		assertNotSame(batch, batch.suspend().resume());
+		assertThat(batch.suspend().resume()).isNotSameAs(batch);
 	}
 
 	@Test
@@ -312,27 +312,27 @@ public class TransactionBatchTestCase {
 		verifyNoMoreInteractions(this.tm);
 		verify(tx).registerSynchronization(sync.capture());
 
-		assertSame(batch, ThreadLocalTransactionBatch.getCurrentBatch());
-		assertSame(tx, batch.getTransaction());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch);
+		assertThat(batch.getTransaction()).isSameAs(tx);
 
 		SuspendedBatch suspended = batch.suspend();
 
 		verify(this.tm, times(2)).suspend();
 		verifyNoMoreInteractions(this.tm);
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 
-		assertThrows(IllegalStateException.class, batch::discard);
-		assertThrows(IllegalStateException.class, batch::interpose);
-		assertThrows(IllegalStateException.class, batch::close);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(batch::discard);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(batch::interpose);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(batch::close);
 
 		Batch resumed = suspended.resume();
 
 		verify(this.tm).resume(tx);
 		verifyNoMoreInteractions(this.tm);
 
-		assertSame(batch, resumed);
-		assertSame(resumed, ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(resumed).isSameAs(batch);
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(resumed);
 	}
 
 	@Test
@@ -351,30 +351,30 @@ public class TransactionBatchTestCase {
 		verifyNoMoreInteractions(this.tm);
 		verify(tx).registerSynchronization(sync.capture());
 
-		assertSame(batch, ThreadLocalTransactionBatch.getCurrentBatch());
-		assertSame(tx, batch.getTransaction());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch);
+		assertThat(batch.getTransaction()).isSameAs(tx);
 
 		SuspendedBatch suspended = batch.suspend();
 
 		verify(this.tm, times(2)).suspend();
 		verifyNoMoreInteractions(this.tm);
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 
 		try (Batch resumed = suspended.resume()) {
 			verify(this.tm).resume(tx);
 			verifyNoMoreInteractions(this.tm);
 
-			assertSame(batch, resumed);
-			assertSame(resumed, ThreadLocalTransactionBatch.getCurrentBatch());
+			assertThat(resumed).isSameAs(batch);
+			assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(resumed);
 		}
 
 		verify(tx).commit();
 		sync.getValue().afterCompletion(Status.STATUS_COMMITTED);
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 		verifyNoMoreInteractions(this.tm);
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 	}
 
 	@Test
@@ -395,15 +395,15 @@ public class TransactionBatchTestCase {
 		verifyNoMoreInteractions(this.tm);
 		verify(tx1).registerSynchronization(sync1.capture());
 
-		assertSame(batch1, ThreadLocalTransactionBatch.getCurrentBatch());
-		assertSame(tx1, batch1.getTransaction());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch1);
+		assertThat(batch1.getTransaction()).isSameAs(tx1);
 
 		SuspendedBatch suspended = batch1.suspend();
 
 		verify(this.tm, times(2)).suspend();
 		verifyNoMoreInteractions(this.tm);
 
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 
 		try (TransactionBatch batch2 = this.factory.get()) {
 			verify(this.tm, times(3)).suspend();
@@ -412,8 +412,8 @@ public class TransactionBatchTestCase {
 			verifyNoMoreInteractions(this.tm);
 			verify(tx2).registerSynchronization(sync2.capture());
 
-			assertSame(batch2, ThreadLocalTransactionBatch.getCurrentBatch());
-			assertSame(tx2, batch2.getTransaction());
+			assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch2);
+			assertThat(batch2.getTransaction()).isSameAs(tx2);
 
 			try (BatchContext<Batch> context = suspended.resumeWithContext()) {
 				verify(this.tm, times(4)).suspend();
@@ -421,23 +421,23 @@ public class TransactionBatchTestCase {
 				verifyNoMoreInteractions(this.tm);
 
 				try (Batch resumed = context.get()) {
-					assertSame(batch1, resumed);
-					assertSame(resumed, ThreadLocalTransactionBatch.getCurrentBatch());
+					assertThat(resumed).isSameAs(batch1);
+					assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(resumed);
 				}
 
 				verify(tx1).commit();
 				sync1.getValue().afterCompletion(Status.STATUS_COMMITTED);
-				assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+				assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 			}
 
 			verify(this.tm).resume(tx2);
 			verifyNoMoreInteractions(this.tm);
 
-			assertSame(batch2, ThreadLocalTransactionBatch.getCurrentBatch());
+			assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch2);
 		}
 
 		sync2.getValue().afterCompletion(Status.STATUS_COMMITTED);
-		assertNull(ThreadLocalTransactionBatch.getCurrentBatch());
+		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
 
 		verifyNoMoreInteractions(this.tm);
 	}

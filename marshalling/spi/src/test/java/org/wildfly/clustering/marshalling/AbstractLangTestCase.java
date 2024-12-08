@@ -5,13 +5,27 @@
 
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.lang.reflect.Proxy;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Boolean2DArrayAssert;
+import org.assertj.core.api.BooleanArrayAssert;
+import org.assertj.core.api.Byte2DArrayAssert;
+import org.assertj.core.api.ByteArrayAssert;
+import org.assertj.core.api.Char2DArrayAssert;
+import org.assertj.core.api.CharArrayAssert;
+import org.assertj.core.api.Double2DArrayAssert;
+import org.assertj.core.api.DoubleArrayAssert;
+import org.assertj.core.api.Float2DArrayAssert;
+import org.assertj.core.api.FloatArrayAssert;
+import org.assertj.core.api.Int2DArrayAssert;
+import org.assertj.core.api.IntArrayAssert;
+import org.assertj.core.api.Long2DArrayAssert;
+import org.assertj.core.api.LongArrayAssert;
+import org.assertj.core.api.Short2DArrayAssert;
+import org.assertj.core.api.ShortArrayAssert;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.test.TestInvocationHandler;
 
@@ -114,89 +128,89 @@ public abstract class AbstractLangTestCase {
 	@Test
 	public void testBooleanArray() {
 		boolean[] array = new boolean[] { true, false };
-		this.factory.<boolean[]>createTester(Assertions::assertArrayEquals).accept(array);
-		this.factory.<boolean[][]>createTester(Assertions::assertArrayEquals).accept(new boolean[][] { array, array });
+		this.factory.createTester(BooleanArrayAssert::new, BooleanArrayAssert::containsExactly).accept(array);
+		this.factory.createTester(Boolean2DArrayAssert::new, Boolean2DArrayAssert::isDeepEqualTo).accept(new boolean[][] { array, array });
 		Boolean[] objectArray = new Boolean[] { true, false };
-		this.factory.<Boolean[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
-		this.factory.<Boolean[][]>createTester(Assertions::assertArrayEquals).accept(new Boolean[][] { objectArray, objectArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
+		this.factory.createArrayTester().accept(objectArray);
+		this.factory.create2DArrayTester().accept(new Boolean[][] { objectArray, objectArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
 	public void testByteArray() {
 		byte[] array = new byte[] { Byte.MIN_VALUE, 0, Byte.MAX_VALUE };
-		this.factory.<byte[]>createTester(Assertions::assertArrayEquals).accept(array);
-		this.factory.<byte[][]>createTester(Assertions::assertArrayEquals).accept(new byte[][] { array, array });
+		this.factory.createTester(ByteArrayAssert::new, ByteArrayAssert::containsExactly).accept(array);
+		this.factory.createTester(Byte2DArrayAssert::new, Byte2DArrayAssert::isDeepEqualTo).accept(new byte[][] { array, array });
 		Byte[] objectArray = new Byte[] { Byte.MIN_VALUE, 0, Byte.MAX_VALUE };
-		this.factory.<Byte[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
-		this.factory.<Byte[][]>createTester(Assertions::assertArrayEquals).accept(new Byte[][] { objectArray, objectArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
+		this.factory.createArrayTester().accept(objectArray);
+		this.factory.create2DArrayTester().accept(new Byte[][] { objectArray, objectArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
 	public void testShortArray() {
 		short[] array = new short[] { Short.MIN_VALUE, 0, Short.MAX_VALUE };
-		this.factory.<short[]>createTester(Assertions::assertArrayEquals).accept(array);
-		this.factory.<short[][]>createTester(Assertions::assertArrayEquals).accept(new short[][] { array, array });
+		this.factory.createTester(ShortArrayAssert::new, ShortArrayAssert::containsExactly).accept(array);
+		this.factory.createTester(Short2DArrayAssert::new, Short2DArrayAssert::isDeepEqualTo).accept(new short[][] { array, array });
 		Short[] objectArray = new Short[] { Short.MIN_VALUE, 0, Short.MAX_VALUE };
-		this.factory.<Short[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
-		this.factory.<Short[][]>createTester(Assertions::assertArrayEquals).accept(new Short[][] { objectArray, objectArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
+		this.factory.createArrayTester().accept(objectArray);
+		this.factory.create2DArrayTester().accept(new Short[][] { objectArray, objectArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
 	public void testIntegerArray() {
 		int[] array = new int[] { Integer.MIN_VALUE, 0, Integer.MAX_VALUE };
-		this.factory.<int[]>createTester(Assertions::assertArrayEquals).accept(array);
-		this.factory.<int[][]>createTester(Assertions::assertArrayEquals).accept(new int[][] { array, array });
+		this.factory.<IntArrayAssert, int[]>createTester(IntArrayAssert::new, IntArrayAssert::containsExactly).accept(array);
+		this.factory.createTester(Int2DArrayAssert::new, Int2DArrayAssert::isDeepEqualTo).accept(new int[][] { array, array });
 		Integer[] objectArray = new Integer[] { Integer.MIN_VALUE, 0, Integer.MAX_VALUE };
-		this.factory.<Integer[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
-		this.factory.<Integer[][]>createTester(Assertions::assertArrayEquals).accept(new Integer[][] { objectArray, objectArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
+		this.factory.createArrayTester().accept(objectArray);
+		this.factory.create2DArrayTester().accept(new Integer[][] { objectArray, objectArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
 	public void testLongArray() {
 		long[] array = new long[] { Long.MIN_VALUE, 0L, Long.MAX_VALUE };
-		this.factory.<long[]>createTester(Assertions::assertArrayEquals).accept(array);
-		this.factory.<long[][]>createTester(Assertions::assertArrayEquals).accept(new long[][] { array, array });
+		this.factory.<LongArrayAssert, long[]>createTester(LongArrayAssert::new, LongArrayAssert::containsExactly).accept(array);
+		this.factory.createTester(Long2DArrayAssert::new, Long2DArrayAssert::isDeepEqualTo).accept(new long[][] { array, array });
 		Long[] objectArray = new Long[] { Long.MIN_VALUE, 0L, Long.MAX_VALUE };
-		this.factory.<Long[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
-		this.factory.<Long[][]>createTester(Assertions::assertArrayEquals).accept(new Long[][] { objectArray, objectArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
+		this.factory.createArrayTester().accept(objectArray);
+		this.factory.create2DArrayTester().accept(new Long[][] { objectArray, objectArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
 	public void testFloatArray() {
 		float[] array = new float[] { Float.MIN_VALUE, 0f, Float.MAX_VALUE };
-		this.factory.<float[]>createTester(Assertions::assertArrayEquals).accept(array);
-		this.factory.<float[][]>createTester(Assertions::assertArrayEquals).accept(new float[][] { array, array });
+		this.factory.createTester(FloatArrayAssert::new, FloatArrayAssert::containsExactly).accept(array);
+		this.factory.createTester(Float2DArrayAssert::new, Float2DArrayAssert::isDeepEqualTo).accept(new float[][] { array, array });
 		Float[] objectArray = new Float[] { Float.MIN_VALUE, 0f, Float.MAX_VALUE };
-		this.factory.<Float[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
-		this.factory.<Float[][]>createTester(Assertions::assertArrayEquals).accept(new Float[][] { objectArray, objectArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
+		this.factory.createArrayTester().accept(objectArray);
+		this.factory.create2DArrayTester().accept(new Float[][] { objectArray, objectArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
 	public void testDoubleArray() {
 		double[] array = new double[] { Double.MIN_VALUE, 0d, Double.MAX_VALUE };
-		this.factory.<double[]>createTester(Assertions::assertArrayEquals).accept(array);
-		this.factory.<double[][]>createTester(Assertions::assertArrayEquals).accept(new double[][] { array, array });
+		this.factory.createTester(DoubleArrayAssert::new, DoubleArrayAssert::containsExactly).accept(array);
+		this.factory.createTester(Double2DArrayAssert::new, Double2DArrayAssert::isDeepEqualTo).accept(new double[][] { array, array });
 		Double[] objectArray = new Double[] { Double.MIN_VALUE, 0d, Double.MAX_VALUE };
-		this.factory.<Double[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
-		this.factory.<Double[][]>createTester(Assertions::assertArrayEquals).accept(new Double[][] { objectArray, objectArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
+		this.factory.createArrayTester().accept(objectArray);
+		this.factory.create2DArrayTester().accept(new Double[][] { objectArray, objectArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
 	public void testCharArray() {
 		char[] array = new char[] { Character.MIN_VALUE, 'A', Character.MAX_VALUE };
-		this.factory.<char[]>createTester(Assertions::assertArrayEquals).accept(array);
-		this.factory.<char[][]>createTester(Assertions::assertArrayEquals).accept(new char[][] { array, array });
+		this.factory.createTester(CharArrayAssert::new, CharArrayAssert::containsExactly).accept(array);
+		this.factory.createTester(Char2DArrayAssert::new, Char2DArrayAssert::isDeepEqualTo).accept(new char[][] { array, array });
 		Character[] objectArray = new Character[] { Character.MIN_VALUE, 'A', Character.MAX_VALUE };
-		this.factory.<Character[]>createTester(Assertions::assertArrayEquals).accept(objectArray);
-		this.factory.<Character[][]>createTester(Assertions::assertArrayEquals).accept(new Character[][] { objectArray, objectArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { objectArray, objectArray });
+		this.factory.createArrayTester().accept(objectArray);
+		this.factory.create2DArrayTester().accept(new Character[][] { objectArray, objectArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { objectArray, objectArray });
 	}
 
 	@Test
@@ -204,11 +218,11 @@ public abstract class AbstractLangTestCase {
 		String string1 = "foo";
 		String string2 = "bar";
 		String[] stringArray = new String[] { string1, string2 };
-		this.factory.<String[]>createTester(Assertions::assertArrayEquals).accept(stringArray);
+		this.factory.createArrayTester().accept(stringArray);
 		// Test array with shared object references
-		this.factory.<String[]>createTester(Assertions::assertArrayEquals).accept(new String[] { string1, string1 });
-		this.factory.<String[][]>createTester(Assertions::assertArrayEquals).accept(new String[][] { stringArray, stringArray });
-		this.factory.<Object[][]>createTester(Assertions::assertArrayEquals).accept(new Object[][] { stringArray, stringArray });
+		this.factory.createArrayTester().accept(new String[] { string1, string1 });
+		this.factory.create2DArrayTester().accept(new String[][] { stringArray, stringArray });
+		this.factory.create2DArrayTester().accept(new Object[][] { stringArray, stringArray });
 	}
 
 	@Test
@@ -252,45 +266,46 @@ public abstract class AbstractLangTestCase {
 	}
 
 	private static void assertProxyEquals(Object expected, Object actual) {
-		assertTrue(Proxy.isProxyClass(actual.getClass()));
+		Assertions.assertThat(actual).isNotNull();
+		Assertions.assertThat(Proxy.isProxyClass(actual.getClass())).isTrue();
+		Assertions.assertThat(Proxy.getInvocationHandler(actual)).isInstanceOf(TestInvocationHandler.class);
 		TestInvocationHandler actualHandler = (TestInvocationHandler) Proxy.getInvocationHandler(actual);
 		TestInvocationHandler expectedHandler = (TestInvocationHandler) Proxy.getInvocationHandler(expected);
-		Assertions.assertEquals(expectedHandler.getValue(), actualHandler.getValue());
+		Assertions.assertThat(actualHandler.getValue()).isEqualTo(expectedHandler.getValue());
 	}
 
 	private static void assertEquals(Throwable expected, Throwable actual) {
-		Assertions.assertEquals(expected.getMessage(), actual.getMessage());
+		Assertions.assertThat(actual.getMessage()).isEqualTo(expected.getMessage());
 
 		StackTraceElement[] expectedStackTrace = expected.getStackTrace();
 		StackTraceElement[] actualStackTrace = expected.getStackTrace();
-		Assertions.assertEquals(expectedStackTrace.length, actualStackTrace.length);
-		for (int i = 0; i < expectedStackTrace.length; ++i) {
+		Assertions.assertThat(actualStackTrace).hasSameSizeAs(expectedStackTrace);
+		for (int i = 0; i < actualStackTrace.length; ++i) {
 			assertEquals(expectedStackTrace[i], actualStackTrace[i]);
 		}
 
 		Throwable[] expectedSuppressed = expected.getSuppressed();
 		Throwable[] actualSuppressed = actual.getSuppressed();
-		Assertions.assertEquals(expectedSuppressed.length, actualSuppressed.length);
-		for (int i = 0; i < expectedSuppressed.length; ++i) {
+		Assertions.assertThat(actualSuppressed).hasSameSizeAs(expectedSuppressed);
+		for (int i = 0; i < actualSuppressed.length; ++i) {
 			assertEquals(expectedSuppressed[i], actualSuppressed[i]);
 		}
 
-		Throwable cause1 = expected.getCause();
-		Throwable cause2 = actual.getCause();
-		if ((cause1 != null) && (cause2 != null)) {
-			assertEquals(cause1, cause2);
+		if (expected.getCause() != null) {
+			Assertions.assertThat(actual.getCause()).isNotNull();
+			assertEquals(expected.getCause(), actual.getCause());
 		} else {
-			assertSame(cause1, cause2);
+			Assertions.assertThat(actual.getCause()).isNull();
 		}
 	}
 
 	private static void assertEquals(StackTraceElement expected, StackTraceElement actual) {
-		Assertions.assertEquals(expected.getClassName(), actual.getClassName());
-		Assertions.assertEquals(expected.getMethodName(), actual.getMethodName());
-		Assertions.assertEquals(expected.getFileName(), actual.getFileName());
-		Assertions.assertEquals(expected.getLineNumber(), actual.getLineNumber());
-		Assertions.assertEquals(expected.getClassLoaderName(), actual.getClassLoaderName());
-		Assertions.assertEquals(expected.getModuleName(), actual.getModuleName());
-		Assertions.assertEquals(expected.getModuleVersion(), actual.getModuleVersion());
+		Assertions.assertThat(actual.getClassName()).isEqualTo(expected.getClassName());
+		Assertions.assertThat(actual.getMethodName()).isEqualTo(expected.getMethodName());
+		Assertions.assertThat(actual.getFileName()).isEqualTo(expected.getFileName());
+		Assertions.assertThat(actual.getLineNumber()).isEqualTo(expected.getLineNumber());
+		Assertions.assertThat(actual.getClassLoaderName()).isEqualTo(expected.getClassLoaderName());
+		Assertions.assertThat(actual.getModuleName()).isEqualTo(expected.getModuleName());
+		Assertions.assertThat(actual.getModuleVersion()).isEqualTo(expected.getModuleVersion());
 	}
 }

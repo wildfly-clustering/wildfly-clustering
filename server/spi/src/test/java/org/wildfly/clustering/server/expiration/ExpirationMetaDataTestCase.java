@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.expiration;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -32,8 +32,8 @@ public class ExpirationMetaDataTestCase {
 				return Instant.now().plus(Duration.ofHours(1));
 			}
 		};
-		assertFalse(metaData.isExpired());
-		assertTrue(metaData.isImmortal());
+		assertThat(metaData.isExpired()).isFalse();
+		assertThat(metaData.isImmortal()).isTrue();
 	}
 
 	@Test
@@ -50,8 +50,8 @@ public class ExpirationMetaDataTestCase {
 				return Instant.now().plus(Duration.ofHours(1));
 			}
 		};
-		assertFalse(metaData.isExpired());
-		assertTrue(metaData.isImmortal());
+		assertThat(metaData.isExpired()).isFalse();
+		assertThat(metaData.isImmortal()).isTrue();
 	}
 
 	@Test
@@ -68,8 +68,8 @@ public class ExpirationMetaDataTestCase {
 				return Instant.now().plus(Duration.ofHours(1));
 			}
 		};
-		assertFalse(metaData.isExpired());
-		assertTrue(metaData.isImmortal());
+		assertThat(metaData.isExpired()).isFalse();
+		assertThat(metaData.isImmortal()).isTrue();
 	}
 
 	@Test
@@ -86,8 +86,8 @@ public class ExpirationMetaDataTestCase {
 				return Instant.now().minus(Duration.ofHours(1));
 			}
 		};
-		assertTrue(metaData.isExpired());
-		assertFalse(metaData.isImmortal());
+		assertThat(metaData.isExpired()).isTrue();
+		assertThat(metaData.isImmortal()).isFalse();
 	}
 
 	@Test
@@ -104,7 +104,7 @@ public class ExpirationMetaDataTestCase {
 				return Instant.now();
 			}
 		};
-		assertFalse(metaData.isExpired());
-		assertFalse(metaData.isImmortal());
+		assertThat(metaData.isExpired()).isFalse();
+		assertThat(metaData.isImmortal()).isFalse();
 	}
 }

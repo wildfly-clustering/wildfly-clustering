@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.UUID;
 
@@ -34,14 +34,13 @@ public abstract class ByteBufferMarshalledKeyFactoryTestCase extends ByteBufferM
 	@Override
 	public void testHashCode() throws Exception {
 		UUID uuid = UUID.randomUUID();
-		int expected = uuid.hashCode();
 		ByteBufferMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
-		assertEquals(expected, mv.hashCode());
+		assertThat(mv).hasSameHashCodeAs(uuid);
 
 		ByteBufferMarshalledValue<UUID> copy = replicate(mv);
-		assertEquals(expected, copy.hashCode());
+		assertThat(copy).hasSameHashCodeAs(uuid);
 
 		mv = this.factory.createMarshalledValue(null);
-		assertEquals(0, mv.hashCode());
+		assertThat(mv.hashCode()).isEqualTo(0);
 	}
 }
