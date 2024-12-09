@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.marshalling;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -42,26 +42,26 @@ public abstract class ByteBufferMarshalledValueFactoryTestCase {
 		UUID uuid = UUID.randomUUID();
 		ByteBufferMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
 
-		assertNotNull(mv.peek());
-		assertSame(uuid, mv.peek());
-		assertSame(uuid, mv.get(this.marshaller));
+		assertThat(mv.peek()).isNotNull().isSameAs(uuid);
+		assertThat(mv.get(this.marshaller)).isNotNull().isSameAs(uuid);
 
 		ByteBufferMarshalledValue<UUID> copy = replicate(mv);
 
-		assertNull(copy.peek());
+		assertThat(copy).isNotNull();
+		assertThat(copy.peek()).isNull();
 
 		UUID uuid2 = copy.get(this.marshaller);
-		assertNotSame(uuid, uuid2);
-		assertEquals(uuid, uuid2);
+		assertThat(uuid2).isNotSameAs(uuid).isEqualTo(uuid);
 
 		copy = replicate(copy);
 		uuid2 = copy.get(this.marshaller);
-		assertEquals(uuid, uuid2);
+		assertThat(uuid2).isEqualTo(uuid);
 
 		mv = this.factory.createMarshalledValue(null);
-		assertNull(mv.peek());
-		assertNull(mv.getBuffer());
-		assertNull(mv.get(this.marshaller));
+		assertThat(mv).isNotNull();
+		assertThat(mv.peek()).isNull();
+		assertThat(mv.getBuffer()).isNull();
+		assertThat(mv.get(this.marshaller)).isNull();
 	}
 
 	@Test
@@ -69,38 +69,34 @@ public abstract class ByteBufferMarshalledValueFactoryTestCase {
 		UUID uuid = UUID.randomUUID();
 		ByteBufferMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
 
-		assertTrue(mv.equals(mv));
-		assertFalse(mv.equals(null));
+		assertThat(mv).isNotNull().isEqualTo(mv);
 
 		ByteBufferMarshalledValue<UUID> dup = this.factory.createMarshalledValue(uuid);
-		assertTrue(mv.equals(dup));
-		assertTrue(dup.equals(mv));
+		assertThat(dup).isEqualTo(mv);
+		assertThat(mv).isEqualTo(dup);
 
 		ByteBufferMarshalledValue<UUID> replica = replicate(mv);
-		assertTrue(mv.equals(replica));
-		assertTrue(replica.equals(mv));
+		assertThat(replica).isEqualTo(mv);
+		assertThat(mv).isEqualTo(replica);
 
 		ByteBufferMarshalledValue<UUID> nulled = this.factory.createMarshalledValue(null);
-		assertFalse(mv.equals(nulled));
-		assertFalse(nulled.equals(mv));
-		assertFalse(replica.equals(nulled));
-		assertFalse(nulled.equals(replica));
-		assertTrue(nulled.equals(nulled));
-		assertFalse(nulled.equals(null));
-		assertTrue(nulled.equals(this.factory.createMarshalledValue(null)));
+		assertThat(nulled).isNotNull().isNotEqualTo(mv).isNotEqualTo(replica).isEqualTo(nulled);
+		assertThat(mv).isNotEqualTo(nulled);
+		assertThat(replica).isNotEqualTo(nulled);
+		assertThat(this.factory.createMarshalledValue(null)).isEqualTo(nulled);
 	}
 
 	@Test
 	public void testHashCode() throws Exception {
 		UUID uuid = UUID.randomUUID();
 		ByteBufferMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
-		assertEquals(uuid.hashCode(), mv.hashCode());
+		assertThat(mv).hasSameHashCodeAs(uuid);
 
 		ByteBufferMarshalledValue<UUID> copy = replicate(mv);
-		assertEquals(0, copy.hashCode());
+		assertThat(copy.hashCode()).isEqualTo(0);
 
 		mv = this.factory.createMarshalledValue(null);
-		assertEquals(0, mv.hashCode());
+		assertThat(mv.hashCode()).isEqualTo(0);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -109,13 +105,13 @@ public abstract class ByteBufferMarshalledValueFactoryTestCase {
 		ByteBuffer buffer = this.marshaller.write(value);
 		if (size.isPresent()) {
 			// Verify that computed size equals actual size
-			assertEquals(size.getAsInt(), buffer.remaining());
+			assertThat(size).hasValue(buffer.remaining());
 		}
 		ByteBufferMarshalledValue<V> result = (ByteBufferMarshalledValue<V>) this.marshaller.read(buffer);
 		OptionalInt resultSize = this.marshaller.size(result);
 		if (size.isPresent() && resultSize.isPresent()) {
 			// Verify that computed size equals actual size
-			assertEquals(size.getAsInt(), resultSize.getAsInt());
+			assertThat(resultSize).isEqualTo(size);
 		}
 		return result;
 	}

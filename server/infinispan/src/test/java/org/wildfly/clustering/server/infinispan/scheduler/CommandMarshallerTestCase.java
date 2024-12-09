@@ -5,11 +5,12 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Consumer;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
@@ -26,7 +27,10 @@ public class CommandMarshallerTestCase {
 	@ParameterizedTest
 	@TesterFactorySource(ProtoStreamTesterFactory.class)
 	public void testScheduleWithLocalMetaDataCommand(TesterFactory factory) {
-		Consumer<ScheduleCommand<String, String>> tester = factory.createTester(this::assertEquals);
+		Consumer<ScheduleCommand<String, String>> tester = factory.createTester((expected, actual) -> {
+			assertThat(actual.getId()).isEqualTo(expected.getId());
+			assertThat(actual.getPersistentMetaData()).isEqualTo(expected.getPersistentMetaData());
+		});
 
 		tester.accept(new ScheduleWithTransientMetaDataCommand<>("foo", null));
 		tester.accept(new ScheduleWithTransientMetaDataCommand<>("foo", "bar"));
@@ -35,19 +39,20 @@ public class CommandMarshallerTestCase {
 	@ParameterizedTest
 	@TesterFactorySource(ProtoStreamTesterFactory.class)
 	public void testCancelCommand(TesterFactory factory) {
-		Consumer<CancelCommand<String, Object>> tester = factory.createTester(this::assertEquals);
+		Consumer<CancelCommand<String, Object>> tester = factory.createTester((expected, actual) -> {
+			assertThat(actual.getId()).isEqualTo(expected.getId());
+		});
 
 		tester.accept(new CancelCommand<>("foo"));
-	}
-
-	<I, M> void assertEquals(CancelCommand<I, M> expected, CancelCommand<I, M> actual) {
-		Assertions.assertEquals(expected.getId(), actual.getId());
 	}
 
 	@ParameterizedTest
 	@TesterFactorySource(ProtoStreamTesterFactory.class)
 	public void testScheduleWithMetaDataCommand(TesterFactory factory) {
-		Consumer<ScheduleCommand<String, String>> tester = factory.createTester(this::assertEquals);
+		Consumer<ScheduleCommand<String, String>> tester = factory.createTester((expected, actual) -> {
+			assertThat(actual.getId()).isEqualTo(expected.getId());
+			assertThat(actual.getPersistentMetaData()).isEqualTo(expected.getPersistentMetaData());
+		});
 
 		tester.accept(new ScheduleWithPersistentMetaDataCommand<>("foo", "bar"));
 	}
@@ -55,22 +60,15 @@ public class CommandMarshallerTestCase {
 	@ParameterizedTest
 	@TesterFactorySource(ProtoStreamTesterFactory.class)
 	public void testScheduleWithExpirationMetaDataCommand(TesterFactory factory) {
-		Consumer<ScheduleCommand<String, ExpirationMetaData>> tester = factory.createTester(this::assertExpirationEquals);
+		Consumer<ScheduleCommand<String, ExpirationMetaData>> tester = factory.createTester((expected, actual) -> {
+			assertThat(actual.getId()).isEqualTo(expected.getId());
+			assertThat(actual.getPersistentMetaData().getTimeout()).isEqualTo(expected.getPersistentMetaData().getTimeout());
+			assertThat(actual.getPersistentMetaData().getLastAccessTime()).isEqualTo(expected.getPersistentMetaData().getLastAccessTime());
+		});
 
 		tester.accept(new ScheduleWithExpirationMetaDataCommand<>("foo", new TestExpirationMetaData(Duration.ZERO, Instant.EPOCH)));
 		tester.accept(new ScheduleWithExpirationMetaDataCommand<>("bar", new TestExpirationMetaData(Duration.ofMinutes(30), Instant.now())));
 		tester.accept(new ScheduleWithExpirationMetaDataCommand<>("bar", new TestExpirationMetaData(Duration.ofHours(1), Instant.now())));
-	}
-
-	<I, M> void assertEquals(ScheduleCommand<I, M> expected, ScheduleCommand<I, M> actual) {
-		Assertions.assertEquals(expected.getId(), actual.getId());
-		Assertions.assertEquals(expected.getPersistentMetaData(), actual.getPersistentMetaData());
-	}
-
-	<I> void assertExpirationEquals(ScheduleCommand<I, ExpirationMetaData> expected, ScheduleCommand<I, ExpirationMetaData> actual) {
-		Assertions.assertEquals(expected.getId(), actual.getId());
-		Assertions.assertEquals(expected.getPersistentMetaData().getTimeout(), actual.getPersistentMetaData().getTimeout());
-		Assertions.assertEquals(expected.getPersistentMetaData().getLastAccessTime(), actual.getPersistentMetaData().getLastAccessTime());
 	}
 
 	private static class TestExpirationMetaData implements ExpirationMetaData {

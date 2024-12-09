@@ -5,11 +5,12 @@
 
 package org.wildfly.clustering.server.infinispan;
 
+import static org.assertj.core.api.Assertions.*;
+
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jgroups.Address;
 import org.jgroups.util.NameCache;
 import org.jgroups.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.cache.infinispan.embedded.persistence.FormatterTesterFactory;
@@ -38,19 +39,21 @@ public class EmbeddedCacheManagerGroupMemberTestCase {
 		NameCache.add(fooAddress, "foo");
 		NameCache.add(barAddress, "bar");
 		CacheContainerGroupMember fooMember = new EmbeddedCacheManagerGroupMember(new JGroupsAddress(fooAddress));
-		Assertions.assertEquals("foo", fooMember.getName());
+		assertThat(fooMember.getName()).isEqualTo("foo");
 		CacheContainerGroupMember barMember = new EmbeddedCacheManagerGroupMember(new JGroupsAddress(barAddress));
-		Assertions.assertEquals("bar", barMember.getName());
+		assertThat(barMember.getName()).isEqualTo("bar");
 
-		Assertions.assertEquals(fooMember, new EmbeddedCacheManagerGroupMember(new JGroupsAddress(fooAddress)));
-		Assertions.assertEquals(fooMember.hashCode(), new EmbeddedCacheManagerGroupMember(new JGroupsAddress(fooAddress)).hashCode());
-		Assertions.assertNotEquals(fooMember, barMember);
-		Assertions.assertEquals(fooMember, new JChannelGroupMember(fooAddress));
-		Assertions.assertEquals(fooMember.hashCode(), new JChannelGroupMember(fooAddress).hashCode());
-		Assertions.assertNotEquals(fooMember, new JChannelGroupMember(barAddress));
-		Assertions.assertNotEquals(fooMember, new LocalEmbeddedCacheManagerGroupMember("foo"));
-		Assertions.assertNotEquals(barMember, new LocalEmbeddedCacheManagerGroupMember("bar"));
-		Assertions.assertNotEquals(fooMember, LocalGroupMember.of("foo"));
-		Assertions.assertNotEquals(barMember, LocalGroupMember.of("bar"));
+		assertThat(fooMember).hasSameHashCodeAs(fooAddress)
+				.isEqualTo(new JChannelGroupMember(fooAddress))
+				.isNotEqualTo(new JChannelGroupMember(barAddress))
+				.isNotEqualTo(new LocalEmbeddedCacheManagerGroupMember("foo"))
+				.isNotEqualTo(LocalGroupMember.of("foo"))
+				;
+		assertThat(barMember).hasSameHashCodeAs(barAddress)
+				.isEqualTo(new JChannelGroupMember(barAddress))
+				.isNotEqualTo(new JChannelGroupMember(fooAddress))
+				.isNotEqualTo(new LocalEmbeddedCacheManagerGroupMember("bar"))
+				.isNotEqualTo(LocalGroupMember.of("bar"))
+				;
 	}
 }

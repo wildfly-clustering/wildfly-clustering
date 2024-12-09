@@ -6,7 +6,7 @@
 package org.wildfly.clustering.session.container;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.net.CookieManager;
 import java.net.URI;
@@ -58,24 +58,24 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		for (URI uri : endpoints) {
 			// Verify no current session
 			request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
-				assertEquals(HTTP_OK, response.statusCode());
-				assertFalse(response.headers().firstValue(SESSION_ID).isPresent());
-				assertFalse(response.headers().firstValueAsLong(IMMUTABLE).isPresent());
-				assertFalse(response.headers().firstValueAsLong(COUNTER).isPresent());
+				assertThat(response.statusCode()).isSameAs(HTTP_OK);
+				assertThat(response.headers().firstValue(SESSION_ID)).isPresent();
+				assertThat(response.headers().firstValueAsLong(IMMUTABLE)).isEmpty();
+				assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
 			}).join();
 		}
 
 		// Create a session
 		Map.Entry<String, String> entry = request(client, endpoints.get(0), HttpMethod.PUT).<Map.Entry<String, String>>thenApply(response -> {
-			assertEquals(HTTP_OK, response.statusCode());
+			assertThat(response.statusCode()).isSameAs(HTTP_OK);
 			String sessionId = response.headers().firstValue(SESSION_ID).orElse(null);
 			String immutableValue = response.headers().firstValue(IMMUTABLE).orElse(null);
 			return new AbstractMap.SimpleImmutableEntry<>(sessionId, immutableValue);
 		}).join();
 		String sessionId = entry.getKey();
 		String immutableValue = entry.getValue();
-		assertNotNull(sessionId);
-		assertNotNull(immutableValue);
+		assertThat(sessionId).isNotNull();
+		assertThat(immutableValue).isNotNull();
 
 		AtomicLong expected = new AtomicLong(0);
 		int concurrency = this.configuration.getConcurrency();
@@ -83,27 +83,27 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 			for (URI uri : endpoints) {
 				String message = String.format("%s[%d]", uri, i);
 				long value = request(client, uri, HttpMethod.GET).thenApply(response -> {
-					assertEquals(HTTP_OK, response.statusCode(), message);
-					assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null), message);
-					assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null), message);
+					assertThat(response.statusCode()).as(message).isSameAs(HTTP_OK);
+					assertThat(response.headers().firstValue(SESSION_ID)).as(message).hasValue(sessionId);
+					assertThat(response.headers().firstValue(IMMUTABLE)).as(message).hasValue(immutableValue);
 					return response.headers().firstValueAsLong(COUNTER).orElse(0);
 				}).join();
-				assertEquals(expected.incrementAndGet(), value, message);
+				assertThat(value).as(message).isEqualTo(expected.incrementAndGet());
 
 				// Perform a number of concurrent requests incrementing the mutable session attribute
 				List<CompletableFuture<Long>> futures = new ArrayList<>(concurrency);
 				for (int j = 0; j < concurrency; j++) {
 					CompletableFuture<Long> future = request(client, uri, HttpMethod.GET).thenApply(response -> {
-						assertEquals(HTTP_OK, response.statusCode(), message);
-						assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null), message);
-						assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null), message);
+						assertThat(response.statusCode()).as(message).isSameAs(HTTP_OK);
+						assertThat(response.headers().firstValue(SESSION_ID)).as(message).hasValue(sessionId);
+						assertThat(response.headers().firstValue(IMMUTABLE)).as(message).hasValue(immutableValue);
 						return response.headers().firstValueAsLong(COUNTER).orElse(0);
 					});
 					futures.add(future);
 				}
 				expected.addAndGet(concurrency);
 				// Verify the correct number of unique results
-				assertEquals(concurrency, futures.stream().map(CompletableFuture::join).distinct().count(), message);
+				assertThat(futures.stream().map(CompletableFuture::join).distinct().count()).as(message).isEqualTo(concurrency);
 
 				// Grace time to increase likelihood that subsequent request does not overlap with post-request processing of previous requests
 				try {
@@ -114,12 +114,12 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 
 				// Verify expected session attribute value following concurrent updates
 				value = request(client, uri, HttpMethod.GET).thenApply(response -> {
-					assertEquals(HTTP_OK, response.statusCode(), message);
-					assertEquals(sessionId, response.headers().firstValue(SESSION_ID).orElse(null), message);
-					assertEquals(immutableValue, response.headers().firstValue(IMMUTABLE).orElse(null), message);
+					assertThat(response.statusCode()).as(message).isSameAs(HTTP_OK);
+					assertThat(response.headers().firstValue(SESSION_ID)).as(message).hasValue(sessionId);
+					assertThat(response.headers().firstValue(IMMUTABLE)).as(message).hasValue(immutableValue);
 					return response.headers().firstValueAsLong(COUNTER).orElse(0);
 				}).join();
-				assertEquals(expected.incrementAndGet(), value, message);
+				assertThat(value).as(message).isEqualTo(expected.incrementAndGet());
 
 				// Grace time between fail-over requests
 				try {
@@ -132,17 +132,17 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 
 		// Invalidate session
 		request(client, endpoints.get(0), HttpMethod.DELETE).thenAccept(response -> {
-			assertEquals(HTTP_OK, response.statusCode());
-			assertNull(response.headers().firstValue(SESSION_ID).orElse(null));
+			assertThat(response.statusCode()).isSameAs(HTTP_OK);
+			assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
 		}).join();
 
 		List<CompletableFuture<Void>> futures = new ArrayList<>(2);
 		for (URI uri : endpoints) {
 			// Verify session was truly invalidated
 			futures.add(request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
-				assertEquals(HTTP_OK, response.statusCode());
-				assertFalse(response.headers().firstValue(SESSION_ID).isPresent());
-				assertFalse(response.headers().firstValueAsLong(COUNTER).isPresent());
+				assertThat(response.statusCode()).isSameAs(HTTP_OK);
+				assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
+				assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
 			}));
 		}
 		futures.forEach(CompletableFuture::join);

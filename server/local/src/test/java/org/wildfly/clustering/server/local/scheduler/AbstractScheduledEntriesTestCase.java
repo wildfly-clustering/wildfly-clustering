@@ -5,12 +5,11 @@
 
 package org.wildfly.clustering.server.local.scheduler;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +34,7 @@ public abstract class AbstractScheduledEntriesTestCase {
 	@Test
 	public void test() {
 		// Verify empty
-		assertFalse(this.entrySet.iterator().hasNext());
+		assertThat(this.entrySet).isEmpty();
 
 		// Populate
 		List<Map.Entry<UUID, Instant>> entries = new LinkedList<>();
@@ -51,58 +50,24 @@ public abstract class AbstractScheduledEntriesTestCase {
 		}
 
 		List<Map.Entry<UUID, Instant>> expected = this.expectedFactory.apply(entries);
-		assertEquals(5, expected.size());
-
-		// Verify iteration order corresponds to expected order
-		Iterator<Map.Entry<UUID, Instant>> iterator = this.entrySet.iterator();
-		for (Map.Entry<UUID, Instant> entry : expected) {
-			assertTrue(iterator.hasNext());
-			Map.Entry<UUID, Instant> result = iterator.next();
-			assertSame(entry.getKey(), result.getKey());
-			assertSame(entry.getValue(), result.getValue());
-		}
-		assertFalse(iterator.hasNext());
+		System.out.println("Actual:\t" + this.entrySet);
+		System.out.println("Expected:\t" + expected);
+		assertThat(this.entrySet).containsExactlyElementsOf(expected);
 
 		// Verify iteration order after removal of first item
 		this.entrySet.remove(expected.remove(0).getKey());
-
-		// Verify iteration order corresponds to expected order
-		iterator = this.entrySet.iterator();
-		for (Map.Entry<UUID, Instant> entry : expected) {
-			assertTrue(iterator.hasNext());
-			Map.Entry<UUID, Instant> result = iterator.next();
-			assertSame(entry.getKey(), result.getKey());
-			assertSame(entry.getValue(), result.getValue());
-		}
-		assertFalse(iterator.hasNext());
+		assertThat(this.entrySet).containsExactlyElementsOf(expected);
 
 		// Verify iteration order after removal of middle item
 		this.entrySet.remove(expected.remove((expected.size() - 1) / 2).getKey());
-
-		// Verify iteration order corresponds to expected order
-		iterator = this.entrySet.iterator();
-		for (Map.Entry<UUID, Instant> entry : expected) {
-			assertTrue(iterator.hasNext());
-			Map.Entry<UUID, Instant> result = iterator.next();
-			assertSame(entry.getKey(), result.getKey());
-			assertSame(entry.getValue(), result.getValue());
-		}
-		assertFalse(iterator.hasNext());
+		assertThat(this.entrySet).containsExactlyElementsOf(expected);
 
 		// Verify iteration order after removal of last item
 		this.entrySet.remove(expected.remove((expected.size() - 1)).getKey());
-
-		// Verify iteration order corresponds to expected order
-		iterator = this.entrySet.iterator();
-		for (Map.Entry<UUID, Instant> entry : expected) {
-			assertTrue(iterator.hasNext());
-			Map.Entry<UUID, Instant> result = iterator.next();
-			assertSame(entry.getKey(), result.getKey());
-			assertSame(entry.getValue(), result.getValue());
-		}
-		assertFalse(iterator.hasNext());
+		assertThat(this.entrySet).containsExactlyElementsOf(expected);
 
 		// Verify removal of non-existent entry
 		this.entrySet.remove(UUID.randomUUID());
+		assertThat(this.entrySet).containsExactlyElementsOf(expected);
 	}
 }

@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.distribution;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.infinispan.remoting.transport.Address;
@@ -29,7 +29,7 @@ public class ConsistentHashLocalityTestCase {
 		when(distribution.getPrimaryOwner(localKey)).thenReturn(localAddress);
 		when(distribution.getPrimaryOwner(remoteKey)).thenReturn(remoteAddress);
 
-		assertTrue(locality.isLocal(localKey));
-		assertFalse(locality.isLocal(remoteKey));
+		assertThat(locality.isLocal(localKey)).isTrue();
+		assertThat(locality.isLocal(remoteKey)).isFalse();
 	}
 }

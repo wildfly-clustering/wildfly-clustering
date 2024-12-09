@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.infinispan.registry;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -32,8 +32,8 @@ public class CacheRegistryITCase {
 		try (CacheContainerRegistryProvider<String, UUID> provider1 = new CacheContainerRegistryProvider<>(CLUSTER_NAME, MEMBER_1)) {
 			try (Registry<CacheContainerGroupMember, String, UUID> registry1 = provider1.apply(entry1)) {
 				CacheContainerGroupMember member1 = registry1.getGroup().getLocalMember();
-				assertEquals(entry1, registry1.getEntry(member1));
-				assertEquals(Map.ofEntries(entry1), registry1.getEntries());
+				assertThat(registry1.getEntry(member1)).isEqualTo(entry1);
+				assertThat(registry1.getEntries()).containsExactlyEntriesOf(Map.ofEntries(entry1));
 
 				RegistryListener<String, UUID> listener = mock(RegistryListener.class);
 				try (Registration registration = registry1.register(listener)) {
@@ -44,13 +44,13 @@ public class CacheRegistryITCase {
 						try (Registry<CacheContainerGroupMember, String, UUID> registry2 = provider2.apply(entry2)) {
 							CacheContainerGroupMember member2 = registry2.getGroup().getLocalMember();
 
-							assertEquals(entry1, registry1.getEntry(member1));
-							assertEquals(entry1, registry2.getEntry(member1));
-							assertEquals(entry2, registry1.getEntry(member2));
-							assertEquals(entry2, registry2.getEntry(member2));
+							assertThat(registry1.getEntry(member1)).isEqualTo(entry1);
+							assertThat(registry2.getEntry(member1)).isEqualTo(entry1);
+							assertThat(registry1.getEntry(member2)).isEqualTo(entry2);
+							assertThat(registry2.getEntry(member2)).isEqualTo(entry2);
 
-							assertEquals(Map.ofEntries(entry1, entry2), registry1.getEntries());
-							assertEquals(Map.ofEntries(entry1, entry2), registry2.getEntries());
+							assertThat(registry1.getEntries()).containsExactlyInAnyOrderEntriesOf(Map.ofEntries(entry1, entry2));
+							assertThat(registry2.getEntries()).containsExactlyInAnyOrderEntriesOf(Map.ofEntries(entry1, entry2));
 
 							Thread.sleep(100);
 
@@ -59,8 +59,8 @@ public class CacheRegistryITCase {
 						}
 					}
 
-					assertEquals(entry1, registry1.getEntry(member1));
-					assertEquals(Map.ofEntries(entry1), registry1.getEntries());
+					assertThat(registry1.getEntry(member1)).isEqualTo(entry1);
+					assertThat(registry1.getEntries()).containsExactlyEntriesOf(Map.ofEntries(entry1));
 
 					Thread.sleep(100);
 

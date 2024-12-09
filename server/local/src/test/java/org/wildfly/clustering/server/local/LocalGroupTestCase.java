@@ -5,9 +5,7 @@
 
 package org.wildfly.clustering.server.local;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.List;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,9 +21,9 @@ public class LocalGroupTestCase {
 	public void test() {
 		LocalGroup group = new DefaultLocalGroup(GROUP_NAME, MEMBER_NAME);
 
-		assertSame(GROUP_NAME, group.getName());
-		assertSame(MEMBER_NAME, group.getLocalMember().getName());
-		assertEquals(List.of(group.getLocalMember()), group.getMembership().getMembers());
-		assertSame(group.getLocalMember(), group.getMembership().getCoordinator());
+		assertThat(group.getName()).isSameAs(GROUP_NAME);
+		assertThat(group.getLocalMember().getName()).isSameAs(MEMBER_NAME);
+		assertThat(group.getMembership().getMembers()).containsExactly(group.getLocalMember());
+		assertThat(group.getMembership().getCoordinator()).isSameAs(group.getLocalMember());
 	}
 }

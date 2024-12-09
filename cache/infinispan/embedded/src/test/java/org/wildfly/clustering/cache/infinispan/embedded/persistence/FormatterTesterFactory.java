@@ -5,12 +5,11 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.persistence;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.function.BiConsumer;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
-import org.junit.jupiter.api.Assertions;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.TesterFactory;
 
@@ -26,7 +25,7 @@ public interface FormatterTesterFactory extends TesterFactory {
 			@Override
 			public void accept(T key) {
 				Class<?> keyClass = key.getClass();
-				Assertions.assertTrue(mapper.isSupportedType(keyClass), key::toString);
+				assertThat(mapper.isSupportedType(keyClass)).as(key::toString).isTrue();
 				String string = mapper.getStringMapping(key);
 
 				System.out.println(String.format("%s\t%s\t%s\t%s", mapper.getClass().getSimpleName(), keyClass.getCanonicalName(), key, string));
@@ -38,13 +37,13 @@ public interface FormatterTesterFactory extends TesterFactory {
 
 			@Override
 			public void reject(T key) {
-				Assertions.assertFalse(mapper.isSupportedType(key.getClass()), key::toString);
+				assertThat(mapper.isSupportedType(key.getClass())).as(key::toString).isFalse();
 			}
 
 			@Override
 			public <E extends Throwable> void reject(T key, Class<E> expected) {
-				Assertions.assertTrue(mapper.isSupportedType(key.getClass()), key::toString);
-				assertThrows(expected, () -> mapper.getStringMapping(key), key::toString);
+				assertThat(mapper.isSupportedType(key.getClass())).as(key::toString).isTrue();
+				assertThatExceptionOfType(expected).as(key::toString).isThrownBy(() -> mapper.getStringMapping(key));
 			}
 		};
 	}

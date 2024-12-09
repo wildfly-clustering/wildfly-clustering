@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.cache.infinispan.embedded.affinity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -42,12 +42,12 @@ public class ConsistentHashKeyRegistryTestCase {
 
 		KeyRegistry<Object> registry = new ConsistentHashKeyRegistry<>(hash, filter, queueFactory);
 
-		assertTrue(registry.getAddresses().contains(local));
-		assertFalse(registry.getAddresses().contains(filtered));
-		assertFalse(registry.getAddresses().contains(standby));
-		assertEquals(Collections.singleton(local), registry.getAddresses());
-		assertSame(queue, registry.getKeys(local));
-		assertNull(registry.getKeys(standby));
-		assertNull(registry.getKeys(filtered));
+		assertThat(registry.getAddresses()).contains(local);
+		assertThat(registry.getAddresses()).doesNotContain(filtered);
+		assertThat(registry.getAddresses()).doesNotContain(standby);
+		assertThat(registry.getAddresses()).containsExactly(local);
+		assertThat(registry.getKeys(local)).isSameAs(queue);
+		assertThat(registry.getKeys(standby)).isNull();
+		assertThat(registry.getKeys(filtered)).isNull();
 	}
 }

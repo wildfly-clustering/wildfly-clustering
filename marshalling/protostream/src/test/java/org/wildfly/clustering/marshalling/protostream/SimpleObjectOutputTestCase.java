@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -34,11 +34,11 @@ public class SimpleObjectOutputTestCase {
 		test.writeExternal(output);
 
 		for (int i = 0; i < 2; ++i) {
-			assertSame(test.objects[i], objects[i]);
-			assertSame(test.strings[i], strings[i]);
-			assertEquals(test.ints[i], ints[i]);
-			assertEquals(test.longs[i], longs[i]);
-			assertEquals(test.doubles[i], doubles[i], 0);
+			assertThat(objects[i]).isSameAs(test.objects[i]);
+			assertThat(strings[i]).isSameAs(test.strings[i]);
+			assertThat(ints[i]).isEqualTo(test.ints[i]);
+			assertThat(longs[i]).isEqualTo(test.longs[i]);
+			assertThat(doubles[i]).isEqualTo(test.doubles[i]);
 		}
 	}
 

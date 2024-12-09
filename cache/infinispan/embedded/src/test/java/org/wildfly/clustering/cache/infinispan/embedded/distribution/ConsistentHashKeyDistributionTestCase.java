@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.distribution;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.infinispan.distribution.DistributionManager;
@@ -40,6 +40,6 @@ public class ConsistentHashKeyDistributionTestCase {
 
 		Address result = distribution.getPrimaryOwner(key);
 
-		assertSame(address, result);
+		assertThat(result).isSameAs(address);
 	}
 }

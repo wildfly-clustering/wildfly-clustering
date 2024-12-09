@@ -5,10 +5,9 @@
 
 package org.wildfly.clustering.server.infinispan;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.infinispan.commons.marshall.IdentityMarshaller;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -56,10 +55,10 @@ public class LocalGroupTestCase {
 			LocalEmbeddedCacheManagerGroupConfiguration config = () -> manager;
 			CacheContainerGroup group = new EmbeddedCacheManagerGroup<>(config);
 
-			assertSame(GROUP_NAME, group.getName());
-			assertSame(MEMBER_NAME, group.getLocalMember().getName());
-			assertEquals(List.of(group.getLocalMember()), group.getMembership().getMembers());
-			assertSame(group.getLocalMember(), group.getMembership().getCoordinator());
+			assertThat(group.getName()).isSameAs(GROUP_NAME);
+			assertThat(group.getLocalMember().getName()).isSameAs(MEMBER_NAME);
+			assertThat(group.getMembership().getMembers()).containsExactly(group.getLocalMember());
+			assertThat(group.getMembership().getCoordinator()).isSameAs(group.getLocalMember());
 		}
 	}
 }

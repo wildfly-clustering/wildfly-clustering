@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.context;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.ThreadFactory;
@@ -33,7 +33,7 @@ public class ContextualThreadFactoryTestCase {
 
 		Thread result = subject.newThread(task);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(reference).accept(same(expected), same(targetContext));
 	}

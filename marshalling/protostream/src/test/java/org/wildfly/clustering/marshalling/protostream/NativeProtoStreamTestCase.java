@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.util.Objects;
 
 import org.infinispan.protostream.SerializationContextInitializer;
@@ -13,7 +15,6 @@ import org.infinispan.protostream.annotations.ProtoEnumValue;
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
 import org.infinispan.protostream.annotations.ProtoSchema;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 
@@ -36,12 +37,12 @@ public class NativeProtoStreamTestCase {
 	}
 
 	static void assertEquals(Employee expected, Employee actual) {
-		Assertions.assertEquals(expected, actual);
-		Assertions.assertEquals(expected.getName(), actual.getName());
-		Assertions.assertSame(expected.getSex(), actual.getSex());
-		Assertions.assertEquals(expected.isHead(), actual.isHead());
+		assertThat(actual).isEqualTo(expected);
+		assertThat(actual.getName()).isEqualTo(expected.getName());
+		assertThat(actual.getSex()).isSameAs(expected.getSex());
+		assertThat(actual.isHead()).isEqualTo(expected.isHead());
 		if (!expected.isHead()) {
-			assertEquals(expected.getManager(), actual.getManager());
+			assertThat(actual.getManager()).isEqualTo(expected.getManager());
 		}
 	}
 
@@ -106,25 +107,7 @@ public class NativeProtoStreamTestCase {
 	@Proto
 	record Name(String first, String last) {
 	}
-/*
-	@ProtoAdapter(Name.class)
-	static class NameFactory {
-		@ProtoFactory
-		static Name create(String first, String last) {
-			return new Name(first, last);
-		}
 
-		@ProtoField(1)
-		static String getFirst(Name name) {
-			return name.first();
-		}
-
-		@ProtoField(2)
-		static String getLast(Name name) {
-			return name.last();
-		}
-	}
-*/
 	@ProtoSchema(includeClasses = { Sex.class, Name.class, Employee.class })
 	interface EmployeeInitializer extends SerializationContextInitializer {
 	}
