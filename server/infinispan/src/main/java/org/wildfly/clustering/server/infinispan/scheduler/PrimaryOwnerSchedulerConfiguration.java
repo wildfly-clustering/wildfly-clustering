@@ -15,8 +15,8 @@ import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommand
 
 /**
  * Encapsulates configuration of a {@link PrimaryOwnerScheduler}.
- * @param <I> the identifier type of scheduled entries
- * @param <M> the meta data type
+ * @param <I> the scheduled entry identifier type
+ * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
 public interface PrimaryOwnerSchedulerConfiguration<I, M> {
@@ -25,7 +25,7 @@ public interface PrimaryOwnerSchedulerConfiguration<I, M> {
 
 	CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
 
-	CacheEntryScheduler<I, M> getScheduler();
+	Scheduler<I, M> getScheduler();
 
 	Function<I, CacheContainerGroupMember> getAffinity();
 

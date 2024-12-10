@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.IntSets;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.Listener.Observation;
@@ -38,6 +37,7 @@ import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
@@ -190,7 +190,8 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 						if (!leftMembers.isEmpty()) {
 							try (Batch batch = this.batchFactory.get()) {
 								// Filter keys owned by the local member
-								try (Stream<T> stream = cache.getAdvancedCache().keySet().stream().filterKeySegments(IntSets.from(hash.getPrimarySegmentsForOwner(localAddress)))) {
+								CacheStreamFilter<T> filter = CacheStreamFilter.primary(hash, localAddress);
+								try (Stream<T> stream = filter.apply(cache.keySet().stream())) {
 									Iterator<T> keys = stream.iterator();
 									while (keys.hasNext()) {
 										this.unregister(keys.next(), leftMembers);

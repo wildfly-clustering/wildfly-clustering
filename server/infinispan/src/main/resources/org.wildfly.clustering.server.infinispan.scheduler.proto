@@ -18,6 +18,7 @@ message CancelCommand {
  */
 message ScheduleCommand {
 	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	metaData	 = 2;
 }
 
 /**

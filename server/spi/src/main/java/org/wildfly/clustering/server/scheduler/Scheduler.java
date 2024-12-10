@@ -6,7 +6,6 @@
 package org.wildfly.clustering.server.scheduler;
 
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /**
  * A task scheduler.
@@ -29,19 +28,11 @@ public interface Scheduler<I, M> extends AutoCloseable {
 	void cancel(I id);
 
 	/**
-	 * Returns a stream of scheduled item identifiers.
-	 * @return a stream of scheduled item identifiers.
-	 */
-	Stream<I> stream();
-
-	/**
 	 * Indicates whether the entry with the specified identifier is scheduled.
 	 * @param id an object identifier
 	 * @return true, if the specified entry is scheduled, false otherwise.
 	 */
-	default boolean contains(I id) {
-		return this.stream().anyMatch(id::equals);
-	}
+	boolean contains(I id);
 
 	@Override
 	void close();
@@ -63,7 +54,7 @@ public interface Scheduler<I, M> extends AutoCloseable {
 	 * @param <M> the scheduled entry metadata type
 	 * @return a scheduler that delegates to a scheduler reference.
 	 */
-	static <I, M> Scheduler<I, M> reference(Supplier<? extends Scheduler<I, M>> reference) {
+	static <I, M> Scheduler<I, M> fromReference(Supplier<? extends Scheduler<I, M>> reference) {
 		return new ReferenceScheduler<>(reference);
 	}
 
@@ -82,11 +73,6 @@ public interface Scheduler<I, M> extends AutoCloseable {
 		@Override
 		public boolean contains(I id) {
 			return false;
-		}
-
-		@Override
-		public Stream<I> stream() {
-			return Stream.of();
 		}
 
 		@Override
@@ -114,11 +100,6 @@ public interface Scheduler<I, M> extends AutoCloseable {
 		@Override
 		public boolean contains(I id) {
 			return this.reference.get().contains(id);
-		}
-
-		@Override
-		public Stream<I> stream() {
-			return this.reference.get().stream();
 		}
 
 		@Override

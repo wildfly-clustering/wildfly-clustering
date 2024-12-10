@@ -8,8 +8,8 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 /**
  * An abstract primary owner command.
  * @author Paul Ferraro
- * @param <I> the identifier type of the entry to cancel
- * @param <M> the meta data type of the entry to cancel
+ * @param <I> the scheduled entry identifier type
+ * @param <M> the scheduled entry metadata type
  * @param <R> the command return type
  */
 public abstract class AbstractPrimaryOwnerCommand<I, M, R> implements PrimaryOwnerCommand<I, M, R> {

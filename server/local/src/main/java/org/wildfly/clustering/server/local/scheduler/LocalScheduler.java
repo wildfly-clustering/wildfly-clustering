@@ -16,7 +16,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.scheduler.Scheduler;
@@ -80,11 +79,6 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	@Override
 	public boolean contains(T id) {
 		return this.entries.contains(id);
-	}
-
-	@Override
-	public Stream<T> stream() {
-		return this.entries.stream().map(Map.Entry::getKey);
 	}
 
 	@Override

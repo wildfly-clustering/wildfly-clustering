@@ -12,7 +12,7 @@ import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithPersistent
 /**
  * {@link ScheduleCommand} that wraps expiration metadata with a marshallable implementation.
  * @author Paul Ferraro
- * @param <I> the identifier type of the scheduled object
+ * @param <I> the scheduled entry identifier type
  */
 public class ScheduleWithExpirationMetaDataCommand<I> extends ScheduleWithPersistentMetaDataCommand<I, ExpirationMetaData> {
 
@@ -21,7 +21,7 @@ public class ScheduleWithExpirationMetaDataCommand<I> extends ScheduleWithPersis
 	}
 
 	@Override
-	protected ExpirationMetaData getPersistentMetaData() {
-		return new SimpleExpirationMetaData(super.getPersistentMetaData());
+	protected ExpirationMetaData getMetaData() {
+		return new SimpleExpirationMetaData(super.getMetaData());
 	}
 }

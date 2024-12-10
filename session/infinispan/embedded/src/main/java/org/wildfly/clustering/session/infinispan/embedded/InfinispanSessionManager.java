@@ -32,7 +32,6 @@ import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionStatistics;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
-import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKeyFilter;
 
 /**
  * Generic session manager implementation - independent of cache mapping strategy.
@@ -94,7 +93,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 				// Don't passivate sessions on stop if we will purge the store on startup
 				if (persistence.passivation() && !persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
 					try (Stream<Key<String>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet().stream()) {
-						stream.filter(SessionMetaDataKeyFilter.INSTANCE).forEach(this.cache::evict);
+						stream.filter(SessionCacheKeyFilter.META_DATA).forEach(this.cache::evict);
 					}
 				}
 			}
@@ -137,7 +136,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 	private Set<String> getLocalSessions(Cache<Key<String>, ?> cache) {
 		CacheStreamFilter<Key<String>> filter = CacheStreamFilter.local(cache);
 		try (Stream<Key<String>> keys = filter.apply(cache.keySet().stream())) {
-			return keys.filter(SessionMetaDataKeyFilter.INSTANCE).map(Key::getId).collect(Collectors.toSet());
+			return keys.filter(SessionCacheKeyFilter.META_DATA).map(Key::getId).collect(Collectors.toSet());
 		}
 	}
 }

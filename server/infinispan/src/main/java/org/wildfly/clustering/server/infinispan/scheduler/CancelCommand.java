@@ -7,8 +7,8 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 
 /**
  * Command that cancels a previously scheduled item.
- * @param <I> the identifier type of the entry to cancel
- * @param <M> the meta data type of the entry to cancel
+ * @param <I> the scheduled entry identifier type
+ * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
 public class CancelCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Void> {
@@ -18,7 +18,7 @@ public class CancelCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Void>
 	}
 
 	@Override
-	public Void execute(CacheEntryScheduler<I, M> scheduler) {
+	public Void execute(Scheduler<I, M> scheduler) {
 		scheduler.cancel(this.getId());
 		return null;
 	}

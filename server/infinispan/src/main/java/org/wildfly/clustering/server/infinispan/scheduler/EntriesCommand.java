@@ -6,20 +6,23 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.wildfly.clustering.server.dispatcher.Command;
 
 /**
  * Command returning the identifiers of all scheduler entries.
- * @param <I> the identifier type of scheduled entries
- * @param <M> the meta data type
+ * @param <I> the scheduled entry identifier type
+ * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement
  */
-public class EntriesCommand<I, M> implements Command<Collection<I>, CacheEntryScheduler<I, M>, RuntimeException> {
+@Deprecated(forRemoval = true)
+public class EntriesCommand<I, M> implements Command<Collection<I>, Scheduler<I, M>, RuntimeException> {
 
 	@Override
-	public Collection<I> execute(CacheEntryScheduler<I, M> scheduler) {
-		return scheduler.stream().toList();
+	public Collection<I> execute(Scheduler<I, M> scheduler) {
+		return List.of();
 	}
 
 	@Override

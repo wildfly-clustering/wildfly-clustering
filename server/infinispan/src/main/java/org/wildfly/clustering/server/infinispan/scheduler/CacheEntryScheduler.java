@@ -5,78 +5,70 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
-import org.wildfly.clustering.server.scheduler.Scheduler;
+import org.wildfly.clustering.cache.Key;
 
 /**
  * A task scheduler.
- * @param <I> the identifier type of scheduled entries
- * @param <M> the meta data type
+ * @param <I> the scheduled entry identifier type
+ * @param <K> the cache entry key type
+ * @param <V> the cache entry value type
+ * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
-public interface CacheEntryScheduler<I, M> extends Scheduler<I, M> {
-	/**
-	 * Schedules a cache entry with the specified identifier.
-	 * This method will generally delegate to {@link #schedule(Object, Object)} after performing a cache lookup.
-	 * @param id the identifier of the object to be scheduled
-	 */
-	void schedule(I id);
+public interface CacheEntryScheduler<I, K extends Key<I>, V, M> extends Scheduler<I, M> {
 
 	/**
-	 * Cancels any previous scheduled tasks for entries which are no longer local to the current member
-	 * @param locality the cache locality
+	 * Schedules a cache entry.
+	 * @param entry a cache entry
 	 */
-	void cancel(Locality locality);
+	void schedule(Map.Entry<K, V> entry);
 
 	/**
 	 * Returns an inactive scheduler instance.
-	 * @param <I> the scheduled entry identifier type
-	 * @param <M> the scheduled entry metadata type
+	 * @param <I> the scheduled object identifier type
+	 * @param <K> the cache entry key type
+	 * @param <V> the cache entry value type
+	 * @param <M> the scheduled object metadata type
 	 * @return an inactive scheduler instance.
 	 */
-	static <I, M> CacheEntryScheduler<I, M> inactive() {
+	static <I, K extends Key<I>, V, M> CacheEntryScheduler<I, K, V, M> inactive() {
 		return new InactiveCacheEntryScheduler<>();
 	}
 
 	/**
 	 * Returns a scheduler that delegates to a scheduler reference.
 	 * @param reference a scheduler reference
-	 * @param <I> the scheduled entry identifier type
-	 * @param <M> the scheduled entry metadata type
+	 * @param <I> the scheduled object identifier type
+	 * @param <K> the cache entry key type
+	 * @param <V> the cache entry value type
+	 * @param <M> the scheduled object metadata type
 	 * @return a scheduler that delegates to a scheduler reference.
 	 */
-	static <I, M> CacheEntryScheduler<I, M> reference(Supplier<? extends CacheEntryScheduler<I, M>> reference) {
+	static <I, K extends Key<I>, V, M> CacheEntryScheduler<I, K, V, M> fromReference(Supplier<? extends CacheEntryScheduler<I, K, V, M>> reference) {
 		return new ReferenceCacheEntryScheduler<>(reference);
 	}
 
-	class InactiveCacheEntryScheduler<I, M> extends Scheduler.InactiveScheduler<I, M> implements CacheEntryScheduler<I, M> {
-		@Override
-		public void schedule(I id) {
-		}
+	class InactiveCacheEntryScheduler<I, K extends Key<I>, V, M> extends Scheduler.InactiveScheduler<I, M> implements CacheEntryScheduler<I, K, V, M> {
 
 		@Override
-		public void cancel(Locality locality) {
+		public void schedule(Map.Entry<K, V> entry) {
 		}
 	}
 
-	class ReferenceCacheEntryScheduler<I, M> extends Scheduler.ReferenceScheduler<I, M> implements CacheEntryScheduler<I, M> {
-		private final Supplier<? extends CacheEntryScheduler<I, M>> reference;
+	class ReferenceCacheEntryScheduler<I, K extends Key<I>, V, M> extends Scheduler.ReferenceScheduler<I, M> implements CacheEntryScheduler<I, K, V, M> {
+		private final Supplier<? extends CacheEntryScheduler<I, K, V, M>> reference;
 
-		ReferenceCacheEntryScheduler(Supplier<? extends CacheEntryScheduler<I, M>> reference) {
+		ReferenceCacheEntryScheduler(Supplier<? extends CacheEntryScheduler<I, K, V, M>> reference) {
 			super(reference);
 			this.reference = reference;
 		}
 
 		@Override
-		public void schedule(I id) {
-			this.reference.get().schedule(id);
-		}
-
-		@Override
-		public void cancel(Locality locality) {
-			this.reference.get().cancel(locality);
+		public void schedule(Map.Entry<K, V> entry) {
+			this.reference.get().schedule(entry);
 		}
 	}
 }
