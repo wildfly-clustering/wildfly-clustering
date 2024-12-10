@@ -5,21 +5,23 @@
 
 package org.wildfly.clustering.server.scheduler;
 
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
  * A task scheduler.
  * @param <I> the scheduled entry identifier type
- * @param <M> the scheduled entry metadata type
+ * @param <V> the scheduled entry value type
  * @author Paul Ferraro
  */
-public interface Scheduler<I, M> extends AutoCloseable {
+public interface Scheduler<I, V> extends AutoCloseable {
 	/**
 	 * Schedules a task for the object with the specified identifier, using the specified metaData
-	 * @param id an object identifier
-	 * @param metaData the object meta-data
+	 * @param id the scheduled entry identifier
+	 * @param value the scheduled entry value
 	 */
-	void schedule(I id, M metaData);
+	void schedule(I id, V value);
 
 	/**
 	 * Cancels a previously scheduled task for the object with the specified identifier.
@@ -37,13 +39,40 @@ public interface Scheduler<I, M> extends AutoCloseable {
 	@Override
 	void close();
 
+	default <T> Scheduler<I, T> map(Function<T, Optional<V>> mapper) {
+		return new Scheduler<>() {
+			@Override
+			public void schedule(I id, T value) {
+				Optional<V> mapped = mapper.apply(value);
+				if (mapped.isPresent()) {
+					Scheduler.this.schedule(id, mapped.get());
+				}
+			}
+
+			@Override
+			public void cancel(I id) {
+				Scheduler.this.cancel(id);
+			}
+
+			@Override
+			public boolean contains(I id) {
+				return Scheduler.this.contains(id);
+			}
+
+			@Override
+			public void close() {
+				Scheduler.this.close();
+			}
+		};
+	}
+
 	/**
 	 * Returns an inactive scheduler instance.
 	 * @param <I> the scheduled entry identifier type
-	 * @param <M> the scheduled entry metadata type
+	 * @param <V> the scheduled entry value type
 	 * @return an inactive scheduler instance.
 	 */
-	static <I, M> Scheduler<I, M> inactive() {
+	static <I, V> Scheduler<I, V> inactive() {
 		return new InactiveScheduler<>();
 	}
 
@@ -51,19 +80,19 @@ public interface Scheduler<I, M> extends AutoCloseable {
 	 * Returns a scheduler that delegates to a scheduler reference.
 	 * @param reference a scheduler reference
 	 * @param <I> the scheduled entry identifier type
-	 * @param <M> the scheduled entry metadata type
+	 * @param <V> the scheduled entry value type
 	 * @return a scheduler that delegates to a scheduler reference.
 	 */
-	static <I, M> Scheduler<I, M> fromReference(Supplier<? extends Scheduler<I, M>> reference) {
+	static <I, V> Scheduler<I, V> fromReference(Supplier<? extends Scheduler<I, V>> reference) {
 		return new ReferenceScheduler<>(reference);
 	}
 
-	class InactiveScheduler<I, M> implements Scheduler<I, M> {
+	class InactiveScheduler<I, V> implements Scheduler<I, V> {
 		protected InactiveScheduler() {
 		}
 
 		@Override
-		public void schedule(I id, M metaData) {
+		public void schedule(I id, V value) {
 		}
 
 		@Override
@@ -80,15 +109,15 @@ public interface Scheduler<I, M> extends AutoCloseable {
 		}
 	}
 
-	class ReferenceScheduler<I, M> implements Scheduler<I, M> {
-		private final Supplier<? extends Scheduler<I, M>> reference;
+	class ReferenceScheduler<I, V> implements Scheduler<I, V> {
+		private final Supplier<? extends Scheduler<I, V>> reference;
 
-		protected ReferenceScheduler(Supplier<? extends Scheduler<I, M>> reference) {
+		protected ReferenceScheduler(Supplier<? extends Scheduler<I, V>> reference) {
 			this.reference = reference;
 		}
 
 		@Override
-		public void schedule(I id, M metaData) {
+		public void schedule(I id, V metaData) {
 			this.reference.get().schedule(id, metaData);
 		}
 

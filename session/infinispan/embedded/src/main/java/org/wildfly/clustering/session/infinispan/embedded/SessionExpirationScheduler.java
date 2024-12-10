@@ -16,7 +16,9 @@ import java.util.function.Supplier;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.DefaultThreadFactory;
-import org.wildfly.clustering.server.infinispan.expiration.AbstractExpirationScheduler;
+import org.wildfly.clustering.server.expiration.ExpirationMetaData;
+import org.wildfly.clustering.server.infinispan.expiration.ExpirationMetaDataFunction;
+import org.wildfly.clustering.server.infinispan.scheduler.AbstractCacheEntryScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerConfiguration;
 import org.wildfly.clustering.server.scheduler.Scheduler;
@@ -28,7 +30,7 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
  * @author Paul Ferraro
  * @param <MV> the meta data value type
  */
-public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<String, SessionMetaDataKey, MV> {
+public class SessionExpirationScheduler<MV> extends AbstractCacheEntryScheduler<String, SessionMetaDataKey, MV, ExpirationMetaData> {
 	private static final Logger LOGGER = Logger.getLogger(SessionExpirationScheduler.class);
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -68,7 +70,7 @@ public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<
 	}
 
 	public SessionExpirationScheduler(Scheduler<String, Instant> scheduler, ImmutableSessionMetaDataFactory<MV> metaDataFactory) {
-		super(scheduler);
+		super(scheduler.map(ExpirationMetaDataFunction.INSTANCE));
 		this.metaDataFactory = metaDataFactory;
 	}
 
