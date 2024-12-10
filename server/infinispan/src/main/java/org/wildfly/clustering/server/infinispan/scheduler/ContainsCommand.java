@@ -7,8 +7,8 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 
 /**
  * Command that determine if a given entry is known to the scheduler.
- * @param <I> the identifier type of scheduled entries
- * @param <M> the meta data type
+ * @param <I> the scheduled entry identifier type
+ * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
 public class ContainsCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Boolean> {
@@ -18,7 +18,7 @@ public class ContainsCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Boo
 	}
 
 	@Override
-	public Boolean execute(CacheEntryScheduler<I, M> scheduler) {
+	public Boolean execute(Scheduler<I, M> scheduler) {
 		return scheduler.contains(this.getId());
 	}
 }

@@ -8,6 +8,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -19,16 +20,15 @@ import org.wildfly.clustering.server.infinispan.expiration.AbstractExpirationSch
 import org.wildfly.clustering.server.local.scheduler.LocalScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerConfiguration;
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
+import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
 
 /**
  * Session expiration scheduler that eagerly expires sessions as soon as they are eligible.
- * If/When Infinispan implements expiration notifications (ISPN-694), this will be obsolete.
  * @author Paul Ferraro
  * @param <MV> the meta data value type
  */
-public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<String> {
+public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<String, SessionMetaDataKey, MV> {
 	private static final Logger LOGGER = Logger.getLogger(SessionExpirationScheduler.class);
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -76,9 +76,14 @@ public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<
 	public void schedule(String id) {
 		MV value = this.metaDataFactory.findValue(id);
 		if (value != null) {
-			ImmutableSessionMetaData metaData = this.metaDataFactory.createImmutableSessionMetaData(id, value);
-			this.schedule(id, metaData);
+			this.schedule(Map.entry(new SessionMetaDataKey(id), value));
 		}
+	}
+
+	@Override
+	public void schedule(Map.Entry<SessionMetaDataKey, MV> entry) {
+		String id = entry.getKey().getId();
+		this.schedule(id, this.metaDataFactory.createImmutableSessionMetaData(id, entry.getValue()));
 	}
 
 	private static class SessionRemoveTask implements Predicate<String> {

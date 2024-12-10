@@ -6,22 +6,21 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.time.Instant;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
-import org.wildfly.clustering.cache.infinispan.CacheKey;
-import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
+import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
  * Abstract {@link CacheEntryScheduler} that delegates to a local scheduler.
- * @param <I> the identifier type of scheduled entries
- * @param <M> the meta data type
+ * @param <I> the scheduled object identifier type
+ * @param <K> the cache entry key type
+ * @param <V> the cache entry value type
+ * @param <M> the scheduled object metadata type
  * @author Paul Ferraro
  */
-public abstract class AbstractCacheEntryScheduler<I, M> implements CacheEntryScheduler<I, M> {
+public abstract class AbstractCacheEntryScheduler<I, K extends Key<I>, V, M> implements CacheEntryScheduler<I, K, V, M> {
 
 	private final Scheduler<I, Instant> scheduler;
 	private final Function<M, Optional<Instant>> instant;
@@ -45,23 +44,8 @@ public abstract class AbstractCacheEntryScheduler<I, M> implements CacheEntrySch
 	}
 
 	@Override
-	public void cancel(Locality locality) {
-		try (Stream<I> stream = this.scheduler.stream()) {
-			Iterator<I> entries = stream.iterator();
-			while (entries.hasNext()) {
-				if (Thread.currentThread().isInterrupted()) break;
-				I id = entries.next();
-				CacheKey<I> key = new CacheKey<>(id);
-				if (!locality.isLocal(key)) {
-					this.scheduler.cancel(id);
-				}
-			}
-		}
-	}
-
-	@Override
-	public Stream<I> stream() {
-		return this.scheduler.stream();
+	public boolean contains(I id) {
+		return this.scheduler.contains(id);
 	}
 
 	@Override

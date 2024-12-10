@@ -29,7 +29,7 @@ public class CommandMarshallerTestCase {
 	public void testScheduleWithLocalMetaDataCommand(TesterFactory factory) {
 		Consumer<ScheduleCommand<String, String>> tester = factory.createTester((expected, actual) -> {
 			assertThat(actual.getId()).isEqualTo(expected.getId());
-			assertThat(actual.getPersistentMetaData()).isEqualTo(expected.getPersistentMetaData());
+			assertThat(actual.getMetaData()).isEqualTo(expected.getMetaData());
 		});
 
 		tester.accept(new ScheduleWithTransientMetaDataCommand<>("foo", null));
@@ -51,7 +51,7 @@ public class CommandMarshallerTestCase {
 	public void testScheduleWithMetaDataCommand(TesterFactory factory) {
 		Consumer<ScheduleCommand<String, String>> tester = factory.createTester((expected, actual) -> {
 			assertThat(actual.getId()).isEqualTo(expected.getId());
-			assertThat(actual.getPersistentMetaData()).isEqualTo(expected.getPersistentMetaData());
+			assertThat(actual.getMetaData()).isEqualTo(expected.getMetaData());
 		});
 
 		tester.accept(new ScheduleWithPersistentMetaDataCommand<>("foo", "bar"));
@@ -62,8 +62,8 @@ public class CommandMarshallerTestCase {
 	public void testScheduleWithExpirationMetaDataCommand(TesterFactory factory) {
 		Consumer<ScheduleCommand<String, ExpirationMetaData>> tester = factory.createTester((expected, actual) -> {
 			assertThat(actual.getId()).isEqualTo(expected.getId());
-			assertThat(actual.getPersistentMetaData().getTimeout()).isEqualTo(expected.getPersistentMetaData().getTimeout());
-			assertThat(actual.getPersistentMetaData().getLastAccessTime()).isEqualTo(expected.getPersistentMetaData().getLastAccessTime());
+			assertThat(actual.getMetaData().getTimeout()).isEqualTo(expected.getMetaData().getTimeout());
+			assertThat(actual.getMetaData().getLastAccessTime()).isEqualTo(expected.getMetaData().getLastAccessTime());
 		});
 
 		tester.accept(new ScheduleWithExpirationMetaDataCommand<>("foo", new TestExpirationMetaData(Duration.ZERO, Instant.EPOCH)));

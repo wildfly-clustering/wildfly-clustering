@@ -14,8 +14,8 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * ProtoStream marshaller for a {@link ScheduleCommand}.
- * @param <I> the identifier type of the entry to schedule
- * @param <M> the meta data type of the entry to schedule
+ * @param <I> the scheduled entry identifier type
+ * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
 public class ScheduleCommandMarshaller<I, M> implements ProtoStreamMarshaller<ScheduleCommand<I, M>> {
@@ -56,7 +56,7 @@ public class ScheduleCommandMarshaller<I, M> implements ProtoStreamMarshaller<Sc
 		if (id != null) {
 			writer.writeAny(ID_INDEX, id);
 		}
-		M metaData = command.getPersistentMetaData();
+		M metaData = command.getMetaData();
 		if (metaData != null) {
 			writer.writeAny(META_DATA_INDEX, metaData);
 		}

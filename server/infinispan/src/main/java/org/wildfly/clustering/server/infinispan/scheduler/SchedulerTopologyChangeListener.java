@@ -14,7 +14,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,23 +30,21 @@ import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
-import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 
 /**
  * Handles cache topology events for a distributed scheduler.
- * @param <I> the identifier type for cache keys
  * @param <K> the cache key type
  * @param <V> the cache value type
- * @param <E> the scheduler entry type
+ * @param <SE> the schedule task entry type
+ * @param <CE> the cancel task entry type
  * @author Paul Ferraro
  */
 @Listener
-public class SchedulerTopologyChangeListener<I, K extends Key<I>, V, E> implements ListenerRegistrar {
+public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRegistrar {
 	private static final Logger LOGGER = Logger.getLogger(SchedulerTopologyChangeListener.class);
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -59,18 +56,14 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V, E> implemen
 	private final Cache<K, V> cache;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY);
 	private final AtomicReference<Future<?>> scheduleTaskFuture = new AtomicReference<>();
-	private final Consumer<Locality> cancelTask;
-	private final Consumer<CacheStreamFilter<E>> scheduleTask;
+	private final Consumer<CacheStreamFilter<SE>> scheduleTask;
+	private final Consumer<CacheStreamFilter<CE>> cancelTask;
 	private final BlockingManager blocking;
 
-	public SchedulerTopologyChangeListener(Cache<K, V> cache, CacheEntryScheduler<I, ?> scheduler, Consumer<CacheStreamFilter<E>> scheduleTask) {
-		this(cache, scheduler::cancel, scheduleTask);
-	}
-
-	public SchedulerTopologyChangeListener(Cache<K, V> cache, Consumer<Locality> cancelTask, Consumer<CacheStreamFilter<E>> scheduleTask) {
+	public SchedulerTopologyChangeListener(Cache<K, V> cache, Consumer<CacheStreamFilter<SE>> scheduleTask, Consumer<CacheStreamFilter<CE>> cancelTask) {
 		this.cache = cache;
-		this.cancelTask = cancelTask;
 		this.scheduleTask = scheduleTask;
+		this.cancelTask = cancelTask;
 		this.blocking = GlobalComponentRegistry.componentOf(this.cache.getCacheManager(), BlockingManager.class);
 	}
 
@@ -101,26 +94,26 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V, E> implemen
 		Set<Integer> newSegments = newHash.getMembers().contains(address) ? newHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
 		LOGGER.debugf("%s scheduler topology change listener received %s-topology changed event: %s -> %s", cache.getName(), event.isPre() ? "pre" : "post", oldHash.getMembers(), newHash.getMembers());
 		if (event.isPre()) {
-			// If there are segments that we no longer own, then run cancellation task
-			if (!newSegments.containsAll(oldSegments)) {
-				Future<?> future = this.scheduleTaskFuture.getAndSet(null);
-				if (future != null) {
-					future.cancel(true);
+			if (!oldSegments.isEmpty()) {
+				IntSet formerlyOwnedSegments = IntSets.mutableCopyFrom(oldSegments);
+				formerlyOwnedSegments.removeAll(IntSets.from(newSegments));
+				// If there are segments that we no longer own, then run cancellation task
+				if (!formerlyOwnedSegments.isEmpty()) {
+					Future<?> future = this.scheduleTaskFuture.getAndSet(null);
+					if (future != null) {
+						future.cancel(true);
+					}
+					return this.blocking.runBlocking(() -> this.cancelTask.accept(CacheStreamFilter.segments(formerlyOwnedSegments)), this.getClass().getName());
 				}
-				return this.blocking.runBlocking(() -> this.cancelTask.accept(Locality.forConsistentHash(cache, newHash)), this.getClass().getName());
 			}
 		} else if (!newSegments.isEmpty()) {
 			IntSet newlyOwnedSegments = IntSets.mutableCopyFrom(newSegments);
 			newlyOwnedSegments.removeAll(IntSets.from(oldSegments));
 			// If we have newly owned segments, then run schedule task
 			if (!newlyOwnedSegments.isEmpty()) {
-				try {
-					Future<?> future = this.scheduleTaskFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(CacheStreamFilter.segments(newlyOwnedSegments))));
-					if (future != null) {
-						future.cancel(true);
-					}
-				} catch (RejectedExecutionException e) {
-					// Executor was shutdown
+				Future<?> future = this.scheduleTaskFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(CacheStreamFilter.segments(newlyOwnedSegments)), this.getClass().getName()));
+				if (future != null) {
+					future.cancel(true);
 				}
 			}
 		}

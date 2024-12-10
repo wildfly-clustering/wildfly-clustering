@@ -8,7 +8,10 @@ package org.wildfly.clustering.session.infinispan.embedded;
 import java.util.List;
 
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.CompositeSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.session.cache.affinity.SessionAffinitySerializationContextInitializer;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributesSerializationContextInitializer;
@@ -26,6 +29,13 @@ public class InfinispanSessionSerializationContextInitializer extends CompositeS
 
 	public InfinispanSessionSerializationContextInitializer() {
 		super(List.of(
+				new AbstractSerializationContextInitializer() {
+					@Override
+					public void registerMarshallers(SerializationContext context) {
+						context.registerMarshaller(ProtoStreamMarshaller.of(SessionCacheKeyFilter.class));
+						context.registerMarshaller(ProtoStreamMarshaller.of(SessionCacheEntryFilter.class));
+					}
+				},
 				new SessionAffinitySerializationContextInitializer(),
 				new CoarseSessionMetaDataSerializationContextInitializer(),
 				new FineSessionAttributesSerializationContextInitializer(),

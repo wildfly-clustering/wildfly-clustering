@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package org.wildfly.clustering.session.infinispan.embedded;
+
+// IDs: 202 - 203
+
+/**
+ * @TypeId(202)
+ */
+enum SessionCacheKeyFilter {
+	META_DATA_KEY	= 0;
+}
+
+/**
+ * @TypeId(203)
+ */
+enum SessionCacheEntryFilter {
+	META_DATA_ENTRY	= 0;
+}

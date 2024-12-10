@@ -7,8 +7,8 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 
 /**
  * Command that scheduled an item using transient metadata.
- * @param <I> the identifier type of the entry to schedule
- * @param <M> the meta data type of the entry to schedule
+ * @param <I> the scheduled entry identifier type
+ * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
 public class ScheduleWithTransientMetaDataCommand<I, M> extends ScheduleCommand<I, M> {
@@ -18,7 +18,7 @@ public class ScheduleWithTransientMetaDataCommand<I, M> extends ScheduleCommand<
 	}
 
 	@Override
-	protected M getPersistentMetaData() {
+	protected M getMetaData() {
 		return null;
 	}
 }
