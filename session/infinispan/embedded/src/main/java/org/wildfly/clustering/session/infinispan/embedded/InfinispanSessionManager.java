@@ -58,7 +58,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 		super(manager, configuration, infinispanConfiguration, factory, new Consumer<>() {
 			@Override
 			public void accept(ImmutableSession session) {
-				if (session.isValid()) {
+				if (session.isValid() && !session.getMetaData().isImmortal()) {
 					infinispanConfiguration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
 				}
 			}
