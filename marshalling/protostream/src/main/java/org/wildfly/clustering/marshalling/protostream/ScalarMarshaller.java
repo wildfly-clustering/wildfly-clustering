@@ -7,6 +7,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -71,6 +72,25 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 				return equals.test(unwrapper.apply(value), unwrapper.apply(defaultFactory.get()));
 			}
 		}, unwrapper, defaultFactory, wrapper);
+	}
+
+	/**
+	 * Returns a marshaller for an {@link Optional} wrapper of this scalar value.
+	 * @return an optional marshaller
+	 */
+	default ProtoStreamMarshaller<Optional<T>> toMarshaller() {
+		return this.toMarshaller(Function.identity(), Function.identity());
+	}
+
+	/**
+	 * Returns a marshaller for an {@link Optional} wrapper of this scalar value.
+	 * @param unwrapper a function exposing the scalar type written by this marshaller from the wrapper instance
+	 * @param wrapper a function creating a wrapped instance from the scalar value read by this marshaller
+	 * @return an optional marshaller
+	 */
+	@SuppressWarnings("unchecked")
+	default <V> ProtoStreamMarshaller<Optional<V>> toMarshaller(Function<V, T> unwrapper, Function<T, V> wrapper) {
+		return this.toMarshaller((Class<Optional<V>>) (Class<?>) Optional.class, Optional::isEmpty, unwrapper.compose(Optional::get), Functions.constantSupplier(Optional.empty()), wrapper.andThen(Optional::of));
 	}
 
 	/**
