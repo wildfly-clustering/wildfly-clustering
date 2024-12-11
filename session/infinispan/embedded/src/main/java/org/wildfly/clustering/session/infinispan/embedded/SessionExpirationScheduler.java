@@ -14,6 +14,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
+import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
@@ -22,15 +23,16 @@ import org.wildfly.clustering.server.infinispan.scheduler.AbstractCacheEntrySche
 import org.wildfly.clustering.server.local.scheduler.LocalScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerConfiguration;
 import org.wildfly.clustering.server.scheduler.Scheduler;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
-import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
 
 /**
  * Session expiration scheduler that eagerly expires sessions as soon as they are eligible.
  * @author Paul Ferraro
- * @param <MV> the meta data value type
+ * @param <K> the cache key type
+ * @param <V> the cache value type
  */
-public class SessionExpirationScheduler<MV> extends AbstractCacheEntryScheduler<String, SessionMetaDataKey, MV, ExpirationMetaData> {
+public class SessionExpirationScheduler<K extends Key<String>, V> extends AbstractCacheEntryScheduler<String, K, V, ExpirationMetaData> {
 	private static final Logger LOGGER = Logger.getLogger(SessionExpirationScheduler.class);
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -39,9 +41,9 @@ public class SessionExpirationScheduler<MV> extends AbstractCacheEntryScheduler<
 		}
 	}));
 
-	private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
+	private final ImmutableSessionMetaDataFactory<V> metaDataFactory;
 
-	public SessionExpirationScheduler(String name, Supplier<Batch> batchFactory, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Predicate<String> remover, Duration closeTimeout) {
+	public SessionExpirationScheduler(String name, Supplier<Batch> batchFactory, ImmutableSessionMetaDataFactory<V> metaDataFactory, Predicate<String> remover, Duration closeTimeout) {
 		this(new LocalSchedulerConfiguration<>() {
 			@Override
 			public String getName() {
@@ -65,27 +67,33 @@ public class SessionExpirationScheduler<MV> extends AbstractCacheEntryScheduler<
 		}, metaDataFactory);
 	}
 
-	public SessionExpirationScheduler(LocalSchedulerConfiguration<String> config, ImmutableSessionMetaDataFactory<MV> metaDataFactory) {
+	public SessionExpirationScheduler(LocalSchedulerConfiguration<String> config, ImmutableSessionMetaDataFactory<V> metaDataFactory) {
 		this(new LocalScheduler<>(config), metaDataFactory);
 	}
 
-	public SessionExpirationScheduler(Scheduler<String, Instant> scheduler, ImmutableSessionMetaDataFactory<MV> metaDataFactory) {
+	public SessionExpirationScheduler(Scheduler<String, Instant> scheduler, ImmutableSessionMetaDataFactory<V> metaDataFactory) {
 		super(scheduler.map(ExpirationMetaDataFunction.INSTANCE));
 		this.metaDataFactory = metaDataFactory;
 	}
 
 	@Override
 	public void schedule(String id) {
-		MV value = this.metaDataFactory.findValue(id);
+		V value = this.metaDataFactory.findValue(id);
 		if (value != null) {
-			this.schedule(Map.entry(new SessionMetaDataKey(id), value));
+			this.schedule(id, value);
 		}
 	}
 
 	@Override
-	public void schedule(Map.Entry<SessionMetaDataKey, MV> entry) {
-		String id = entry.getKey().getId();
-		this.schedule(id, this.metaDataFactory.createImmutableSessionMetaData(id, entry.getValue()));
+	public void schedule(Map.Entry<K, V> entry) {
+		this.schedule(entry.getKey().getId(), entry.getValue());
+	}
+
+	private void schedule(String id, V value) {
+		ImmutableSessionMetaData metaData = this.metaDataFactory.createImmutableSessionMetaData(id, value);
+		if (!metaData.isImmortal()) {
+			this.schedule(id, metaData);
+		}
 	}
 
 	private static class SessionRemoveTask implements Predicate<String> {
