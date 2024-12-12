@@ -46,7 +46,7 @@ public interface CacheStreamFilter<T> extends UnaryOperator<CacheStream<T>> {
 		return new CacheStreamFilter<>() {
 			@Override
 			public CacheStream<T> apply(CacheStream<T> stream) {
-				return stream.filterKeySegments(segments);
+				return stream.filterKeySegments(segments).disableRehashAware();
 			}
 		};
 	}
@@ -60,7 +60,7 @@ public interface CacheStreamFilter<T> extends UnaryOperator<CacheStream<T>> {
 	static <T> CacheStreamFilter<T> local(Cache<?, ?> cache) {
 		DistributionManager distribution = cache.getAdvancedCache().getDistributionManager();
 		LocalizedCacheTopology topology = (distribution != null) ? distribution.getCacheTopology() : null;
-		return (topology != null) ? primary(topology.getWriteConsistentHash(), topology.getLocalAddress()) : identity();
+		return (topology != null) ? primary(topology.getReadConsistentHash(), topology.getLocalAddress()) : identity();
 	}
 
 	/**
