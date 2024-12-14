@@ -60,7 +60,7 @@ public interface CacheStreamFilter<T> extends UnaryOperator<CacheStream<T>> {
 	static <T> CacheStreamFilter<T> local(Cache<?, ?> cache) {
 		DistributionManager distribution = cache.getAdvancedCache().getDistributionManager();
 		LocalizedCacheTopology topology = (distribution != null) ? distribution.getCacheTopology() : null;
-		return (topology != null) ? primary(topology.getReadConsistentHash(), topology.getLocalAddress()) : identity();
+		return (topology != null) ? primary(topology.getWriteConsistentHash(), topology.getLocalAddress()) : identity();
 	}
 
 	/**

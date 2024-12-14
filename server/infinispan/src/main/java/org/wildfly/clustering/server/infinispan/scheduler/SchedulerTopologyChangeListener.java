@@ -88,9 +88,9 @@ public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRe
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<K, V> event) {
 		Cache<K, V> cache = event.getCache();
 		Address address = cache.getCacheManager().getAddress();
-		ConsistentHash oldHash = event.getReadConsistentHashAtStart();
+		ConsistentHash oldHash = event.getWriteConsistentHashAtStart();
 		Set<Integer> oldSegments = oldHash.getMembers().contains(address) ? oldHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
-		ConsistentHash newHash = event.getReadConsistentHashAtEnd();
+		ConsistentHash newHash = event.getWriteConsistentHashAtEnd();
 		Set<Integer> newSegments = newHash.getMembers().contains(address) ? newHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
 		LOGGER.debugf("%s scheduler topology change listener received %s-topology changed event: %s -> %s", cache.getName(), event.isPre() ? "pre" : "post", oldHash.getMembers(), newHash.getMembers());
 		if (event.isPre()) {

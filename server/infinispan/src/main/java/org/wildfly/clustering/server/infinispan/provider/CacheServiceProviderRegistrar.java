@@ -5,7 +5,6 @@
 package org.wildfly.clustering.server.infinispan.provider;
 
 import java.util.AbstractMap;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -182,7 +181,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 			leftMembers.removeAll(members);
 
 			// If this is a merge after cluster split: Re-assert services for local member
-			Set<T> localServices = !previousMembers.contains(localAddress) ? this.listeners.keySet() : Collections.emptySet();
+			Set<T> localServices = !previousMembers.contains(localAddress) ? this.listeners.keySet() : Set.of();
 
 			if (!leftMembers.isEmpty() || !localServices.isEmpty()) {
 				try {

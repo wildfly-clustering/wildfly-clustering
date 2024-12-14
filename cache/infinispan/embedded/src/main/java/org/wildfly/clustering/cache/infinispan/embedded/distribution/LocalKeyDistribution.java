@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.distribution;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.infinispan.remoting.transport.Address;
@@ -25,6 +24,6 @@ enum LocalKeyDistribution implements KeyDistribution {
 
 	@Override
 	public List<Address> getOwners(Object key) {
-		return Collections.singletonList(LocalModeAddress.INSTANCE);
+		return List.of(LocalModeAddress.INSTANCE);
 	}
 }

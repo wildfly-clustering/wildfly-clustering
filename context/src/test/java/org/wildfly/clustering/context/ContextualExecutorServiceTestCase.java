@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -57,7 +56,7 @@ public class ContextualExecutorServiceTestCase {
 
 	@Test
 	public void shutdownNow() {
-		List<Runnable> expected = Collections.singletonList(mock(Runnable.class));
+		List<Runnable> expected = List.of(mock(Runnable.class));
 
 		when(this.executor.shutdownNow()).thenReturn(expected);
 
@@ -146,7 +145,7 @@ public class ContextualExecutorServiceTestCase {
 		@SuppressWarnings("unchecked")
 		ArgumentCaptor<List<Callable<Object>>> capturedTasks = ArgumentCaptor.forClass(List.class);
 		@SuppressWarnings("unchecked")
-		List<Future<Object>> expected = Collections.singletonList(mock(Future.class));
+		List<Future<Object>> expected = List.of(mock(Future.class));
 
 		when(this.contextualizer.contextualize(task1)).thenReturn(contextualTask1);
 		when(this.contextualizer.contextualize(task2)).thenReturn(contextualTask2);
@@ -171,7 +170,7 @@ public class ContextualExecutorServiceTestCase {
 		@SuppressWarnings("unchecked")
 		ArgumentCaptor<List<Callable<Object>>> capturedTasks = ArgumentCaptor.forClass(List.class);
 		@SuppressWarnings("unchecked")
-		List<Future<Object>> expected = Collections.singletonList(mock(Future.class));
+		List<Future<Object>> expected = List.of(mock(Future.class));
 
 		when(this.contextualizer.contextualize(task1)).thenReturn(contextualTask1);
 		when(this.contextualizer.contextualize(task2)).thenReturn(contextualTask2);
