@@ -59,7 +59,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 			// Verify no current session
 			request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
 				assertThat(response.statusCode()).isEqualTo(HTTP_OK);
-				assertThat(response.headers().firstValue(SESSION_ID)).isPresent();
+				assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
 				assertThat(response.headers().firstValueAsLong(IMMUTABLE)).isEmpty();
 				assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
 			}).join();
