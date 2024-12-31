@@ -22,6 +22,7 @@ import java.util.List;
  */
 final class Reflect {
 
+	@SuppressWarnings("removal")
 	static Field findField(Class<?> sourceClass, Class<?> fieldType) {
 		if (System.getSecurityManager() == null) {
 			return findFieldUnchecked(sourceClass, fieldType);
@@ -69,6 +70,7 @@ final class Reflect {
 		return findFieldUnchecked(superClass, fieldType);
 	}
 
+	@SuppressWarnings("removal")
 	static Method findMethod(Class<?> sourceClass, Class<?> returnType) {
 		if (System.getSecurityManager() == null) {
 			return findMethodUnchecked(sourceClass, returnType);
@@ -104,6 +106,7 @@ final class Reflect {
 		return findMethodUnchecked(superClass, returnType);
 	}
 
+	@SuppressWarnings("removal")
 	static Method findMethod(Class<?> sourceClass, String methodName) {
 		if (System.getSecurityManager() == null) {
 			return findMethodUnchecked(sourceClass, methodName);
@@ -126,6 +129,7 @@ final class Reflect {
 		}
 	}
 
+	@SuppressWarnings("removal")
 	static <T> Constructor<T> getConstructor(Class<T> sourceClass, Class<?>... parameterTypes) {
 		if (System.getSecurityManager() == null) {
 			return getConstructorUnchecked(sourceClass, parameterTypes);
@@ -148,6 +152,7 @@ final class Reflect {
 		}
 	}
 
+	@SuppressWarnings("removal")
 	static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
 		if (System.getSecurityManager() == null) {
 			return newInstanceUnchecked(constructor, parameters);
@@ -172,6 +177,7 @@ final class Reflect {
 		return getValue(source, field, Object.class);
 	}
 
+	@SuppressWarnings("removal")
 	static <T> T getValue(Object source, Field field, Class<T> fieldType) {
 		if (System.getSecurityManager() == null) {
 			return getValueUnchecked(source, field, fieldType);
@@ -192,6 +198,7 @@ final class Reflect {
 		}
 	}
 
+	@SuppressWarnings("removal")
 	static void setValue(Object source, Field field, Object value) {
 		if (System.getSecurityManager() == null) {
 			setValueUnchecked(source, field, value);
@@ -218,6 +225,7 @@ final class Reflect {
 		return invoke(source, method, Object.class);
 	}
 
+	@SuppressWarnings("removal")
 	static <T> T invoke(Object source, Method method, Class<T> returnClass) {
 		if (System.getSecurityManager() == null) {
 			return invokeUnchecked(source, method, returnClass);

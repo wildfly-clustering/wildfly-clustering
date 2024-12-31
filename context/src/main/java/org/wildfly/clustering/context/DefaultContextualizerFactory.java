@@ -20,6 +20,7 @@ public enum DefaultContextualizerFactory implements ContextualizerFactory {
 
 	private final List<ContextualizerFactory> factories = new LinkedList<>();
 
+	@SuppressWarnings("removal")
 	DefaultContextualizerFactory() {
 		this.factories.add(new ContextualizerFactory() {
 			@Override

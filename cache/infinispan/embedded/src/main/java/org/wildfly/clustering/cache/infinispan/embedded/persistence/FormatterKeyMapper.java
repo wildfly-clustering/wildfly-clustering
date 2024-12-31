@@ -39,6 +39,7 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 	private final List<Formatter<?>> formatters;
 	private final int padding;
 
+	@SuppressWarnings("removal")
 	public FormatterKeyMapper() {
 		List<Formatter<?>> formatters = new LinkedList<>();
 		formatters.addAll(DEFAULT_FORMATTERS);

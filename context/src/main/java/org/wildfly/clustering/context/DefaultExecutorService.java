@@ -16,6 +16,7 @@ import java.util.function.Function;
  */
 public class DefaultExecutorService extends ContextualExecutorService {
 
+	@SuppressWarnings("removal")
 	public DefaultExecutorService(Function<ThreadFactory, ExecutorService> factory, ClassLoader loader) {
 		// Use thread group of current thread
 		super(factory.apply(AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {

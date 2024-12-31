@@ -34,6 +34,7 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  */
 public class SessionExpirationScheduler<K extends Key<String>, V> extends AbstractCacheEntryScheduler<String, K, V, ExpirationMetaData> {
 	private static final Logger LOGGER = Logger.getLogger(SessionExpirationScheduler.class);
+	@SuppressWarnings("removal")
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
 		public ClassLoader run() {

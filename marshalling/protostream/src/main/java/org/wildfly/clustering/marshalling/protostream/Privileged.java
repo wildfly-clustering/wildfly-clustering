@@ -14,6 +14,7 @@ import java.security.PrivilegedAction;
  */
 class Privileged {
 
+	@SuppressWarnings("removal")
 	static ClassLoader getClassLoader(Class<?> targetClass) {
 		if (System.getSecurityManager() == null) {
 			return targetClass.getClassLoader();
