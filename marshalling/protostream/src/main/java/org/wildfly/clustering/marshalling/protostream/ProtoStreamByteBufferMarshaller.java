@@ -75,7 +75,7 @@ public class ProtoStreamByteBufferMarshaller extends AbstractByteBufferMarshalle
 
 	@Override
 	public void writeTo(OutputStream output, Object object) throws IOException {
-		WriteContext context = TagWriterImpl.newInstanceNoBuffer(this.context, output);
+		WriteContext context = TagWriterImpl.newInstance(this.context, output);
 		ProtoStreamWriter writer = new DefaultProtoStreamWriter(context);
 		ProtoStreamMarshaller<Any> marshaller = writer.findMarshaller(Any.class);
 		marshaller.writeTo(writer, new Any(object));
