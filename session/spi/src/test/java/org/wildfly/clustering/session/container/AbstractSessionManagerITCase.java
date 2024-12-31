@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.clustering.arquillian.Deployment;
 import org.wildfly.clustering.arquillian.DeploymentContainer;
 import org.wildfly.clustering.arquillian.DeploymentContainerRegistry;
+import org.wildfly.clustering.arquillian.Lifecycle;
 
 /**
  * Abstract container integration test.
@@ -61,18 +62,12 @@ public abstract class AbstractSessionManagerITCase implements Consumer<Archive<?
 	@Override
 	public void accept(Archive<?> archive) {
 		Collection<DeploymentContainer> containers = this.getContainers();
-		List<Deployment> deployments = new ArrayList<>(containers.size());
+		// Deploy archive to all containers
+		List<Deployment> deployments = containers.stream().map(container -> container.deploy(archive)).toList();
 
-		try (ClientTester tester = new SessionManagementTester(this)) {
-
-			for (DeploymentContainer container : containers) {
-				deployments.add(container.deploy(archive));
-			}
-
-			tester.test(deployments);
-		} finally {
-			for (Deployment deployment : deployments) {
-				deployment.close();
+		try (Lifecycle composite = Lifecycle.composite(deployments)) {
+			try (ClientTester tester = this.createClientTester()) {
+				tester.test(deployments);
 			}
 		}
 	}

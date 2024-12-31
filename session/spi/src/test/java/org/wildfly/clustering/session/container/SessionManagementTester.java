@@ -32,7 +32,7 @@ import org.wildfly.clustering.arquillian.Deployment;
  */
 public class SessionManagementTester implements ClientTester, SessionManagementEndpointConfiguration {
 
-	enum HttpMethod {
+	public enum HttpMethod {
 		HEAD, GET, PUT, DELETE;
 	}
 
