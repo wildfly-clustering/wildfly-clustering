@@ -76,11 +76,6 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		}
 
 		@Override
-		public String getName() {
-			return this.container.getName();
-		}
-
-		@Override
 		public void start() {
 			try {
 				LOGGER.log(System.Logger.Level.INFO, "Starting {0}", this.container.getName());
@@ -103,6 +98,11 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		@Override
 		public boolean isStarted() {
 			return this.container.getState() == Container.State.STARTED;
+		}
+
+		@Override
+		public String toString() {
+			return this.container.getName();
 		}
 
 		ProtocolMetaData deployArchive(Archive<?> archive) {
@@ -135,8 +135,8 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 			AtomicBoolean started = new AtomicBoolean(true);
 			return new Deployment() {
 				@Override
-				public String getName() {
-					return archive.getName();
+				public boolean isStarted() {
+					return started.get();
 				}
 
 				@Override
@@ -154,11 +154,6 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 				}
 
 				@Override
-				public boolean isStarted() {
-					return started.get();
-				}
-
-				@Override
 				public URI locate(String resourceName) {
 					return uris.get(resourceName);
 				}
@@ -166,6 +161,11 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 				@Override
 				public DeploymentContainer getContainer() {
 					return WebContainerImpl.this;
+				}
+
+				@Override
+				public String toString() {
+					return archive.getName();
 				}
 			};
 		}
