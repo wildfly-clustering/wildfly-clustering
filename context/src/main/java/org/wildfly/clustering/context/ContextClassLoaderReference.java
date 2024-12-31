@@ -14,6 +14,7 @@ import java.security.PrivilegedAction;
 public enum ContextClassLoaderReference implements ThreadContextReference<ClassLoader> {
 	INSTANCE;
 
+	@SuppressWarnings("removal")
 	@Override
 	public ClassLoader apply(Thread thread) {
 		if (System.getSecurityManager() == null) {
@@ -27,6 +28,7 @@ public enum ContextClassLoaderReference implements ThreadContextReference<ClassL
 		});
 	}
 
+	@SuppressWarnings("removal")
 	@Override
 	public void accept(Thread thread, ClassLoader loader) {
 		if (System.getSecurityManager() == null) {

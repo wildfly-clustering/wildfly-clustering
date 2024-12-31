@@ -82,6 +82,7 @@ public interface MarshallingConfigurationBuilder extends MarshallerConfiguration
 			return this.configuration;
 		}
 
+		@SuppressWarnings("removal")
 		static <T> void loadAll(Class<T> targetClass, ClassLoader loader, Consumer<T> consumer) {
 			AccessController.doPrivileged(new PrivilegedAction<>() {
 				@Override

@@ -57,6 +57,7 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 		return this.resourceName;
 	}
 
+	@SuppressWarnings("removal")
 	private static FileDescriptorSource getFileDescriptorSource(ClassLoader loader, String resourceName) {
 		try {
 			return AccessController.doPrivileged(new PrivilegedExceptionAction<>() {

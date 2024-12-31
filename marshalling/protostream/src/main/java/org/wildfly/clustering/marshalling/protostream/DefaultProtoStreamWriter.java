@@ -57,7 +57,7 @@ public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter implemen
 			// If size is unknown, marshal to an expandable temporary buffer
 			// This should only be the case if delegating to JBoss Marshalling or Java Serialization
 			try (ByteBufferOutputStream output = new ByteBufferOutputStream()) {
-				TagWriterImpl writer = TagWriterImpl.newInstanceNoBuffer(context, output);
+				TagWriterImpl writer = TagWriterImpl.newInstance(context, output);
 				marshaller.writeTo(new DefaultProtoStreamWriter(writer, this.context), value);
 				// Byte buffer is array backed
 				ByteBuffer buffer = output.getBuffer();

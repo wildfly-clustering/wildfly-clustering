@@ -54,6 +54,7 @@ public class ObjectOutputStream extends java.io.ObjectOutputStream {
 		this.seralizer.write(this, getClassLoader(proxyClass));
 	}
 
+	@SuppressWarnings("removal")
 	private static ClassLoader getClassLoader(Class<?> targetClass) {
 		if (System.getSecurityManager() == null) {
 			return targetClass.getClassLoader();

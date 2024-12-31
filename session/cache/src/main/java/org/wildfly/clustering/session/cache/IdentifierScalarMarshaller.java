@@ -30,6 +30,7 @@ import org.wildfly.clustering.session.IdentifierMarshallerProvider;
 public enum IdentifierScalarMarshaller implements ScalarMarshaller<String> {
 	INSTANCE;
 
+	@SuppressWarnings("removal")
 	private final Marshaller<String, ByteBuffer> marshaller = AccessController.doPrivileged(new PrivilegedAction<Optional<Marshaller<String, ByteBuffer>>>() {
 		@Override
 		public Optional<Marshaller<String, ByteBuffer>> run() {

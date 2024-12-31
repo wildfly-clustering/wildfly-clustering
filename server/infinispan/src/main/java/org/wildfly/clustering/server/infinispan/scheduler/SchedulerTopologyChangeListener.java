@@ -46,6 +46,7 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
 @Listener
 public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRegistrar {
 	private static final Logger LOGGER = Logger.getLogger(SchedulerTopologyChangeListener.class);
+	@SuppressWarnings("removal")
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
 		public ClassLoader run() {

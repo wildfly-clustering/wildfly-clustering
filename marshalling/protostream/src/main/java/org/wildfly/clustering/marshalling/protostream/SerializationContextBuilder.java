@@ -180,6 +180,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 		}
 	}
 
+	@SuppressWarnings("removal")
 	static <T> List<T> loadAll(Class<T> targetClass, ClassLoader loader) {
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override

@@ -32,6 +32,7 @@ public class ContextualThreadFactory<C> implements ThreadFactory {
 
 	@Override
 	public Thread newThread(Runnable task) {
+		@SuppressWarnings("removal")
 		Thread thread = AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Thread run() {

@@ -8,7 +8,6 @@ package org.wildfly.clustering.session.infinispan.remote;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -55,7 +54,7 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 		this.accept(this.container::stop);
 
 		Configuration configuration = this.container.getConfiguration();
-		configuration.addRemoteCache(this.deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(parameters.getNearCacheMode()).transactionMode(TransactionMode.NONE).templateName(DefaultTemplate.LOCAL));
+		configuration.addRemoteCache(this.deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(parameters.getNearCacheMode()).transactionMode(TransactionMode.NONE).configuration("<local-cache/>"));
 		this.accept(() -> configuration.removeRemoteCache(this.deploymentName));
 	}
 

@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 
+	@SuppressWarnings("removal")
 	public DefaultThreadFactory(Class<?> targetClass, ClassLoader loader) {
 		this(AccessController.doPrivileged(new PrivilegedAction<ThreadGroup>() {
 			@Override
@@ -40,6 +41,7 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 			this.group = group;
 		}
 
+		@SuppressWarnings("removal")
 		@Override
 		public Thread newThread(Runnable task) {
 			ThreadGroup group = this.group;
