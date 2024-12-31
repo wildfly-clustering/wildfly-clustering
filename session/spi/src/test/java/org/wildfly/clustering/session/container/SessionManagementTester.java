@@ -58,7 +58,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		for (URI uri : endpoints) {
 			// Verify no current session
 			request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
-				assertThat(response.statusCode()).isSameAs(HTTP_OK);
+				assertThat(response.statusCode()).isEqualTo(HTTP_OK);
 				assertThat(response.headers().firstValue(SESSION_ID)).isPresent();
 				assertThat(response.headers().firstValueAsLong(IMMUTABLE)).isEmpty();
 				assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
@@ -67,7 +67,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 
 		// Create a session
 		Map.Entry<String, String> entry = request(client, endpoints.get(0), HttpMethod.PUT).<Map.Entry<String, String>>thenApply(response -> {
-			assertThat(response.statusCode()).isSameAs(HTTP_OK);
+			assertThat(response.statusCode()).isEqualTo(HTTP_OK);
 			String sessionId = response.headers().firstValue(SESSION_ID).orElse(null);
 			String immutableValue = response.headers().firstValue(IMMUTABLE).orElse(null);
 			return new AbstractMap.SimpleImmutableEntry<>(sessionId, immutableValue);
@@ -83,7 +83,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 			for (URI uri : endpoints) {
 				String message = String.format("%s[%d]", uri, i);
 				long value = request(client, uri, HttpMethod.GET).thenApply(response -> {
-					assertThat(response.statusCode()).as(message).isSameAs(HTTP_OK);
+					assertThat(response.statusCode()).as(message).isEqualTo(HTTP_OK);
 					assertThat(response.headers().firstValue(SESSION_ID)).as(message).hasValue(sessionId);
 					assertThat(response.headers().firstValue(IMMUTABLE)).as(message).hasValue(immutableValue);
 					return response.headers().firstValueAsLong(COUNTER).orElse(0);
@@ -94,7 +94,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 				List<CompletableFuture<Long>> futures = new ArrayList<>(concurrency);
 				for (int j = 0; j < concurrency; j++) {
 					CompletableFuture<Long> future = request(client, uri, HttpMethod.GET).thenApply(response -> {
-						assertThat(response.statusCode()).as(message).isSameAs(HTTP_OK);
+						assertThat(response.statusCode()).as(message).isEqualTo(HTTP_OK);
 						assertThat(response.headers().firstValue(SESSION_ID)).as(message).hasValue(sessionId);
 						assertThat(response.headers().firstValue(IMMUTABLE)).as(message).hasValue(immutableValue);
 						return response.headers().firstValueAsLong(COUNTER).orElse(0);
@@ -114,7 +114,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 
 				// Verify expected session attribute value following concurrent updates
 				value = request(client, uri, HttpMethod.GET).thenApply(response -> {
-					assertThat(response.statusCode()).as(message).isSameAs(HTTP_OK);
+					assertThat(response.statusCode()).as(message).isEqualTo(HTTP_OK);
 					assertThat(response.headers().firstValue(SESSION_ID)).as(message).hasValue(sessionId);
 					assertThat(response.headers().firstValue(IMMUTABLE)).as(message).hasValue(immutableValue);
 					return response.headers().firstValueAsLong(COUNTER).orElse(0);
@@ -132,7 +132,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 
 		// Invalidate session
 		request(client, endpoints.get(0), HttpMethod.DELETE).thenAccept(response -> {
-			assertThat(response.statusCode()).isSameAs(HTTP_OK);
+			assertThat(response.statusCode()).isEqualTo(HTTP_OK);
 			assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
 		}).join();
 
@@ -140,7 +140,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 		for (URI uri : endpoints) {
 			// Verify session was truly invalidated
 			futures.add(request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
-				assertThat(response.statusCode()).isSameAs(HTTP_OK);
+				assertThat(response.statusCode()).isEqualTo(HTTP_OK);
 				assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
 				assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
 			}));
