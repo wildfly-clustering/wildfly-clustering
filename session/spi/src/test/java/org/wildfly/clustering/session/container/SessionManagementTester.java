@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.container;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.assertj.core.api.Assertions.*;
+import static org.wildfly.clustering.session.container.SessionManagementEndpointConfiguration.*;
 
 import java.net.CookieManager;
 import java.net.URI;
@@ -25,12 +26,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.wildfly.clustering.arquillian.Deployment;
+import org.wildfly.clustering.arquillian.Tester;
 
 /**
  * A smoke test client for validating container integration.
  * @author Paul Ferraro
  */
-public class SessionManagementTester implements ClientTester, SessionManagementEndpointConfiguration {
+public class SessionManagementTester implements Tester {
 
 	public enum HttpMethod {
 		HEAD, GET, PUT, DELETE;
@@ -50,7 +52,7 @@ public class SessionManagementTester implements ClientTester, SessionManagementE
 	}
 
 	@Override
-	public void test(List<Deployment> deployments) {
+	public void accept(List<Deployment> deployments) {
 		HttpClient client = this.configuration.getHttpClientConfigurator().apply(HttpClient.newBuilder()).cookieHandler(new CookieManager()).executor(this.executor).build();
 
 		List<URI> endpoints = deployments.stream().map(this.configuration::locateEndpoint).toList();
