@@ -8,7 +8,7 @@ package org.wildfly.clustering.arquillian;
 import java.util.Collection;
 
 /**
- * Implemented by objects with a lifecycle.
+ * Implemented by objects with an unmanaged lifecycle.
  * @author Paul Ferraro
  */
 public interface Lifecycle extends AutoCloseable {
@@ -39,8 +39,18 @@ public interface Lifecycle extends AutoCloseable {
 		}
 	}
 
+	/**
+	 * Returns a composite lifecycle object, useful for performing bulk lifecycle operations.
+	 * @param lifecycles a collection of lifecycle objects
+	 * @return a composite lifecycle
+	 */
 	static Lifecycle composite(Collection<? extends Lifecycle> lifecycles) {
 		return new Lifecycle() {
+			@Override
+			public boolean isStarted() {
+				return lifecycles.stream().anyMatch(Lifecycle::isStarted);
+			}
+
 			@Override
 			public void start() {
 				lifecycles.forEach(Lifecycle::start);
@@ -52,8 +62,8 @@ public interface Lifecycle extends AutoCloseable {
 			}
 
 			@Override
-			public boolean isStarted() {
-				return lifecycles.stream().anyMatch(Lifecycle::isStarted);
+			public void close() {
+				lifecycles.stream().forEach(Lifecycle::close);
 			}
 		};
 	}
