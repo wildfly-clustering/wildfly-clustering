@@ -17,8 +17,6 @@ import org.wildfly.clustering.arquillian.Deployment;
  */
 public interface SessionManagementTesterConfiguration extends SessionManagementEndpointConfiguration {
 
-	Class<?> getEndpointClass();
-
 	default URI locateEndpoint(Deployment deployment) {
 		return deployment.locate(this.getEndpointClass()).resolve(ENDPOINT_NAME);
 	}
