@@ -14,4 +14,6 @@ public interface SessionManagementEndpointConfiguration {
 	String COUNTER = "counter";
 	String IMMUTABLE = "immutable";
 	String SESSION_ID = "session-id";
+
+	Class<?> getEndpointClass();
 }

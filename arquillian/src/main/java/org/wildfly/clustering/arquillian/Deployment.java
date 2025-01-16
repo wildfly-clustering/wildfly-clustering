@@ -10,7 +10,12 @@ import java.net.URI;
 /**
  * @author Paul Ferraro
  */
-public interface Deployment extends Lifecycle {
+public interface Deployment extends Lifecycle, Comparable<Deployment> {
+	/**
+	 * Returns the name of this deployment
+	 * @return the deployment name
+	 */
+	String getName();
 
 	/**
 	 * Returns the container associated with this deployment.
@@ -34,4 +39,10 @@ public interface Deployment extends Lifecycle {
 	 * @return a URI to be used to invoke the specified resource.
 	 */
 	URI locate(String resourceName);
+
+	@Override
+	default int compareTo(Deployment deployment) {
+		int result = this.getContainer().compareTo(deployment.getContainer());
+		return (result == 0) ? this.getName().compareTo(deployment.getName()) : result;
+	}
 }

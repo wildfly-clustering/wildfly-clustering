@@ -7,8 +7,10 @@ package org.wildfly.clustering.arquillian.extension;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -63,8 +65,13 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		}
 
 		@Override
-		public Collection<DeploymentContainer> getContainers() {
-			return this.containers.values();
+		public Set<String> getContainerNames() {
+			return Set.copyOf(this.containers.keySet());
+		}
+
+		@Override
+		public List<DeploymentContainer> getContainers(Set<String> names) {
+			return names.stream().sorted().map(this.containers::get).map(Objects::requireNonNull).toList();
 		}
 	}
 
@@ -78,6 +85,11 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		@Override
 		public String getName() {
 			return this.container.getName();
+		}
+
+		@Override
+		public boolean isStarted() {
+			return this.container.getState() == Container.State.STARTED;
 		}
 
 		@Override
@@ -101,8 +113,20 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		}
 
 		@Override
-		public boolean isStarted() {
-			return this.container.getState() == Container.State.STARTED;
+		public String toString() {
+			return this.getName();
+		}
+
+		@Override
+		public int hashCode() {
+			return this.getName().hashCode();
+		}
+
+		@Override
+		public boolean equals(Object object) {
+			if (!(object instanceof DeploymentContainer)) return false;
+			DeploymentContainer container = (DeploymentContainer) object;
+			return this.getName().equals(container.getName());
 		}
 
 		ProtocolMetaData deployArchive(Archive<?> archive) {
@@ -136,7 +160,12 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 			return new Deployment() {
 				@Override
 				public String getName() {
-					return archive.getName();
+					return this.getContainer().getName() + ":" + archive.getName();
+				}
+
+				@Override
+				public boolean isStarted() {
+					return started.get();
 				}
 
 				@Override
@@ -154,11 +183,6 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 				}
 
 				@Override
-				public boolean isStarted() {
-					return started.get();
-				}
-
-				@Override
 				public URI locate(String resourceName) {
 					return uris.get(resourceName);
 				}
@@ -166,6 +190,23 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 				@Override
 				public DeploymentContainer getContainer() {
 					return WebContainerImpl.this;
+				}
+
+				@Override
+				public String toString() {
+					return this.getName();
+				}
+
+				@Override
+				public int hashCode() {
+					return Objects.hash(this.getContainer(), this.getName());
+				}
+
+				@Override
+				public boolean equals(Object object) {
+					if (!(object instanceof Deployment)) return false;
+					Deployment deployment = (Deployment) object;
+					return this.getContainer().equals(deployment.getContainer()) && this.getName().equals(deployment.getName());
 				}
 			};
 		}
