@@ -37,7 +37,7 @@
 
 		<!-- Compile dependency versions -->
 		<version.io.github.resilience4j>2.3.0</version.io.github.resilience4j>
-		<version.org.infinispan>15.1.3.Final</version.org.infinispan>
+		<version.org.infinispan>15.1.4.Final</version.org.infinispan>
 		<version.org.jboss.logging>3.6.1.Final</version.org.jboss.logging>
 		<version.org.jboss.marshalling>2.2.2.Final</version.org.jboss.marshalling>
 		<version.org.jgroups>5.4.1.Final</version.org.jgroups>
