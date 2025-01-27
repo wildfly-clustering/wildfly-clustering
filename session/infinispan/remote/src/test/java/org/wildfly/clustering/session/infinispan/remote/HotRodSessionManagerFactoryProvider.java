@@ -95,6 +95,11 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 			public String getServerName() {
 				return SERVER_NAME;
 			}
+
+			@Override
+			public ClassLoader getClassLoader() {
+				return this.getClass().getClassLoader();
+			}
 		};
 		RemoteCache<?, ?> cache = this.container.getCache(this.deploymentName);
 		cache.start();
