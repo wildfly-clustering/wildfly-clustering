@@ -50,8 +50,6 @@ public abstract class AbstractScheduledEntriesTestCase {
 		}
 
 		List<Map.Entry<UUID, Instant>> expected = this.expectedFactory.apply(entries);
-		System.out.println("Actual:\t" + this.entrySet);
-		System.out.println("Expected:\t" + expected);
 		assertThat(this.entrySet).containsExactlyElementsOf(expected);
 
 		// Verify iteration order after removal of first item
