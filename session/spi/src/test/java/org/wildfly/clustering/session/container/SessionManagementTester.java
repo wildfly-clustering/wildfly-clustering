@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.wildfly.clustering.session.container.SessionManagementEndpointConfiguration.*;
 
 import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -53,18 +54,21 @@ public class SessionManagementTester implements Tester {
 
 	@Override
 	public void accept(List<Deployment> deployments) {
-		HttpClient client = this.configuration.getHttpClientConfigurator().apply(HttpClient.newBuilder()).cookieHandler(new CookieManager()).executor(this.executor).build();
+		HttpClient client = this.configuration.getHttpClientConfigurator().apply(HttpClient.newBuilder()).cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL)).executor(this.executor).build();
 
 		List<URI> endpoints = deployments.stream().map(this.configuration::locateEndpoint).toList();
 
-		for (URI uri : endpoints) {
-			// Verify no current session
-			request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
-				assertThat(response.statusCode()).isEqualTo(HTTP_OK);
-				assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
-				assertThat(response.headers().firstValueAsLong(IMMUTABLE)).isEmpty();
-				assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
-			}).join();
+		boolean nullableSession = this.configuration.isNullableSession();
+		if (nullableSession) {
+			for (URI uri : endpoints) {
+				// Verify no current session
+				request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
+					assertThat(response.statusCode()).isEqualTo(HTTP_OK);
+					assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
+					assertThat(response.headers().firstValueAsLong(IMMUTABLE)).isEmpty();
+					assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
+				}).join();
+			}
 		}
 
 		// Create a session
@@ -138,12 +142,16 @@ public class SessionManagementTester implements Tester {
 			assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
 		}).join();
 
-		List<CompletableFuture<Void>> futures = new ArrayList<>(2);
+		List<CompletableFuture<Void>> futures = new ArrayList<>(endpoints.size());
 		for (URI uri : endpoints) {
 			// Verify session was truly invalidated
 			futures.add(request(client, uri, HttpMethod.HEAD).thenAccept(response -> {
 				assertThat(response.statusCode()).isEqualTo(HTTP_OK);
-				assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
+				if (nullableSession) {
+					assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
+				} else {
+					assertThat(response.headers().firstValue(SESSION_ID)).isNotEqualTo(sessionId);
+				}
 				assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
 			}));
 		}
