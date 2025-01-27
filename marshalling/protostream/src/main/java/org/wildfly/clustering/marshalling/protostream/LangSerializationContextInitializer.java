@@ -14,7 +14,7 @@ public class LangSerializationContextInitializer extends AbstractSerializationCo
 	private final ClassLoaderMarshaller loaderMarshaller;
 
 	public LangSerializationContextInitializer(ClassLoaderMarshaller loaderMarshaller) {
-		super("java.lang.proto");
+		super(Class.class.getPackage());
 		this.loaderMarshaller = loaderMarshaller;
 	}
 

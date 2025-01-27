@@ -6,6 +6,7 @@
 package org.wildfly.clustering.marshalling.protostream.math;
 
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
@@ -20,7 +21,7 @@ import org.wildfly.common.function.Functions;
 public class MathSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public MathSerializationContextInitializer() {
-		super("java.math.proto");
+		super(MathContext.class.getPackage());
 	}
 
 	@Override

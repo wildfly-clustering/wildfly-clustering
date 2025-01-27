@@ -5,13 +5,15 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+
 /**
  * @author Paul Ferraro
  */
 public class MarshallingSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public MarshallingSerializationContextInitializer() {
-		super("org.wildfly.clustering.marshalling.proto");
+		super(ByteBufferMarshaller.class.getPackage());
 	}
 
 	@Override

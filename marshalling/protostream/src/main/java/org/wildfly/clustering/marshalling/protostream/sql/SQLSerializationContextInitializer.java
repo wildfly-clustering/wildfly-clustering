@@ -21,7 +21,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 public class SQLSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public SQLSerializationContextInitializer() {
-		super("java.sql.proto");
+		super(Timestamp.class.getPackage());
 	}
 
 	@Override

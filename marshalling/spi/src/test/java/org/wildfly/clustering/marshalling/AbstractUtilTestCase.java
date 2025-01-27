@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -181,6 +182,17 @@ public abstract class AbstractUtilTestCase {
 		for (Locale locale : Locale.getAvailableLocales()) {
 			tester.accept(locale);
 		}
+	}
+
+	@Test
+	public void testProperties() {
+		Consumer<Properties> tester = this.factory.createTester();
+		Properties properties = new Properties();
+		tester.accept(properties);
+		properties.setProperty("foo", "bar");
+		tester.accept(properties);
+		properties.setProperty("baz", "qux");
+		tester.accept(properties);
 	}
 
 	@Test

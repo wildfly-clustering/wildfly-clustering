@@ -32,7 +32,7 @@ import org.wildfly.clustering.marshalling.protostream.util.SortedSetMarshaller;
 public class ConcurrentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public ConcurrentSerializationContextInitializer() {
-		super("java.util.concurrent.proto");
+		super(TimeUnit.class.getPackage());
 	}
 
 	@Override

@@ -16,7 +16,7 @@ import org.wildfly.clustering.marshalling.test.TestInvocationHandler;
 public class TestSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public TestSerializationContextInitializer() {
-		super("org.wildfly.clustering.marshalling.test.proto");
+		super(TestComparator.class.getPackage());
 	}
 
 	@Override

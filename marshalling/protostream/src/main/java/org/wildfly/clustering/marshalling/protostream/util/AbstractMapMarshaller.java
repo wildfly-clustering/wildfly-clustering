@@ -15,9 +15,11 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Abstract marshaller for a {@link Map} that writes the entries of the map.
  * @author Paul Ferraro
+ * @param <K> the map key type
+ * @param <V> the map value type
  * @param <T> the map type of this marshaller
  */
-public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> implements ProtoStreamMarshaller<T> {
+public abstract class AbstractMapMarshaller<K, V, T extends Map<K, V>> implements ProtoStreamMarshaller<T> {
 	protected static final int ENTRY_INDEX = 1;
 
 	private final Class<? extends T> mapClass;
@@ -29,7 +31,7 @@ public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> imple
 	@Override
 	public void writeTo(ProtoStreamWriter writer, T map) throws IOException {
 		synchronized (map) { // Avoid ConcurrentModificationException
-			for (Map.Entry<Object, Object> entry : map.entrySet()) {
+			for (Map.Entry<K, V> entry : map.entrySet()) {
 				writer.writeObject(ENTRY_INDEX, new AbstractMap.SimpleEntry<>(entry));
 			}
 		}

@@ -26,6 +26,7 @@ import org.wildfly.clustering.marshalling.protostream.math.MathSerializationCont
 import org.wildfly.clustering.marshalling.protostream.net.NetSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.sql.SQLSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.time.TimeSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.util.JavaUtilSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.util.UtilSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.util.concurrent.ConcurrentSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.AtomicSerializationContextInitializer;
@@ -89,6 +90,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 			this.register(new TimeSerializationContextInitializer());
 			this.register(new SQLSerializationContextInitializer());
 			this.register(new UtilSerializationContextInitializer());
+			this.register(new JavaUtilSerializationContextInitializer());
 			this.register(new AtomicSerializationContextInitializer());
 			this.register(new ConcurrentSerializationContextInitializer());
 			this.register(new MarshallingSerializationContextInitializer());

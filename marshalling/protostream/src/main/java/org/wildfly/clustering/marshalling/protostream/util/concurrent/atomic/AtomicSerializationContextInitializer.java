@@ -20,7 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 public class AtomicSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public AtomicSerializationContextInitializer() {
-		super("java.util.concurrent.atomic.proto");
+		super(AtomicReference.class.getPackage());
 	}
 
 	@Override

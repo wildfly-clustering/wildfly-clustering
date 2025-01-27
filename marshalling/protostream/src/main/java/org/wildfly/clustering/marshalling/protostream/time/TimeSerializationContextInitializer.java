@@ -24,7 +24,7 @@ import org.wildfly.common.function.Functions;
 public class TimeSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public TimeSerializationContextInitializer() {
-		super("java.time.proto");
+		super(Instant.class.getPackage());
 	}
 
 	@Override

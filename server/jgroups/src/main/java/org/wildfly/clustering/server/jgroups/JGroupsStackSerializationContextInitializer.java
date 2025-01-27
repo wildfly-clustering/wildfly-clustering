@@ -5,21 +5,27 @@
 
 package org.wildfly.clustering.server.jgroups;
 
-import org.jgroups.Address;
+import java.net.InetSocketAddress;
+
+import org.jgroups.stack.IpAddress;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
- * {@link SerializationContextInitializer} for this package.
+ * {@link SerializationContextInitializer} for the {@link org.jgroups.stack} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
-public class JGroupsServerSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class JGroupsStackSerializationContextInitializer extends AbstractSerializationContextInitializer {
+
+	public JGroupsStackSerializationContextInitializer() {
+		super(IpAddress.class.getPackage());
+	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(AddressMarshaller.INSTANCE.asMarshaller(Address.class).wrap(JChannelGroupMember.class, ChannelGroupMember::getAddress, JChannelGroupMember::new));
+		context.registerMarshaller(context.getMarshaller(InetSocketAddress.class).wrap(IpAddress.class, address -> new InetSocketAddress(address.getIpAddress(), address.getPort()), IpAddress::new));
 	}
 }

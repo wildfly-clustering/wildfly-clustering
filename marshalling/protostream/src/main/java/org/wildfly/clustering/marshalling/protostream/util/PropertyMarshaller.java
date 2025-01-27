@@ -15,40 +15,40 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for a {@link java.util.Map.Entry}
+ * A marshaller for a property, i.e. a {@link java.util.Map.Entry} whose key and value are strings.
  * @author Paul Ferraro
- * @param <K> the map entry key type
- * @param <V> the map entry value type
- * @param <T> the map entry type of this marshaller
+ * @param <T> the map entry type
  */
-public class MapEntryMarshaller<K, V, T extends Map.Entry<K, V>> implements ProtoStreamMarshaller<T> {
+public class PropertyMarshaller<T extends Map.Entry<String, String>> implements ProtoStreamMarshaller<T> {
 
 	private static final int KEY_INDEX = 1;
 	private static final int VALUE_INDEX = 2;
 
-	private final Class<? extends T> targetClass;
-	private final BiFunction<K, V, T> factory;
+	private final BiFunction<String, String, T> factory;
 
-	@SuppressWarnings("unchecked")
-	public MapEntryMarshaller(BiFunction<K, V, T> factory) {
-		this.targetClass = (Class<T>) factory.apply(null, null).getClass();
+	public PropertyMarshaller(BiFunction<String, String, T> factory) {
 		this.factory = factory;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
+	public Class<? extends T> getJavaClass() {
+		return (Class<T>) this.factory.apply(null, null).getClass();
+	}
+
+	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
-		K key = null;
-		V value = null;
+		String key = null;
+		String value = null;
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
 				case KEY_INDEX:
-					key = (K) reader.readAny();
+					key = reader.readString();
 					break;
 				case VALUE_INDEX:
-					value = (V) reader.readAny();
+					value = reader.readString();
 					break;
 				default:
 					reader.skipField(tag);
@@ -59,18 +59,13 @@ public class MapEntryMarshaller<K, V, T extends Map.Entry<K, V>> implements Prot
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, T entry) throws IOException {
-		K key = entry.getKey();
+		String key = entry.getKey();
 		if (key != null) {
-			writer.writeAny(KEY_INDEX, key);
+			writer.writeString(KEY_INDEX, key);
 		}
-		V value = entry.getValue();
+		String value = entry.getValue();
 		if (value != null) {
-			writer.writeAny(VALUE_INDEX, value);
+			writer.writeString(VALUE_INDEX, value);
 		}
-	}
-
-	@Override
-	public Class<? extends T> getJavaClass() {
-		return this.targetClass;
 	}
 }

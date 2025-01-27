@@ -23,7 +23,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 public class NetSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public NetSerializationContextInitializer() {
-		super("java.net.proto");
+		super(URI.class.getPackage());
 	}
 
 	@Override

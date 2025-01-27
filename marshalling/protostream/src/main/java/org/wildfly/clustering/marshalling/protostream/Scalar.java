@@ -362,7 +362,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 
 	@SuppressWarnings("unchecked")
 	public <T> ScalarMarshaller<T> cast(Class<T> type) {
-		if (!type.isAssignableFrom(this.getJavaClass())) {
+		if (!this.getJavaClass().isAssignableFrom(type) && !type.isAssignableFrom(this.getJavaClass())) {
 			throw new IllegalArgumentException(type.getName());
 		}
 		return (ScalarMarshaller<T>) this.marshaller;
