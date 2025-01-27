@@ -22,4 +22,10 @@ public interface DeploymentConfiguration {
 	 * @return a server name
 	 */
 	String getServerName();
+
+	/**
+	 * Returns the class loader of this deployment
+	 * @return a class loader
+	 */
+	ClassLoader getClassLoader();
 }

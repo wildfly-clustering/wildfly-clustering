@@ -113,6 +113,11 @@ public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseablePro
 			public String getServerName() {
 				return SERVER_NAME;
 			}
+
+			@Override
+			public ClassLoader getClassLoader() {
+				return this.getClass().getClassLoader();
+			}
 		};
 		Cache<?, ?> cache = this.manager.getCache(this.deploymentName);
 		cache.start();

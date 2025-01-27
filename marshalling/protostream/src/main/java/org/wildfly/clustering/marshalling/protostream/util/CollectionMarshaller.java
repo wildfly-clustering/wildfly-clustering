@@ -15,9 +15,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 /**
  * Marshaller for a basic collection.
  * @author Paul Ferraro
+ * @param <E> the collection element type
  * @param <T> the collection type of this marshaller
  */
-public class CollectionMarshaller<T extends Collection<Object>> extends AbstractCollectionMarshaller<T> {
+public class CollectionMarshaller<E, T extends Collection<E>> extends AbstractCollectionMarshaller<E, T> {
 
 	private final Supplier<T> factory;
 
@@ -35,7 +36,8 @@ public class CollectionMarshaller<T extends Collection<Object>> extends Abstract
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
 				case ELEMENT_INDEX:
-					collection.add(reader.readAny());
+					@SuppressWarnings("unchecked") E element = (E) reader.readAny();
+					collection.add(element);
 					break;
 				default:
 					reader.skipField(tag);

@@ -4,6 +4,7 @@ package java.util;
 
 import "java.lang.proto";
 import "org.wildfly.clustering.marshalling.protostream.proto";
+import "org.wildfly.clustering.marshalling.protostream.util.proto";
 
 // IDs: 10 - 59
 
@@ -286,6 +287,13 @@ message Locale {
 	string	variant	= 3;
 	string	script	= 4;
 	repeated	string	extension	= 5;
+}
+
+/**
+ * @TypeId(45)
+ */
+message Properties {
+	repeated	org.wildfly.clustering.marshalling.protostream.util.Property	entry	= 1;
 }
 
 /**

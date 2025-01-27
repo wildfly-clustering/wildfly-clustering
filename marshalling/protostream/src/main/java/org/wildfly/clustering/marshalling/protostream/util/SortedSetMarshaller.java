@@ -18,17 +18,18 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Marshaller for a {@link SortedSet}.
  * @author Paul Ferraro
+ * @param <E> the set element type
  * @param <T> the set type of this marshaller
  */
-public class SortedSetMarshaller<T extends SortedSet<Object>> extends AbstractCollectionMarshaller<T> {
+public class SortedSetMarshaller<E, T extends SortedSet<E>> extends AbstractCollectionMarshaller<E, T> {
 
 	private static final int COMPARATOR_INDEX = 2;
 
-	private final Function<Comparator<? super Object>, T> factory;
+	private final Function<Comparator<? super E>, T> factory;
 
 	@SuppressWarnings("unchecked")
-	public SortedSetMarshaller(Function<Comparator<? super Object>, T> factory) {
-		super((Class<T>) factory.apply((Comparator<Object>) ComparatorMarshaller.INSTANCE.createInitialValue()).getClass());
+	public SortedSetMarshaller(Function<Comparator<? super E>, T> factory) {
+		super((Class<T>) factory.apply((Comparator<E>) ComparatorMarshaller.INSTANCE.createInitialValue()).getClass());
 		this.factory = factory;
 	}
 
@@ -36,17 +37,18 @@ public class SortedSetMarshaller<T extends SortedSet<Object>> extends AbstractCo
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
 		FieldSetReader<Comparator<?>> comparatorReader = reader.createFieldSetReader(ComparatorMarshaller.INSTANCE, COMPARATOR_INDEX);
-		Comparator<Object> comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.createInitialValue();
+		Comparator<E> comparator = (Comparator<E>) ComparatorMarshaller.INSTANCE.createInitialValue();
 		T set = this.factory.apply(comparator);
 		while (!reader.isAtEnd()) {
 
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			if (index == ELEMENT_INDEX) {
-				set.add(reader.readAny());
+				E element = (E) reader.readAny();
+				set.add(element);
 			} else if (comparatorReader.contains(index)) {
 				T existing = set;
-				comparator = (Comparator<Object>) comparatorReader.readField(comparator);
+				comparator = (Comparator<E>) comparatorReader.readField(comparator);
 				set = this.factory.apply(comparator);
 				set.addAll(existing);
 			} else {

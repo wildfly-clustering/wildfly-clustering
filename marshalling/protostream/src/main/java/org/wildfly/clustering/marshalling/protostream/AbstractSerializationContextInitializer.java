@@ -22,19 +22,18 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 	private final String resourceName;
 	private final ClassLoader loader;
 
+	private static String getResourceName(Package targetPackage) {
+		return targetPackage.getName() + ".proto";
+	}
+
 	protected AbstractSerializationContextInitializer() {
-		this.resourceName = this.getClass().getPackage().getName() + ".proto";
+		this.resourceName = getResourceName(this.getClass().getPackage());
 		this.loader = Privileged.getClassLoader(this.getClass());
 	}
 
-	protected AbstractSerializationContextInitializer(String resourceName) {
-		this.resourceName = resourceName;
+	protected AbstractSerializationContextInitializer(Package targetPackage) {
+		this.resourceName = getResourceName(targetPackage);
 		this.loader = Privileged.getClassLoader(this.getClass());
-	}
-
-	protected AbstractSerializationContextInitializer(String resourceName, Class<?> containingClass) {
-		this.resourceName = resourceName;
-		this.loader = Privileged.getClassLoader(containingClass);
 	}
 
 	@Override

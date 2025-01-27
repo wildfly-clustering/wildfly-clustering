@@ -21,12 +21,14 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Marshaller for a {@link LinkedHashMap}.
  * @author Paul Ferraro
+ * @param <K> the map key type
+ * @param <V> the map value type
  */
-public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap<Object, Object>> {
+public class LinkedHashMapMarshaller<K, V> extends AbstractMapMarshaller<K, V, LinkedHashMap<K, V>> {
 
 	private static final int ACCESS_ORDER_INDEX = ENTRY_INDEX + 1;
 
-	private  static final Function<LinkedHashMap<Object, Object>, Boolean> ACCESS_ORDER = new Function<>() {
+	private static final Function<LinkedHashMap<Object, Object>, Boolean> ACCESS_ORDER = new Function<>() {
 		@Override
 		public Boolean apply(LinkedHashMap<Object, Object> map) {
 			Object insertOrder = new Object();
@@ -55,13 +57,13 @@ public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap
 
 	@SuppressWarnings("unchecked")
 	public LinkedHashMapMarshaller() {
-		super((Class<LinkedHashMap<Object, Object>>) (Class<?>) LinkedHashMap.class);
+		super((Class<LinkedHashMap<K, V>>) (Class<?>) LinkedHashMap.class);
 	}
 
 	@Override
-	public LinkedHashMap<Object, Object> readFrom(ProtoStreamReader reader) throws IOException {
+	public LinkedHashMap<K, V> readFrom(ProtoStreamReader reader) throws IOException {
 		boolean accessOrder = false;
-		List<Map.Entry<Object, Object>> entries = new LinkedList<>();
+		List<Map.Entry<K, V>> entries = new LinkedList<>();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
@@ -76,18 +78,19 @@ public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap
 					reader.skipField(tag);
 			}
 		}
-		LinkedHashMap<Object, Object> map = new LinkedHashMap<>(16, 0.75f, accessOrder);
-		for (Map.Entry<Object, Object> entry : entries) {
+		LinkedHashMap<K, V> map = new LinkedHashMap<>(16, 0.75f, accessOrder);
+		for (Map.Entry<K, V> entry : entries) {
 			map.put(entry.getKey(), entry.getValue());
 		}
 		return map;
 	}
 
 	@Override
-	public void writeTo(ProtoStreamWriter writer, LinkedHashMap<Object, Object> map) throws IOException {
+	public void writeTo(ProtoStreamWriter writer, LinkedHashMap<K, V> map) throws IOException {
 		synchronized (map) { // Avoid ConcurrentModificationException
 			super.writeTo(writer, map);
-			boolean accessOrder = ACCESS_ORDER.apply(map);
+			@SuppressWarnings("unchecked")
+			boolean accessOrder = ACCESS_ORDER.apply((LinkedHashMap<Object, Object>) map);
 			if (accessOrder) {
 				writer.writeBool(ACCESS_ORDER_INDEX, accessOrder);
 			}

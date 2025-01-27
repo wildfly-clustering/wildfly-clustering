@@ -36,4 +36,8 @@ public interface SessionManagementTesterConfiguration extends SessionManagementE
 	default Duration getFailoverGracePeriod() {
 		return Duration.ofSeconds(2);
 	}
+
+	default boolean isNullableSession() {
+		return true;
+	}
 }

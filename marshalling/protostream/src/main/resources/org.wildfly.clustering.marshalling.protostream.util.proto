@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package org.wildfly.clustering.marshalling.protostream.util;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
+
+/**
+ * @TypeId(8)
+ */
+message Property {
+	string	key	= 1;
+	string	value	= 2;
+}
+
+/**
+ * @TypeId(9)
+ */
+message StringKeyMapEntry {
+	string	key	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
+}

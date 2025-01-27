@@ -14,9 +14,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Abstract collection marshaller that writes the elements of the collection.
  * @author Paul Ferraro
+ * @param <E> the collection element type
  * @param <T> the collection type of this marshaller
  */
-public abstract class AbstractCollectionMarshaller<T extends Collection<Object>> implements ProtoStreamMarshaller<T> {
+public abstract class AbstractCollectionMarshaller<E, T extends Collection<E>> implements ProtoStreamMarshaller<T> {
 
 	protected static final int ELEMENT_INDEX = 1;
 
@@ -29,7 +30,7 @@ public abstract class AbstractCollectionMarshaller<T extends Collection<Object>>
 	@Override
 	public void writeTo(ProtoStreamWriter writer, T collection) throws IOException {
 		synchronized (collection) { // Avoid ConcurrentModificationException
-			for (Object element : collection) {
+			for (E element : collection) {
 				writer.writeAny(ELEMENT_INDEX, element);
 			}
 		}

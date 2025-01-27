@@ -22,17 +22,19 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Marshaller for a {@link SortedMap}.
  * @author Paul Ferraro
+ * @param <K> the map key type
+ * @param <V> the map value type
  * @param <T> the map type of this marshaller
  */
-public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends AbstractMapMarshaller<T> {
+public class SortedMapMarshaller<K, V, T extends SortedMap<K, V>> extends AbstractMapMarshaller<K, V, T> {
 
 	private static final int COMPARATOR_INDEX = ENTRY_INDEX + 1;
 
-	private final Function<Comparator<? super Object>, T> factory;
+	private final Function<Comparator<? super K>, T> factory;
 
 	@SuppressWarnings("unchecked")
-	public SortedMapMarshaller(Function<Comparator<? super Object>, T> factory) {
-		super((Class<T>) factory.apply((Comparator<Object>) ComparatorMarshaller.INSTANCE.createInitialValue()).getClass());
+	public SortedMapMarshaller(Function<Comparator<? super K>, T> factory) {
+		super((Class<T>) factory.apply((Comparator<K>) ComparatorMarshaller.INSTANCE.createInitialValue()).getClass());
 		this.factory = factory;
 	}
 
@@ -40,21 +42,21 @@ public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends Ab
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
 		FieldSetReader<Comparator<?>> comparatorReader = reader.createFieldSetReader(ComparatorMarshaller.INSTANCE, COMPARATOR_INDEX);
-		Comparator<Object> comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.createInitialValue();
-		List<Map.Entry<Object, Object>> entries = new LinkedList<>();
+		Comparator<K> comparator = (Comparator<K>) ComparatorMarshaller.INSTANCE.createInitialValue();
+		List<Map.Entry<K, V>> entries = new LinkedList<>();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			if (index == ENTRY_INDEX) {
 				entries.add(reader.readObject(AbstractMap.SimpleEntry.class));
 			} else if (comparatorReader.contains(index)) {
-				comparator = (Comparator<Object>) comparatorReader.readField(comparator);
+				comparator = (Comparator<K>) comparatorReader.readField(comparator);
 			} else {
 				reader.skipField(tag);
 			}
 		}
 		T map = this.factory.apply(comparator);
-		for (Map.Entry<Object, Object> entry : entries) {
+		for (Map.Entry<K, V> entry : entries) {
 			map.put(entry.getKey(), entry.getValue());
 		}
 		return map;
