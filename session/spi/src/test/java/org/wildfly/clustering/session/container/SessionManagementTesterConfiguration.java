@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.container;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.arquillian.Deployment;
@@ -33,8 +34,8 @@ public interface SessionManagementTesterConfiguration extends SessionManagementE
 		return this.getIterations() * 10;
 	}
 
-	default Duration getFailoverGracePeriod() {
-		return Duration.ofSeconds(2);
+	default Optional<Duration> getFailoverGracePeriod() {
+		return Optional.empty();
 	}
 
 	default boolean isNullableSession() {
