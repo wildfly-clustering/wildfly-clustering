@@ -112,11 +112,7 @@ public class SessionManagementTester implements Tester {
 				assertThat(futures.stream().map(CompletableFuture::join).distinct().count()).as(message).isEqualTo(concurrency);
 
 				// Grace time to increase likelihood that subsequent request does not overlap with post-request processing of previous requests
-				try {
-					Thread.sleep(this.configuration.getFailoverGracePeriod().toMillis());
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
+				this.failoverGracePeriod();
 
 				// Verify expected session attribute value following concurrent updates
 				value = request(client, uri, HttpMethod.GET).thenApply(response -> {
@@ -127,12 +123,7 @@ public class SessionManagementTester implements Tester {
 				}).join();
 				assertThat(value).as(message).isEqualTo(expected.incrementAndGet());
 
-				// Grace time between fail-over requests
-				try {
-					Thread.sleep(this.configuration.getFailoverGracePeriod().toMillis());
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
+				this.failoverGracePeriod();
 			}
 		}
 
@@ -156,6 +147,17 @@ public class SessionManagementTester implements Tester {
 			}));
 		}
 		futures.forEach(CompletableFuture::join);
+	}
+
+	private void failoverGracePeriod() {
+		this.configuration.getFailoverGracePeriod().ifPresent(duration -> {
+			// Grace time between fail-over requests
+			try {
+				Thread.sleep(duration.toMillis());
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		});
 	}
 
 	private static CompletableFuture<HttpResponse<Void>> request(HttpClient client, URI uri, HttpMethod method) {

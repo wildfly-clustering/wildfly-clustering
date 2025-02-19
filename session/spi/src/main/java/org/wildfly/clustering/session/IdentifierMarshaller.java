@@ -56,20 +56,33 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	/**
 	 * Specific optimization for hex-encoded identifiers (e.g. Tomcat).
 	 */
-	HEX() {
-		private final HexFormat format = HexFormat.of().withUpperCase();
+	HEX_UPPER() {
+		private final Marshaller<String, ByteBuffer> marshaller = new HexMarshaller(HexFormat.of().withUpperCase());
 
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
-			if (!buffer.hasArray()) {
-				throw new IllegalArgumentException(buffer.toString());
-			}
-			return this.format.formatHex(buffer.array(), buffer.arrayOffset(), buffer.limit());
+			return this.marshaller.read(buffer);
 		}
 
 		@Override
 		public ByteBuffer write(String value) throws IOException {
-			return ByteBuffer.wrap(this.format.parseHex(value));
+			return this.marshaller.write(value);
+		}
+	},
+	/**
+	 * Specific optimization for hex-encoded identifiers (e.g. Tomcat).
+	 */
+	HEX_LOWER() {
+		private final Marshaller<String, ByteBuffer> marshaller = new HexMarshaller(HexFormat.of().withLowerCase());
+
+		@Override
+		public String read(ByteBuffer buffer) throws IOException {
+			return this.marshaller.read(buffer);
+		}
+
+		@Override
+		public ByteBuffer write(String value) throws IOException {
+			return this.marshaller.write(value);
 		}
 	}
 	;
@@ -90,6 +103,32 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 			return true;
 		} catch (IOException | IllegalArgumentException e) {
 			return false;
+		}
+	}
+
+	static class HexMarshaller implements Marshaller<String, ByteBuffer> {
+		private final HexFormat format;
+
+		HexMarshaller(HexFormat format) {
+			this.format = format;
+		}
+
+		@Override
+		public String read(ByteBuffer buffer) throws IOException {
+			if (!buffer.hasArray()) {
+				throw new IllegalArgumentException(buffer.toString());
+			}
+			return this.format.formatHex(buffer.array(), buffer.arrayOffset(), buffer.limit());
+		}
+
+		@Override
+		public ByteBuffer write(String value) throws IOException {
+			return ByteBuffer.wrap(this.format.parseHex(value));
+		}
+
+		@Override
+		public boolean isMarshallable(Object object) {
+			return object instanceof String;
 		}
 	}
 }
