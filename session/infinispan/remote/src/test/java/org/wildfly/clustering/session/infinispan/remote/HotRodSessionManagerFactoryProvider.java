@@ -54,7 +54,7 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 		this.accept(this.container::stop);
 
 		Configuration configuration = this.container.getConfiguration();
-		configuration.addRemoteCache(this.deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(parameters.getNearCacheMode()).transactionMode(TransactionMode.NONE).configuration("<local-cache/>"));
+		configuration.addRemoteCache(this.deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(parameters.getNearCacheMode()).transactionMode(TransactionMode.NONE).configuration("{\"local-cache\": { \"statistics\": \"true\"}}"));
 		this.accept(() -> configuration.removeRemoteCache(this.deploymentName));
 	}
 
