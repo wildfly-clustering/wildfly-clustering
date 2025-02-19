@@ -37,7 +37,7 @@ public class StringIdentifierSerializerTestCase {
 	@Test
 	public void testHex() throws IOException {
 		org.apache.catalina.SessionIdGenerator generator = new StandardSessionIdGenerator();
-		test(IdentifierMarshaller.HEX, generator::generateSessionId);
+		test(IdentifierMarshaller.HEX_UPPER, generator::generateSessionId);
 	}
 
 	private static void test(Marshaller<String, ByteBuffer> marshaller, Supplier<String> generator) throws IOException {
