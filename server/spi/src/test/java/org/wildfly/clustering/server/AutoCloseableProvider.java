@@ -5,8 +5,8 @@
 
 package org.wildfly.clustering.server;
 
+import java.util.Deque;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -14,15 +14,15 @@ import java.util.function.Consumer;
  */
 public class AutoCloseableProvider implements AutoCloseable, Consumer<Runnable> {
 
-	private final List<Runnable> tasks = new LinkedList<>();
+	private final Deque<Runnable> tasks = new LinkedList<>();
 
 	@Override
 	public void accept(Runnable task) {
-		this.tasks.add(0, task);
+		this.tasks.add(task);
 	}
 
 	@Override
 	public void close() {
-		this.tasks.forEach(Runnable::run);
+		this.tasks.descendingIterator().forEachRemaining(Runnable::run);
 	}
 }
