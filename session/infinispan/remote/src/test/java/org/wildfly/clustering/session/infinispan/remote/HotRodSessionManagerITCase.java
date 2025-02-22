@@ -35,7 +35,6 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();
 
 	static class HotRodSessionManagerArgumentsProvider implements ArgumentsProvider {
-		Class<? extends MarshallingTesterFactory> marshallerClass;
 		Set<NearCacheMode> nearCacheModes = EnumSet.of(NearCacheMode.DISABLED);
 
 		@Override
