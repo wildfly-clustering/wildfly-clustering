@@ -8,7 +8,6 @@ package org.wildfly.clustering.cache.infinispan.remote;
 import java.time.Duration;
 import java.util.function.Function;
 
-import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
@@ -22,21 +21,19 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 public class RemoteCacheEntryMutatorFactory<K, V> implements CacheEntryMutatorFactory<K, V> {
 
 	private final RemoteCache<K, V> cache;
-	private final Flag[] flags;
 	private final Function<V, Duration> maxIdle;
 
-	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache, Flag[] flags) {
-		this(cache, flags, null);
+	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache) {
+		this(cache, null);
 	}
 
-	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache, Flag[] flags, Function<V, Duration> maxIdle) {
+	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache, Function<V, Duration> maxIdle) {
 		this.cache = cache;
-		this.flags = flags;
 		this.maxIdle = maxIdle;
 	}
 
 	@Override
 	public CacheEntryMutator createMutator(K key, V value) {
-		return (this.maxIdle != null) ? new RemoteCacheEntryMutator<>(this.cache, this.flags, key, value, () -> this.maxIdle.apply(value)) : new RemoteCacheEntryMutator<>(this.cache, this.flags, key, value);
+		return (this.maxIdle != null) ? new RemoteCacheEntryMutator<>(this.cache, key, value, () -> this.maxIdle.apply(value)) : new RemoteCacheEntryMutator<>(this.cache, key, value);
 	}
 }

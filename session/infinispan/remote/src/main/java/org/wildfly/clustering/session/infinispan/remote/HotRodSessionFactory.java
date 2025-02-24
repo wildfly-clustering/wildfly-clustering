@@ -14,7 +14,6 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
 import org.infinispan.client.hotrod.annotation.ClientListener;
@@ -51,7 +50,6 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	private static final Logger LOGGER = Logger.getLogger(HotRodSessionFactory.class);
 
 	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache;
-	private final Flag[] forceReturnFlags;
 	private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory;
 	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
 	private final CacheEntryRemover<String> attributesRemover;
@@ -70,8 +68,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
 		this.attributesRemover = attributesFactory;
-		this.creationMetaDataCache = config.getCache();
-		this.forceReturnFlags = config.getForceReturnFlags();
+		this.creationMetaDataCache = config.getForceReturnCache();
 		this.executor = config.getExecutor();
 		this.creationMetaDataCache.addClientListener(this);
 	}
@@ -85,7 +82,6 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	@ClientCacheEntryExpired
 	public void expired(ClientCacheEntryExpiredEvent<SessionAccessMetaDataKey> event) {
 		RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache = this.creationMetaDataCache;
-		Flag[] forceReturnFlags = this.forceReturnFlags;
 		ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = this.metaDataFactory;
 		ImmutableSessionAttributesFactory<AV> attributesFactory = this.attributesFactory;
 		CacheEntryRemover<String> attributesRemover = this.attributesRemover;
@@ -94,7 +90,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 		Runnable task = new Runnable() {
 			@Override
 			public void run() {
-				SessionCreationMetaDataEntry<SC> creationMetaDataEntry = creationMetaDataCache.withFlags(forceReturnFlags).remove(new SessionCreationMetaDataKey(id));
+				SessionCreationMetaDataEntry<SC> creationMetaDataEntry = creationMetaDataCache.remove(new SessionCreationMetaDataKey(id));
 				if (creationMetaDataEntry != null) {
 					AV attributesValue = attributesFactory.findValue(id);
 					if (attributesValue != null) {

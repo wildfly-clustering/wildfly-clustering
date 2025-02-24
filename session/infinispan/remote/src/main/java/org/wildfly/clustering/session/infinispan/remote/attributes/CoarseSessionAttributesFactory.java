@@ -16,7 +16,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
-import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryMutator;
@@ -46,8 +45,8 @@ import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationN
 public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 	private static final Logger LOGGER = Logger.getLogger(CoarseSessionAttributesFactory.class);
 
-	private final RemoteCache<SessionAttributesKey, V> cache;
-	private final Flag[] ignoreReturnFlags;
+	private final RemoteCache<SessionAttributesKey, V> readCache;
+	private final RemoteCache<SessionAttributesKey, V> writeCache;
 	private final Marshaller<Map<String, Object>, V> marshaller;
 	private final Immutability immutability;
 	private final CacheProperties properties;
@@ -55,12 +54,12 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	private final BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory;
 
 	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
-		this.cache = hotrod.getCache();
-		this.ignoreReturnFlags = hotrod.getIgnoreReturnFlags();
+		this.readCache = hotrod.getCache();
+		this.writeCache = hotrod.getIgnoreReturnCache();
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = hotrod.getCacheProperties();
-		this.mutatorFactory = new RemoteCacheEntryMutatorFactory<>(this.cache, this.ignoreReturnFlags);
+		this.mutatorFactory = new RemoteCacheEntryMutatorFactory<>(this.writeCache);
 		this.notifierFactory = notifierFactory;
 	}
 
@@ -69,7 +68,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		Map<String, Object> attributes = new ConcurrentHashMap<>();
 		try {
 			V value = this.marshaller.write(attributes);
-			return this.cache.withFlags(this.ignoreReturnFlags).putAsync(new SessionAttributesKey(id), value).thenApply(constantFunction(attributes));
+			return this.writeCache.putAsync(new SessionAttributesKey(id), value).thenApply(constantFunction(attributes));
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -90,7 +89,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {
-		return this.cache.getAsync(new SessionAttributesKey(id)).thenApply(value -> {
+		return this.readCache.getAsync(new SessionAttributesKey(id)).thenApply(value -> {
 			try {
 				return (value != null) ? this.marshaller.read(value) : null;
 			} catch (IOException e) {
@@ -101,7 +100,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.cache.withFlags(this.ignoreReturnFlags).removeAsync(new SessionAttributesKey(id)).thenAccept(discardingConsumer());
+		return this.writeCache.removeAsync(new SessionAttributesKey(id)).thenAccept(discardingConsumer());
 	}
 
 	@Override

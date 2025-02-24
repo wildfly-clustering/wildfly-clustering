@@ -16,7 +16,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
-import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
@@ -46,8 +45,8 @@ import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapC
 public class FineSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 	private static final Logger LOGGER = Logger.getLogger(FineSessionAttributesFactory.class);
 
-	private final RemoteCache<SessionAttributesKey, Map<String, V>> cache;
-	private final Flag[] ignoreReturnFlags;
+	private final RemoteCache<SessionAttributesKey, Map<String, V>> readCache;
+	private final RemoteCache<SessionAttributesKey, Map<String, V>> writeCache;
 	private final Marshaller<Object, V> marshaller;
 	private final Immutability immutability;
 	private final CacheProperties properties;
@@ -55,12 +54,12 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	private final BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory;
 
 	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
-		this.cache = hotrod.getCache();
-		this.ignoreReturnFlags = hotrod.getIgnoreReturnFlags();
+		this.readCache = hotrod.getCache();
+		this.writeCache = hotrod.getIgnoreReturnCache();
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = hotrod.getCacheProperties();
-		this.mutatorFactory = new RemoteCacheEntryComputerFactory<>(this.cache, this.ignoreReturnFlags, SessionAttributeMapComputeFunction::new);
+		this.mutatorFactory = new RemoteCacheEntryComputerFactory<>(this.readCache, SessionAttributeMapComputeFunction::new);
 		this.notifierFactory = notifierFactory;
 	}
 
@@ -89,7 +88,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {
-		return this.cache.getAsync(new SessionAttributesKey(id)).thenApply(values -> {
+		return this.readCache.getAsync(new SessionAttributesKey(id)).thenApply(values -> {
 			Map<String, Object> attributes = this.createValue(id, null);
 			if (values != null) {
 				for (Map.Entry<String, V> entry : values.entrySet()) {
@@ -107,7 +106,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.cache.withFlags(this.ignoreReturnFlags).removeAsync(new SessionAttributesKey(id)).thenAccept(discardingConsumer());
+		return this.writeCache.removeAsync(new SessionAttributesKey(id)).thenAccept(discardingConsumer());
 	}
 
 	@Override
