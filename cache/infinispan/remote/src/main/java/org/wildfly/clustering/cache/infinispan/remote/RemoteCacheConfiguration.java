@@ -25,7 +25,7 @@ import org.wildfly.clustering.cache.infinispan.BasicCacheConfiguration;
 public interface RemoteCacheConfiguration extends RemoteCacheContainerConfiguration, BasicCacheConfiguration {
 
 	@Override
-	<CK, CV> RemoteCache<CK, CV> getCache();
+	<K, V> RemoteCache<K, V> getCache();
 
 	@Override
 	default RemoteCacheContainer getCacheContainer() {
@@ -53,12 +53,14 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 		return this.getCache().getTransactionManager();
 	}
 
-	default Flag[] getIgnoreReturnFlags() {
-		return this.getNearCacheMode().enabled() ? new Flag[0] : new Flag[] { Flag.SKIP_LISTENER_NOTIFICATION };
+	default <K, V> RemoteCache<K, V> getIgnoreReturnCache() {
+		RemoteCache<K, V> cache = this.getCache();
+		return this.getNearCacheMode().enabled() ? cache : cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
 	}
 
-	default Flag[] getForceReturnFlags() {
-		return this.getNearCacheMode().enabled() ? new Flag[] { Flag.FORCE_RETURN_VALUE } : new Flag[] { Flag.FORCE_RETURN_VALUE, Flag.SKIP_LISTENER_NOTIFICATION };
+	default <K, V> RemoteCache<K, V> getForceReturnCache() {
+		RemoteCache<K, V> cache = this.getCache();
+		return this.getNearCacheMode().enabled() ? cache.withFlags(Flag.FORCE_RETURN_VALUE) : cache.withFlags(Flag.FORCE_RETURN_VALUE, Flag.SKIP_LISTENER_NOTIFICATION);
 	}
 
 	default NearCacheMode getNearCacheMode() {

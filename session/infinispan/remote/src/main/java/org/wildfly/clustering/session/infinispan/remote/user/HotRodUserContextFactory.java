@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
-import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.marshalling.Marshaller;
@@ -31,14 +30,14 @@ import org.wildfly.clustering.session.cache.user.UserContextFactory;
  */
 public class HotRodUserContextFactory<PC, PV, TC> implements UserContextFactory<UserContext<PV, TC>, PC, TC> {
 
-	private final RemoteCache<UserContextKey, UserContext<PV, TC>> cache;
-	private final Flag[] ignoreReturnFlags;
+	private final RemoteCache<UserContextKey, UserContext<PV, TC>> readCache;
+	private final RemoteCache<UserContextKey, UserContext<PV, TC>> writeCache;
 	private final Marshaller<PC, PV> marshaller;
 	private final Supplier<TC> contextFactory;
 
 	public HotRodUserContextFactory(RemoteCacheConfiguration configuration, Marshaller<PC, PV> marshaller, Supplier<TC> contextFactory) {
-		this.cache = configuration.getCache();
-		this.ignoreReturnFlags = configuration.getIgnoreReturnFlags();
+		this.readCache = configuration.getCache();
+		this.writeCache = configuration.getIgnoreReturnCache();
 		this.marshaller = marshaller;
 		this.contextFactory = contextFactory;
 	}
@@ -47,7 +46,7 @@ public class HotRodUserContextFactory<PC, PV, TC> implements UserContextFactory<
 	public CompletionStage<UserContext<PV, TC>> createValueAsync(String id, PC context) {
 		try {
 			UserContext<PV, TC> entry = new UserContextEntry<>(this.marshaller.write(context));
-			return this.cache.withFlags(this.ignoreReturnFlags).putAsync(new UserContextKey(id), entry).thenApply(constantFunction(entry));
+			return this.writeCache.putAsync(new UserContextKey(id), entry).thenApply(constantFunction(entry));
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -55,12 +54,12 @@ public class HotRodUserContextFactory<PC, PV, TC> implements UserContextFactory<
 
 	@Override
 	public CompletionStage<UserContext<PV, TC>> findValueAsync(String id) {
-		return this.cache.getAsync(new UserContextKey(id));
+		return this.readCache.getAsync(new UserContextKey(id));
 	}
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.cache.withFlags(this.ignoreReturnFlags).removeAsync(new UserContextKey(id)).thenAccept(discardingConsumer());
+		return this.writeCache.removeAsync(new UserContextKey(id)).thenAccept(discardingConsumer());
 	}
 
 	@Override
