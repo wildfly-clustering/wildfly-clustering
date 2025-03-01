@@ -10,9 +10,9 @@ import org.wildfly.clustering.marshalling.AbstractTimeTestCase;
 /**
  * @author Paul Ferraro
  */
-public class JavaTimeUnitTest extends AbstractTimeTestCase {
+public class JavaTimeTestCase extends AbstractTimeTestCase {
 
-	public JavaTimeUnitTest() {
+	public JavaTimeTestCase() {
 		super(new JavaSerializationTesterFactory());
 	}
 }
