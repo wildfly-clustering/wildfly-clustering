@@ -5,10 +5,11 @@
 
 package org.wildfly.clustering.session.cache.metadata.fine;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.time.Duration;
 import java.util.function.Consumer;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
@@ -38,7 +39,7 @@ public class DefaultSessionAccessMetaDataEntryMarshallerTestCase {
 	}
 
 	static void assertEquals(DefaultSessionAccessMetaDataEntry metaData1, DefaultSessionAccessMetaDataEntry metaData2) {
-		Assertions.assertEquals(metaData1.getSinceCreationDuration(), metaData2.getSinceCreationDuration());
-		Assertions.assertEquals(metaData1.getLastAccessDuration(), metaData2.getLastAccessDuration());
+		assertThat(metaData2.getSinceCreationDuration()).isEqualTo(metaData1.getSinceCreationDuration());
+		assertThat(metaData2.getLastAccessDuration()).isEqualTo(metaData1.getLastAccessDuration());
 	}
 }

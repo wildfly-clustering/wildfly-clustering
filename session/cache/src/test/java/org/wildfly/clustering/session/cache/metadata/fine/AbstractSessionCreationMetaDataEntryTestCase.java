@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache.metadata.fine;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -32,9 +32,9 @@ public abstract class AbstractSessionCreationMetaDataEntryTestCase implements Co
 		DefaultSessionCreationMetaDataEntry<Object> entry = new DefaultSessionCreationMetaDataEntry<>(this.created);
 
 		// Verify defaults
-		assertEquals(this.created, entry.getCreationTime());
-		assertEquals(Duration.ZERO, entry.getTimeout());
-		assertNull(entry.getContext().get(() -> null));
+		assertThat(entry.getCreationTime()).isEqualTo(this.created);
+		assertThat(entry.getTimeout()).isZero();
+		assertThat(entry.getContext().get(() -> null)).isNull();
 
 		// Apply original state
 		entry.setTimeout(this.originalTimeout);
@@ -58,12 +58,12 @@ public abstract class AbstractSessionCreationMetaDataEntryTestCase implements Co
 	}
 
 	void verifyOriginalState(SessionCreationMetaData metaData) {
-		assertEquals(this.created, metaData.getCreationTime());
-		assertEquals(this.originalTimeout, metaData.getTimeout());
+		assertThat(metaData.getCreationTime()).isEqualTo(this.created);
+		assertThat(metaData.getTimeout()).isEqualTo(this.originalTimeout);
 	}
 
 	void verifyUpdatedState(SessionCreationMetaData metaData) {
-		assertEquals(this.created, metaData.getCreationTime());
-		assertEquals(this.updatedTimeout, metaData.getTimeout());
+		assertThat(metaData.getCreationTime()).isEqualTo(this.created);
+		assertThat(metaData.getTimeout()).isEqualTo(this.updatedTimeout);
 	}
 }

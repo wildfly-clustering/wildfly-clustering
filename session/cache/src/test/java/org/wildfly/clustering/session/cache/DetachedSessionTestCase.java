@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
@@ -36,12 +36,12 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void getId() {
-		assertSame(this.id, this.session.getId());
+		assertThat(this.session.getId()).isSameAs(this.id);
 	}
 
 	@Test
 	public void isNew() {
-		assertFalse(this.session.getMetaData().isNew());
+		assertThat(this.session.getMetaData().isNew()).isFalse();
 	}
 
 	@Test
@@ -53,7 +53,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findImmutableSession(this.id);
 
-		assertFalse(this.session.isValid());
+		assertThat(this.session.isValid()).isFalse();
 
 		verify(batch).close();
 		reset(batch);
@@ -62,7 +62,7 @@ public class DetachedSessionTestCase {
 
 		doReturn(session).when(this.manager).findImmutableSession(this.id);
 
-		assertTrue(this.session.isValid());
+		assertThat(this.session.isValid()).isTrue();
 
 		verify(batch).close();
 	}
@@ -76,7 +76,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, this.session::invalidate);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(this.session::invalidate);
 
 		verify(batch).close();
 		reset(batch);
@@ -101,7 +101,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, this.session.getMetaData()::isExpired);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(this.session.getMetaData()::isExpired);
 
 		verify(batch).close();
 		reset(batch);
@@ -116,7 +116,7 @@ public class DetachedSessionTestCase {
 
 		boolean result = this.session.getMetaData().isExpired();
 
-		assertEquals(expected, result);
+		assertThat(result).isEqualTo(expected);
 
 		verify(batch).close();
 	}
@@ -130,7 +130,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, this.session.getMetaData()::getCreationTime);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(this.session.getMetaData()::getCreationTime);
 
 		verify(batch).close();
 		reset(batch);
@@ -145,7 +145,7 @@ public class DetachedSessionTestCase {
 
 		Instant result = this.session.getMetaData().getCreationTime();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(batch).close();
 	}
@@ -159,7 +159,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessStartTime);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(this.session.getMetaData()::getLastAccessStartTime);
 
 		verify(batch).close();
 		reset(batch);
@@ -174,7 +174,7 @@ public class DetachedSessionTestCase {
 
 		Instant result = this.session.getMetaData().getLastAccessStartTime();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(batch).close();
 	}
@@ -188,7 +188,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessEndTime);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(this.session.getMetaData()::getLastAccessEndTime);
 
 		verify(batch).close();
 		reset(batch);
@@ -203,7 +203,7 @@ public class DetachedSessionTestCase {
 
 		Instant result = this.session.getMetaData().getLastAccessEndTime();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(batch).close();
 	}
@@ -217,7 +217,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, this.session.getMetaData()::getTimeout);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(this.session.getMetaData()::getTimeout);
 
 		verify(batch).close();
 		reset(batch);
@@ -232,14 +232,14 @@ public class DetachedSessionTestCase {
 
 		Duration result = this.session.getMetaData().getTimeout();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(batch).close();
 	}
 
 	@Test
 	public void setLastAccess() {
-		assertThrows(IllegalStateException.class, () -> this.session.getMetaData().setLastAccess(Instant.now(), Instant.now()));
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> this.session.getMetaData().setLastAccess(Instant.now(), Instant.now()));
 	}
 
 	@Test
@@ -252,7 +252,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, () -> this.session.getMetaData().setTimeout(duration));
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> this.session.getMetaData().setTimeout(duration));
 
 		verify(batch).close();
 		reset(batch);
@@ -279,7 +279,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, this.session.getAttributes()::keySet);
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(this.session.getAttributes()::keySet);
 
 		verify(batch).close();
 		reset(batch);
@@ -294,7 +294,7 @@ public class DetachedSessionTestCase {
 
 		Set<String> result = this.session.getAttributes().keySet();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(batch).close();
 	}
@@ -309,7 +309,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().get(attributeName));
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> this.session.getAttributes().get(attributeName));
 
 		verify(batch).close();
 		reset(batch);
@@ -324,7 +324,7 @@ public class DetachedSessionTestCase {
 
 		Object result = this.session.getAttributes().get(attributeName);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(batch).close();
 	}
@@ -340,7 +340,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().put(attributeName, attributeValue));
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> this.session.getAttributes().put(attributeName, attributeValue));
 
 		verify(batch).close();
 		reset(batch);
@@ -355,7 +355,7 @@ public class DetachedSessionTestCase {
 
 		Object result = this.session.getAttributes().put(attributeName, attributeValue);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(session).close();
 		verify(batch).close();
@@ -371,7 +371,7 @@ public class DetachedSessionTestCase {
 		doReturn(batch).when(batchFactory).get();
 		doReturn(null).when(this.manager).findSession(this.id);
 
-		assertThrows(IllegalStateException.class, () -> this.session.getAttributes().remove(attributeName));
+		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> this.session.getAttributes().remove(attributeName));
 
 		verify(batch).close();
 		reset(batch);
@@ -386,7 +386,7 @@ public class DetachedSessionTestCase {
 
 		Object result = this.session.getAttributes().remove(attributeName);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 
 		verify(session).close();
 		verify(batch).close();

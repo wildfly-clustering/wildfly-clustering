@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.CompletableFuture;
@@ -51,15 +51,15 @@ public class CacheableSessionManagerTestCase {
 		when(expected2.getMetaData()).thenReturn(metaData2);
 
 		try (Session<Void> session1 = subject.findSession(id)) {
-			assertNotNull(session1);
-			assertSame(id, session1.getId());
-			assertSame(metaData1, session1.getMetaData());
-			assertSame(attributes1, session1.getAttributes());
+			assertThat(session1).isNotNull();
+			assertThat(session1.getId()).isSameAs(id);
+			assertThat(session1.getMetaData()).isSameAs(metaData1);
+			assertThat(session1.getAttributes()).isSameAs(attributes1);
 
 			try (Session<Void> session2 = subject.findSession(id)) {
-				assertNotNull(session2);
+				assertThat(session2).isNotNull();
 				// Should return the same session without invoking the manager
-				assertSame(session1, session2);
+				assertThat(session2).isSameAs(session1);
 			}
 
 			// Should not trigger Session.close() yet
@@ -70,10 +70,10 @@ public class CacheableSessionManagerTestCase {
 
 		// Should use second session instance
 		try (Session<Void> session = subject.findSession(id)) {
-			assertNotNull(session);
-			assertSame(id, session.getId());
-			assertSame(metaData2, session.getMetaData());
-			assertSame(attributes2, session.getAttributes());
+			assertThat(session).isNotNull();
+			assertThat(session.getId()).isSameAs(id);
+			assertThat(session.getMetaData()).isSameAs(metaData2);
+			assertThat(session.getAttributes()).isSameAs(attributes2);
 		}
 	}
 
@@ -94,10 +94,10 @@ public class CacheableSessionManagerTestCase {
 		when(expected1.getMetaData()).thenReturn(metaData1);
 
 		try (Session<Void> session1 = subject.findSession(id)) {
-			assertNotNull(session1);
-			assertSame(id, session1.getId());
-			assertSame(metaData1, session1.getMetaData());
-			assertSame(attributes1, session1.getAttributes());
+			assertThat(session1).isNotNull();
+			assertThat(session1.getId()).isSameAs(id);
+			assertThat(session1.getMetaData()).isSameAs(metaData1);
+			assertThat(session1.getAttributes()).isSameAs(attributes1);
 
 			session1.invalidate();
 
@@ -131,15 +131,15 @@ public class CacheableSessionManagerTestCase {
 		when(expected2.getMetaData()).thenReturn(metaData2);
 
 		try (Session<Void> session1 = subject.createSession(id)) {
-			assertNotNull(session1);
-			assertSame(id, session1.getId());
-			assertSame(metaData1, session1.getMetaData());
-			assertSame(attributes1, session1.getAttributes());
+			assertThat(session1).isNotNull();
+			assertThat(session1.getId()).isSameAs(id);
+			assertThat(session1.getMetaData()).isSameAs(metaData1);
+			assertThat(session1.getAttributes()).isSameAs(attributes1);
 
 			try (Session<Void> session2 = subject.findSession(id)) {
-				assertNotNull(session2);
+				assertThat(session2).isNotNull();
 				// Should return the same session without invoking the manager
-				assertSame(session1, session2);
+				assertThat(session2).isSameAs(session1);
 			}
 
 			// Should not trigger Session.close() yet
@@ -150,10 +150,10 @@ public class CacheableSessionManagerTestCase {
 
 		// Should use second session instance
 		try (Session<Void> session = subject.createSession(id)) {
-			assertNotNull(session);
-			assertSame(id, session.getId());
-			assertSame(metaData2, session.getMetaData());
-			assertSame(attributes2, session.getAttributes());
+			assertThat(session).isNotNull();
+			assertThat(session.getId()).isSameAs(id);
+			assertThat(session.getMetaData()).isSameAs(metaData2);
+			assertThat(session.getAttributes()).isSameAs(attributes2);
 		}
 	}
 
@@ -167,7 +167,7 @@ public class CacheableSessionManagerTestCase {
 
 		Supplier<String> result = subject.getIdentifierFactory();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	@Test
@@ -198,7 +198,7 @@ public class CacheableSessionManagerTestCase {
 
 		when(manager.getStatistics()).thenReturn(statistics);
 
-		assertSame(statistics, subject.getStatistics());
+		assertThat(subject.getStatistics()).isSameAs(statistics);
 	}
 
 	@Test
@@ -211,7 +211,7 @@ public class CacheableSessionManagerTestCase {
 
 		Supplier<Batch> result = subject.getBatchFactory();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	@Test
@@ -225,6 +225,6 @@ public class CacheableSessionManagerTestCase {
 
 		ImmutableSession result = subject.findImmutableSession(id);
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 }

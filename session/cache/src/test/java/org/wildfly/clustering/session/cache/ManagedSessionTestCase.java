@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -31,7 +31,7 @@ public class ManagedSessionTestCase {
 		doReturn(attachedId).when(this.attachedSession).getId();
 		doReturn(detachedId).when(this.detachedSession).getId();
 
-		assertSame(attachedId, this.session.getId());
+		assertThat(this.session.getId()).isSameAs(attachedId);
 
 		verify(this.attachedSession).getId();
 		verify(this.detachedSession, never()).getId();
@@ -41,7 +41,7 @@ public class ManagedSessionTestCase {
 		verify(this.attachedSession).close();
 		verify(this.detachedSession, never()).close();
 
-		assertSame(detachedId, this.session.getId());
+		assertThat(this.session.getId()).isSameAs(detachedId);
 
 		verifyNoMoreInteractions(this.attachedSession);
 
@@ -58,7 +58,7 @@ public class ManagedSessionTestCase {
 		doReturn(attachedContext).when(this.attachedSession).getContext();
 		doReturn(detachedContext).when(this.detachedSession).getContext();
 
-		assertSame(attachedContext, this.session.getContext());
+		assertThat(this.session.getContext()).isSameAs(attachedContext);
 
 		verify(this.attachedSession).getContext();
 		verify(this.detachedSession, never()).getContext();
@@ -68,7 +68,7 @@ public class ManagedSessionTestCase {
 		verify(this.attachedSession).close();
 		verify(this.detachedSession, never()).close();
 
-		assertSame(detachedContext, this.session.getContext());
+		assertThat(this.session.getContext()).isSameAs(detachedContext);
 
 		verifyNoMoreInteractions(this.attachedSession);
 
@@ -83,7 +83,7 @@ public class ManagedSessionTestCase {
 		doReturn(true).when(this.attachedSession).isValid();
 		doReturn(false).when(this.detachedSession).isValid();
 
-		assertTrue(this.session.isValid());
+		assertThat(this.session.isValid()).isTrue();
 
 		verify(this.attachedSession).isValid();
 		verify(this.detachedSession, never()).isValid();
@@ -93,7 +93,7 @@ public class ManagedSessionTestCase {
 		verify(this.attachedSession).close();
 		verify(this.detachedSession, never()).close();
 
-		assertFalse(this.session.isValid());
+		assertThat(this.session.isValid()).isFalse();
 
 		verifyNoMoreInteractions(this.attachedSession);
 
@@ -110,7 +110,7 @@ public class ManagedSessionTestCase {
 		doReturn(attachedMetaData).when(this.attachedSession).getMetaData();
 		doReturn(detachedMetaData).when(this.detachedSession).getMetaData();
 
-		assertSame(attachedMetaData, this.session.getMetaData());
+		assertThat(this.session.getMetaData()).isSameAs(attachedMetaData);
 
 		verify(this.attachedSession).getMetaData();
 		verify(this.detachedSession, never()).getMetaData();
@@ -120,7 +120,7 @@ public class ManagedSessionTestCase {
 		verify(this.attachedSession).close();
 		verify(this.detachedSession, never()).close();
 
-		assertSame(detachedMetaData, this.session.getMetaData());
+		assertThat(this.session.getMetaData()).isSameAs(detachedMetaData);
 
 		verifyNoMoreInteractions(this.attachedSession);
 
@@ -137,7 +137,7 @@ public class ManagedSessionTestCase {
 		doReturn(attachedAttributes).when(this.attachedSession).getAttributes();
 		doReturn(detachedAttributes).when(this.detachedSession).getAttributes();
 
-		assertSame(attachedAttributes, this.session.getAttributes());
+		assertThat(this.session.getAttributes()).isSameAs(attachedAttributes);
 
 		verify(this.attachedSession).getAttributes();
 		verify(this.detachedSession, never()).getAttributes();
@@ -147,7 +147,7 @@ public class ManagedSessionTestCase {
 		verify(this.attachedSession).close();
 		verify(this.detachedSession, never()).close();
 
-		assertSame(detachedAttributes, this.session.getAttributes());
+		assertThat(this.session.getAttributes()).isSameAs(detachedAttributes);
 
 		verifyNoMoreInteractions(this.attachedSession);
 

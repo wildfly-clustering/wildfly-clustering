@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache.metadata.fine;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -23,8 +23,8 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 	@Override
 	public void accept(SessionCreationMetaDataEntry<Object> entry) {
 		Object context = UUID.randomUUID();
-		assertSame(context, entry.getContext().get(Functions.constantSupplier(context)));
-		assertSame(context, entry.getContext().get(Functions.constantSupplier(null)));
+		assertThat(entry.getContext().get(Functions.constantSupplier(context))).isSameAs(context);
+		assertThat(entry.getContext().get(Functions.constantSupplier(null))).isSameAs(context);
 
 		OffsetValue<Duration> timeoutOffset = OffsetValue.from(entry.getTimeout());
 
@@ -42,6 +42,6 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 
 		this.verifyUpdatedState(resultEntry);
 
-		assertSame(context, resultEntry.getContext().get(Functions.constantSupplier(null)));
+		assertThat(resultEntry.getContext().get(Functions.constantSupplier(null))).isSameAs(context);
 	}
 }

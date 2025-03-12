@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache.metadata.fine;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
@@ -34,8 +34,8 @@ public abstract class AbstractSessionAccessMetaDataEntryTestCase implements Cons
 		DefaultSessionAccessMetaDataEntry entry = new DefaultSessionAccessMetaDataEntry();
 
 		// Verify defaults
-		assertTrue(entry.getSinceCreationDuration().isZero());
-		assertTrue(entry.getLastAccessDuration().isZero());
+		assertThat(entry.getSinceCreationDuration()).isZero();
+		assertThat(entry.getLastAccessDuration()).isZero();
 
 		// Apply original state
 		entry.setLastAccessDuration(this.originalSinceCreation, this.originalLastAccess);
@@ -62,12 +62,12 @@ public abstract class AbstractSessionAccessMetaDataEntryTestCase implements Cons
 	}
 
 	void verifyOriginalState(SessionAccessMetaData metaData) {
-		assertEquals(this.originalSinceCreation, metaData.getSinceCreationDuration());
-		assertEquals(this.originalLastAccess, metaData.getLastAccessDuration());
+		assertThat(metaData.getSinceCreationDuration()).isEqualTo(this.originalSinceCreation);
+		assertThat(metaData.getLastAccessDuration()).isEqualTo(this.originalLastAccess);
 	}
 
 	void verifyUpdatedState(SessionAccessMetaData metaData) {
-		assertEquals(this.updatedSinceCreation, metaData.getSinceCreationDuration());
-		assertEquals(this.updatedLastAccess, metaData.getLastAccessDuration());
+		assertThat(metaData.getSinceCreationDuration()).isEqualTo(this.updatedSinceCreation);
+		assertThat(metaData.getLastAccessDuration()).isEqualTo(this.updatedLastAccess);
 	}
 }

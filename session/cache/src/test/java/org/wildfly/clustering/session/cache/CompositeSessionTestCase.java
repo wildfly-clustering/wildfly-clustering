@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.session.cache;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
@@ -31,17 +31,17 @@ public class CompositeSessionTestCase {
 
 	@Test
 	public void getId() {
-		assertSame(this.id, this.session.getId());
+		assertThat(this.session.getId()).isSameAs(this.id);
 	}
 
 	@Test
 	public void getAttributes() {
-		assertSame(this.attributes, this.session.getAttributes());
+		assertThat(this.session.getAttributes()).isSameAs(this.attributes);
 	}
 
 	@Test
 	public void getMetaData() {
-		assertSame(this.metaData, this.session.getMetaData());
+		assertThat(this.session.getMetaData()).isSameAs(this.metaData);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -65,11 +65,11 @@ public class CompositeSessionTestCase {
 	public void isValid() {
 		when(this.metaData.isValid()).thenReturn(true);
 
-		assertTrue(this.session.isValid());
+		assertThat(this.session.isValid()).isTrue();
 
 		when(this.metaData.isValid()).thenReturn(false);
 
-		assertFalse(this.session.isValid());
+		assertThat(this.session.isValid()).isFalse();
 	}
 
 	@Test
@@ -96,6 +96,6 @@ public class CompositeSessionTestCase {
 	public void getLocalContext() {
 		Object result = this.session.getContext();
 
-		assertSame(this.context, result);
+		assertThat(result).isSameAs(this.context);
 	}
 }

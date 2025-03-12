@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache.metadata.coarse;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
@@ -39,11 +39,11 @@ public abstract class AbstractSessionMetaDataEntryTestCase implements Consumer<C
 		DefaultSessionMetaDataEntry<Object> entry = new DefaultSessionMetaDataEntry<>(this.created);
 
 		// Verify defaults
-		assertEquals(this.created, entry.getCreationTime());
-		assertEquals(this.created, entry.getLastAccessStartTime().get());
-		assertEquals(this.created, entry.getLastAccessEndTime().get());
-		assertEquals(Duration.ZERO, entry.getTimeout());
-		assertNull(entry.getContext().get(() -> null));
+		assertThat(entry.getCreationTime()).isEqualTo(this.created);
+		assertThat(entry.getLastAccessStartTime().get()).isEqualTo(this.created);
+		assertThat(entry.getLastAccessEndTime().get()).isEqualTo(this.created);
+		assertThat(entry.getTimeout()).isZero();
+		assertThat(entry.getContext().get(() -> null)).isNull();
 
 		// Apply original state
 		entry.getLastAccessStartTime().set(this.originalLastAccessStartTime);
@@ -75,16 +75,16 @@ public abstract class AbstractSessionMetaDataEntryTestCase implements Consumer<C
 	}
 
 	void verifyOriginalState(SessionMetaDataEntry entry) {
-		assertEquals(this.created, entry.getCreationTime());
-		assertEquals(this.originalLastAccessStartTime, entry.getLastAccessStartTime().get());
-		assertEquals(this.originalLastAccessEndTime, entry.getLastAccessEndTime().get());
-		assertEquals(this.originalTimeout, entry.getTimeout());
+		assertThat(entry.getCreationTime()).isEqualTo(this.created);
+		assertThat(entry.getLastAccessStartTime().get()).isEqualTo(this.originalLastAccessStartTime);
+		assertThat(entry.getLastAccessEndTime().get()).isEqualTo(this.originalLastAccessEndTime);
+		assertThat(entry.getTimeout()).isEqualTo(this.originalTimeout);
 	}
 
 	void verifyUpdatedState(SessionMetaDataEntry entry) {
-		assertEquals(this.created, entry.getCreationTime());
-		assertEquals(this.updatedLastAccessStartTime, entry.getLastAccessStartTime().get());
-		assertEquals(this.updatedLastAccessEndTime, entry.getLastAccessEndTime().get());
-		assertEquals(this.updatedTimeout, entry.getTimeout());
+		assertThat(entry.getCreationTime()).isEqualTo(this.created);
+		assertThat(entry.getLastAccessStartTime().get()).isEqualTo(this.updatedLastAccessStartTime);
+		assertThat(entry.getLastAccessEndTime().get()).isEqualTo(this.updatedLastAccessEndTime);
+		assertThat(entry.getTimeout()).isEqualTo(this.updatedTimeout);
 	}
 }

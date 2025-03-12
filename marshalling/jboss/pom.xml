@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: JBoss Marshalling support</name>
+	<name>WildFly Clustering: Marshalling: JBoss Marshalling</name>
 
 	<dependencies>
 		<dependency>
