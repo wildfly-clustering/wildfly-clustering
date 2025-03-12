@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache.metadata.coarse;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
@@ -89,13 +89,48 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 		Instant normalizedEndTime = lastAccessEndTimeCaptor.getValue();
 
 		// Verify millisecond precision
-		assertEquals(0, normalizedStartTime.getNano() % Duration.ofMillis(1).getNano());
-		assertEquals(startTime.toEpochMilli(), normalizedStartTime.toEpochMilli());
+		assertThat(normalizedStartTime.getNano() % Duration.ofMillis(1).getNano()).isZero();
+		assertThat(normalizedStartTime.toEpochMilli()).isEqualTo(startTime.toEpochMilli());
 
 		// Verify second precision
 		Duration lastAccessDuration = Duration.between(normalizedStartTime, normalizedEndTime);
-		assertEquals(1, lastAccessDuration.getSeconds());
-		assertEquals(0, lastAccessDuration.getNano());
+		assertThat(lastAccessDuration).hasSeconds(1);
+		assertThat(lastAccessDuration.getNano()).isZero();
+
+		Mockito.verifyNoInteractions(mutator);
+	}
+
+	@ParameterizedTest(name = ParameterizedTest.INDEX_PLACEHOLDER)
+	@ArgumentsSource(Parameters.class)
+	public void setLastAccessZeroDuration(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+		// Validate zero duration request
+		Instant endTime = Instant.now();
+		Instant startTime = endTime.minus(Duration.ofMillis(500));
+		OffsetValue<Instant> lastAccessStartTime = Mockito.mock(OffsetValue.class);
+		OffsetValue<Instant> lastAccessEndTime = Mockito.mock(OffsetValue.class);
+
+		ArgumentCaptor<Instant> lastAccessStartTimeCaptor = ArgumentCaptor.forClass(Instant.class);
+		ArgumentCaptor<Instant> lastAccessEndTimeCaptor = ArgumentCaptor.forClass(Instant.class);
+
+		doReturn(lastAccessStartTime).when(entry).getLastAccessStartTime();
+		doReturn(lastAccessEndTime).when(entry).getLastAccessEndTime();
+
+		doNothing().when(lastAccessStartTime).set(lastAccessStartTimeCaptor.capture());
+		doNothing().when(lastAccessEndTime).set(lastAccessEndTimeCaptor.capture());
+
+		metaData.setLastAccess(startTime, endTime);
+
+		Instant normalizedStartTime = lastAccessStartTimeCaptor.getValue();
+		Instant normalizedEndTime = lastAccessEndTimeCaptor.getValue();
+
+		// Verify millisecond precision
+		assertThat(normalizedStartTime.getNano() % Duration.ofMillis(1).getNano()).isZero();
+		assertThat(normalizedStartTime.toEpochMilli()).isEqualTo(startTime.toEpochMilli());
+
+		// Verify second precision
+		Duration lastAccessDuration = Duration.between(normalizedStartTime, normalizedEndTime);
+		assertThat(lastAccessDuration).hasSeconds(1);
+		assertThat(lastAccessDuration.getNano()).isZero();
 
 		Mockito.verifyNoInteractions(mutator);
 	}
@@ -115,14 +150,14 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 	@ParameterizedTest(name = ParameterizedTest.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
 	public void invalidate(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
-		assertTrue(metaData.isValid());
+		assertThat(metaData.isValid()).isTrue();
 
 		metaData.invalidate();
 
 		Mockito.verifyNoInteractions(entry);
 		Mockito.verifyNoInteractions(mutator);
 
-		assertFalse(metaData.isValid());
+		assertThat(metaData.isValid()).isFalse();
 	}
 
 	@ParameterizedTest(name = ParameterizedTest.INDEX_PLACEHOLDER)
