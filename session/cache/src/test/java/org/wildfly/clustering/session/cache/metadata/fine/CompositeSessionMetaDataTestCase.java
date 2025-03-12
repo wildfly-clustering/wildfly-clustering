@@ -85,29 +85,42 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void setLastAccessedTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void setLastAccessed(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
 		// New session
-		Instant endTime = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-		Duration lastAccess = Duration.ofSeconds(1L);
-		Instant startTime = endTime.minus(lastAccess);
+		Instant creationTime = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+		Instant startTime = creationTime;
+		Instant endTime = startTime.plus(Duration.ofMillis(500));
 
-		when(creationMetaData.getCreationTime()).thenReturn(startTime);
+		when(creationMetaData.getCreationTime()).thenReturn(creationTime);
 
 		metaData.setLastAccess(startTime, endTime);
 
-		verify(accessMetaData).setLastAccessDuration(Duration.ZERO, lastAccess);
+		// Request duration in second precision
+		verify(accessMetaData).setLastAccessDuration(Duration.ZERO, Duration.ofSeconds(1L));
 		verifyNoInteractions(mutator);
 
-		reset(creationMetaData, accessMetaData);
+		reset(accessMetaData);
 
 		// Existing session
 		Duration sinceCreated = Duration.ofSeconds(10L);
-
-		when(creationMetaData.getCreationTime()).thenReturn(startTime.minus(sinceCreated));
+		startTime = creationTime.plus(sinceCreated);
+		endTime = startTime.plus(Duration.ofMillis(500));
 
 		metaData.setLastAccess(startTime, endTime);
 
-		verify(accessMetaData).setLastAccessDuration(sinceCreated, lastAccess);
+		verify(accessMetaData).setLastAccessDuration(sinceCreated, Duration.ofSeconds(1L));
+		verifyNoInteractions(mutator);
+
+		reset(accessMetaData);
+
+		// Zero duration request
+		sinceCreated = Duration.ofSeconds(20L);
+		startTime = creationTime.plus(sinceCreated);
+		endTime = startTime;
+
+		metaData.setLastAccess(startTime, endTime);
+
+		verify(accessMetaData).setLastAccessDuration(sinceCreated, Duration.ofSeconds(1L));
 		verifyNoInteractions(mutator);
 	}
 
