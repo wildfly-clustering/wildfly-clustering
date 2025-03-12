@@ -41,7 +41,7 @@ public class DefaultSessionMetaData extends DefaultImmutableSessionMetaData impl
 
 	@Override
 	public void setLastAccess(Instant startTime, Instant endTime) {
-		if (!endTime.isAfter(startTime)) {
+		if (startTime.isAfter(endTime)) {
 			throw new IllegalStateException();
 		}
 		// Retain millisecond precision
