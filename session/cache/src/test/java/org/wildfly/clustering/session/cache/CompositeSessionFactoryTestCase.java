@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -47,9 +47,9 @@ public class CompositeSessionFactoryTestCase {
 
 		Map.Entry<Contextual<Object>, Object> result = this.factory.createValue(id, null);
 
-		assertNotNull(result);
-		assertSame(contextual, result.getKey());
-		assertSame(attributes, result.getValue());
+		assertThat(result).isNotNull();
+		assertThat(result.getKey()).isSameAs(contextual);
+		assertThat(result.getValue()).isSameAs(attributes);
 	}
 
 	@Test
@@ -71,11 +71,11 @@ public class CompositeSessionFactoryTestCase {
 		Map.Entry<Contextual<Object>, Object> missingAttributesResult = this.factory.findValue(missingAttributesSessionId);
 		Map.Entry<Contextual<Object>, Object> existingSessionResult = this.factory.findValue(existingSessionId);
 
-		assertNull(missingMetaDataResult);
-		assertNull(missingAttributesResult);
-		assertNotNull(existingSessionResult);
-		assertSame(contextual, existingSessionResult.getKey());
-		assertSame(attributes, existingSessionResult.getValue());
+		assertThat(missingMetaDataResult).isNull();
+		assertThat(missingAttributesResult).isNull();
+		assertThat(existingSessionResult).isNotNull();
+		assertThat(existingSessionResult.getKey()).isSameAs(contextual);
+		assertThat(existingSessionResult.getValue()).isSameAs(attributes);
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class CompositeSessionFactoryTestCase {
 
 	@Test
 	public void getMetaDataFactory() {
-		assertSame(this.metaDataFactory, this.factory.getMetaDataFactory());
+		assertThat(this.factory.getMetaDataFactory()).isSameAs(this.metaDataFactory);
 	}
 
 	@Test
@@ -111,10 +111,10 @@ public class CompositeSessionFactoryTestCase {
 
 		Session<Object> result = this.factory.createSession(id, Map.entry(contextual, attributesValue), context);
 
-		assertSame(id, result.getId());
-		assertSame(metaData, result.getMetaData());
-		assertSame(attributes, result.getAttributes());
-		assertSame(this.transientContext, result.getContext());
+		assertThat(result.getId()).isSameAs(id);
+		assertThat(result.getMetaData()).isSameAs(metaData);
+		assertThat(result.getAttributes()).isSameAs(attributes);
+		assertThat(result.getContext()).isSameAs(this.transientContext);
 	}
 
 	@Test
@@ -130,9 +130,9 @@ public class CompositeSessionFactoryTestCase {
 
 		ImmutableSession result = this.factory.createImmutableSession(id, Map.entry(contextual, attributesValue));
 
-		assertSame(id, result.getId());
-		assertSame(metaData, result.getMetaData());
-		assertSame(attributes, result.getAttributes());
+		assertThat(result.getId()).isSameAs(id);
+		assertThat(result.getMetaData()).isSameAs(metaData);
+		assertThat(result.getAttributes()).isSameAs(attributes);
 	}
 
 	@Test

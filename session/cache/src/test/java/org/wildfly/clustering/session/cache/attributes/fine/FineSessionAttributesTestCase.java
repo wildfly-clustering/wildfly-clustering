@@ -5,12 +5,11 @@
 
 package org.wildfly.clustering.session.cache.attributes.fine;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -58,7 +57,7 @@ public class FineSessionAttributesTestCase {
 	public void getAttributeNames() {
 		Map<String, Object> map = Map.of("foo", UUID.randomUUID(), "bar", UUID.randomUUID());
 		try (SessionAttributes attributes = this.createSessionAttributes("id", map)) {
-			assertEquals(map.keySet(), attributes.keySet());
+			assertThat(attributes.keySet()).containsExactlyElementsOf(map.keySet());
 		}
 
 		for (Object value : map.values()) {
@@ -82,10 +81,10 @@ public class FineSessionAttributesTestCase {
 		// Verify read-only request
 		try (SessionAttributes attributes = this.createSessionAttributes("id", map)) {
 			// Verify non-existant attribute
-			assertNull(attributes.get("missing"));
+			assertThat(attributes.get("missing")).isNull();
 
 			// Verify immutable attributes
-			assertSame(immutable, attributes.get("immutable"));
+			assertThat(attributes.get("immutable")).isSameAs(immutable);
 		}
 
 		for (Object value : map.values()) {
@@ -102,14 +101,14 @@ public class FineSessionAttributesTestCase {
 
 		try (SessionAttributes attributes = this.createSessionAttributes("id", map)) {
 			// Verify non-existant attribute
-			assertNull(attributes.get("missing"));
+			assertThat(attributes.get("missing")).isNull();
 
 			// Verify mutable/immutable attributes
 			doReturn(marshalledMutable).when(this.marshaller).write(mutable);
 			doReturn(mutator).when(this.mutatorFactory).createMutator(eq("id"), capturedUpdates.capture());
 
-			assertSame(immutable, attributes.get("immutable"));
-			assertSame(mutable, attributes.get("mutable"));
+			assertThat(attributes.get("immutable")).isSameAs(immutable);
+			assertThat(attributes.get("mutable")).isSameAs(mutable);
 		}
 
 		for (Object value : map.values()) {
@@ -121,8 +120,8 @@ public class FineSessionAttributesTestCase {
 
 		// Only mutable attributes should have been updated
 		Map<String, Object> updates = capturedUpdates.getValue();
-		assertEquals(Set.of("mutable"), updates.keySet());
-		assertSame(marshalledMutable, updates.get("mutable"));
+		assertThat(updates.keySet()).containsExactlyInAnyOrder("mutable");
+		assertThat(updates.get("mutable")).isSameAs(marshalledMutable);
 	}
 
 	@Test
@@ -131,7 +130,7 @@ public class FineSessionAttributesTestCase {
 		UUID bar = UUID.randomUUID();
 		try (SessionAttributes attributes = this.createSessionAttributes("id", Map.of("foo", foo, "bar", bar))) {
 			// Verify non-existant attribute
-			assertNull(attributes.remove("baz"));
+			assertThat(attributes.remove("baz")).isNull();
 		}
 
 		verify(this.notifier).prePassivate(foo);
@@ -145,12 +144,12 @@ public class FineSessionAttributesTestCase {
 		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
 		try (SessionAttributes attributes = this.createSessionAttributes("id", Map.of("foo", foo, "bar", bar))) {
 			// Verify non-existant attribute
-			assertNull(attributes.remove("baz"));
+			assertThat(attributes.remove("baz")).isNull();
 
 			// Verify mutable/immutable attributes
 			doReturn(mutator).when(this.mutatorFactory).createMutator(eq("id"), capturedUpdates.capture());
 
-			assertSame(foo, attributes.remove("foo"));
+			assertThat(attributes.remove("foo")).isSameAs(foo);
 		}
 
 		verify(this.notifier).prePassivate(bar);
@@ -160,8 +159,8 @@ public class FineSessionAttributesTestCase {
 		verify(mutator).mutate();
 
 		Map<String, Object> updates = capturedUpdates.getValue();
-		assertEquals(Set.of("foo"), updates.keySet());
-		assertNull(updates.get("foo"));
+		assertThat(updates.keySet()).containsExactlyInAnyOrder("foo");
+		assertThat(updates.get("foo")).isNull();
 	}
 
 	@Test
@@ -173,10 +172,10 @@ public class FineSessionAttributesTestCase {
 			doReturn(false).when(this.marshaller).isMarshallable(unmarshallable);
 
 			// Should be treated as a removal
-			assertNull(attributes.put("missing", null));
+			assertThat(attributes.put("missing", null)).isNull();
 
 			// Verify unmarshallable attribute
-			assertThrows(IllegalArgumentException.class, () -> attributes.put("unmarshallable", unmarshallable));
+			assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> attributes.put("unmarshallable", unmarshallable));
 		}
 
 		verify(this.notifier).prePassivate(existing);
@@ -206,13 +205,13 @@ public class FineSessionAttributesTestCase {
 			doReturn(marshalledExistingReplacement).when(this.marshaller).write(existingReplacement);
 
 			// Test new attribute
-			assertNull(attributes.put("new", newIntermediate));
-			assertSame(newIntermediate, attributes.put("new", newReplacement));
+			assertThat(attributes.put("new", newIntermediate)).isNull();
+			assertThat(attributes.put("new", newReplacement)).isSameAs(newIntermediate);
 			// Test replaced attribute
-			assertSame(existing, attributes.put("existing", existingIntermediate));
-			assertSame(existingIntermediate, attributes.put("existing", existingReplacement));
+			assertThat(attributes.put("existing", existingIntermediate)).isSameAs(existing);
+			assertThat(attributes.put("existing", existingReplacement)).isSameAs(existingIntermediate);
 			// Should be treated as a removal
-			assertSame(removing, attributes.put("removing", null));
+			assertThat(attributes.put("removing", null)).isSameAs(removing);
 		}
 
 		verify(this.notifier).prePassivate(newReplacement);
@@ -223,9 +222,9 @@ public class FineSessionAttributesTestCase {
 		verify(this.notifier, never()).prePassivate(existingIntermediate);
 
 		Map<String, Object> updates = capturedUpdates.getValue();
-		assertEquals(Set.of("new", "existing", "removing"), updates.keySet());
-		assertSame(marshalledNewReplacement, updates.get("new"));
-		assertSame(marshalledExistingReplacement, updates.get("existing"));
-		assertNull(updates.get("removing"));
+		assertThat(updates.keySet()).containsExactlyInAnyOrder("new", "existing", "removing");
+		assertThat(updates.get("new")).isSameAs(marshalledNewReplacement);
+		assertThat(updates.get("existing")).isSameAs(marshalledExistingReplacement);
+		assertThat(updates.get("removing")).isNull();
 	}
 }

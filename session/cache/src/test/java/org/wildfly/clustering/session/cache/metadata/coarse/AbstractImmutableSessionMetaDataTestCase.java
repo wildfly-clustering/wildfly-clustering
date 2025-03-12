@@ -5,9 +5,8 @@
 
 package org.wildfly.clustering.session.cache.metadata.coarse;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.doReturn;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -28,7 +27,7 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 
 		Instant result = metaData.getCreationTime();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	void testLastAccessStartTime(ImmutableSessionMetaDataEntry entry, ImmutableSessionMetaData metaData) {
@@ -40,7 +39,7 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 
 		Instant result = metaData.getLastAccessStartTime();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	void testLastAccessEndTime(ImmutableSessionMetaDataEntry entry, ImmutableSessionMetaData metaData) {
@@ -52,8 +51,8 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 
 		Instant result = metaData.getLastAccessEndTime();
 
-		assertEquals(expected, result);
-		assertEquals(expected, metaData.getLastAccessTime());
+		assertThat(result).isEqualTo(expected);
+		assertThat(metaData.getLastAccessTime()).isEqualTo(expected);
 	}
 
 	void testTimeout(ImmutableSessionMetaDataEntry entry, ImmutableSessionMetaData metaData) {
@@ -63,6 +62,6 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 
 		Duration result = metaData.getTimeout();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 }

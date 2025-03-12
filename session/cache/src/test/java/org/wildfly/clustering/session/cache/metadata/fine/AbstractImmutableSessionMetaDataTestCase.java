@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.session.cache.metadata.fine;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
@@ -21,11 +21,11 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 	void isNew(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
 		when(accessMetaData.isNew()).thenReturn(true);
 
-		assertTrue(metaData.isNew());
+		assertThat(metaData.isNew()).isTrue();
 
 		when(accessMetaData.isNew()).thenReturn(false);
 
-		assertFalse(metaData.isNew());
+		assertThat(metaData.isNew()).isFalse();
 	}
 
 	void isExpired(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
@@ -34,16 +34,16 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 		when(accessMetaData.getSinceCreationDuration()).thenReturn(Duration.ofMinutes(5L));
 		when(accessMetaData.getLastAccessDuration()).thenReturn(Duration.ofSeconds(1));
 
-		assertFalse(metaData.isExpired());
+		assertThat(metaData.isExpired()).isFalse();
 
 		when(creationMetaData.getTimeout()).thenReturn(Duration.ofMinutes(5L).minus(Duration.ofSeconds(1, 1)));
 
-		assertTrue(metaData.isExpired());
+		assertThat(metaData.isExpired()).isTrue();
 
 		// Timeout of 0 means never expire
 		when(creationMetaData.getTimeout()).thenReturn(Duration.ZERO);
 
-		assertFalse(metaData.isExpired());
+		assertThat(metaData.isExpired()).isFalse();
 	}
 
 	void getCreationTime(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
@@ -53,7 +53,7 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 
 		Instant result = metaData.getCreationTime();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 
 	void getLastAccessStartTime(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
@@ -65,7 +65,7 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 
 		Instant result = metaData.getLastAccessStartTime();
 
-		assertEquals(now, result);
+		assertThat(result).isEqualTo(now);
 	}
 
 	void getLastAccessEndTime(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
@@ -79,7 +79,7 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 
 		Instant result = metaData.getLastAccessEndTime();
 
-		assertEquals(now, result);
+		assertThat(result).isEqualTo(now);
 	}
 
 	void getMaxInactiveInterval(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
@@ -89,6 +89,6 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 
 		Duration result = metaData.getTimeout();
 
-		assertSame(expected, result);
+		assertThat(result).isSameAs(expected);
 	}
 }

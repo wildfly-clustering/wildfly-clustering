@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.session.cache.user;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -25,17 +25,17 @@ public class CompositeUserTestCase {
 
 	@Test
 	public void getId() {
-		assertSame(this.id, this.user.getId());
+		assertThat(this.user.getId()).isSameAs(this.id);
 	}
 
 	@Test
 	public void getContext() {
-		assertSame(this.context, this.user.getPersistentContext());
+		assertThat(this.user.getPersistentContext()).isSameAs(this.context);
 	}
 
 	@Test
 	public void getSessions() {
-		assertSame(this.sessions, this.user.getSessions());
+		assertThat(this.user.getSessions()).isSameAs(this.sessions);
 	}
 
 	@Test
@@ -47,6 +47,6 @@ public class CompositeUserTestCase {
 
 	@Test
 	public void getLocalContext() {
-		assertSame(this.localContext, this.user.getTransientContext());
+		assertThat(this.user.getTransientContext()).isSameAs(this.localContext);
 	}
 }

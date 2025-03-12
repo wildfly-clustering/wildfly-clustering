@@ -5,11 +5,12 @@
 
 package org.wildfly.clustering.session.cache.metadata.coarse;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Consumer;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.offset.Offset;
@@ -44,9 +45,9 @@ public class DefaultSessionMetaDataEntryMarshallerTestCase {
 
 	static void assertEquals(ContextualSessionMetaDataEntry<Object> entry1, ContextualSessionMetaDataEntry<Object> entry2) {
 		// Compare only to millisecond precision
-		Assertions.assertEquals(entry1.getLastAccessStartTime().getBasis().toEpochMilli(), entry2.getLastAccessStartTime().getBasis().toEpochMilli());
-		Assertions.assertEquals(entry1.getTimeout(), entry2.getTimeout());
-		Assertions.assertEquals(entry1.getLastAccessStartTime().get(), entry2.getLastAccessStartTime().get());
-		Assertions.assertEquals(entry1.getLastAccessEndTime().get(), entry2.getLastAccessEndTime().get());
+		assertThat(entry1.getLastAccessStartTime().getBasis().toEpochMilli()).isEqualTo(entry2.getLastAccessStartTime().getBasis().toEpochMilli());
+		assertThat(entry2.getTimeout()).isEqualTo(entry1.getTimeout());
+		assertThat(entry2.getLastAccessStartTime().get()).isEqualTo(entry1.getLastAccessStartTime().get());
+		assertThat(entry2.getLastAccessEndTime().get()).isEqualTo(entry1.getLastAccessEndTime().get());
 	}
 }
