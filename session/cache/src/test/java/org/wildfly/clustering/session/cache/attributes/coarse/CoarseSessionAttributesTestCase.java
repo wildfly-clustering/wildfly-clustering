@@ -122,7 +122,7 @@ public class CoarseSessionAttributesTestCase {
 
 		try (SessionAttributes attributes = new CoarseSessionAttributes(values, this.mutator, this.marshallability, this.immutability, this.notifier)) {
 			Set<String> names = attributes.keySet();
-			assertThat(names).containsExactlyElementsOf(values.keySet());
+			assertThat(names).containsExactlyInAnyOrderElementsOf(values.keySet());
 			assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> names.add("baz"));
 		}
 		// Read-only operations do not require mutation

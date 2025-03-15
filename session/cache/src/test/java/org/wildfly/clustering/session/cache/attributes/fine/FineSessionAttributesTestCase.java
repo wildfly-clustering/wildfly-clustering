@@ -57,7 +57,7 @@ public class FineSessionAttributesTestCase {
 	public void getAttributeNames() {
 		Map<String, Object> map = Map.of("foo", UUID.randomUUID(), "bar", UUID.randomUUID());
 		try (SessionAttributes attributes = this.createSessionAttributes("id", map)) {
-			assertThat(attributes.keySet()).containsExactlyElementsOf(map.keySet());
+			assertThat(attributes.keySet()).containsExactlyInAnyOrderElementsOf(map.keySet());
 		}
 
 		for (Object value : map.values()) {
@@ -120,7 +120,7 @@ public class FineSessionAttributesTestCase {
 
 		// Only mutable attributes should have been updated
 		Map<String, Object> updates = capturedUpdates.getValue();
-		assertThat(updates.keySet()).containsExactlyInAnyOrder("mutable");
+		assertThat(updates.keySet()).containsExactly("mutable");
 		assertThat(updates.get("mutable")).isSameAs(marshalledMutable);
 	}
 
@@ -159,7 +159,7 @@ public class FineSessionAttributesTestCase {
 		verify(mutator).mutate();
 
 		Map<String, Object> updates = capturedUpdates.getValue();
-		assertThat(updates.keySet()).containsExactlyInAnyOrder("foo");
+		assertThat(updates.keySet()).containsExactly("foo");
 		assertThat(updates.get("foo")).isNull();
 	}
 
