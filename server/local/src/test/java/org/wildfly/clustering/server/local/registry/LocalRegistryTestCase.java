@@ -10,7 +10,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
@@ -44,9 +43,9 @@ public class LocalRegistryTestCase {
 
 		verify(closeTask).run();
 
-		Assertions.assertNull(registry.getEntry(localMember));
-		Assertions.assertNull(registry.getEntry(nonMember));
-		Assertions.assertEquals(Map.of(), registry.getEntries());
+		assertThat(registry.getEntry(localMember)).isNull();
+		assertThat(registry.getEntry(nonMember)).isNull();
+		assertThat(registry.getEntries()).isEmpty();
 
 		registry.close();
 
