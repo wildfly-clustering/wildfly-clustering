@@ -336,6 +336,10 @@
 						<goals>
 							<goal>test-jar</goal>
 						</goals>
+						<configuration>
+							<!-- Default classifier is not consistent with default classifier of jar:test-jar -->
+							<classifier>tests-sources</classifier>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -378,6 +382,8 @@
 						<configuration>
 							<detectJavaApiLink>true</detectJavaApiLink>
 							<sourceFileExcludes>org/wildfly/clustering/cache/infinispan/embedded/*/WildflyClustering*Impl.java</sourceFileExcludes>
+							<!-- Default classifier not consistent with default classifier of jar:test-jar -->
+							<testClassifier>tests-javadoc</testClassifier>
 						</configuration>
 						<executions>
 							<execution>
@@ -395,6 +401,7 @@
 									<goal>test-aggregate-jar</goal>
 								</goals>
 								<configuration>
+									<!-- Servlet spec modules are mutually exclusive -->
 									<excludePackageNames>org.wildfly.clustering.session.spec.servlet</excludePackageNames>
 								</configuration>
 							</execution>
