@@ -325,7 +325,7 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>@{project.version}</tagNameFormat>
 					<preparationProfiles>jboss-release</preparationProfiles>
-					<releaseProfiles>quickly,jboss-release</releaseProfiles>
+					<releaseProfiles>quickly,gpg-sign,jboss-release</releaseProfiles>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -336,6 +336,10 @@
 						<goals>
 							<goal>test-jar</goal>
 						</goals>
+						<configuration>
+							<!-- Default classifier is not consistent with default classifier of jar:test-jar -->
+							<classifier>tests-sources</classifier>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -378,12 +382,15 @@
 						<configuration>
 							<detectJavaApiLink>true</detectJavaApiLink>
 							<sourceFileExcludes>org/wildfly/clustering/cache/infinispan/embedded/*/WildflyClustering*Impl.java</sourceFileExcludes>
+							<!-- Default classifier not consistent with default classifier of jar:test-jar -->
+							<testClassifier>tests-javadoc</testClassifier>
 						</configuration>
 						<executions>
 							<execution>
 								<id>javadoc</id>
 								<goals>
 									<goal>jar</goal>
+									<goal>test-jar</goal>
 								</goals>
 							</execution>
 							<execution>
@@ -391,8 +398,10 @@
 								<inherited>false</inherited>
 								<goals>
 									<goal>aggregate-jar</goal>
+									<goal>test-aggregate-jar</goal>
 								</goals>
 								<configuration>
+									<!-- Servlet spec modules are mutually exclusive -->
 									<excludePackageNames>org.wildfly.clustering.session.spec.servlet</excludePackageNames>
 								</configuration>
 							</execution>
