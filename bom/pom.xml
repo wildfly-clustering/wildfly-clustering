@@ -9,8 +9,8 @@
 	<parent>
 		<groupId>org.jboss</groupId>
 		<artifactId>jboss-parent</artifactId>
-		<version>48</version>
-		<relativePath />
+		<version>49</version>
+		<relativePath/>
 	</parent>
 
 	<groupId>org.wildfly.clustering</groupId>
