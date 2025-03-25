@@ -401,7 +401,7 @@
 								</goals>
 								<configuration>
 									<!-- Servlet spec modules are mutually exclusive -->
-									<excludePackageNames>org.wildfly.clustering.session.spec.servlet</excludePackageNames>
+									<excludePackageNames>org.wildfly.clustering.session.spec.servlet:org.wildfly.clustering.session.spec.container:org.wildfly.clustering.session.spec.container.*</excludePackageNames>
 								</configuration>
 							</execution>
 						</executions>
