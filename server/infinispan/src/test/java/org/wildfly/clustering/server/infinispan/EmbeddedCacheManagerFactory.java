@@ -23,7 +23,6 @@ import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
-import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolConfiguration;
 import org.jgroups.util.SocketFactory;
@@ -74,10 +73,6 @@ public class EmbeddedCacheManagerFactory implements BiFunction<String, ClassLoad
 
 			@Override
 			public void setSocketFactory(SocketFactory socketFactory) {
-			}
-
-			@Override
-			public void addChannelListener(ChannelListener listener) {
 			}
 
 			@Override
