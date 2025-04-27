@@ -5,14 +5,14 @@
 
 package org.wildfly.clustering.session.cache;
 
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.cache.Cache;
 import org.wildfly.clustering.server.cache.CacheFactory;
 import org.wildfly.clustering.session.Session;
@@ -25,22 +25,12 @@ import org.wildfly.common.function.Functions;
  * @author Paul Ferraro
  */
 public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
+	static final Logger LOGGER = Logger.getLogger(CachedSessionManager.class);
 
 	private final Cache<String, CompletionStage<CacheableSession<C>>> sessionCache;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionCreator;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionFinder;
-	private final UnaryOperator<Session<C>> validator = new UnaryOperator<>() {
-		@Override
-		public Session<C> apply(Session<C> session) {
-			// If session was invalidated by a concurrent thread, return null instead of an invalid session
-			// This will reduce the likelihood that a duplicate invalidation request (e.g. from a double-clicked logout) results in an ISE
-			if (session != null && !session.isValid()) {
-				session.close();
-				return null;
-			}
-			return session;
-		}
-	};
+	private final Function<CacheableSession<C>, Session<C>> identity = Functions.cast(Function.identity());
 
 	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
 		super(manager);
@@ -50,31 +40,55 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 				return manager.createSessionAsync(id).thenApply(session -> new CachedSession<>(session, closeTask));
 			}
 		};
-		Function<Runnable, CacheableSession<C>> empty = closeTask -> {
-			closeTask.run();
-			return null;
+		UnaryOperator<Session<C>> validator = new UnaryOperator<>() {
+			@Override
+			public Session<C> apply(Session<C> session) {
+				// If session was invalidated by a concurrent thread, return null instead of an invalid session
+				// This will reduce the likelihood that a duplicate invalidation request (e.g. from a double-clicked logout) results in an ISE
+				if (session != null && !session.isValid()) {
+					session.close();
+					return null;
+				}
+				return session;
+			}
 		};
 		this.sessionFinder = new BiFunction<>() {
 			@Override
 			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-				return manager.findSessionAsync(id).thenApply(session -> (session != null) ? new CachedSession<>(session, closeTask) : empty.apply(closeTask));
+				CompletionStage<CacheableSession<C>> result = manager.findSessionAsync(id).thenApply(validator).thenApply(session -> (session != null) ? new CachedSession<>(session, closeTask) : null);
+				result.whenComplete(new BiConsumer<>() {
+					@Override
+					public void accept(CacheableSession<C> session, Throwable u) {
+						if (session == null) {
+							closeTask.run();
+						}
+					}
+				});
+				return result;
 			}
 		};
 		this.sessionCache = cacheFactory.createCache(Functions.discardingConsumer(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
 			public void accept(CompletionStage<CacheableSession<C>> future) {
-				future.thenAccept(session -> Optional.ofNullable(session).map(Supplier::get).ifPresent(Session::close));
+				future.whenComplete(new BiConsumer<>() {
+					@Override
+					public void accept(CacheableSession<C> session, Throwable e) {
+						if (session != null) {
+							session.get().close();
+						}
+					}
+				});
 			}
 		});
 	}
 
 	@Override
 	public CompletionStage<Session<C>> createSessionAsync(String id) {
-		return this.sessionCache.computeIfAbsent(id, this.sessionCreator).thenApply(Function.identity());
+		return this.sessionCache.computeIfAbsent(id, this.sessionCreator).thenApply(this.identity);
 	}
 
 	@Override
 	public CompletionStage<Session<C>> findSessionAsync(String id) {
-		return this.sessionCache.computeIfAbsent(id, this.sessionFinder).thenApply(this.validator);
+		return this.sessionCache.computeIfAbsent(id, this.sessionFinder).thenApply(this.identity);
 	}
 }
