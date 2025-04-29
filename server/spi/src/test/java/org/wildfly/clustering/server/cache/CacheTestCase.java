@@ -28,40 +28,37 @@ public class CacheTestCase {
 	private static final int SIZE = 100;
 
 	@Test
-	public void shared() throws InterruptedException, ExecutionException {
+	public void concurrent() throws InterruptedException, ExecutionException {
 		Cache<Integer, ManagedService<Integer>> manager = CacheStrategy.CONCURRENT.createCache(Service::start, Service::stop);
-		List<List<Future<ManagedService<Integer>>>> keyFutures = new ArrayList<>(KEYS);
+		List<Future<ManagedService<Integer>>> futures = new ArrayList<>(KEYS * SIZE);
 		ExecutorService executor = Executors.newFixedThreadPool(KEYS);
 		try {
 			for (int i = 0; i < KEYS; ++i) {
-				List<Future<ManagedService<Integer>>> futures = new ArrayList<>(SIZE);
-				keyFutures.add(futures);
+				List<Callable<ManagedService<Integer>>> tasks = new ArrayList<>(SIZE);
 				for (int j = 0; j < SIZE; ++j) {
 					int key = i;
-					Callable<ManagedService<Integer>> task = () -> {
+					tasks.add(() -> {
 						try (ManagedService<Integer> object = manager.computeIfAbsent(key, ManagedService::new)) {
 							assertThat(object.isStarted()).as(object::toString).isTrue();
 							assertThat(object.isStopped()).as(object::toString).isFalse();
 							Thread.sleep(10);
 							return object;
 						}
-					};
+					});
+				}
+				for (Callable<ManagedService<Integer>> task : tasks) {
 					futures.add(executor.submit(task));
 				}
 			}
 			// Wait until all tasks are finished
-			for (List<Future<ManagedService<Integer>>> futures : keyFutures) {
-				for (Future<ManagedService<Integer>> future : futures) {
-					future.get();
-				}
+			for (Future<ManagedService<Integer>> future : futures) {
+				future.get();
 			}
 			// Verify
-			for (List<Future<ManagedService<Integer>>> futures : keyFutures) {
-				for (Future<ManagedService<Integer>> future : futures) {
-					ManagedService<Integer> object = future.get();
-					assertThat(object.isStarted()).as(object::toString).isTrue();
-					assertThat(object.isStopped()).as(object::toString).isTrue();
-				}
+			for (Future<ManagedService<Integer>> future : futures) {
+				ManagedService<Integer> object = future.get();
+				assertThat(object.isStarted()).as(object::toString).isTrue();
+				assertThat(object.isStopped()).as(object::toString).isTrue();
 			}
 		} finally {
 			executor.shutdown();
@@ -69,7 +66,7 @@ public class CacheTestCase {
 	}
 
 	@Test
-	public void unshared() {
+	public void none() {
 		Cache<String, ManagedService<String>> context = CacheStrategy.NONE.createCache(Service::start, Service::stop);
 		@SuppressWarnings("resource")
 		ManagedService<String> object = context.computeIfAbsent("foo", ManagedService::new);
@@ -115,11 +112,21 @@ public class CacheTestCase {
 
 		@Override
 		public void start() {
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 			this.started = true;
 		}
 
 		@Override
 		public void stop() {
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 			this.stopped = true;
 		}
 
