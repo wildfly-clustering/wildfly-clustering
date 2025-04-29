@@ -22,7 +22,6 @@
 		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering.git</connection>
 		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering.git</developerConnection>
 		<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
-		<tag>7.0.0.Beta1</tag>
 	</scm>
 
 	<properties>
