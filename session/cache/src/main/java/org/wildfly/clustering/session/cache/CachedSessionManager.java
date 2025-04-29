@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -46,8 +47,12 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 				// If session was invalidated by a concurrent thread, return null instead of an invalid session
 				// This will reduce the likelihood that a duplicate invalidation request (e.g. from a double-clicked logout) results in an ISE
 				if (session != null && !session.isValid()) {
-					session.close();
-					return null;
+					try {
+						session.close();
+						return null;
+					} catch (Throwable e) {
+						LOGGER.warn(e.getLocalizedMessage(), e);
+					}
 				}
 				return session;
 			}
@@ -55,10 +60,18 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 		this.sessionFinder = new BiFunction<>() {
 			@Override
 			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-				CompletionStage<CacheableSession<C>> result = manager.findSessionAsync(id).thenApply(validator).thenApply(session -> (session != null) ? new CachedSession<>(session, closeTask) : null);
+				Function<Session<C>, CacheableSession<C>> wrapper = new Function<>() {
+					@Override
+					public CacheableSession<C> apply(Session<C> session) {
+						return (session != null) ? new CachedSession<>(session, closeTask) : null;
+					}
+				};
+				CompletionStage<CacheableSession<C>> result = manager.findSessionAsync(id)
+						.thenApply(validator)
+						.thenApply(wrapper);
 				result.whenComplete(new BiConsumer<>() {
 					@Override
-					public void accept(CacheableSession<C> session, Throwable u) {
+					public void accept(CacheableSession<C> session, Throwable e) {
 						if (session == null) {
 							closeTask.run();
 						}
@@ -70,14 +83,16 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 		this.sessionCache = cacheFactory.createCache(Functions.discardingConsumer(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
 			public void accept(CompletionStage<CacheableSession<C>> future) {
-				future.whenComplete(new BiConsumer<>() {
-					@Override
-					public void accept(CacheableSession<C> session, Throwable e) {
-						if (session != null) {
-							session.get().close();
-						}
+				try {
+					CacheableSession<C> session = future.toCompletableFuture().join();
+					if (session != null) {
+						session.get().close();
 					}
-				});
+				} catch (CancellationException e) {
+					// Ignore
+				} catch (Throwable e) {
+					LOGGER.warn(e.getLocalizedMessage(), e);
+				}
 			}
 		});
 	}
