@@ -4,7 +4,7 @@ package org.wildfly.clustering.server.offset;
 
 import "java.time.proto";
 
-// IDs: 170 - 179
+// IDs: 170 - 174
 
 /**
  * @TypeId(170)

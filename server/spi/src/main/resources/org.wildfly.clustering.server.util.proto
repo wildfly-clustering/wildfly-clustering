@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package org.wildfly.clustering.server.util;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
+
+// IDs: 175 - 179
+
+/**
+ * @TypeId(175)
+ */
+message SimpleMapEntry {
+	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
+}
