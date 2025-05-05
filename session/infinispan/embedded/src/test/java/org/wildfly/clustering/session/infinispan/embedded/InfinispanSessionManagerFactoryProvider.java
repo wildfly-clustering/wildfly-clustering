@@ -45,7 +45,7 @@ public class InfinispanSessionManagerFactoryProvider<C> extends AutoCloseablePro
 	private final EmbeddedCacheManager manager;
 	private final String deploymentName;
 
-	public InfinispanSessionManagerFactoryProvider(InfinispanSessionManagerParameters parameters, String memberName) throws Exception {
+	public InfinispanSessionManagerFactoryProvider(InfinispanSessionManagerParameters parameters, String memberName) {
 		this.parameters = parameters;
 		this.deploymentName = String.format(DEPLOYMENT_NAME_PATTERN, parameters.getSessionAttributeMarshaller(), parameters.getSessionAttributePersistenceStrategy().name(), parameters.getCacheMode().name(), parameters.getTransactionMode().name());
 		this.dispatcherFactoryProvider = new ChannelCommandDispatcherFactoryProvider(parameters.getClusterName(), memberName);

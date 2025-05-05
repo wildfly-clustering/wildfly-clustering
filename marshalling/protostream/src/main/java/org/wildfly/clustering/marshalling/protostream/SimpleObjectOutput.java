@@ -6,9 +6,8 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.ObjectOutput;
-import java.util.function.Consumer;
 
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * {@link ObjectOutput} implementation used to read the unexposed fields of an {@link java.io.Externalizable} object.
@@ -39,7 +38,7 @@ public class SimpleObjectOutput extends SimpleDataOutput implements ObjectOutput
 	}
 
 	public static class Builder extends SimpleDataOutput.Builder {
-		Consumer<Object> objects = Functions.discardingConsumer();
+		Consumer<Object> objects = Consumer.empty();
 
 		public Builder with(Object[] values) {
 			this.objects = new SimpleDataOutput.ArrayConsumer<>(values);

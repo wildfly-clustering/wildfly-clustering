@@ -142,13 +142,4 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 			}
 		} : (UnaryOperator<T>) NULL;
 	}
-
-	static <T> UnaryOperator<T> ifAbsent(java.util.function.Supplier<? extends T> factory) {
-		return new UnaryOperator<>() {
-			@Override
-			public T apply(T value) {
-				return (value != null) ? value : factory.get();
-			}
-		};
-	}
 }

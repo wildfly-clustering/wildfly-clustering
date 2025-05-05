@@ -5,12 +5,10 @@
 
 package org.wildfly.clustering.server.infinispan;
 
-import java.util.function.Function;
-
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
-import org.wildfly.clustering.cache.function.Functions;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
 
@@ -26,7 +24,7 @@ public interface LocalEmbeddedCacheManagerGroupConfiguration extends EmbeddedCac
 	}
 
 	@Override
-	default Function<String, Address> getAddressWrapper() {
-		return Functions.constantFunction(LocalModeAddress.INSTANCE);
+	default java.util.function.Function<String, Address> getAddressWrapper() {
+		return Function.of(LocalModeAddress.INSTANCE);
 	}
 }

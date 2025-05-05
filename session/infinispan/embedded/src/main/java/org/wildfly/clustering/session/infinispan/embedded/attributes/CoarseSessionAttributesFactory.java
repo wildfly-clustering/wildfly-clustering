@@ -5,10 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.embedded.attributes;
 
-import static org.wildfly.clustering.cache.function.Functions.constantFunction;
-import static org.wildfly.clustering.cache.function.Functions.nullFunction;
-import static org.wildfly.common.function.Functions.discardingConsumer;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
@@ -16,7 +12,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
@@ -29,6 +24,8 @@ import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistr
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PostActivateBlockingListener;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PostPassivateBlockingListener;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PrePassivateBlockingListener;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.Marshallability;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
@@ -97,7 +94,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		Map<String, Object> attributes = new ConcurrentHashMap<>();
 		try {
 			V value = this.marshaller.write(attributes);
-			return this.writeCache.putAsync(new SessionAttributesKey(id), value).thenApply(constantFunction(attributes));
+			return this.writeCache.putAsync(new SessionAttributesKey(id), value).thenApply(Function.of(attributes));
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -114,7 +111,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(nullFunction());
+		return this.getValueAsync(id).exceptionally(Function.of(null));
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {
@@ -138,7 +135,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	}
 
 	public CompletionStage<Void> deleteAsync(Cache<SessionAttributesKey, V> cache, String id) {
-		return cache.removeAsync(new SessionAttributesKey(id)).thenAccept(discardingConsumer());
+		return cache.removeAsync(new SessionAttributesKey(id)).thenAccept(Consumer.empty());
 	}
 
 	@Override

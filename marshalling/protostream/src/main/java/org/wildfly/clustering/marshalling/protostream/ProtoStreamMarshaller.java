@@ -7,11 +7,10 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.util.OptionalInt;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.infinispan.protostream.ProtobufTagMarshaller;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * A {@link ProtobufTagMarshaller} that include a facility for computing buffer sizes.
@@ -44,8 +43,8 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 	 * @param wrapper a function for creating the decorator from the value read by this marshaller.\
 	 * @return a new marshaller
 	 */
-	default <V extends T> ProtoStreamMarshaller<V> wrap(Class<? extends V> type, Function<T, V> wrapper) {
-		return wrap(type, Functions.cast(Function.identity()), wrapper);
+	default <V extends T> ProtoStreamMarshaller<V> wrap(Class<? extends V> type, java.util.function.Function<T, V> wrapper) {
+		return wrap(type, Function.identity(), wrapper);
 	}
 
 	/**
@@ -56,7 +55,7 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 	 * @param wrapper a function creating the wrapped instance from the value read by this marshaller.
 	 * @return a new marshaller
 	 */
-	default <V> ProtoStreamMarshaller<V> wrap(Class<? extends V> type, Function<V, T> unwrapper, Function<T, V> wrapper) {
+	default <V> ProtoStreamMarshaller<V> wrap(Class<? extends V> type, java.util.function.Function<V, T> unwrapper, java.util.function.Function<T, V> wrapper) {
 		ProtoStreamMarshaller<T> marshaller = this;
 		return new ProtoStreamMarshaller<>() {
 			@Override
@@ -88,7 +87,7 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 	 * @return a new marshaller
 	 */
 	static <T> ProtoStreamMarshaller<T> of(T value) {
-		return of(Functions.constantSupplier(value));
+		return of(Supplier.of(value));
 	}
 
 	/**
@@ -97,7 +96,7 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 	 * @param factory a supplier of the constant value
 	 * @return a new marshaller
 	 */
-	static <T> ProtoStreamMarshaller<T> of(Supplier<T> factory) {
+	static <T> ProtoStreamMarshaller<T> of(java.util.function.Supplier<T> factory) {
 		return new ProtoStreamMarshaller<>() {
 			@SuppressWarnings("unchecked")
 			@Override

@@ -12,11 +12,11 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
-import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -44,7 +44,7 @@ public class TimeSerializationContextInitializer extends AbstractSerializationCo
 		context.registerMarshaller(new PeriodMarshaller());
 		context.registerMarshaller(YearMarshaller.INSTANCE.asMarshaller());
 		context.registerMarshaller(new YearMonthMarshaller());
-		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(ZoneId.class, ZoneId::getId, Functions.constantSupplier(ZoneOffset.UTC), ZoneId::of));
+		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(ZoneId.class, ZoneId::getId, Supplier.of(ZoneOffset.UTC), ZoneId::of));
 		context.registerMarshaller(ZoneOffsetMarshaller.INSTANCE.asMarshaller());
 		context.registerMarshaller(new ZonedDateTimeMarshaller());
 	}

@@ -18,7 +18,6 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 			return value;
 		}
 	};
-
 	Function<?, ?> NULL = new Function<>() {
 		@Override
 		public Object apply(Object value) {

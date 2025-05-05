@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
@@ -33,8 +34,6 @@ import org.wildfly.clustering.server.jgroups.ChannelGroup;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 import org.wildfly.clustering.server.jgroups.JChannelGroup;
 import org.wildfly.clustering.server.util.BlockingExecutor;
-import org.wildfly.common.function.ExceptionSupplier;
-import org.wildfly.common.function.Functions;
 
 /**
  * {@link MessageDispatcher} based {@link CommandDispatcherFactory}.
@@ -43,7 +42,12 @@ import org.wildfly.common.function.Functions;
  * @author Paul Ferraro
  */
 public class JChannelCommandDispatcherFactory implements ChannelCommandDispatcherFactory, RequestHandler, Runnable {
-	private static final ExceptionSupplier<Object, Exception> NO_SUCH_SERVICE_SUPPLIER = Functions.constantExceptionSupplier(ServiceResponse.NO_SUCH_SERVICE);
+	private static final Callable<Object> NO_SUCH_SERVICE_SUPPLIER = new Callable<>() {
+		@Override
+		public Object call() throws Exception {
+			return ServiceResponse.NO_SUCH_SERVICE;
+		}
+	};
 
 	private final JChannelGroup group;
 	private final Map<Object, CommandDispatcherContext<?, ?>> contexts = new ConcurrentHashMap<>();
@@ -87,17 +91,17 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 
 	@Override
 	public Object handle(Message request) throws Exception {
-		return this.read(request).get();
+		return this.read(request).call();
 	}
 
 	@Override
 	public void handle(Message request, Response response) throws Exception {
-		ExceptionSupplier<Object, Exception> commandTask = this.read(request);
+		Callable<Object> commandTask = this.read(request);
 		Runnable responseTask = new Runnable() {
 			@Override
 			public void run() {
 				try {
-					response.send(commandTask.get(), false);
+					response.send(commandTask.call(), false);
 				} catch (Throwable e) {
 					response.send(e, true);
 				}
@@ -110,7 +114,7 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 		}
 	}
 
-	private ExceptionSupplier<Object, Exception> read(Message message) throws IOException {
+	private Callable<Object> read(Message message) throws IOException {
 		ByteBuffer buffer = ByteBuffer.wrap(message.getArray(), message.getOffset(), message.getLength());
 		@SuppressWarnings("unchecked")
 		Map.Entry<Object, MarshalledValue<Command<Object, Object, Exception>, Object>> entry = (Map.Entry<Object, MarshalledValue<Command<Object, Object, Exception>, Object>>) this.marshaller.read(buffer);
@@ -121,16 +125,16 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 		Contextualizer contextualizer = context.getContextualizer();
 		MarshalledValue<Command<Object, Object, Exception>, Object> value = entry.getValue();
 		Command<Object, Object, Exception> command = value.get(context.getMarshalledValueFactory().getMarshallingContext());
-		ExceptionSupplier<Object, Exception> commandExecutionTask = new ExceptionSupplier<>() {
+		Callable<Object> commandExecutionTask = new Callable<>() {
 			@Override
-			public Object get() throws Exception {
+			public Object call() throws Exception {
 				return context.getMarshalledValueFactory().createMarshalledValue(command.execute(commandContext));
 			}
 		};
 		BlockingExecutor executor = this.executor;
-		return new ExceptionSupplier<>() {
+		return new Callable<>() {
 			@Override
-			public Object get() throws Exception {
+			public Object call() throws Exception {
 				return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(ServiceResponse.NO_SUCH_SERVICE);
 			}
 		};

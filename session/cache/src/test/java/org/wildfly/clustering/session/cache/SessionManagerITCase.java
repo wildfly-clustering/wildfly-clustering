@@ -20,20 +20,20 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.BiConsumer;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionMetaData;
-import org.wildfly.common.function.ExceptionBiFunction;
-import org.wildfly.common.function.Functions;
 
 /**
  * Session manager integration tests.
@@ -45,9 +45,9 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	private static final String DEPLOYMENT_CONTEXT = "deployment";
 	private static final Supplier<AtomicReference<String>> SESSION_CONTEXT_FACTORY = AtomicReference::new;
 
-	private final ExceptionBiFunction<P, String, SessionManagerFactoryProvider<String>, Exception> factory;
+	private final BiFunction<P, String, SessionManagerFactoryProvider<String>> factory;
 
-	protected SessionManagerITCase(ExceptionBiFunction<P, String, SessionManagerFactoryProvider<String>, Exception> factory) {
+	protected SessionManagerITCase(BiFunction<P, String, SessionManagerFactoryProvider<String>> factory) {
 		this.factory = factory;
 	}
 
@@ -131,7 +131,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 											v.incrementAndGet();
 										});
 									}
-								}), Functions.discardingBiConsumer());
+								}), BiConsumer.empty());
 							}
 							future.join();
 							Instant stop = Instant.now();

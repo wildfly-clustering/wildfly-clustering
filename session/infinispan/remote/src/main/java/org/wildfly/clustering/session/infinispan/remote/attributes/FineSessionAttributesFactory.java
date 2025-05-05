@@ -5,9 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.remote.attributes;
 
-import static org.wildfly.clustering.cache.function.Functions.nullFunction;
-import static org.wildfly.common.function.Functions.discardingConsumer;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
@@ -22,6 +19,8 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryComputerFactory;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -84,7 +83,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(nullFunction());
+		return this.getValueAsync(id).exceptionally(Function.of(null));
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {
@@ -106,7 +105,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.writeCache.removeAsync(new SessionAttributesKey(id)).thenAccept(discardingConsumer());
+		return this.writeCache.removeAsync(new SessionAttributesKey(id)).thenAccept(Consumer.empty());
 	}
 
 	@Override

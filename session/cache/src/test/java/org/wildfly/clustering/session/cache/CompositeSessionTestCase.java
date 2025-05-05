@@ -9,11 +9,11 @@ import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.CacheEntryRemover;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
-import org.wildfly.common.function.Functions;
 
 /**
  * Unit test for {@link CompositeSession}.
@@ -27,7 +27,7 @@ public class CompositeSessionTestCase {
 	private final CacheEntryRemover<String> remover = mock(CacheEntryRemover.class);
 	private final Object context = new Object();
 
-	private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, Supplied.simple(), Functions.constantSupplier(this.context), this.remover);
+	private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, Supplied.simple(), Supplier.of(this.context), this.remover);
 
 	@Test
 	public void getId() {

@@ -10,9 +10,8 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Encapsulates a value that is offset from some basis, and updated via {@link OffsetValue#set(Object)}.
@@ -57,23 +56,23 @@ public interface OffsetValue<V> extends Value<V> {
 	OffsetValue<V> rebase();
 
 	static OffsetValue<Duration> from(Duration duration) {
-		return new DurationOffsetValue(Functions.constantSupplier(duration));
+		return new DurationOffsetValue(Supplier.of(duration));
 	}
 
 	static OffsetValue<Instant> from(Instant instant) {
-		return new InstantOffsetValue(Functions.constantSupplier(instant));
+		return new InstantOffsetValue(Supplier.of(instant));
 	}
 
 	class DefaultOffsetValue<O, V> extends AbstractValue<V> implements OffsetValue<V> {
 		private final BiFunction<V, V, O> factory;
 		private final Function<O, Offset<V>> offsetFactory;
-		private final Function<Supplier<V>, OffsetValue<V>> offsetValueFactory;
-		private final Supplier<V> basis;
+		private final Function<java.util.function.Supplier<V>, OffsetValue<V>> offsetValueFactory;
+		private final java.util.function.Supplier<V> basis;
 		private final O zero;
 
 		private volatile Offset<V> offset;
 
-		DefaultOffsetValue(Supplier<V> basis, O zero, BiFunction<V, V, O> factory, Function<O, Offset<V>> offsetFactory, Function<Supplier<V>, OffsetValue<V>> offsetValueFactory) {
+		DefaultOffsetValue(java.util.function.Supplier<V> basis, O zero, BiFunction<V, V, O> factory, Function<O, Offset<V>> offsetFactory, Function<java.util.function.Supplier<V>, OffsetValue<V>> offsetValueFactory) {
 			this.factory = factory;
 			this.offsetFactory = offsetFactory;
 			this.offsetValueFactory = offsetValueFactory;
@@ -111,7 +110,7 @@ public interface OffsetValue<V> extends Value<V> {
 
 	class TemporalOffsetValue<V> extends DefaultOffsetValue<Duration, V> {
 
-		TemporalOffsetValue(Supplier<V> basis, BiFunction<V, V, Duration> factory, Function<Duration, Offset<V>> offsetFactory, Function<Supplier<V>, OffsetValue<V>> offsetValueFactory) {
+		TemporalOffsetValue(java.util.function.Supplier<V> basis, BiFunction<V, V, Duration> factory, Function<Duration, Offset<V>> offsetFactory, Function<java.util.function.Supplier<V>, OffsetValue<V>> offsetValueFactory) {
 			super(basis, Duration.ZERO, factory, offsetFactory, offsetValueFactory);
 		}
 	}
@@ -120,7 +119,7 @@ public interface OffsetValue<V> extends Value<V> {
 		private static final BiFunction<Duration, Duration, Duration> MINUS = Duration::minus;
 		private static final BiFunction<Duration, Duration, Duration> FACTORY = MINUS.andThen(Duration::negated);
 
-		DurationOffsetValue(Supplier<Duration> basis) {
+		DurationOffsetValue(java.util.function.Supplier<Duration> basis) {
 			super(basis, FACTORY, Offset::forDuration, DurationOffsetValue::new);
 		}
 	}
@@ -128,7 +127,7 @@ public interface OffsetValue<V> extends Value<V> {
 	class InstantOffsetValue extends TemporalOffsetValue<Instant> {
 		private static final BiFunction<Instant, Instant, Duration> FACTORY = Duration::between;
 
-		InstantOffsetValue(Supplier<Instant> basis) {
+		InstantOffsetValue(java.util.function.Supplier<Instant> basis) {
 			super(basis, FACTORY, Offset::forInstant, InstantOffsetValue::new);
 		}
 	}

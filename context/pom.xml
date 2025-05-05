@@ -19,8 +19,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.wildfly.common</groupId>
-			<artifactId>wildfly-common</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-function</artifactId>
 		</dependency>
 	</dependencies>
 </project>

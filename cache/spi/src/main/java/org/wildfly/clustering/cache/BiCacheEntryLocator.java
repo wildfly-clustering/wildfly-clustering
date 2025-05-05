@@ -5,7 +5,12 @@
 package org.wildfly.clustering.cache;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletionStage;
+
+import org.wildfly.clustering.function.BiFunction;
+import org.wildfly.clustering.function.BiPredicate;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Locates a pair of entries from a cache.
@@ -35,12 +40,14 @@ public interface BiCacheEntryLocator<I, K, V> extends CacheEntryLocator<I, Map.E
 	@Override
 	default CompletionStage<Map.Entry<K, V>> findValueAsync(I id) {
 		Map.Entry<CompletionStage<K>, CompletionStage<V>> entry = this.findEntry(id);
-		return entry.getKey().thenCombine(entry.getValue(), (key, value) -> (key != null) && (value != null) ? Map.entry(key, value) : null);
+		BiFunction<K, V, Map.Entry<K, V>> entryFactory = Map::entry;
+		return entry.getKey().thenCombine(entry.getValue(), entryFactory.orDefault(BiPredicate.and(Objects::nonNull, Objects::nonNull), Supplier.of(null)));
 	}
 
 	@Override
 	default CompletionStage<Map.Entry<K, V>> tryValueAsync(I id) {
 		Map.Entry<CompletionStage<K>, CompletionStage<V>> entry = this.tryEntry(id);
-		return entry.getKey().thenCombine(entry.getValue(), (key, value) -> (key != null) && (value != null) ? Map.entry(key, value) : null);
+		BiFunction<K, V, Map.Entry<K, V>> entryFactory = Map::entry;
+		return entry.getKey().thenCombine(entry.getValue(), entryFactory.orDefault(BiPredicate.and(Objects::nonNull, Objects::nonNull), Supplier.of(null)));
 	}
 }

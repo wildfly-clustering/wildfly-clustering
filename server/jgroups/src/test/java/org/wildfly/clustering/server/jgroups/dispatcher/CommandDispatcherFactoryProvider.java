@@ -15,4 +15,7 @@ import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 public interface CommandDispatcherFactoryProvider<M extends GroupMember> extends AutoCloseable {
 
 	CommandDispatcherFactory<M> getCommandDispatcherFactory();
+
+	@Override
+	void close();
 }

@@ -4,9 +4,11 @@
  */
 package org.wildfly.clustering.server.util;
 
-import java.util.Optional;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+
+import org.wildfly.clustering.function.UnaryOperator;
 
 /**
  * A supplied value.
@@ -14,6 +16,12 @@ import java.util.function.Supplier;
  * @param <T> the supplied value type
  */
 public interface Supplied<T> {
+	Supplied<?> SIMPLE = new Supplied<>() {
+		@Override
+		public Object get(Supplier<Object> supplier) {
+			return supplier.get();
+		}
+	};
 
 	/**
 	 * Returns the supplied value, created from the specified factory if necessary.
@@ -32,7 +40,7 @@ public interface Supplied<T> {
 		return new Supplied<>() {
 			@Override
 			public T get(Supplier<T> factory) {
-				return reference.updateAndGet(context -> Optional.ofNullable(context).orElseGet(factory));
+				return reference.updateAndGet(UnaryOperator.<T>identity().orDefault(Objects::nonNull, factory));
 			}
 		};
 	}
@@ -42,12 +50,8 @@ public interface Supplied<T> {
 	 * @param <T>
 	 * @return the supplied value
 	 */
+	@SuppressWarnings("unchecked")
 	static <T> Supplied<T> simple() {
-		return new Supplied<>() {
-			@Override
-			public T get(Supplier<T> factory) {
-				return factory.get();
-			}
-		};
+		return (Supplied<T>) SIMPLE;
 	}
 }

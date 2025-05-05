@@ -9,16 +9,15 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.jboss.logging.Logger;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.cache.Cache;
 import org.wildfly.clustering.server.cache.CacheFactory;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.common.function.Functions;
 
 /**
  * A concurrent session manager, that can share session references across concurrent threads.
@@ -31,7 +30,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 	private final Cache<String, CompletionStage<CacheableSession<C>>> sessionCache;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionCreator;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionFinder;
-	private final Function<CacheableSession<C>, Session<C>> identity = Functions.cast(Function.identity());
+	private final Function<CacheableSession<C>, Session<C>> identity = Function.identity();
 
 	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
 		super(manager);
@@ -80,7 +79,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 				return result;
 			}
 		};
-		this.sessionCache = cacheFactory.createCache(Functions.discardingConsumer(), new Consumer<CompletionStage<CacheableSession<C>>>() {
+		this.sessionCache = cacheFactory.createCache(Consumer.empty(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
 			public void accept(CompletionStage<CacheableSession<C>> future) {
 				try {

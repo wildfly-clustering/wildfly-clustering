@@ -9,9 +9,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.offset.OffsetValue;
 import org.wildfly.clustering.server.util.Supplied;
-import org.wildfly.common.function.Functions;
 
 /**
  * Default contextual session metadata entry.
@@ -73,7 +73,7 @@ public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaData
 		result.setTimeout(offsets.getTimeoutOffset().apply(this.timeout));
 		result.getLastAccessStartTime().set(offsets.getLastAccessStartTimeOffset().apply(this.lastAccessStartTime.get()));
 		result.getLastAccessEndTime().set(offsets.getLastAccessEndTimeOffset().apply(this.lastAccessEndTime.get()));
-		result.getContext().get(Functions.constantSupplier(this.context.get(Functions.constantSupplier(null))));
+		result.getContext().get(Supplier.of(this.context.get(Supplier.of(null))));
 		return result;
 	}
 

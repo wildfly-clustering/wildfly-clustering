@@ -8,10 +8,8 @@ package org.wildfly.clustering.marshalling.jboss;
 import java.io.IOException;
 import java.util.List;
 
-import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.Unmarshaller;
-import org.wildfly.common.function.ExceptionBiConsumer;
 
 /**
  * An {@link ObjectTable} based on an {@link IdentityTable}.
@@ -27,8 +25,8 @@ public class IdentityObjectTable implements ObjectTable {
 
 	@Override
 	public Writer getObjectWriter(Object object) throws IOException {
-		ExceptionBiConsumer<Marshaller, Object, IOException> writer = this.table.findWriter(object);
-		return writer != null ? writer::accept : null;
+		Writable<Object> writer = this.table.findWriter(object);
+		return writer != null ? writer::write : null;
 	}
 
 	@Override

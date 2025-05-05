@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.jgroups.Address;
@@ -28,7 +29,6 @@ import org.wildfly.clustering.server.GroupMembershipMergeEvent;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.group.GroupMember;
-import org.wildfly.common.function.ExceptionBiFunction;
 
 /**
  * Base integration test for {@link Group} implementations.
@@ -42,10 +42,10 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 	private static final Duration VIEW_CHANGE_DURATION = Duration.ofSeconds(20);
 	private static final Duration SPLIT_MERGE_DURATION = Duration.ofSeconds(120);
 
-	private final ExceptionBiFunction<String, String, GroupProvider<A, M>, Exception> factory;
+	private final BiFunction<String, String, GroupProvider<A, M>> factory;
 	private final Function<A, Address> mapper;
 
-	protected GroupITCase(ExceptionBiFunction<String, String, GroupProvider<A, M>, Exception> factory, Function<A, Address> mapper) {
+	protected GroupITCase(BiFunction<String, String, GroupProvider<A, M>> factory, Function<A, Address> mapper) {
 		this.factory = factory;
 		this.mapper = mapper;
 	}

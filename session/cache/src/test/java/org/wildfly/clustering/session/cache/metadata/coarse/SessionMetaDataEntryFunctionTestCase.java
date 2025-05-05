@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import org.mockito.Mockito;
 import org.wildfly.clustering.cache.Key;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Supplier;
 
 
 /**
@@ -23,8 +23,8 @@ public class SessionMetaDataEntryFunctionTestCase extends AbstractSessionMetaDat
 	@Override
 	public void accept(ContextualSessionMetaDataEntry<Object> entry) {
 		Object context = UUID.randomUUID();
-		assertThat(entry.getContext().get(Functions.constantSupplier(context))).isSameAs(context);
-		assertThat(entry.getContext().get(Functions.constantSupplier(null))).isSameAs(context);
+		assertThat(entry.getContext().get(Supplier.of(context))).isSameAs(context);
+		assertThat(entry.getContext().get(Supplier.of(null))).isSameAs(context);
 
 		MutableSessionMetaDataOffsetValues delta = MutableSessionMetaDataOffsetValues.from(entry);
 
@@ -42,6 +42,6 @@ public class SessionMetaDataEntryFunctionTestCase extends AbstractSessionMetaDat
 
 		this.verifyUpdatedState(resultEntry);
 
-		assertThat(resultEntry.getContext().get(Functions.constantSupplier(null))).isSameAs(context);
+		assertThat(resultEntry.getContext().get(Supplier.of(null))).isSameAs(context);
 	}
 }

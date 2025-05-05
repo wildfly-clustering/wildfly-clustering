@@ -17,8 +17,6 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.common.function.ExceptionRunnable;
-import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * @author Paul Ferraro
@@ -37,46 +35,6 @@ public class BlockingExecutorTestCase {
 
 		// Task should run
 		verify(executeTask).run();
-		verify(closeTask, never()).run();
-		reset(executeTask);
-
-		executor.close();
-
-		verify(closeTask).run();
-		reset(closeTask);
-
-		executor.close();
-
-		// Close task should only run once
-		verify(closeTask, never()).run();
-
-		executor.execute(executeTask);
-
-		// Task should no longer run since service is closed
-		verify(executeTask, never()).run();
-		verify(closeTask, never()).run();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testExecuteExceptionRunnable() throws Exception {
-		Runnable closeTask = mock(Runnable.class);
-		@SuppressWarnings("resource")
-		BlockingExecutor executor = BlockingExecutor.newInstance(closeTask);
-
-		ExceptionRunnable<Exception> executeTask = mock(ExceptionRunnable.class);
-
-		executor.execute(executeTask);
-
-		// Task should run
-		verify(executeTask).run();
-		verify(closeTask, never()).run();
-		reset(executeTask);
-
-		doThrow(new Exception()).when(executeTask).run();
-
-		assertThatExceptionOfType(Exception.class).isThrownBy(() -> executor.execute(executeTask));
-
 		verify(closeTask, never()).run();
 		reset(executeTask);
 
@@ -125,49 +83,6 @@ public class BlockingExecutorTestCase {
 
 		// Close task should only run once
 		verify(closeTask, never()).run();
-		verify(closeTask, never()).run();
-
-		result = executor.execute(executeTask);
-
-		// Task should no longer run since service is closed
-		assertThat(result).isEmpty();
-		verify(closeTask, never()).run();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testExecuteExceptionSupplier() throws Exception {
-		Runnable closeTask = mock(Runnable.class);
-		@SuppressWarnings("resource")
-		BlockingExecutor executor = BlockingExecutor.newInstance(closeTask);
-		Object expected = new Object();
-
-		ExceptionSupplier<Object, Exception> executeTask = mock(ExceptionSupplier.class);
-
-		when(executeTask.get()).thenReturn(expected);
-
-		Optional<Object> result = executor.execute(executeTask);
-
-		// Task should run
-		assertThat(result).isPresent().containsSame(expected);
-		verify(closeTask, never()).run();
-		reset(executeTask);
-
-		doThrow(new Exception()).when(executeTask).get();
-
-		assertThatExceptionOfType(Exception.class).isThrownBy(() -> executor.execute(executeTask));
-
-		verify(closeTask, never()).run();
-		reset(executeTask);
-
-		executor.close();
-
-		verify(closeTask).run();
-		reset(closeTask);
-
-		executor.close();
-
-		// Close task should only run once
 		verify(closeTask, never()).run();
 
 		result = executor.execute(executeTask);

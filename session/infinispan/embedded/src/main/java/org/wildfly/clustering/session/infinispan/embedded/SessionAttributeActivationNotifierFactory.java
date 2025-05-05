@@ -8,8 +8,8 @@ package org.wildfly.clustering.session.infinispan.embedded;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.Session;

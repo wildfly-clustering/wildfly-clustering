@@ -31,13 +31,13 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.reflect.DecoratorMarshaller;
 import org.wildfly.clustering.marshalling.protostream.reflect.SynchronizedDecoratorMarshaller;
-import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -70,7 +70,7 @@ public class JavaUtilSerializationContextInitializer extends AbstractSerializati
 		context.registerMarshaller(linkedListMarshaller);
 		context.registerMarshaller(new LocaleMarshaller());
 		context.registerMarshaller(new PropertiesMarshaller());
-		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(TimeZone.class, TimeZone::getID, Functions.constantSupplier(TimeZone.getTimeZone(ZoneOffset.UTC)), TimeZone::getTimeZone));
+		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(TimeZone.class, TimeZone::getID, Supplier.of(TimeZone.getTimeZone(ZoneOffset.UTC)), TimeZone::getTimeZone));
 		context.registerMarshaller(new SortedMapMarshaller<>(TreeMap::new));
 		context.registerMarshaller(new SortedSetMarshaller<>(TreeSet::new));
 		context.registerMarshaller(UUIDMarshaller.INSTANCE.asMarshaller());

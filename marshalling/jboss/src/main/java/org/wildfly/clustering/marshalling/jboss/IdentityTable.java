@@ -15,7 +15,6 @@ import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.marshalling.IndexSerializer;
 import org.wildfly.clustering.marshalling.IntSerializer;
-import org.wildfly.common.function.ExceptionBiConsumer;
 
 /**
  * Generic identity table.
@@ -24,7 +23,7 @@ import org.wildfly.common.function.ExceptionBiConsumer;
  */
 public interface IdentityTable<T> {
 
-	ExceptionBiConsumer<Marshaller, T, IOException> findWriter(T value);
+	Writable<T> findWriter(T value);
 
 	T read(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException;
 
@@ -35,16 +34,16 @@ public interface IdentityTable<T> {
 		while (iterator.hasNext()) {
 			indexes.putIfAbsent(iterator.next(), iterator.previousIndex());
 		}
-		ExceptionBiConsumer<Marshaller, T, IOException> writer = new ExceptionBiConsumer<>() {
+		Writable<T> writer = new Writable<>() {
 			@Override
-			public void accept(Marshaller marshaller, T value) throws IOException {
+			public void write(Marshaller marshaller, T value) throws IOException {
 				int index = indexes.get(value);
 				indexSerializer.writeInt(marshaller, index);
 			}
 		};
 		return new IdentityTable<>() {
 			@Override
-			public ExceptionBiConsumer<Marshaller, T, IOException> findWriter(T value) {
+			public Writable<T> findWriter(T value) {
 				return indexes.containsKey(value) ? writer : null;
 			}
 

@@ -8,11 +8,10 @@ package org.wildfly.clustering.session.cache.metadata.fine;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.function.Supplier;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.offset.Offset;
 import org.wildfly.clustering.server.util.Supplied;
-import org.wildfly.common.function.Functions;
 
 /**
  * @param <C> the session context type
@@ -54,10 +53,10 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 	}
 
 	@Override
-	public SessionCreationMetaDataEntry<C> remap(Supplier<Offset<Duration>> timeoutOffset) {
+	public SessionCreationMetaDataEntry<C> remap(java.util.function.Supplier<Offset<Duration>> timeoutOffset) {
 		SessionCreationMetaDataEntry<C> result = new DefaultSessionCreationMetaDataEntry<>(this.creationTime);
 		result.setTimeout(timeoutOffset.get().apply(this.timeout));
-		result.getContext().get(Functions.constantSupplier(this.context.get(Functions.constantSupplier(null))));
+		result.getContext().get(Supplier.of(this.context.get(Supplier.of(null))));
 		return result;
 	}
 

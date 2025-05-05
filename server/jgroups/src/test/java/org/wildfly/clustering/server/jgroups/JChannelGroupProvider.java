@@ -18,13 +18,19 @@ public class JChannelGroupProvider extends AutoCloseableProvider implements Grou
 	private final JChannel channel;
 	private final ChannelGroup group;
 
-	public JChannelGroupProvider(String clusterName, String memberName) throws Exception {
+	public JChannelGroupProvider(String clusterName, String memberName) {
 		this.channel = JChannelFactory.INSTANCE.apply(memberName);
 		this.accept(this.channel::close);
-		this.channel.connect(clusterName);
-		this.accept(this.channel::disconnect);
-		this.group = new JChannelGroup(this.channel);
-		this.accept(this.group::close);
+		try {
+			this.channel.connect(clusterName);
+			this.accept(this.channel::disconnect);
+			this.group = new JChannelGroup(this.channel);
+			this.accept(this.group::close);
+		} catch (RuntimeException | Error e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

@@ -12,8 +12,8 @@ import java.util.UUID;
 
 import org.mockito.Mockito;
 import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.offset.OffsetValue;
-import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -23,8 +23,8 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 	@Override
 	public void accept(SessionCreationMetaDataEntry<Object> entry) {
 		Object context = UUID.randomUUID();
-		assertThat(entry.getContext().get(Functions.constantSupplier(context))).isSameAs(context);
-		assertThat(entry.getContext().get(Functions.constantSupplier(null))).isSameAs(context);
+		assertThat(entry.getContext().get(Supplier.of(context))).isSameAs(context);
+		assertThat(entry.getContext().get(Supplier.of(null))).isSameAs(context);
 
 		OffsetValue<Duration> timeoutOffset = OffsetValue.from(entry.getTimeout());
 
@@ -42,6 +42,6 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 
 		this.verifyUpdatedState(resultEntry);
 
-		assertThat(resultEntry.getContext().get(Functions.constantSupplier(null))).isSameAs(context);
+		assertThat(resultEntry.getContext().get(Supplier.of(null))).isSameAs(context);
 	}
 }
