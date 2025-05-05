@@ -362,22 +362,24 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	}
 
 	private static class TestSessionManagerConfiguration<C> implements SessionManagerConfiguration<C> {
-		private final BlockingQueue<ImmutableSession> expired;
+		private final Consumer<ImmutableSession> expirationListener;
 		private final C context;
 
 		TestSessionManagerConfiguration(BlockingQueue<ImmutableSession> expired, C context) {
-			this.expired = expired;
+			org.wildfly.clustering.function.Consumer<ImmutableSession> queue = expired::add;
+			this.expirationListener = queue.map(SimpleImmutableSession::new);
 			this.context = context;
 		}
 
 		@Override
 		public Supplier<String> getIdentifierFactory() {
-			return () -> UUID.randomUUID().toString();
+			org.wildfly.clustering.function.Supplier<UUID> factory = UUID::randomUUID;
+			return factory.map(UUID::toString);
 		}
 
 		@Override
 		public Consumer<ImmutableSession> getExpirationListener() {
-			return this.expired::add;
+			return this.expirationListener;
 		}
 
 		@Override

@@ -41,6 +41,7 @@ public class CacheTestCase {
 						try (ManagedService<Integer> object = manager.computeIfAbsent(key, ManagedService::new)) {
 							assertThat(object.isStarted()).as(object::toString).isTrue();
 							assertThat(object.isStopped()).as(object::toString).isFalse();
+							// Emulate usage of shared object
 							Thread.sleep(10);
 							return object;
 						}
@@ -112,6 +113,7 @@ public class CacheTestCase {
 
 		@Override
 		public void start() {
+			// Emulate some starting cost
 			try {
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
@@ -122,6 +124,7 @@ public class CacheTestCase {
 
 		@Override
 		public void stop() {
+			// Emulate some stopping cost
 			try {
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
@@ -137,6 +140,11 @@ public class CacheTestCase {
 		@Override
 		public void close() {
 			this.closeTask.run();
+		}
+
+		@Override
+		public String toString() {
+			return this.id.toString();
 		}
 	}
 }
