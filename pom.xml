@@ -62,6 +62,7 @@
 		<module>arquillian</module>
 		<module>cache</module>
 		<module>context</module>
+		<module>function</module>
 		<module>marshalling</module>
 		<module>server</module>
 		<module>session</module>

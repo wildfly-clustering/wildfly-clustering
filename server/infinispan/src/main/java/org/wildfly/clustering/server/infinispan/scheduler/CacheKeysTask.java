@@ -26,12 +26,12 @@ public class CacheKeysTask<K, V> implements Consumer<CacheStreamFilter<K>> {
 	private final Consumer<K> task;
 
 	public static <I, K extends Key<I>, V, M> CacheKeysTask<K, V> schedule(Cache<K, V> cache, Predicate<? super K> filter, Scheduler<I, M> scheduler) {
-		org.wildfly.clustering.cache.function.Consumer<I> schedule = scheduler::schedule;
+		org.wildfly.clustering.function.Consumer<I> schedule = scheduler::schedule;
 		return new CacheKeysTask<>(cache, filter, schedule.map(Key::getId));
 	}
 
 	public static <I, K extends Key<I>, V, M> CacheKeysTask<K, V> cancel(Cache<K, V> cache, Predicate<? super K> filter, Scheduler<I, M> scheduler) {
-		org.wildfly.clustering.cache.function.Consumer<I> cancel = scheduler::cancel;
+		org.wildfly.clustering.function.Consumer<I> cancel = scheduler::cancel;
 		return new CacheKeysTask<>(cache, filter, cancel.map(Key::getId));
 	}
 

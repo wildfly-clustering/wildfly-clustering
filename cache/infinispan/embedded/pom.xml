@@ -44,6 +44,10 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-cache-infinispan-common</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-function</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
