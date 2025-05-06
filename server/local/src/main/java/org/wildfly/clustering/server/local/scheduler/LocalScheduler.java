@@ -7,18 +7,21 @@ package org.wildfly.clustering.server.local.scheduler;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.scheduler.Scheduler;
+import org.wildfly.clustering.server.util.Reference;
 
 /**
  * Scheduler that uses a single scheduled task in concert with a {@link ScheduledEntries}.
@@ -33,8 +36,10 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	private final ScheduledEntries<T, Instant> entries;
 	private final Predicate<T> task;
 	private final Duration closeTimeout;
-
-	private volatile Map.Entry<Map.Entry<T, Instant>, Future<?>> futureEntry = null;
+	private final Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> schedule;
+	private final Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> scheduleIfAbsent;
+	private final Reference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel;
+	private final Reference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule;
 
 	public LocalScheduler(LocalSchedulerConfiguration<T> configuration) {
 		this.name = configuration.getName();
@@ -47,6 +52,21 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 		this.executor = executor;
 		this.task = configuration.getTask();
 		this.closeTimeout = configuration.getCloseTimeout();
+		Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> scheduleFirst = this::scheduleFirst;
+		UnaryOperator<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel = entry -> {
+			entry.getValue().cancel(true);
+			return null;
+		};
+		UnaryOperator<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule = entry -> {
+			cancel.apply(entry);
+			return scheduleFirst.get();
+		};
+		Reference<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntry = Reference.of(null);
+		Reference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntryWriter = futureEntry.writer(scheduleFirst);
+		this.schedule = futureEntryWriter;
+		this.scheduleIfAbsent = futureEntryWriter.when(Objects::isNull);
+		this.cancel = futureEntry.writer(cancel);
+		this.reschedule = futureEntry.writer(reschedule);
 	}
 
 	@Override
@@ -113,9 +133,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 			}
 		}
 		// Schedule next task
-		synchronized (this) {
-			this.futureEntry = this.scheduleFirst();
-		}
+		this.schedule.get();
 	}
 
 	private Map.Entry<Map.Entry<T, Instant>, Future<?>> scheduleFirst() {
@@ -128,46 +146,22 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 		long millis = !delay.isNegative() ? delay.toMillis() + 1 : 0;
 		try {
 			Future<?> future = this.executor.schedule(this, millis, TimeUnit.MILLISECONDS);
-			return new SimpleImmutableEntry<>(entry, future);
+			return Map.entry(entry, future);
 		} catch (RejectedExecutionException e) {
 			return null;
 		}
 	}
 
 	private void scheduleIfAbsent() {
-		if (this.futureEntry == null) {
-			synchronized (this) {
-				if (this.futureEntry == null) {
-					this.futureEntry = this.scheduleFirst();
-				}
-			}
-		}
+		this.scheduleIfAbsent.get();
 	}
 
 	private void rescheduleIfEarlier(Instant instant) {
-		if (this.futureEntry != null) {
-			synchronized (this) {
-				if (this.futureEntry != null) {
-					if (instant.isBefore(this.futureEntry.getKey().getValue())) {
-						this.futureEntry.getValue().cancel(true);
-						this.futureEntry = this.scheduleFirst();
-					}
-				}
-			}
-		}
+		this.reschedule.when(entry -> (entry != null) && instant.isBefore(entry.getKey().getValue())).get();
 	}
 
 	private void cancelIfPresent(T id) {
-		if (this.futureEntry != null) {
-			synchronized (this) {
-				if (this.futureEntry != null) {
-					if (this.futureEntry.getKey().getKey().equals(id)) {
-						this.futureEntry.getValue().cancel(true);
-						this.futureEntry = null;
-					}
-				}
-			}
-		}
+		this.cancel.when(entry -> (entry != null) && entry.getKey().getKey().equals(id)).get();
 	}
 
 	@Override
