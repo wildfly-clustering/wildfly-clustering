@@ -12,8 +12,10 @@ import java.util.TreeMap;
 
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
+import org.wildfly.clustering.server.util.ReferenceMap;
 import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
 
 /**
@@ -31,7 +33,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 	private final Immutability immutability;
 	private final CacheProperties properties;
 	private final SessionAttributeActivationNotifier notifier;
-	private final Map<String, Object> updates = new TreeMap<>();
+	private final ReferenceMap<String, Object> updates = ReferenceMap.of(new TreeMap<>());
 
 	public FineSessionAttributes(K key, Map<String, Object> attributes, CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory, Marshaller<Object, V> marshaller, Immutability immutability, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
 		super(attributes);
@@ -58,12 +60,8 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 
 		if (value != null) {
 			// If the object is mutable, we need to mutate this value on close
-			synchronized (this.updates) {
-				// Bypass immutability check if attribute already updates on close
-				if (!this.updates.containsKey(name) && !this.immutability.test(value)) {
-					this.updates.put(name, value);
-				}
-			}
+			// Bypass immutability check if attribute already updates on close
+			this.updates.reference(name).writer(value).when(v -> (v == null) && !this.immutability.test(value)).get();
 		}
 
 		return value;
@@ -76,9 +74,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		Object result = this.attributes.remove(name);
 
 		if (result != null) {
-			synchronized (this.updates) {
-				this.updates.put(name, null);
-			}
+			this.updates.reference(name).writer(Supplier.of(null)).get();
 		}
 
 		return result;
@@ -97,10 +93,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		Object result = this.attributes.put(name, value);
 
 		// Always trigger attribute update, even if called with an existing reference
-		synchronized (this.updates) {
-			this.updates.put(name, value);
-		}
-
+		this.updates.reference(name).writer(value).get();
 		return result;
 	}
 
@@ -111,18 +104,17 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 				this.notifier.prePassivate(value);
 			}
 		}
-		synchronized (this.updates) {
-			if (!this.updates.isEmpty()) {
+		this.updates.reader().consume(map -> {
+			if (!map.isEmpty()) {
 				Map<String, V> updates = new TreeMap<>();
-				for (Map.Entry<String, Object> entry : this.updates.entrySet()) {
+				for (Map.Entry<String, Object> entry : map.entrySet()) {
 					String name = entry.getKey();
 					Object value = entry.getValue();
 					updates.put(name, (value != null) ? this.write(value) : null);
 				}
-
 				this.mutatorFactory.createMutator(this.key, updates).mutate();
 			}
-		}
+		});
 	}
 
 	private V write(Object value) {
