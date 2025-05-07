@@ -10,11 +10,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Predicate;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Marshaller for a single scalar value.
@@ -39,7 +38,7 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 	 * @return a new marshaller
 	 */
 	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, Function<V, T> unwrapper, Function<T, V> wrapper) {
-		return this.toMarshaller(targetClass, value -> false, unwrapper, Functions.constantSupplier(null), wrapper);
+		return this.toMarshaller(targetClass, Predicate.never(), unwrapper, Supplier.of(null), wrapper);
 	}
 
 	/**
@@ -51,7 +50,7 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 	 * @param wrapper a function creating a wrapped instance from the scalar value read by this marshaller
 	 * @return a new marshaller
 	 */
-	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, Function<V, T> unwrapper, Supplier<V> defaultFactory, Function<T, V> wrapper) {
+	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, Function<V, T> unwrapper, java.util.function.Supplier<V> defaultFactory, Function<T, V> wrapper) {
 		return this.toMarshaller(targetClass, Objects::equals, unwrapper, defaultFactory, wrapper);
 	}
 
@@ -65,7 +64,7 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 	 * @param wrapper a function creating a wrapped instance from the scalar value read by this marshaller
 	 * @return a new marshaller
 	 */
-	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, BiPredicate<T, T> equals, Function<V, T> unwrapper, Supplier<V> defaultFactory, Function<T, V> wrapper) {
+	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, BiPredicate<T, T> equals, Function<V, T> unwrapper, java.util.function.Supplier<V> defaultFactory, Function<T, V> wrapper) {
 		return this.toMarshaller(targetClass, new Predicate<>() {
 			@Override
 			public boolean test(V value) {
@@ -90,7 +89,7 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	default <V> ProtoStreamMarshaller<Optional<V>> toMarshaller(Function<V, T> unwrapper, Function<T, V> wrapper) {
-		return this.toMarshaller((Class<Optional<V>>) (Class<?>) Optional.class, Optional::isEmpty, unwrapper.compose(Optional::get), Functions.constantSupplier(Optional.empty()), wrapper.andThen(Optional::of));
+		return this.toMarshaller((Class<Optional<V>>) (Class<?>) Optional.class, Optional::isEmpty, unwrapper.compose(Optional::get), Supplier.of(Optional.empty()), wrapper.andThen(Optional::of));
 	}
 
 	/**
@@ -103,7 +102,7 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 	 * @param wrapper a function creating a wrapped instance from the scalar value read by this marshaller
 	 * @return a new marshaller
 	 */
-	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, Predicate<V> skipWrite, Function<V, T> unwrapper, Supplier<V> defaultFactory, Function<T, V> wrapper) {
+	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, java.util.function.Predicate<V> skipWrite, Function<V, T> unwrapper, java.util.function.Supplier<V> defaultFactory, Function<T, V> wrapper) {
 		ScalarMarshaller<T> marshaller = this;
 		return new ProtoStreamMarshaller<>() {
 			@Override

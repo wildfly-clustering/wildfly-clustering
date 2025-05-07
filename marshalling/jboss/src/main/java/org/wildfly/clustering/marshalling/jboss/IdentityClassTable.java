@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.marshalling.ClassTable;
-import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
-import org.wildfly.common.function.ExceptionBiConsumer;
 
 /**
  * A {@link ClassTable} based on an {@link IdentityTable}.
@@ -26,9 +24,9 @@ public class IdentityClassTable implements ClassTable {
 	}
 
 	@Override
-	public Writer getClassWriter(Class<?> targetClass) throws IOException {
-		ExceptionBiConsumer<Marshaller, Class<?>, IOException> writer = this.table.findWriter(targetClass);
-		return writer != null ? writer::accept : null;
+	public ClassTable.Writer getClassWriter(Class<?> targetClass) throws IOException {
+		Writable<Class<?>> writer = this.table.findWriter(targetClass);
+		return writer != null ? writer::write : null;
 	}
 
 	@Override

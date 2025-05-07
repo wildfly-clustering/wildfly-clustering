@@ -5,12 +5,11 @@
 
 package org.wildfly.clustering.server.jgroups.dispatcher;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jgroups.JChannel;
 import org.jgroups.Message;
-import org.wildfly.clustering.cache.function.Functions;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.server.AutoCloseableProvider;
@@ -26,13 +25,19 @@ public class ChannelCommandDispatcherFactoryProvider extends AutoCloseableProvid
 	private final JChannel channel;
 	private final ChannelCommandDispatcherFactory factory;
 
-	public ChannelCommandDispatcherFactoryProvider(String clusterName, String memberName) throws Exception {
+	public ChannelCommandDispatcherFactoryProvider(String clusterName, String memberName) {
 		this.channel = JChannelFactory.INSTANCE.apply(memberName);
 		this.accept(this.channel::close);
-		this.channel.connect(clusterName);
-		this.accept(this.channel::disconnect);
-		this.factory = new JChannelCommandDispatcherFactory(this);
-		this.accept(this.factory::close);
+		try {
+			this.channel.connect(clusterName);
+			this.accept(this.channel::disconnect);
+			this.factory = new JChannelCommandDispatcherFactory(this);
+			this.accept(this.factory::close);
+		} catch (RuntimeException | Error e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -56,7 +61,7 @@ public class ChannelCommandDispatcherFactoryProvider extends AutoCloseableProvid
 	}
 
 	@Override
-	public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
-		return Functions.constantFunction(this.marshaller);
+	public java.util.function.Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
+		return Function.of(this.marshaller);
 	}
 }

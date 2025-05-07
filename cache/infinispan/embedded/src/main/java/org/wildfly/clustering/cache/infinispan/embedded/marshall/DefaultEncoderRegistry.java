@@ -18,7 +18,7 @@ import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.dataconversion.Transcoder;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
-import org.wildfly.clustering.cache.function.Predicate;
+import org.wildfly.clustering.function.Predicate;
 
 /**
  * Custom {@link EncoderRegistry} that supports transcoder removal.

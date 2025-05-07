@@ -5,9 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.remote.user;
 
-import static org.wildfly.clustering.cache.function.Functions.constantFunction;
-import static org.wildfly.common.function.Functions.discardingConsumer;
-
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +13,8 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryMutator;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.session.cache.user.MutableUserSessions;
 import org.wildfly.clustering.session.cache.user.UserSessionsFactory;
 import org.wildfly.clustering.session.user.UserSessions;
@@ -45,7 +44,7 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 	@Override
 	public CompletionStage<Map<D, S>> createValueAsync(String id, Void context) {
 		Map<D, S> sessions = new ConcurrentHashMap<>();
-		return this.writeCache.putAsync(new UserSessionsKey(id), sessions).thenApply(constantFunction(sessions));
+		return this.writeCache.putAsync(new UserSessionsKey(id), sessions).thenApply(Function.of(sessions));
 	}
 
 	@Override
@@ -55,6 +54,6 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.writeCache.removeAsync(new UserSessionsKey(id)).thenAccept(discardingConsumer());
+		return this.writeCache.removeAsync(new UserSessionsKey(id)).thenAccept(Consumer.empty());
 	}
 }

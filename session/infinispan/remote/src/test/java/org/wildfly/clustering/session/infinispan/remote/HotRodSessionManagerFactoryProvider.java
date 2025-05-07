@@ -43,7 +43,7 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 	private final RemoteCacheContainer container;
 	private final String deploymentName;
 
-	public HotRodSessionManagerFactoryProvider(HotRodSessionManagerParameters parameters, String memberName) throws Exception {
+	public HotRodSessionManagerFactoryProvider(HotRodSessionManagerParameters parameters, String memberName) {
 		this.parameters = parameters;
 		this.deploymentName = String.format(DEPLOYMENT_NAME_PATTERN, parameters.getSessionAttributeMarshaller(), parameters.getSessionAttributePersistenceStrategy().name());
 

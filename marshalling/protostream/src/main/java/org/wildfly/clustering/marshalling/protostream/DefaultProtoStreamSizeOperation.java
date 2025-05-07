@@ -11,7 +11,6 @@ import java.util.OptionalInt;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractProtoStreamWriter.DefaultProtoStreamWriterContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractProtoStreamWriter.ProtoStreamWriterContext;
-import org.wildfly.common.function.ExceptionBiConsumer;
 
 /**
  * A default ProtoStream size operation.
@@ -45,10 +44,10 @@ public class DefaultProtoStreamSizeOperation extends AbstractProtoStreamOperatio
 	}
 
 	@Override
-	public <T> OptionalInt computeSize(ExceptionBiConsumer<ProtoStreamWriter, T, IOException> operation, T value) {
+	public <T> OptionalInt computeSize(Writable<T> operation, T value) {
 		SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this, this.context);
 		try {
-			operation.accept(writer, value);
+			operation.writeTo(writer, value);
 			return writer.get();
 		} catch (IOException e) {
 			return OptionalInt.empty();

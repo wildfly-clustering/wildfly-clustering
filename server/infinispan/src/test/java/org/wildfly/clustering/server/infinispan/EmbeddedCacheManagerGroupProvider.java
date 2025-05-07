@@ -28,22 +28,28 @@ public class EmbeddedCacheManagerGroupProvider implements CacheContainerGroupPro
 	private final EmbeddedCacheManager manager;
 	private final CacheContainerGroup group;
 
-	public EmbeddedCacheManagerGroupProvider(String clusterName, String memberName) throws Exception {
+	public EmbeddedCacheManagerGroupProvider(String clusterName, String memberName) {
 		this.channel = JChannelFactory.INSTANCE.apply(memberName);
-		this.channel.connect(clusterName);
-		this.channelGroup = new JChannelGroup(this.channel);
-		this.manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(this.channel), clusterName, memberName).apply(CONTAINER_NAME, EmbeddedCacheManagerGroup.class.getClassLoader());
-		this.group = new EmbeddedCacheManagerGroup<>(new ChannelEmbeddedCacheManagerGroupConfiguration() {
-			@Override
-			public Group<org.jgroups.Address, ChannelGroupMember> getGroup() {
-				return EmbeddedCacheManagerGroupProvider.this.channelGroup;
-			}
+		try {
+			this.channel.connect(clusterName);
+			this.channelGroup = new JChannelGroup(this.channel);
+			this.manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(this.channel), clusterName, memberName).apply(CONTAINER_NAME, EmbeddedCacheManagerGroup.class.getClassLoader());
+			this.group = new EmbeddedCacheManagerGroup<>(new ChannelEmbeddedCacheManagerGroupConfiguration() {
+				@Override
+				public Group<org.jgroups.Address, ChannelGroupMember> getGroup() {
+					return EmbeddedCacheManagerGroupProvider.this.channelGroup;
+				}
 
-			@Override
-			public EmbeddedCacheManager getCacheContainer() {
-				return EmbeddedCacheManagerGroupProvider.this.manager;
-			}
-		});
+				@Override
+				public EmbeddedCacheManager getCacheContainer() {
+					return EmbeddedCacheManagerGroupProvider.this.manager;
+				}
+			});
+		} catch (RuntimeException | Error e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

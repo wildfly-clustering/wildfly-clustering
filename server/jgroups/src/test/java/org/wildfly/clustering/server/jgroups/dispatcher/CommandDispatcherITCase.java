@@ -7,11 +7,13 @@ package org.wildfly.clustering.server.jgroups.dispatcher;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.Group;
@@ -19,7 +21,6 @@ import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.jgroups.dispatcher.test.IdentityCommand;
-import org.wildfly.common.function.ExceptionBiFunction;
 
 /**
  * Base integration test for {@link CommandDispatcher} implementations.
@@ -29,14 +30,14 @@ import org.wildfly.common.function.ExceptionBiFunction;
 public abstract class CommandDispatcherITCase<M extends GroupMember> {
 	private static final String CLUSTER_NAME = "cluster";
 
-	private final ExceptionBiFunction<String, String, CommandDispatcherFactoryProvider<M>, Exception> factory;
+	private final BiFunction<String, String, CommandDispatcherFactoryProvider<M>> factory;
 
-	protected CommandDispatcherITCase(ExceptionBiFunction<String, String, CommandDispatcherFactoryProvider<M>, Exception> factory) {
+	protected CommandDispatcherITCase(BiFunction<String, String, CommandDispatcherFactoryProvider<M>> factory) {
 		this.factory = factory;
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void test() throws IOException {
 		try (CommandDispatcherFactoryProvider<M> provider1 = this.factory.apply(CLUSTER_NAME, "member1")) {
 			CommandDispatcherFactory<M> factory1 = provider1.getCommandDispatcherFactory();
 			Group<M> group1 = factory1.getGroup();

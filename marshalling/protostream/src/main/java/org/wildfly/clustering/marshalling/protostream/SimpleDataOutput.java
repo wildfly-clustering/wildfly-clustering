@@ -8,12 +8,11 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.DataOutput;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
-import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
 
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * {@link DataOutput} implementation used to write the unexposed serializable fields of an object.
@@ -116,15 +115,15 @@ public class SimpleDataOutput implements DataOutput {
 	}
 
 	public static class Builder {
-		Consumer<String> stringConsumer = Functions.discardingConsumer();
-		Consumer<Character> charConsumer = Functions.discardingConsumer();
-		Consumer<ByteBuffer> bufferConsumer = Functions.discardingConsumer();
-		Consumer<Boolean> booleanConsumer = Functions.discardingConsumer();
-		Consumer<Byte> byteConsumer = Functions.discardingConsumer();
-		Consumer<Short> shortConsumer = Functions.discardingConsumer();
+		Consumer<String> stringConsumer = Consumer.empty();
+		Consumer<Character> charConsumer = Consumer.empty();
+		Consumer<ByteBuffer> bufferConsumer = Consumer.empty();
+		Consumer<Boolean> booleanConsumer = Consumer.empty();
+		Consumer<Byte> byteConsumer = Consumer.empty();
+		Consumer<Short> shortConsumer = Consumer.empty();
 		IntConsumer intConsumer = DiscardingConsumer.INSTANCE;
 		LongConsumer longConsumer = DiscardingConsumer.INSTANCE;
-		Consumer<Float> floatConsumer = Functions.discardingConsumer();
+		Consumer<Float> floatConsumer = Consumer.empty();
 		DoubleConsumer doubleConsumer = DiscardingConsumer.INSTANCE;
 
 		public Builder with(String[] values) {

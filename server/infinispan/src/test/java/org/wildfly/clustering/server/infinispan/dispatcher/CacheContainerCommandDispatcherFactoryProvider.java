@@ -25,7 +25,7 @@ public class CacheContainerCommandDispatcherFactoryProvider extends AutoCloseabl
 
 	private final CommandDispatcherFactory<CacheContainerGroupMember> factory;
 
-	public CacheContainerCommandDispatcherFactoryProvider(String clusterName, String memberName) throws Exception {
+	public CacheContainerCommandDispatcherFactoryProvider(String clusterName, String memberName) {
 		ChannelCommandDispatcherFactoryProvider provider = new ChannelCommandDispatcherFactoryProvider(clusterName, memberName);
 		this.accept(provider::close);
 		EmbeddedCacheManager manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(provider.getChannel()), clusterName, memberName).apply(CONTAINER_NAME, EmbeddedCacheManagerCommandDispatcherFactory.class.getClassLoader());

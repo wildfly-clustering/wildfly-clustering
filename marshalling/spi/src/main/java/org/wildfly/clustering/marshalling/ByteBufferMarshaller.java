@@ -10,11 +10,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.OptionalInt;
-import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.context.Context;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Marshals an object to and from a {@link ByteBuffer}.
@@ -82,7 +81,7 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 	 * Returns a provider of context to use during read/write operations.
 	 * @return a context provider
 	 */
-	default Supplier<Context> getContextProvider() {
-		return Functions.constantSupplier(Context.EMPTY);
+	default java.util.function.Supplier<Context> getContextProvider() {
+		return Supplier.of(Context.EMPTY);
 	}
 }

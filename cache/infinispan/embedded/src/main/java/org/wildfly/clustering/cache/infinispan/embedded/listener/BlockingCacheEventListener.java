@@ -6,13 +6,13 @@
 package org.wildfly.clustering.cache.infinispan.embedded.listener;
 
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import org.infinispan.Cache;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.util.concurrent.BlockingManager;
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * Generic non-blocking event listener that delegates to a blocking event consumer.
@@ -25,15 +25,15 @@ public class BlockingCacheEventListener<K, V> extends NonBlockingCacheEventListe
 	private final BlockingManager blocking;
 	private final String name;
 
-	public BlockingCacheEventListener(Cache<K, V> cache, Consumer<K> consumer) {
-		this(cache, (key, value) -> consumer.accept(key), consumer.getClass());
+	public BlockingCacheEventListener(Cache<K, V> cache, java.util.function.Consumer<K> consumer) {
+		this(cache, BiConsumer.of(consumer, Consumer.empty()), consumer.getClass());
 	}
 
-	public BlockingCacheEventListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
+	public BlockingCacheEventListener(Cache<K, V> cache, java.util.function.BiConsumer<K, V> consumer) {
 		this(cache, consumer, consumer.getClass());
 	}
 
-	private BlockingCacheEventListener(Cache<K, V> cache, BiConsumer<K, V> consumer, Class<?> consumerClass) {
+	private BlockingCacheEventListener(Cache<K, V> cache, java.util.function.BiConsumer<K, V> consumer, Class<?> consumerClass) {
 		super(consumer);
 		this.blocking = GlobalComponentRegistry.componentOf(cache.getCacheManager(), BlockingManager.class);
 		this.name = consumerClass.getName();

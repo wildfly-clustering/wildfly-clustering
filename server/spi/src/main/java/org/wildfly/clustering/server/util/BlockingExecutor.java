@@ -6,27 +6,17 @@
 package org.wildfly.clustering.server.util;
 
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.Supplier;
-
-import org.wildfly.common.function.ExceptionRunnable;
-import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Allows safe invocation of tasks that require resources not otherwise available after {@link #close()} to block a service from stopping.
  * @author Paul Ferraro
  */
 public interface BlockingExecutor extends Executor, AutoCloseable {
-
-	/**
-	 * Executes the specified runner, but only if the executor was not already closed.
-	 * @param <E> the exception type
-	 * @param runner a runnable task
-	 * @throws E if execution fails
-	 */
-	<E extends Exception> void execute(ExceptionRunnable<E> runner) throws E;
 
 	/**
 	 * Executes the specified task, but only if the service was not already closed.
@@ -42,10 +32,10 @@ public interface BlockingExecutor extends Executor, AutoCloseable {
 	 * If service is already closed, the task is not run.
 	 * If executed, the specified task must return a non-null value, to be distinguishable from a non-execution.
 	 * @param executeTask a task to execute
+	 * @throws Exception if the specified task fails to execute
 	 * @return an optional value that is present only if the specified task was run.
-	 * @throws E if the task execution failed
 	 */
-	<R, E extends Exception> Optional<R> execute(ExceptionSupplier<R, E> executeTask) throws E;
+	<R> Optional<R> execute(Callable<R> executeTask) throws Exception;
 
 	@Override
 	void close();
@@ -74,18 +64,6 @@ public interface BlockingExecutor extends Executor, AutoCloseable {
 			}
 
 			@Override
-			public <E extends Exception> void execute(ExceptionRunnable<E> executeTask) throws E {
-				long stamp = this.lock.tryReadLock();
-				if (stamp != 0L) {
-					try {
-						executeTask.run();
-					} finally {
-						this.lock.unlock(stamp);
-					}
-				}
-			}
-
-			@Override
 			public <R> Optional<R> execute(Supplier<R> executeTask) {
 				long stamp = this.lock.tryReadLock();
 				if (stamp != 0L) {
@@ -99,11 +77,11 @@ public interface BlockingExecutor extends Executor, AutoCloseable {
 			}
 
 			@Override
-			public <R, E extends Exception> Optional<R> execute(ExceptionSupplier<R, E> executeTask) throws E {
+			public <R> Optional<R> execute(Callable<R> executeTask) throws Exception {
 				long stamp = this.lock.tryReadLock();
 				if (stamp != 0L) {
 					try {
-						return Optional.of(executeTask.get());
+						return Optional.of(executeTask.call());
 					} finally {
 						this.lock.unlock(stamp);
 					}

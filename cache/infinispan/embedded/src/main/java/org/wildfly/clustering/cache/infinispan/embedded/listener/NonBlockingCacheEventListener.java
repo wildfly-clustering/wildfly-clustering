@@ -7,11 +7,11 @@ package org.wildfly.clustering.cache.infinispan.embedded.listener;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * Generic non-blocking event listener that delegates to a non-blocking event consumer.
@@ -19,15 +19,15 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
  * @param <K> cache key type
  * @param <V> cache value type
  */
-public class NonBlockingCacheEventListener<K, V> implements Function<CacheEntryEvent<K, V>, CompletionStage<Void>>, Consumer<CacheEntryEvent<K, V>> {
+public class NonBlockingCacheEventListener<K, V> implements Function<CacheEntryEvent<K, V>, CompletionStage<Void>>, java.util.function.Consumer<CacheEntryEvent<K, V>> {
 
-	private final BiConsumer<K, V> consumer;
+	private final java.util.function.BiConsumer<K, V> consumer;
 
-	public NonBlockingCacheEventListener(Consumer<K> consumer) {
-		this((key, value) -> consumer.accept(key));
+	public NonBlockingCacheEventListener(java.util.function.Consumer<K> consumer) {
+		this(BiConsumer.of(consumer, Consumer.empty()));
 	}
 
-	public NonBlockingCacheEventListener(BiConsumer<K, V> consumer) {
+	public NonBlockingCacheEventListener(java.util.function.BiConsumer<K, V> consumer) {
 		this.consumer = consumer;
 	}
 

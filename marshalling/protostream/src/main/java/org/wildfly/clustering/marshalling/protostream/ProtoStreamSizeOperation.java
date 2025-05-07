@@ -10,7 +10,6 @@ import java.util.OptionalInt;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.infinispan.protostream.impl.TagWriterImpl;
-import org.wildfly.common.function.ExceptionBiConsumer;
 
 /**
  * A ProtoStream size operation.
@@ -25,7 +24,7 @@ public interface ProtoStreamSizeOperation extends ProtoStreamOperation {
 	 * @param value the object to be sized
 	 * @return the computed size
 	 */
-	<T> OptionalInt computeSize(ExceptionBiConsumer<ProtoStreamWriter, T, IOException> operation, T value);
+	<T> OptionalInt computeSize(Writable<T> operation, T value);
 
 	/**
 	 * Computes the marshalled size of the protobuf tag containing the specified field index and wire type.

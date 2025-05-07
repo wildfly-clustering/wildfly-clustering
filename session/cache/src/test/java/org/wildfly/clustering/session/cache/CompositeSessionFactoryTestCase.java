@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.CacheProperties;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
@@ -21,7 +22,6 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
-import org.wildfly.common.function.Functions;
 
 /**
  * Unit test for {@link CompositeSessionFactory}.
@@ -34,7 +34,7 @@ public class CompositeSessionFactoryTestCase {
 	private final CacheProperties properties = mock(CacheProperties.class);
 	private final Object transientContext = new Object();
 
-	private final SessionFactory<Object, Contextual<Object>, Object, Object> factory = new CompositeSessionFactory<>(this.metaDataFactory, this.attributesFactory, this.properties, Functions.constantSupplier(this.transientContext));
+	private final SessionFactory<Object, Contextual<Object>, Object, Object> factory = new CompositeSessionFactory<>(this.metaDataFactory, this.attributesFactory, this.properties, Supplier.of(this.transientContext));
 
 	@Test
 	public void createValue() {

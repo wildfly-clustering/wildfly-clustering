@@ -5,10 +5,8 @@
 
 package org.wildfly.clustering.server.infinispan.dispatcher;
 
-import java.util.function.Function;
-
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.cache.function.Functions;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.LocalEmbeddedCacheManagerGroupConfiguration;
 import org.wildfly.clustering.server.local.LocalGroupMember;
@@ -25,7 +23,7 @@ public interface LocalEmbeddedCacheManagerCommandDispatcherFactoryConfiguration 
 	}
 
 	@Override
-	default Function<Address, String> getAddressUnwrapper() {
-		return Functions.constantFunction(this.getCacheContainer().getCacheManagerConfiguration().transport().nodeName());
+	default java.util.function.Function<Address, String> getAddressUnwrapper() {
+		return Function.of(this.getCacheContainer().getCacheManagerConfiguration().transport().nodeName());
 	}
 }
