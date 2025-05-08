@@ -14,7 +14,7 @@ import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.remoting.transport.Address;
 import org.junit.jupiter.api.Test;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * @author Paul Ferraro
@@ -26,7 +26,7 @@ public class ConsistentHashKeyDistributionTestCase {
 		KeyPartitioner partitioner = mock(KeyPartitioner.class);
 		DistributionManager dist = mock(DistributionManager.class);
 		ConsistentHash hash = mock(ConsistentHash.class);
-		KeyDistribution distribution = new ConsistentHashKeyDistribution(dist, Functions.constantSupplier(hash));
+		KeyDistribution distribution = new ConsistentHashKeyDistribution(dist, Supplier.of(hash));
 
 		Address address = mock(Address.class);
 		Object key = new Object();

@@ -6,8 +6,8 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.common.function.Functions;
 
 /**
  * An abstract cache entry scheduler.
@@ -20,6 +20,6 @@ import org.wildfly.common.function.Functions;
 public abstract class AbstractCacheEntryScheduler<I, K extends Key<I>, V, M> extends Scheduler.ReferenceScheduler<I, M> implements CacheEntryScheduler<I, K, V, M> {
 
 	protected AbstractCacheEntryScheduler(Scheduler<I, M> scheduler) {
-		super(Functions.constantSupplier(scheduler));
+		super(Supplier.of(scheduler));
 	}
 }

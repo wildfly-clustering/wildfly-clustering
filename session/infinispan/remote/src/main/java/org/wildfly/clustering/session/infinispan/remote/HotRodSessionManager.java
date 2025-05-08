@@ -7,10 +7,10 @@ package org.wildfly.clustering.session.infinispan.remote;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -18,7 +18,6 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
-import org.wildfly.common.function.Functions;
 
 /**
  * Generic HotRod-based session manager implementation - independent of cache mapping strategy.
@@ -29,14 +28,14 @@ import org.wildfly.common.function.Functions;
  * @author Paul Ferraro
  */
 public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
-	private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
-	private final Consumer<ImmutableSession> expirationListener;
+	private final Registrar<java.util.function.Consumer<ImmutableSession>> expirationListenerRegistrar;
+	private final java.util.function.Consumer<ImmutableSession> expirationListener;
 	private final Supplier<Batch> batchFactory;
 
 	private AtomicReference<Registration> expirationListenerRegistration = new AtomicReference<>();
 
 	public HotRodSessionManager(Supplier<SessionManager<SC>> manager, SessionManagerConfiguration<C> configuration, SessionFactory<C, MV, AV, SC> factory, HotRodSessionManagerConfiguration hotrod) {
-		super(manager, configuration, hotrod, factory, Functions.discardingConsumer());
+		super(manager, configuration, hotrod, factory, Consumer.empty());
 		this.expirationListenerRegistrar = hotrod.getExpirationListenerRegistrar();
 		this.expirationListener = configuration.getExpirationListener();
 		this.batchFactory = hotrod.getBatchFactory();

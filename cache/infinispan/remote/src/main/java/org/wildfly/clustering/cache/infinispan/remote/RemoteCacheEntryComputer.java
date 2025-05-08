@@ -9,11 +9,11 @@ import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Mutator for a cache entry using a compute function.
@@ -26,13 +26,13 @@ public class RemoteCacheEntryComputer<K, V> implements CacheEntryMutator {
 	private final RemoteCache<K, V> cache;
 	private final K key;
 	private final BiFunction<Object, V, V> function;
-	private final Supplier<Duration> maxIdle;
+	private final java.util.function.Supplier<Duration> maxIdle;
 
 	public RemoteCacheEntryComputer(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function) {
-		this(cache, key, function, Functions.constantSupplier(Duration.ZERO));
+		this(cache, key, function, Supplier.of(Duration.ZERO));
 	}
 
-	public RemoteCacheEntryComputer(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function, Supplier<Duration> maxIdle) {
+	public RemoteCacheEntryComputer(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function, java.util.function.Supplier<Duration> maxIdle) {
 		this.cache = cache;
 		this.key = key;
 		this.function = function;
@@ -47,6 +47,6 @@ public class RemoteCacheEntryComputer<K, V> implements CacheEntryMutator {
 		if (nanos > 0) {
 			seconds += 1;
 		}
-		return this.cache.computeAsync(this.key, this.function, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS).thenAccept(Functions.discardingConsumer());
+		return this.cache.computeAsync(this.key, this.function, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS).thenAccept(Consumer.empty());
 	}
 }

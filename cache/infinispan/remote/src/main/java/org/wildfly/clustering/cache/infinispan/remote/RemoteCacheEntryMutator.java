@@ -8,11 +8,11 @@ package org.wildfly.clustering.cache.infinispan.remote;
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Mutates a given cache entry.
@@ -25,13 +25,13 @@ public class RemoteCacheEntryMutator<K, V> implements CacheEntryMutator {
 	private final RemoteCache<K, V> cache;
 	private final K id;
 	private final V value;
-	private final Supplier<Duration> maxIdle;
+	private final java.util.function.Supplier<Duration> maxIdle;
 
 	public RemoteCacheEntryMutator(RemoteCache<K, V> cache, K id, V value) {
-		this(cache, id, value, Functions.constantSupplier(Duration.ZERO));
+		this(cache, id, value, Supplier.of(Duration.ZERO));
 	}
 
-	public RemoteCacheEntryMutator(RemoteCache<K, V> cache, K id, V value, Supplier<Duration> maxIdle) {
+	public RemoteCacheEntryMutator(RemoteCache<K, V> cache, K id, V value, java.util.function.Supplier<Duration> maxIdle) {
 		this.cache = cache;
 		this.id = id;
 		this.value = value;
@@ -46,6 +46,6 @@ public class RemoteCacheEntryMutator<K, V> implements CacheEntryMutator {
 		if (nanos > 0) {
 			seconds += 1;
 		}
-		return this.cache.putAsync(this.id, this.value, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS).thenAccept(Functions.discardingConsumer());
+		return this.cache.putAsync(this.id, this.value, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS).thenAccept(Consumer.empty());
 	}
 }

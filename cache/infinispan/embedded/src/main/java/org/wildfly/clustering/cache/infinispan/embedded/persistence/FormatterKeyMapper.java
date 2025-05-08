@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.persistence;
 
-import static org.wildfly.common.Assert.checkNotNullParam;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.IdentityHashMap;
@@ -73,7 +71,6 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 
 	@Override
 	public String getStringMapping(Object key) {
-		checkNotNullParam("key", key);
 		Integer index = this.indexes.get(key.getClass());
 		if (index == null) {
 			throw new IllegalArgumentException(key.getClass().getName());

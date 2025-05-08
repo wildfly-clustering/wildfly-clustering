@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.cache.CacheEntryMutator;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * Mutates a given cache entry.
@@ -44,7 +44,7 @@ public class EmbeddedCacheEntryMutator<K, V> implements CacheEntryMutator {
 		// We only ever have to perform a replace once within a batch
 		if ((this.mutated == null) || this.mutated.compareAndSet(false, true)) {
 			// Use FAIL_SILENTLY to prevent mutation from failing locally due to remote exceptions
-			return this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).putAsync(this.key, this.value).thenAccept(Functions.discardingConsumer());
+			return this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).putAsync(this.key, this.value).thenAccept(Consumer.empty());
 		}
 		return CompletableFuture.completedFuture(null);
 	}
