@@ -40,6 +40,22 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		public void accept(Object value) {
 		}
 	};
+	Consumer<AutoCloseable> CLOSE = new Consumer<>() {
+		private final System.Logger logger = System.getLogger(this.getClass().getPackageName());
+
+		@Override
+		public void accept(AutoCloseable object) {
+			if (object != null) {
+				try {
+					object.close();
+				} catch (RuntimeException e) {
+					throw e;
+				} catch (Exception e) {
+					this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+				}
+			}
+		}
+	};
 
 	/**
 	 * Returns a consumer that performs no action.
@@ -49,6 +65,16 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	@SuppressWarnings("unchecked")
 	static <V> Consumer<V> empty() {
 		return (Consumer<V>) EMPTY;
+	}
+
+	/**
+	 * Returns a consumer that performs no action.
+	 * @param <V> the consumed type
+	 * @return an empty consumer
+	 */
+	@SuppressWarnings("unchecked")
+	static <V extends AutoCloseable> Consumer<V> close() {
+		return (Consumer<V>) CLOSE;
 	}
 
 	/**
