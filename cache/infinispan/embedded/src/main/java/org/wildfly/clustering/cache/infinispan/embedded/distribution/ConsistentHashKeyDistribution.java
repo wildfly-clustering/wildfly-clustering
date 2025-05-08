@@ -6,13 +6,12 @@
 package org.wildfly.clustering.cache.infinispan.embedded.distribution;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Key distribution functions for a specific {@link ConsistentHash}.
@@ -28,7 +27,7 @@ public class ConsistentHashKeyDistribution implements KeyDistribution {
 	}
 
 	ConsistentHashKeyDistribution(Cache<?, ?> cache, ConsistentHash hash) {
-		this(cache, Functions.constantSupplier(hash));
+		this(cache, Supplier.of(hash));
 	}
 
 	private ConsistentHashKeyDistribution(Cache<?, ?> cache, Supplier<ConsistentHash> hash) {

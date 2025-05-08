@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.cache.CacheEntryMutator;
-import org.wildfly.common.function.Functions;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * Mutator for a cache entry using a compute function.
@@ -34,6 +34,6 @@ public class EmbeddedCacheEntryComputer<K, V> implements CacheEntryMutator {
 	@Override
 	public CompletionStage<Void> mutateAsync() {
 		// Use FAIL_SILENTLY to prevent mutation from failing locally due to remote exceptions
-		return this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).computeAsync(this.key, this.function).thenAccept(Functions.discardingConsumer());
+		return this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).computeAsync(this.key, this.function).thenAccept(Consumer.empty());
 	}
 }
