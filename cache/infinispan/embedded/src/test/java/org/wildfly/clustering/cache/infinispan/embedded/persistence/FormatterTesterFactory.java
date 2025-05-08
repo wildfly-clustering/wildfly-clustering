@@ -17,6 +17,7 @@ import org.wildfly.clustering.marshalling.TesterFactory;
  * @author Paul Ferraro
  */
 public interface FormatterTesterFactory extends TesterFactory {
+	System.Logger LOGGER = System.getLogger(FormatterTesterFactory.class.getName());
 
 	@Override
 	default <T> Tester<T> createTester(BiConsumer<T, T> assertion) {
@@ -28,7 +29,7 @@ public interface FormatterTesterFactory extends TesterFactory {
 				assertThat(mapper.isSupportedType(keyClass)).as(key::toString).isTrue();
 				String string = mapper.getStringMapping(key);
 
-				System.out.println(String.format("%s\t%s\t%s\t%s", mapper.getClass().getSimpleName(), keyClass.getCanonicalName(), key, string));
+				LOGGER.log(System.Logger.Level.DEBUG, "{0}\t{1}\t{2}\t{3}", mapper.getClass().getSimpleName(), keyClass.getCanonicalName(), key, string);
 
 				@SuppressWarnings("unchecked")
 				T remappedKey = (T) mapper.getKeyMapping(string);

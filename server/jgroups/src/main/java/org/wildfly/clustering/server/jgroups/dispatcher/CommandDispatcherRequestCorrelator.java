@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.function.Predicate;
 
-import org.jboss.logging.Logger;
 import org.jgroups.BytesMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -23,7 +22,7 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
  * @author Paul Ferraro
  */
 public class CommandDispatcherRequestCorrelator extends RequestCorrelator {
-	private static final Logger LOGGER = Logger.getLogger(CommandDispatcherRequestCorrelator.class);
+	private static final System.Logger LOGGER = System.getLogger(CommandDispatcherRequestCorrelator.class.getName());
 
 	private final ByteBufferMarshaller marshaller;
 	private final Predicate<Message> unknownForkPredicate;
@@ -52,7 +51,7 @@ public class CommandDispatcherRequestCorrelator extends RequestCorrelator {
 						Object response = this.readPayload(message);
 						request.receiveResponse(response, message.getSrc(), exception);
 					} catch (IOException e) {
-						LOGGER.warn(e.getLocalizedMessage(), e);
+						LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 						request.receiveResponse(e, message.getSrc(), true);
 					}
 				}
@@ -83,7 +82,7 @@ public class CommandDispatcherRequestCorrelator extends RequestCorrelator {
 			ByteBuffer buffer = this.marshaller.write(reply);
 			response.setArray(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset());
 		} catch (IOException e) {
-			LOGGER.warn(e.getLocalizedMessage(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			response.setObject(e);
 		}
 		this.sendResponse(response, requestId, exception);

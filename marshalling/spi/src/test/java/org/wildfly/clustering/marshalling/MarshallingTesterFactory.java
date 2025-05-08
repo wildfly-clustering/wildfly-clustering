@@ -18,6 +18,7 @@ import java.util.function.BiConsumer;
  * @author Paul Ferraro
  */
 public interface MarshallingTesterFactory extends TesterFactory {
+	System.Logger LOGGER = System.getLogger(MarshallingTesterFactory.class.getName());
 
 	default <T> Tester<T> createTester(BiConsumer<T, T> assertion) {
 		ByteBufferMarshaller marshaller = this.getMarshaller();
@@ -39,7 +40,7 @@ public interface MarshallingTesterFactory extends TesterFactory {
 					if (subject != null) {
 						Class<?> subjectClass = (subject instanceof Enum) ? ((Enum<?>) subject).getDeclaringClass() : subject.getClass();
 						Object subjectValue = (subject instanceof Character) ? (int) (Character) subject : subject;
-						System.out.println(String.format("%s\t%s\t%s\t%d", marshaller, subjectClass.getCanonicalName(), subjectValue, bufferSize));
+						LOGGER.log(System.Logger.Level.DEBUG, "{0}\t{1}\t{2}\t{3}", marshaller, subjectClass.getCanonicalName(), subjectValue, bufferSize);
 					}
 
 					@SuppressWarnings("unchecked")

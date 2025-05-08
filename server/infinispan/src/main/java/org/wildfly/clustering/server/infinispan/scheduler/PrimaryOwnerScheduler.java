@@ -17,7 +17,6 @@ import java.util.function.Function;
 import io.github.resilience4j.core.functions.CheckedFunction;
 import io.github.resilience4j.retry.Retry;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.util.MapEntry;
@@ -29,7 +28,7 @@ import org.wildfly.clustering.server.util.MapEntry;
  * @author Paul Ferraro
  */
 public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
-	private static final Logger LOGGER = Logger.getLogger(PrimaryOwnerScheduler.class);
+	private static final System.Logger LOGGER = System.getLogger(PrimaryOwnerScheduler.class.getName());
 
 	private final String name;
 	private final CommandDispatcher<CacheContainerGroupMember, Scheduler<I, M>> dispatcher;
@@ -69,7 +68,7 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 		} catch (CancellationException e) {
 			// Ignore
 		} catch (Throwable e) {
-			LOGGER.warn(id.toString(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -80,7 +79,7 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 		} catch (CancellationException e) {
 			// Ignore
 		} catch (Throwable e) {
-			LOGGER.warn(id.toString(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -91,7 +90,7 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 		} catch (CancellationException e) {
 			// Ignore
 		} catch (Throwable e) {
-			LOGGER.warn(id.toString(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -102,14 +101,14 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 		} catch (CancellationException e) {
 			return false;
 		} catch (Throwable e) {
-			LOGGER.warn(id.toString(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			return false;
 		}
 	}
 
 	@Override
 	public void close() {
-		LOGGER.tracef("Closing command dispatcher for %s primary-owner scheduler", this.name);
+		LOGGER.log(System.Logger.Level.DEBUG, "Closing command dispatcher for {0} primary-owner scheduler", this.name);
 		this.dispatcher.close();
 		this.dispatcher.getContext().close();
 	}
@@ -129,7 +128,7 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 		public CompletionStage<R> apply(T value) throws IOException {
 			PrimaryOwnerCommand<I, M, R> command = this.commandFactory.apply(value);
 			CacheContainerGroupMember primaryOwner = this.affinity.apply(command.getId());
-			LOGGER.tracef("Executing command %s on %s", command, primaryOwner);
+			LOGGER.log(System.Logger.Level.DEBUG, "Executing command %s on %s", command, primaryOwner);
 			// This should only go remote following a failover
 			return this.dispatcher.dispatchToMember(command, primaryOwner);
 		}

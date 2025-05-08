@@ -45,6 +45,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	private static final String DEPLOYMENT_CONTEXT = "deployment";
 	private static final Supplier<AtomicReference<String>> SESSION_CONTEXT_FACTORY = AtomicReference::new;
 
+	private final System.Logger logger = System.getLogger(this.getClass().getName());
 	private final BiFunction<P, String, SessionManagerFactoryProvider<String>> factory;
 
 	protected SessionManagerITCase(BiFunction<P, String, SessionManagerFactoryProvider<String>> factory) {
@@ -220,7 +221,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 								Instant start = Instant.now();
 								ImmutableSession expiredSession = expiredSessions.poll(expirationDuration.getSeconds(), TimeUnit.SECONDS);
 								assertThat(expiredSession).as("No expiration event received within %s seconds", expirationDuration.getSeconds()).isNotNull();
-								System.out.println(String.format("Received expiration event for %s after %s", expiredSession.getId(), Duration.between(start, Instant.now())));
+								this.logger.log(System.Logger.Level.INFO, "Received expiration event for {0} after {1}", expiredSession.getId(), Duration.between(start, Instant.now()));
 								assertThat(sessionId).isEqualTo(expiredSession.getId());
 								assertThat(expiredSession.isValid()).isFalse();
 								assertThat(expiredSession.getMetaData().isNew()).isFalse();

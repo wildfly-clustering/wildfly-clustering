@@ -15,7 +15,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
@@ -48,7 +47,7 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
  * @author Paul Ferraro
  */
 public class FineSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
-	private static final Logger LOGGER = Logger.getLogger(FineSessionAttributesFactory.class);
+	private static final System.Logger LOGGER = System.getLogger(FineSessionAttributesFactory.class.getName());
 
 	private final Cache<SessionAttributesKey, Map<String, V>> cache;
 	private final Cache<SessionAttributesKey, Map<String, V>> writeCache;
@@ -102,7 +101,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	@Override
 	public CompletionStage<Map<String, Object>> findValueAsync(String id) {
 		return this.getValueAsync(id).exceptionally(e -> {
-			LOGGER.warn(e.getLocalizedMessage(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			this.removeAsync(id);
 			return null;
 		});
@@ -173,7 +172,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 			try (SessionAttributeActivationNotifier notifier = this.detachedNotifierFactory.apply(id)) {
 				notification.accept(notifier, this.marshaller.read(entry.getValue()));
 			} catch (IOException e) {
-				LOGGER.warn(entry.getKey(), e);
+				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			}
 		}
 	}

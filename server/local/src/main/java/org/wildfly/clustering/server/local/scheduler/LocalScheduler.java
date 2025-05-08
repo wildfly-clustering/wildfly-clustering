@@ -19,7 +19,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.server.util.Reference;
 
@@ -29,7 +28,7 @@ import org.wildfly.clustering.server.util.Reference;
  * @author Paul Ferraro
  */
 public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
-	private static final Logger LOGGER = Logger.getLogger(LocalScheduler.class);
+	private static final System.Logger LOGGER = System.getLogger(LocalScheduler.class.getName());
 
 	private final String name;
 	private final ScheduledExecutorService executor;
@@ -71,7 +70,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
 	@Override
 	public void schedule(T id, Instant instant) {
-		LOGGER.tracef("Scheduling %s on local %s scheduler for %s", id, this.name, instant);
+		LOGGER.log(System.Logger.Level.TRACE, "Scheduling {1} on local {0} scheduler for {2}", this.name, id, instant);
 		this.entries.add(id, instant);
 		// Reschedule next task if this item is now the earliest task
 		// This can only be the case if the ScheduledEntries is sorted
@@ -84,7 +83,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
 	@Override
 	public void cancel(T id) {
-		LOGGER.tracef("Canceling %s on local %s scheduler", id, this.name);
+		LOGGER.log(System.Logger.Level.TRACE, "Canceling {1} on local {0} scheduler", this.name, id);
 		// Cancel scheduled task if this item was currently scheduled
 		if (this.entries.isSorted()) {
 			this.cancelIfPresent(id);
@@ -103,17 +102,17 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
 	@Override
 	public void close() {
-		LOGGER.debugf("Shutting down local %s scheduler", this.name);
+		LOGGER.log(System.Logger.Level.DEBUG, "Shutting down local {0} scheduler", this.name);
 		this.executor.shutdown();
 		if (!this.closeTimeout.isNegative() && !this.closeTimeout.isZero()) {
 			try {
-				LOGGER.debugf("Waiting for local %s scheduler tasks to complete", this.name);
+				LOGGER.log(System.Logger.Level.DEBUG, "Waiting for local {0} scheduler tasks to complete", this.name);
 				this.executor.awaitTermination(this.closeTimeout.toMillis(), TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
 		}
-		LOGGER.debugf("Local %s scheduler shutdown complete", this.name);
+		LOGGER.log(System.Logger.Level.DEBUG, "Local {0} scheduler shutdown complete", this.name);
 	}
 
 	@Override
@@ -126,7 +125,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 			// If this is a future entry, break out of loop
 			if (entry.getValue().isAfter(Instant.now())) break;
 			T key = entry.getKey();
-			LOGGER.tracef("Executing task for %s on local %s scheduler", key, this.name);
+			LOGGER.log(System.Logger.Level.TRACE, "Executing task for {1} on local {0} scheduler", this.name, key);
 			// Remove only if task is successful
 			if (this.task.test(key)) {
 				entries.remove();

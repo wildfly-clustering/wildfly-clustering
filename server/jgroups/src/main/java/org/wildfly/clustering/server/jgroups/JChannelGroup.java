@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.MergeView;
@@ -28,7 +27,7 @@ import org.wildfly.clustering.server.local.listener.LocalListenerRegistrar;
  * @author Paul Ferraro
  */
 public class JChannelGroup implements ChannelGroup, Receiver {
-	private static final Logger LOGGER = Logger.getLogger(JChannelGroup.class);
+	private static final System.Logger LOGGER = System.getLogger(JChannelGroup.class.getName());
 
 	private final String name;
 	private final ChannelGroupMemberFactory memberFactory = JChannelGroupMember::new;
@@ -96,7 +95,7 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 				}
 			}
 		} catch (Throwable e) {
-			LOGGER.error(e.getLocalizedMessage(), e);
+			LOGGER.log(System.Logger.Level.ERROR, e.getLocalizedMessage(), e);
 		}
 	}
 
