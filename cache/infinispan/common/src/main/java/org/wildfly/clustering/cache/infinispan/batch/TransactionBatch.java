@@ -16,7 +16,6 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 
@@ -51,7 +50,7 @@ public interface TransactionBatch extends Batch, SuspendedBatch {
 	 * @return a new transaction batcher
 	 */
 	static <E extends RuntimeException> Factory factory(String name, TransactionManager tm, Function<Throwable, E> exceptionTransformer) {
-		Logger logger = Logger.getLogger(TransactionBatch.class, name);
+		System.Logger logger = System.getLogger(String.join(".", TransactionBatch.class.getName(), name));
 		Synchronization synchronization = new Synchronization() {
 			@Override
 			public void beforeCompletion() {

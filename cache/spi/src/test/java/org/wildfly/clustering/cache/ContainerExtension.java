@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Function;
 
-import org.jboss.logging.Logger;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -22,7 +21,7 @@ import org.testcontainers.lifecycle.Startable;
  * @author Paul Ferraro
  */
 public class ContainerExtension<C extends Container<C> & Startable> implements AfterAllCallback, BeforeAllCallback, ContainerProvider<C> {
-	protected static final Logger LOGGER = Logger.getLogger(ContainerExtension.class);
+	protected static final System.Logger LOGGER = System.getLogger(ContainerExtension.class.getName());
 
 	private final Function<ExtensionContext, C> factory;
 	private C container;
@@ -39,19 +38,19 @@ public class ContainerExtension<C extends Container<C> & Startable> implements A
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
 		this.container = this.factory.apply(context);
-		LOGGER.infof("Starting %s", this.container.getDockerImageName());
+		LOGGER.log(System.Logger.Level.INFO, "Starting {0}", this.container.getDockerImageName());
 		Instant start = Instant.now();
 		this.container.start();
-		LOGGER.infof("Started %s in %s", this.container.getDockerImageName(), Duration.between(start, Instant.now()));
+		LOGGER.log(System.Logger.Level.INFO, "Started {0} in {1}", this.container.getDockerImageName(), Duration.between(start, Instant.now()));
 	}
 
 	@Override
 	public void afterAll(ExtensionContext context) throws Exception {
 		if (this.container != null) {
-			LOGGER.infof("Starting %s", this.container.getDockerImageName());
+			LOGGER.log(System.Logger.Level.INFO, "Stopping {0}", this.container.getDockerImageName());
 			Instant start = Instant.now();
 			this.container.stop();
-			LOGGER.infof("Stopped %s in %s", this.container.getDockerImageName(), Duration.between(start, Instant.now()));
+			LOGGER.log(System.Logger.Level.INFO, "Stopped {0} in {1}", this.container.getDockerImageName(), Duration.between(start, Instant.now()));
 		}
 	}
 }

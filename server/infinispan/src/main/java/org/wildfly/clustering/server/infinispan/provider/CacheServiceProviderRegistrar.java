@@ -34,7 +34,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
@@ -54,7 +53,7 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
  */
 @Listener(observation = Observation.POST)
 public class CacheServiceProviderRegistrar<T> implements CacheContainerServiceProviderRegistrar<T>, AutoCloseable {
-	private static final Logger LOGGER = Logger.getLogger(CacheServiceProviderRegistrar.class);
+	private static final System.Logger LOGGER = System.getLogger(CacheServiceProviderRegistrar.class.getName());
 
 	private final Supplier<Batch> batchFactory;
 	private final ConcurrentMap<T, Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
@@ -234,7 +233,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 						try {
 							listener.providersChanged(members);
 						} catch (Throwable e) {
-							LOGGER.warn(e.getLocalizedMessage(), e);
+							LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 						}
 					});
 				} catch (RejectedExecutionException e) {

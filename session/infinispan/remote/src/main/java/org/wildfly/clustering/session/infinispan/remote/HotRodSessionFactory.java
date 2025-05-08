@@ -18,7 +18,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
 import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.server.Registrar;
@@ -47,7 +46,7 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreation
  */
 @ClientListener
 public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC, SessionMetaDataEntry<SC>, AV, SC> implements Registrar<Consumer<ImmutableSession>> {
-	private static final Logger LOGGER = Logger.getLogger(HotRodSessionFactory.class);
+	private static final System.Logger LOGGER = System.getLogger(HotRodSessionFactory.class.getName());
 
 	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache;
 	private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory;
@@ -104,7 +103,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 						ImmutableSessionMetaData metaData = metaDataFactory.createImmutableSessionMetaData(id, new DefaultSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData));
 						Map<String, Object> attributes = attributesFactory.createImmutableSessionAttributes(id, attributesValue);
 						ImmutableSession session = HotRodSessionFactory.this.createImmutableSession(id, metaData, attributes);
-						LOGGER.tracef("Session %s has expired.", id);
+						LOGGER.log(System.Logger.Level.TRACE, "Session {0} has expired.", id);
 						for (Consumer<ImmutableSession> listener : listeners) {
 							listener.accept(session);
 						}

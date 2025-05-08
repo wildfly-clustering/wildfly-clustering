@@ -37,7 +37,6 @@ import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.concurrent.BlockingManager;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.KeyDistribution;
 
 /**
@@ -58,7 +57,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 	private static final BiFunction<Cache<?, ?>, ConsistentHash, KeyDistribution> KEY_DISTRIBUTION_FACTORY = KeyDistribution::forConsistentHash;
 
 	static final int DEFAULT_QUEUE_SIZE = 100;
-	private static final Logger LOGGER = Logger.getLogger(DefaultKeyAffinityService.class);
+	private static final System.Logger LOGGER = System.getLogger(DefaultKeyAffinityService.class.getName());
 
 	private final Cache<? extends K, ?> cache;
 	private final KeyGenerator<? extends K> generator;
@@ -151,7 +150,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 				return this.getCollocatedKey(currentState, otherKey);
 			}
 		}
-		LOGGER.debugf("Could not obtain pre-generated key with same affinity as %s -- generating random key", otherKey);
+		LOGGER.log(System.Logger.Level.DEBUG, "Could not obtain pre-generated key with same affinity as {0} -- generating random key", otherKey);
 		return this.generator.getKey();
 	}
 
@@ -175,7 +174,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 				return this.getKeyForAddress(currentState, address);
 			}
 		}
-		LOGGER.debugf("Could not obtain pre-generated key with affinity for %s -- generating random key", address);
+		LOGGER.log(System.Logger.Level.DEBUG, "Could not obtain pre-generated key with affinity for {0} -- generating random key", address);
 		return this.generator.getKey();
 	}
 
@@ -196,7 +195,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
 		if (!this.getSegments(event.getWriteConsistentHashAtStart()).equals(this.getSegments(event.getWriteConsistentHashAtEnd()))) {
-			LOGGER.debugf("Restarting key generation based on new consistent hash for topology %d", event.getNewTopologyId());
+			LOGGER.log(System.Logger.Level.DEBUG, "Restarting key generation based on new consistent hash for topology {0}", event.getNewTopologyId());
 			this.accept(event.getWriteConsistentHashAtEnd());
 		}
 		return CompletableFuture.completedStage(null);

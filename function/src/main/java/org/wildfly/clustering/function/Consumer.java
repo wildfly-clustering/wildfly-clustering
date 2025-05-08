@@ -41,7 +41,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		}
 	};
 	Consumer<AutoCloseable> CLOSE = new Consumer<>() {
-		private final System.Logger logger = System.getLogger(this.getClass().getPackageName());
+		private final System.Logger logger = System.getLogger(Consumer.class.getName());
 
 		@Override
 		public void accept(AutoCloseable object) {

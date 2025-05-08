@@ -11,7 +11,6 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Supplier;
 
@@ -20,7 +19,6 @@ import org.wildfly.clustering.function.Supplier;
  * @author Paul Ferraro
  */
 public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
-	Logger LOGGER = Logger.getLogger(ByteBufferMarshaller.class);
 
 	/**
 	 * Reads an object from the specified input stream.
@@ -54,14 +52,16 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 			try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
 				this.writeTo(output, object);
 				ByteBuffer buffer = output.getBuffer();
-				if (size.isPresent()) {
-					int predictedSize = size.getAsInt();
-					int actualSize = buffer.limit() - buffer.arrayOffset();
-					if (predictedSize < actualSize) {
-						LOGGER.debugf("Buffer size prediction too small for %s (%s), predicted = %d, actual = %d", object, (object != null) ? object.getClass().getCanonicalName() : null, predictedSize, actualSize);
+				if (Logger.INSTANCE.isLoggable(System.Logger.Level.DEBUG)) {
+					if (size.isPresent()) {
+						int predictedSize = size.getAsInt();
+						int actualSize = buffer.limit() - buffer.arrayOffset();
+						if (predictedSize < actualSize) {
+							Logger.INSTANCE.log(System.Logger.Level.DEBUG, "Buffer size prediction too small for {0} ({1}), predicted = {3}, actual = {4}", object, (object != null) ? object.getClass().getCanonicalName() : null, predictedSize, actualSize);
+						}
+					} else {
+						Logger.INSTANCE.log(System.Logger.Level.DEBUG, "Buffer size prediction missing for {0} ({1})", object, (object != null) ? object.getClass().getCanonicalName() : null);
 					}
-				} else {
-					LOGGER.tracef("Buffer size prediction missing for %s (%s)", object, (object != null) ? object.getClass().getCanonicalName() : null);
 				}
 				return buffer;
 			}

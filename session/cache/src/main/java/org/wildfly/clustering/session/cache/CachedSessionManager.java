@@ -12,7 +12,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
@@ -28,7 +27,7 @@ import org.wildfly.clustering.session.SessionMetaData;
  * @author Paul Ferraro
  */
 public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
-	static final Logger LOGGER = Logger.getLogger(CachedSessionManager.class);
+	static final System.Logger LOGGER = System.getLogger(CachedSessionManager.class.getName());
 
 	private final Cache<String, CompletionStage<CacheableSession<C>>> sessionCache;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionCreator;
@@ -41,7 +40,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 					session.close();
 					return null;
 				} catch (Throwable e) {
-					LOGGER.warn(e.getLocalizedMessage(), e);
+					LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 				}
 			}
 			return session;
@@ -115,7 +114,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 				} catch (CancellationException e) {
 					// Ignore
 				} catch (Throwable e) {
-					LOGGER.warn(e.getLocalizedMessage(), e);
+					LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 				}
 			}
 		});

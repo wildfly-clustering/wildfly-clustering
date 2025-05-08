@@ -11,7 +11,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -27,7 +26,7 @@ import org.wildfly.clustering.session.cache.SessionFactory;
  * @author Paul Ferraro
  */
 public class ExpiredSessionRemover<SC, MV, AV, LC> implements Predicate<String>, Registrar<Consumer<ImmutableSession>> {
-	private static final Logger LOGGER = Logger.getLogger(ExpiredSessionRemover.class);
+	private static final System.Logger LOGGER = System.getLogger(ExpiredSessionRemover.class.getName());
 
 	private final SessionFactory<SC, MV, AV, LC> factory;
 	private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
@@ -46,7 +45,7 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Predicate<String>,
 				if (attributesValue != null) {
 					Map<String, Object> attributes = this.factory.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
 					ImmutableSession session = this.factory.createImmutableSession(id, metaData, attributes);
-					LOGGER.tracef("Session %s has expired.", id);
+					LOGGER.log(System.Logger.Level.TRACE, "Session {0} has expired.", id);
 					for (Consumer<ImmutableSession> listener : this.listeners) {
 						listener.accept(session);
 					}
@@ -58,9 +57,9 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Predicate<String>,
 					return false;
 				}
 			}
-			LOGGER.tracef("Session %s is not yet expired.", id);
+			LOGGER.log(System.Logger.Level.TRACE, "Session {0} is not yet expired.", id);
 		} else {
-			LOGGER.tracef("Session %s was not found or is currently in use.", id);
+			LOGGER.log(System.Logger.Level.TRACE, "Session {0} was not found or is currently in use.", id);
 		}
 		return false;
 	}

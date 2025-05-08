@@ -13,7 +13,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.DefaultThreadFactory;
@@ -33,7 +32,7 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  * @param <V> the cache value type
  */
 public class SessionExpirationScheduler<K extends Key<String>, V> extends AbstractCacheEntryScheduler<String, K, V, ExpirationMetaData> {
-	private static final Logger LOGGER = Logger.getLogger(SessionExpirationScheduler.class);
+	private static final System.Logger LOGGER = System.getLogger(SessionExpirationScheduler.class.getName());
 	@SuppressWarnings("removal")
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationScheduler.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -108,7 +107,7 @@ public class SessionExpirationScheduler<K extends Key<String>, V> extends Abstra
 
 		@Override
 		public boolean test(String id) {
-			LOGGER.debugf("Expiring session %s", id);
+			LOGGER.log(System.Logger.Level.DEBUG, "Expiring session {0}", id);
 			try (Batch batch = this.batchFactory.get()) {
 				try {
 					return this.remover.test(id);
@@ -117,7 +116,7 @@ public class SessionExpirationScheduler<K extends Key<String>, V> extends Abstra
 					throw e;
 				}
 			} catch (RuntimeException e) {
-				LOGGER.warnf(e, id.toString());
+				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 				return false;
 			}
 		}
