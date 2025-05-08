@@ -5,17 +5,21 @@
 
 package org.wildfly.clustering.session.cache;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,7 +31,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -45,7 +49,9 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	private static final String DEPLOYMENT_CONTEXT = "deployment";
 	private static final Supplier<AtomicReference<String>> SESSION_CONTEXT_FACTORY = AtomicReference::new;
 
+	private final System.Logger logger = System.getLogger(this.getClass().getName());
 	private final BiFunction<P, String, SessionManagerFactoryProvider<String>> factory;
+	private final String threadGroupName = this.getClass().getSimpleName();
 
 	protected SessionManagerITCase(BiFunction<P, String, SessionManagerFactoryProvider<String>> factory) {
 		this.factory = factory;
@@ -119,11 +125,10 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 							this.createSession(manager1, sessionId, Map.of("value", value));
 
-							Instant start = Instant.now();
+							List<Runnable> tasks = new ArrayList<>(threads);
 							// Trigger a number of concurrent sequences of requests for the same session
-							CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
 							for (int i = 0; i < threads; ++i) {
-								future = future.thenAcceptBoth(CompletableFuture.runAsync(() -> {
+								tasks.add(() -> {
 									for (int j = 0; j < requests; ++j) {
 										this.requestSession(manager1, sessionId, session -> {
 											AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
@@ -131,38 +136,52 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 											v.incrementAndGet();
 										});
 									}
-								}), BiConsumer.empty());
+								});
 							}
-							future.join();
-							Instant stop = Instant.now();
-							Duration concurrentDuration = Duration.between(start, stop);
-
-							// Verify integrity of value on other manager
-							this.requestSession(manager2, sessionId, session -> {
-								assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests);
-							});
-
-							start = Instant.now();
-							// Trigger sequences of the same number of requests for the same session
-							for (int i = 0; i < threads; ++i) {
-								for (int j = 0; j < requests; ++j) {
-									this.requestSession(manager1, sessionId, session -> {
-										AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
-										assertThat(v).isNotNull();
-										v.incrementAndGet();
-									});
+							List<Future<?>> futures = new ArrayList<>(threads);
+							ExecutorService executor = Executors.newFixedThreadPool(threads, new DefaultThreadFactory(new ThreadGroup(this.threadGroupName), Thread.currentThread().getContextClassLoader()));
+							try {
+								Instant start = Instant.now();
+								for (Runnable task : tasks) {
+									futures.add(executor.submit(task));
 								}
+								for (Future<?> future : futures) {
+									future.get();
+								}
+								Instant stop = Instant.now();
+								Duration concurrentDuration = Duration.between(start, stop);
+								this.logger.log(System.Logger.Level.INFO, "{0} concurrent requests completed in {1}", threads * requests, concurrentDuration);
+
+								// Verify integrity of value on other manager
+								this.requestSession(manager2, sessionId, session -> {
+									assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests);
+								});
+
+								start = Instant.now();
+								// Trigger sequences of the same number of requests for the same session
+								for (int i = 0; i < threads; ++i) {
+									for (int j = 0; j < requests; ++j) {
+										this.requestSession(manager1, sessionId, session -> {
+											AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
+											assertThat(v).isNotNull();
+											v.incrementAndGet();
+										});
+									}
+								}
+								stop = Instant.now();
+								Duration serialDuration = Duration.between(start, stop);
+								this.logger.log(System.Logger.Level.INFO, "{0} serial requests completed in {1}", threads * requests, serialDuration);
+
+								// Verify integrity of value on other manager
+								this.requestSession(manager2, sessionId, session -> {
+									assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests * 2);
+								});
+
+								// Ensure that concurrent requests complete faster than same number of serial requests
+								assertThat(concurrentDuration).isLessThan(serialDuration);
+							} finally {
+								executor.shutdown();
 							}
-							stop = Instant.now();
-							Duration serialDuration = Duration.between(start, stop);
-
-							// Verify integrity of value on other manager
-							this.requestSession(manager2, sessionId, session -> {
-								assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests * 2);
-							});
-
-							// Ensure that concurrent requests complete faster than same number of serial requests
-							assertThat(concurrentDuration).isLessThan(serialDuration);
 
 							this.invalidateSession(manager2, sessionId);
 						} finally {
@@ -220,7 +239,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 								Instant start = Instant.now();
 								ImmutableSession expiredSession = expiredSessions.poll(expirationDuration.getSeconds(), TimeUnit.SECONDS);
 								assertThat(expiredSession).as("No expiration event received within %s seconds", expirationDuration.getSeconds()).isNotNull();
-								System.out.println(String.format("Received expiration event for %s after %s", expiredSession.getId(), Duration.between(start, Instant.now())));
+								this.logger.log(System.Logger.Level.INFO, "Received expiration event for {0} after {1}", expiredSession.getId(), Duration.between(start, Instant.now()));
 								assertThat(sessionId).isEqualTo(expiredSession.getId());
 								assertThat(expiredSession.isValid()).isFalse();
 								assertThat(expiredSession.getMetaData().isNew()).isFalse();
@@ -303,7 +322,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 					assertThat(metaData.isNew()).isFalse();
 					// Skip these assertions during concurrent session access
 					// We would otherwise require memory synchronization to validate
-					if (!(Thread.currentThread() instanceof ForkJoinWorkerThread)) {
+					if (!Thread.currentThread().getThreadGroup().getName().equals(this.threadGroupName)) {
 						// Validate last-access times are within precision bounds
 						assertThat(Duration.between(metaData.getLastAccessStartTime(), start).getSeconds()).isEqualTo(0);
 						assertThat(Duration.between(metaData.getLastAccessStartTime(), start).truncatedTo(ChronoUnit.MILLIS).getNano()).isEqualTo(0);

@@ -38,7 +38,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.KeyFilter;
@@ -58,7 +57,7 @@ import org.wildfly.clustering.server.registry.RegistryListener;
  */
 @Listener(observation = Observation.POST)
 public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
-	private static final Logger LOGGER = Logger.getLogger(CacheRegistry.class);
+	private static final System.Logger LOGGER = System.getLogger(CacheRegistry.class.getName());
 
 	private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
 	private final Cache<Address, Map.Entry<K, V>> cache;
@@ -100,7 +99,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 			// If this remove fails, the entry will be auto-removed on topology change by the new primary owner
 			this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(localAddress);
 		} catch (CacheException e) {
-			LOGGER.warn(e.getLocalizedMessage(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		} finally {
 			// Cleanup any unregistered listeners
 			for (ExecutorService executor : this.listeners.values()) {
@@ -190,7 +189,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 									}
 								}
 							} catch (CacheException e) {
-								LOGGER.warn(e.getLocalizedMessage(), e);
+								LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 							}
 							if (!removed.isEmpty()) {
 								this.notifyListeners(Event.Type.CACHE_ENTRY_REMOVED, removed);
@@ -204,7 +203,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 									this.notifyListeners(Event.Type.CACHE_ENTRY_CREATED, this.entry);
 								}
 							} catch (CacheException e) {
-								LOGGER.warn(e.getLocalizedMessage(), e);
+								LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 							}
 						}
 					});
@@ -269,7 +268,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 							}
 						}
 					} catch (Throwable e) {
-						LOGGER.warn(e.getLocalizedMessage(), e);
+						LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 					}
 				});
 			} catch (RejectedExecutionException e) {

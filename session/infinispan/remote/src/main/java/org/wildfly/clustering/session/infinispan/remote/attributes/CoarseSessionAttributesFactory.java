@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.infinispan.client.hotrod.RemoteCache;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
@@ -41,7 +40,7 @@ import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationN
  * @author Paul Ferraro
  */
 public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
-	private static final Logger LOGGER = Logger.getLogger(CoarseSessionAttributesFactory.class);
+	private static final System.Logger LOGGER = System.getLogger(CoarseSessionAttributesFactory.class.getName());
 
 	private final RemoteCache<SessionAttributesKey, V> readCache;
 	private final RemoteCache<SessionAttributesKey, V> writeCache;
@@ -75,7 +74,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	@Override
 	public CompletionStage<Map<String, Object>> findValueAsync(String id) {
 		return this.getValueAsync(id).exceptionally(e -> {
-			LOGGER.warn(e.getLocalizedMessage(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			this.removeAsync(id);
 			return null;
 		});

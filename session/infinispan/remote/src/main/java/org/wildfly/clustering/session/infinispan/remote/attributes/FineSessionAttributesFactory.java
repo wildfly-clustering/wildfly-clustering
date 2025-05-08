@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.infinispan.client.hotrod.RemoteCache;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
@@ -42,7 +41,7 @@ import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapC
  * @author Paul Ferraro
  */
 public class FineSessionAttributesFactory<C, V> implements SessionAttributesFactory<C, Map<String, Object>> {
-	private static final Logger LOGGER = Logger.getLogger(FineSessionAttributesFactory.class);
+	private static final System.Logger LOGGER = System.getLogger(FineSessionAttributesFactory.class.getName());
 
 	private final RemoteCache<SessionAttributesKey, Map<String, V>> readCache;
 	private final RemoteCache<SessionAttributesKey, Map<String, V>> writeCache;
@@ -75,7 +74,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	@Override
 	public CompletionStage<Map<String, Object>> findValueAsync(String id) {
 		return this.getValueAsync(id).exceptionally(e -> {
-			LOGGER.warn(e.getLocalizedMessage(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			this.purgeAsync(id);
 			return null;
 		});

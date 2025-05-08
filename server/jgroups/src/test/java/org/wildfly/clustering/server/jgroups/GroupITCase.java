@@ -42,6 +42,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 	private static final Duration VIEW_CHANGE_DURATION = Duration.ofSeconds(20);
 	private static final Duration SPLIT_MERGE_DURATION = Duration.ofSeconds(120);
 
+	private final System.Logger logger = System.getLogger(this.getClass().getName());
 	private final BiFunction<String, String, GroupProvider<A, M>> factory;
 	private final Function<A, Address> mapper;
 
@@ -105,7 +106,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 
 					Instant start = Instant.now();
 					updateEvent = updateEvents.poll(VIEW_CHANGE_DURATION.toSeconds(), TimeUnit.SECONDS);
-					System.out.println("View change detected after " + Duration.between(start, Instant.now()));
+					this.logger.log(System.Logger.Level.INFO, "View change detected after {0}", Duration.between(start, Instant.now()));
 					splitEvent = splitEvents.poll();
 					mergeEvent = mergeEvents.poll();
 
@@ -142,7 +143,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 
 						start = Instant.now();
 						updateEvent = updateEvents.poll(VIEW_CHANGE_DURATION.toSeconds(), TimeUnit.SECONDS);
-						System.out.println("View change detected after " + Duration.between(start, Instant.now()));
+						this.logger.log(System.Logger.Level.INFO, "View change detected after {0}", Duration.between(start, Instant.now()));
 						splitEvent = splitEvents.poll();
 						mergeEvent = mergeEvents.poll();
 
@@ -172,13 +173,13 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						assertThat(membership3.getCoordinator()).isEqualTo(currentMembership.getCoordinator());
 						assertThat(membership3.getMembers()).containsExactlyElementsOf(currentMembership.getMembers());
 
-						System.out.println("Simulating network partition");
+						this.logger.log(System.Logger.Level.INFO, "Simulating network partition");
 						DISCARD discard1 = new DISCARD().discardAll(true);
 						channel1.getProtocolStack().insertProtocol(discard1, ProtocolStack.Position.ABOVE, TP.class);
 
 						start = Instant.now();
 						splitEvent = splitEvents.poll(SPLIT_MERGE_DURATION.toSeconds(), TimeUnit.SECONDS);
-						System.out.println("Network partition created after " + Duration.between(start, Instant.now()));
+						this.logger.log(System.Logger.Level.INFO, "Network partition created after {0}", Duration.between(start, Instant.now()));
 						updateEvent = updateEvents.poll();
 						mergeEvent = mergeEvents.poll();
 
@@ -198,12 +199,12 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 						assertThat(currentMembership.getMembers()).containsExactly(group1.getLocalMember());
 						assertThat(currentMembership.getCoordinator()).isEqualTo(group1.getLocalMember());
 
-						System.out.println("Resolving network partition");
+						this.logger.log(System.Logger.Level.INFO, "Resolving network partition");
 						channel1.getProtocolStack().removeProtocol(DISCARD.class);
 
 						start = Instant.now();
 						mergeEvent = mergeEvents.poll(SPLIT_MERGE_DURATION.toSeconds(), TimeUnit.SECONDS);
-						System.out.println("Network partition resolved after " + Duration.between(start, Instant.now()));
+						this.logger.log(System.Logger.Level.INFO, "Network partition resolved after {0}", Duration.between(start, Instant.now()));
 						splitEvent = splitEvents.poll();
 						updateEvent = updateEvents.poll();
 
@@ -226,7 +227,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 
 					start = Instant.now();
 					updateEvent = updateEvents.poll(VIEW_CHANGE_DURATION.toSeconds(), TimeUnit.SECONDS);
-					System.out.println("View change detected after " + Duration.between(start, Instant.now()));
+					this.logger.log(System.Logger.Level.INFO, "View change detected after {0}", Duration.between(start, Instant.now()));
 					splitEvent = splitEvents.poll();
 					mergeEvent = mergeEvents.poll();
 
@@ -247,7 +248,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 
 				Instant start = Instant.now();
 				updateEvent = updateEvents.poll(VIEW_CHANGE_DURATION.toSeconds(), TimeUnit.SECONDS);
-				System.out.println("View change detected after " + Duration.between(start, Instant.now()));
+				this.logger.log(System.Logger.Level.INFO, "View change detected after {0}", Duration.between(start, Instant.now()));
 				splitEvent = splitEvents.poll();
 				mergeEvent = mergeEvents.poll();
 

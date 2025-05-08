@@ -10,15 +10,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
-import org.wildfly.common.function.Functions;
 
 /**
  * Unit test for {@link SessionExpirationScheduler}.
@@ -61,7 +60,7 @@ public class SessionExpirationSchedulerTestCase {
 		doReturn(true).when(remover).test(expiringSessionId);
 		doReturn(false, true).when(remover).test(busySessionId);
 
-		try (Scheduler<String, ExpirationMetaData> scheduler = new SessionExpirationScheduler<>("test", Functions.constantSupplier(batch), metaDataFactory, remover, Duration.ZERO)) {
+		try (Scheduler<String, ExpirationMetaData> scheduler = new SessionExpirationScheduler<>("test", Supplier.of(batch), metaDataFactory, remover, Duration.ZERO)) {
 			scheduler.schedule(immortalSessionId, immortalSessionMetaData);
 			scheduler.schedule(canceledSessionId, canceledSessionMetaData);
 			scheduler.schedule(expiringSessionId, expiringSessionMetaData);

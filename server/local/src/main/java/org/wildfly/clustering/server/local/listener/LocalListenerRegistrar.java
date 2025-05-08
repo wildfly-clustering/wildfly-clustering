@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.server.Registration;
@@ -27,7 +26,7 @@ import org.wildfly.clustering.server.listener.ListenerRegistrar;
  * @author Paul Ferraro
  */
 public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
-	private static final Logger LOGGER = Logger.getLogger(LocalListenerRegistrar.class);
+	private static final System.Logger LOGGER = System.getLogger(LocalListenerRegistrar.class.getName());
 
 	private final Map<T, ExecutorService> listeners = new ConcurrentHashMap<>();
 	private final Duration shutdownTimeout;
@@ -61,7 +60,7 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 				}
 			}
 		} catch (Throwable e) {
-			LOGGER.error(e.getLocalizedMessage(), e);
+			LOGGER.log(System.Logger.Level.ERROR, e.getLocalizedMessage(), e);
 		}
 	}
 

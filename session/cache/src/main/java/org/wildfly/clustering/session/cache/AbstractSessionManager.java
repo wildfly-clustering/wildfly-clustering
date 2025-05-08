@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.expiration.Expiration;
@@ -29,7 +28,7 @@ import org.wildfly.clustering.session.SessionStatistics;
  * @author Paul Ferraro
  */
 public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
-	protected final Logger logger = Logger.getLogger(this.getClass());
+	protected final System.Logger logger = System.getLogger(this.getClass().getName());
 
 	private final Supplier<SessionManager<SC>> manager;
 	private final SessionFactory<C, MV, AV, SC> factory;
@@ -68,21 +67,21 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 
 	@Override
 	public CompletionStage<Session<SC>> createSessionAsync(String id) {
-		this.logger.tracef("Creating session %s", id);
+		this.logger.log(System.Logger.Level.TRACE, "Creating session {0}", id);
 		return this.factory.createValueAsync(id, this.expiration.getTimeout()).thenApply(entry -> this.wrapper.apply(this.factory.createSession(id, entry, this.context)));
 	}
 
 	@Override
 	public CompletionStage<Session<SC>> findSessionAsync(String id) {
-		this.logger.tracef("Locating session %s", id);
+		this.logger.log(System.Logger.Level.TRACE, "Locating session {0}", id);
 		return this.factory.findValueAsync(id).thenApply(entry -> {
 			if (entry == null) {
-				this.logger.tracef("Session %s not found", id);
+				this.logger.log(System.Logger.Level.TRACE, "Session {0} not found", id);
 				return null;
 			}
 			ImmutableSession session = this.factory.createImmutableSession(id, entry);
 			if (session.getMetaData().isExpired()) {
-				this.logger.tracef("Session %s was found, but has expired", id);
+				this.logger.log(System.Logger.Level.TRACE, "Session {0} was found, but has expired", id);
 				this.expirationListener.accept(session);
 				this.factory.removeAsync(id);
 				return null;

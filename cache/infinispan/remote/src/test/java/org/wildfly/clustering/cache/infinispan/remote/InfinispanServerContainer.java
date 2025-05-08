@@ -8,8 +8,6 @@ package org.wildfly.clustering.cache.infinispan.remote;
 import java.time.Duration;
 
 import org.infinispan.commons.util.Version;
-import org.jboss.logging.Logger;
-import org.jboss.logging.Logger.Level;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -23,7 +21,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> {
 
-	static final Logger LOGGER = Logger.getLogger(InfinispanServerContainer.class);
+	static final System.Logger LOGGER = System.getLogger(InfinispanServerContainer.class.getName());
 
 	static final String DOCKER_NETWORK_MODE_PROPERTY = "docker.network.mode";
 	static final String DOCKER_IMAGE_PROPERTY = "infinispan.server.image";
@@ -55,7 +53,7 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 			OutputFrame.OutputType type = frame.getType();
 			if (type != OutputType.END) {
 				String message = frame.getUtf8String().replaceAll("((\\r?\\n)|(\\r))$", "");
-				LOGGER.logf(type == OutputType.STDERR ? Level.ERROR : Level.INFO, message);
+				LOGGER.log(type == OutputType.STDERR ? System.Logger.Level.ERROR : System.Logger.Level.INFO, message);
 			}
 		});
 		// Wait for server started log message

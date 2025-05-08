@@ -6,7 +6,6 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.function.Supplier;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.server.util.Supplied;
 import org.wildfly.clustering.session.Session;
@@ -20,7 +19,7 @@ import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaDat
  * @author Paul Ferraro
  */
 public class CompositeSession<C> extends CompositeImmutableSession implements Session<C> {
-	private static final Logger LOGGER = Logger.getLogger(CompositeSession.class);
+	private static final System.Logger LOGGER = System.getLogger(CompositeSession.class.getName());
 
 	private final InvalidatableSessionMetaData metaData;
 	private final SessionAttributes attributes;
@@ -50,7 +49,7 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 	@Override
 	public void invalidate() {
 		if (this.metaData.invalidate()) {
-			LOGGER.debugf("Invalidating session %s", this.getId());
+			LOGGER.log(System.Logger.Level.DEBUG, "Invalidating session {0}", this.getId());
 			this.remover.remove(this.getId());
 		}
 	}
@@ -63,7 +62,7 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 	@Override
 	public void close() {
 		if (this.metaData.isValid()) {
-			LOGGER.tracef("Closing session %s", this.getId());
+			LOGGER.log(System.Logger.Level.TRACE, "Closing session {0}", this.getId());
 			this.attributes.close();
 			this.metaData.close();
 		}

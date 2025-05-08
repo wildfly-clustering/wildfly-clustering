@@ -29,7 +29,6 @@ import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.concurrent.BlockingManager;
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
@@ -45,7 +44,7 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
  */
 @Listener
 public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRegistrar {
-	private static final Logger LOGGER = Logger.getLogger(SchedulerTopologyChangeListener.class);
+	private static final System.Logger LOGGER = System.getLogger(SchedulerTopologyChangeListener.class.getName());
 	@SuppressWarnings("removal")
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -73,15 +72,15 @@ public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRe
 		this.cache.addListener(this);
 		return () -> {
 			this.cache.removeListener(this);
-			LOGGER.debugf("Shutting down thread pool for %s scheduler topology change listener", this.cache.getName());
+			LOGGER.log(System.Logger.Level.DEBUG, "Shutting down thread pool for {0} scheduler topology change listener", this.cache.getName());
 			this.executor.shutdownNow();
 			try {
-				LOGGER.debugf("Awaiting task termination for %s scheduler topology change listener", this.cache.getName());
+				LOGGER.log(System.Logger.Level.DEBUG, "Awaiting task termination for {0} scheduler topology change listener", this.cache.getName());
 				this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
-			LOGGER.debugf("%s scheduler topology change listener shutdown complete", this.cache.getName());
+			LOGGER.log(System.Logger.Level.DEBUG, "{0} scheduler topology change listener shutdown complete", this.cache.getName());
 		};
 	}
 
@@ -93,7 +92,7 @@ public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRe
 		Set<Integer> oldSegments = oldHash.getMembers().contains(address) ? oldHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
 		ConsistentHash newHash = event.getWriteConsistentHashAtEnd();
 		Set<Integer> newSegments = newHash.getMembers().contains(address) ? newHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
-		LOGGER.debugf("%s scheduler topology change listener received %s-topology changed event: %s -> %s", cache.getName(), event.isPre() ? "pre" : "post", oldHash.getMembers(), newHash.getMembers());
+		LOGGER.log(System.Logger.Level.DEBUG, "{0} scheduler topology change listener received {1}-topology changed event: {2} -> {3}", cache.getName(), event.isPre() ? "pre" : "post", oldHash.getMembers(), newHash.getMembers());
 		if (event.isPre()) {
 			if (!oldSegments.isEmpty()) {
 				IntSet formerlyOwnedSegments = IntSets.mutableCopyFrom(oldSegments);

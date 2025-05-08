@@ -16,7 +16,6 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
@@ -46,18 +45,18 @@ public class ThreadLocalTransactionBatch<E extends RuntimeException> implements 
 
 	private final TransactionManager tm;
 	private final Transaction tx;
-	private final Logger logger;
+	private final System.Logger logger;
 	private final Function<Throwable, E> exceptionTransformer;
 	private final AtomicInteger count = new AtomicInteger(0);
 
 	private volatile boolean active = true;
 
-	ThreadLocalTransactionBatch(TransactionManager tm, Transaction tx, Logger logger, Function<Throwable, E> exceptionTransformer) {
+	ThreadLocalTransactionBatch(TransactionManager tm, Transaction tx, System.Logger logger, Function<Throwable, E> exceptionTransformer) {
 		this.tm = tm;
 		this.tx = tx;
 		this.logger = logger;
 		this.exceptionTransformer = exceptionTransformer;
-		this.logger.debugf("Started batch %s[%d]", this.tx, this.count.get());
+		this.logger.log(System.Logger.Level.DEBUG, "Started batch {0}[{1}]", this.tx, this.count.get());
 	}
 
 	private int getStatus() {
@@ -174,7 +173,7 @@ public class ThreadLocalTransactionBatch<E extends RuntimeException> implements 
 			throw new IllegalStateException();
 		}
 		int count = this.count.incrementAndGet();
-		this.logger.debugf("Interposed batch %s[%d]", this.tx, count);
+		this.logger.log(System.Logger.Level.DEBUG, "Interposed batch {0}[{1}]", this.tx, count);
 		return this;
 	}
 
@@ -199,7 +198,7 @@ public class ThreadLocalTransactionBatch<E extends RuntimeException> implements 
 					case Status.STATUS_ACTIVE:
 						if (this.active) {
 							try {
-								this.logger.debugf("Committing batch %s[%d]", this.tx, count);
+								this.logger.log(System.Logger.Level.DEBUG, "Committing batch {0}[{1}]", this.tx, count);
 								this.tx.commit();
 								break;
 							} catch (RollbackException e) {
@@ -210,17 +209,17 @@ public class ThreadLocalTransactionBatch<E extends RuntimeException> implements 
 						}
 						// Otherwise fall through
 					case Status.STATUS_MARKED_ROLLBACK:
-						this.logger.debugf("Rolling back batch %s[%d]", this.tx, count);
+						this.logger.log(System.Logger.Level.DEBUG, "Rolling back batch {0}[{1}]", this.tx, count);
 						this.tx.rollback();
 						break;
 					default:
-						this.logger.debugf("Closed batch %s[%d] with status = %d", this.tx, count, this.tx.getStatus());
+						this.logger.log(System.Logger.Level.DEBUG, "Closed batch {0}[{1}] with status = {2}", this.tx, count, this.tx.getStatus());
 				}
 			} catch (SystemException e) {
 				throw this.exceptionTransformer.apply(e);
 			}
 		} else {
-			this.logger.debugf("Closed interposed batch %s[%d]", this.tx, count);
+			this.logger.log(System.Logger.Level.DEBUG, "Closed interposed batch {0}[{1}]", this.tx, count);
 		}
 	}
 
