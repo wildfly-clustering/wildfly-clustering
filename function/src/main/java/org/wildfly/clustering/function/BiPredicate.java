@@ -12,6 +12,8 @@ package org.wildfly.clustering.function;
  * @param <U> the second parameter type
  */
 public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
+	BiPredicate<?, ?> ALWAYS = new SimpleBiPredicate<>(true);
+	BiPredicate<?, ?> NEVER = new SimpleBiPredicate<>(false);
 
 	@Override
 	default BiPredicate<T, U> and(java.util.function.BiPredicate<? super T, ? super U> other) {
@@ -41,6 +43,63 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 				return BiPredicate.this.test(value1, value2) || other.test(value1, value2);
 			}
 		};
+	}
+
+	/**
+	 * Returns a predicate that processes this predicate with reversed parameter order.
+	 * @return a predicate that processes this predicate with reversed parameter order.
+	 */
+	default BiPredicate<U, T> reverse() {
+		return new BiPredicate<>() {
+			@Override
+			public boolean test(U value2, T value1) {
+				return BiPredicate.this.test(value1, value2);
+			}
+		};
+	}
+
+	/**
+	 * Returns a predicate that always accepts its arguments.
+	 * @param <T> the first parameter type
+	 * @param <U> the second parameter type
+	 * @return a predicate that always accepts its arguments.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U> BiPredicate<T, U> always() {
+		return (BiPredicate<T, U>) ALWAYS;
+	}
+
+	/**
+	 * Returns a predicate that never accepts its arguments.
+	 * @param <T> the first parameter type
+	 * @param <U> the second parameter type
+	 * @return a predicate that never accepts its arguments.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U> BiPredicate<T, U> never() {
+		return (BiPredicate<T, U>) NEVER;
+	}
+
+	/**
+	 * Returns a binary predicate from a predicate that tests the first parameter only.
+	 * @param <T> the first parameter type
+	 * @param <U> the second parameter type
+	 * @param predicate the predicate for the first parameter
+	 * @return a binary predicate from a predicate that tests the first parameter only.
+	 */
+	static <T, U> BiPredicate<T, U> former(java.util.function.Predicate<T> predicate) {
+		return and(predicate, Predicate.always());
+	}
+
+	/**
+	 * Returns a binary predicate from a predicate that tests the second parameter only.
+	 * @param <T> the first parameter type
+	 * @param <U> the second parameter type
+	 * @param predicate the predicate for the first parameter
+	 * @return a binary predicate from a predicate that tests the first parameter only.
+	 */
+	static <T, U> BiPredicate<T, U> latter(java.util.function.Predicate<U> predicate) {
+		return and(Predicate.always(), predicate);
 	}
 
 	/**
@@ -75,5 +134,18 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 				return predicate1.test(value1) || predicate2.test(value2);
 			}
 		};
+	}
+
+	class SimpleBiPredicate<T, U> implements BiPredicate<T, U> {
+		private final boolean value;
+
+		SimpleBiPredicate(boolean value) {
+			this.value = value;
+		}
+
+		@Override
+		public boolean test(T value1, U value2) {
+			return this.value;
+		}
 	}
 }

@@ -17,7 +17,6 @@ import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
-import org.wildfly.clustering.server.infinispan.expiration.ExpirationMetaDataFunction;
 import org.wildfly.clustering.server.infinispan.scheduler.AbstractCacheEntryScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalScheduler;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerConfiguration;
@@ -72,7 +71,7 @@ public class SessionExpirationScheduler<K extends Key<String>, V> extends Abstra
 	}
 
 	public SessionExpirationScheduler(Scheduler<String, Instant> scheduler, ImmutableSessionMetaDataFactory<V> metaDataFactory) {
-		super(scheduler.map(ExpirationMetaDataFunction.INSTANCE));
+		super(scheduler.map(ExpirationMetaData::getExpirationTime));
 		this.metaDataFactory = metaDataFactory;
 	}
 

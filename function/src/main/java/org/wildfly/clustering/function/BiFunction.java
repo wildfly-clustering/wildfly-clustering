@@ -13,13 +13,13 @@ package org.wildfly.clustering.function;
  * @param <R> the result type
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
-	BiFunction<?, ?, ?> FIRST = new BiFunction<>() {
+	BiFunction<?, ?, ?> FORMER_IDENTITY = new BiFunction<>() {
 		@Override
 		public Object apply(Object value1, Object value2) {
 			return value1;
 		}
 	};
-	BiFunction<?, ?, ?> SECOND = new BiFunction<>() {
+	BiFunction<?, ?, ?> LATTER_IDENTITY = new BiFunction<>() {
 		@Override
 		public Object apply(Object value1, Object value2) {
 			return value2;
@@ -55,6 +55,19 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 			@Override
 			public V apply(T value1, U value2) {
 				return after.apply(BiFunction.this.apply(value1, value2));
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that processes this function with reversed parameter order.
+	 * @return a function that processes this function with reversed parameter order.
+	 */
+	default BiFunction<U, T, R> reverse() {
+		return new BiFunction<>() {
+			@Override
+			public R apply(U value2, T value1) {
+				return BiFunction.this.apply(value1, value2);
 			}
 		};
 	}
@@ -99,8 +112,8 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @return a function that returns its first parameter.
 	 */
 	@SuppressWarnings("unchecked")
-	static <T extends R, U, R> BiFunction<T, U, R> first() {
-		return (BiFunction<T, U, R>) FIRST;
+	static <T extends R, U, R> BiFunction<T, U, R> former() {
+		return (BiFunction<T, U, R>) FORMER_IDENTITY;
 	}
 
 	/**
@@ -111,7 +124,7 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param function the function applied to the first parameter of this function
 	 * @return a function that returns the result of applying the specified function to its first parameter.
 	 */
-	static <T, U, R> BiFunction<T, U, R> first(java.util.function.Function<T, R> function) {
+	static <T, U, R> BiFunction<T, U, R> former(java.util.function.Function<T, R> function) {
 		return new BiFunction<>() {
 			@Override
 			public R apply(T value1, U value2) {
@@ -128,8 +141,8 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @return a function that returns its first parameter.
 	 */
 	@SuppressWarnings("unchecked")
-	static <T, U extends R, R> BiFunction<T, U, R> second() {
-		return (BiFunction<T, U, R>) SECOND;
+	static <T, U extends R, R> BiFunction<T, U, R> latter() {
+		return (BiFunction<T, U, R>) LATTER_IDENTITY;
 	}
 
 	/**
@@ -140,7 +153,7 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param function the function applied to the second parameter of this function
 	 * @return a function that returns the result of applying the specified function to its second parameter.
 	 */
-	static <T, U, R> BiFunction<T, U, R> second(java.util.function.Function<U, R> function) {
+	static <T, U, R> BiFunction<T, U, R> latter(java.util.function.Function<U, R> function) {
 		return new BiFunction<>() {
 			@Override
 			public R apply(T value1, U value2) {

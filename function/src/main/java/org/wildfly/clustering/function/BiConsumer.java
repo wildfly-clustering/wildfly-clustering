@@ -28,8 +28,8 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	}
 
 	/**
-	 * Returns a consumer delegate that reverses the parameters of this consumer.
-	 * @return a consumer delegate that reverses the parameters of this consumer.
+	 * Returns a consumer that processes this consumer with reversed parameter order.
+	 * @return a consumer that processes this consumer with reversed parameter order.
 	 */
 	default BiConsumer<U, T> reverse() {
 		return new BiConsumer<>() {
@@ -67,6 +67,28 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 				}
 			}
 		};
+	}
+
+	/**
+	 * Returns a consumer that delegates to a consumer of the first parameter, ignoring the second.
+	 * @param <T> the first consumed type
+	 * @param <U> the second consumed type
+	 * @param consumer the consumer of the first parameter
+	 * @return a consumer of the first parameter
+	 */
+	static <T, U> BiConsumer<T, U> former(java.util.function.Consumer<? super T> consumer) {
+		return of(consumer, Consumer.empty());
+	}
+
+	/**
+	 * Returns a consumer that delegates to a consumer of the second parameter, ignoring the first.
+	 * @param <T> the first consumed type
+	 * @param <U> the second consumed type
+	 * @param consumer the consumer of the second parameter
+	 * @return a consumer that delegates to a consumer of the second parameter, ignoring the first.
+	 */
+	static <T, U> BiConsumer<T, U> latter(java.util.function.Consumer<? super U> consumer) {
+		return of(Consumer.empty(), consumer);
 	}
 
 	/**
