@@ -6,6 +6,7 @@
 package org.wildfly.clustering.server.expiration;
 
 import java.time.Instant;
+import java.util.Optional;
 
 /**
  * Describes expiration-related metadata.
@@ -18,9 +19,18 @@ public interface ExpirationMetaData extends Expiration {
 	 * @return true, if this object has expired, false otherwise.
 	 */
 	default boolean isExpired() {
-		if (this.isImmortal()) return false;
+		Optional<Instant> expirationTime = this.getExpirationTime();
+		return expirationTime.isPresent() && !expirationTime.get().isAfter(Instant.now());
+	}
+
+	/**
+	 * Returns the time at which this session should expire.
+	 * @return an optional expiration time, present if the session is mortal and not new.
+	 */
+	default Optional<Instant> getExpirationTime() {
+		if (this.isImmortal()) return Optional.empty();
 		Instant lastAccessedTime = this.getLastAccessTime();
-		return (lastAccessedTime != null) ? !lastAccessedTime.plus(this.getTimeout()).isAfter(Instant.now()) : false;
+		return (lastAccessedTime != null) ? Optional.of(lastAccessedTime.plus(this.getTimeout())) : Optional.empty();
 	}
 
 	/**

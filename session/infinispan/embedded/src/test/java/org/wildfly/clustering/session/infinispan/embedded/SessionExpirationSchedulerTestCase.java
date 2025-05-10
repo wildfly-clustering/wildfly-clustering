@@ -52,10 +52,12 @@ public class SessionExpirationSchedulerTestCase {
 		when(canceledSessionMetaData.getTimeout()).thenReturn(Duration.ofSeconds(100L));
 
 		Instant now = Instant.now();
+		doCallRealMethod().when(expiringSessionMetaData).getExpirationTime();
 		doCallRealMethod().when(expiringSessionMetaData).getLastAccessTime();
 		doReturn(now).when(expiringSessionMetaData).getLastAccessEndTime();
 		doCallRealMethod().when(canceledSessionMetaData).getLastAccessTime();
 		doReturn(now).when(canceledSessionMetaData).getLastAccessEndTime();
+		doCallRealMethod().when(busySessionMetaData).getExpirationTime();
 		doCallRealMethod().when(busySessionMetaData).getLastAccessTime();
 		doReturn(now).when(busySessionMetaData).getLastAccessEndTime();
 		doReturn(true).when(remover).test(expiringSessionId);
