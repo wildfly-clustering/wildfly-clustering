@@ -15,13 +15,13 @@ import java.util.concurrent.Future;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.server.util.Reference.Writer;
+import org.wildfly.clustering.server.util.BlockingReference.Writer;
 
 /**
  * Validates the linearisability of concurrent read/write operations against a reference.
  * @author Paul Ferraro
  */
-public class ReferenceTestCase {
+public class BlockingReferenceTestCase {
 	private static final int ITERATIONS = 1000;
 	private static final int CONCURRENCY = 100;
 
@@ -29,7 +29,7 @@ public class ReferenceTestCase {
 	public void test() throws ExecutionException {
 		int expected = 0;
 		Random random = new Random();
-		Reference<Integer> reference = Reference.of(Integer.valueOf(0));
+		BlockingReference<Integer> reference = BlockingReference.of(Integer.valueOf(0));
 		List<Runnable> tasks = new ArrayList<>(ITERATIONS);
 		for (int i = 0; i < ITERATIONS; ++i) {
 			int increment = random.nextInt(0, 10);

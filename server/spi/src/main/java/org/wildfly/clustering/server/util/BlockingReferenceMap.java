@@ -18,13 +18,13 @@ import java.util.function.UnaryOperator;
  * @param <K> the key type
  * @param <V> the value type
  */
-public interface ReferenceMap<K, V> extends ReadableReference<Map<K, V>> {
+public interface BlockingReferenceMap<K, V> extends Reference<Map<K, V>> {
 	/**
 	 * Returns a reference to the map entry for the specified key.
 	 * @param key a map key
 	 * @return a reference to the map entry for the specified key.
 	 */
-	Reference<V> reference(K key);
+	BlockingReference<V> reference(K key);
 
 	/**
 	 * Returns a thread-safe map of the specified map.
@@ -33,17 +33,17 @@ public interface ReferenceMap<K, V> extends ReadableReference<Map<K, V>> {
 	 * @param map a non-thread-safe map
 	 * @return a thread-safe map of the specified map.
 	 */
-	static <K, V> ReferenceMap<K, V> of(Map<K, V> map) {
+	static <K, V> BlockingReferenceMap<K, V> of(Map<K, V> map) {
 		StampedLock lock = new StampedLock();
 		Supplier<Map<K, V>> reader = () -> Collections.unmodifiableMap(map);
 		UnaryOperator<Map<K, V>> mapper = UnaryOperator.identity();
-		return new ReferenceMap<>() {
+		return new BlockingReferenceMap<>() {
 			@Override
-			public Reference<V> reference(K key) {
+			public BlockingReference<V> reference(K key) {
 				Supplier<V> reader = () -> map.get(key);
 				Consumer<V> writer = value -> map.put(key, value);
 				UnaryOperator<V> mapper = UnaryOperator.identity();
-				return new Reference<>() {
+				return new BlockingReference<>() {
 					@Override
 					public Reader<V> reader() {
 						return new ReferenceReader<>(lock, reader, mapper);
