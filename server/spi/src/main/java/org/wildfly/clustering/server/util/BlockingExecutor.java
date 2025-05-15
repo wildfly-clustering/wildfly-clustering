@@ -54,7 +54,7 @@ public interface BlockingExecutor extends Executor, AutoCloseable {
 			@Override
 			public void execute(Runnable executeTask) {
 				long stamp = this.lock.tryReadLock();
-				if (stamp != 0L) {
+				if (StampedLock.isReadLockStamp(stamp)) {
 					try {
 						executeTask.run();
 					} finally {
@@ -66,7 +66,7 @@ public interface BlockingExecutor extends Executor, AutoCloseable {
 			@Override
 			public <R> Optional<R> execute(Supplier<R> executeTask) {
 				long stamp = this.lock.tryReadLock();
-				if (stamp != 0L) {
+				if (StampedLock.isReadLockStamp(stamp)) {
 					try {
 						return Optional.of(executeTask.get());
 					} finally {
@@ -79,7 +79,7 @@ public interface BlockingExecutor extends Executor, AutoCloseable {
 			@Override
 			public <R> Optional<R> execute(Callable<R> executeTask) throws Exception {
 				long stamp = this.lock.tryReadLock();
-				if (stamp != 0L) {
+				if (StampedLock.isReadLockStamp(stamp)) {
 					try {
 						return Optional.of(executeTask.call());
 					} finally {

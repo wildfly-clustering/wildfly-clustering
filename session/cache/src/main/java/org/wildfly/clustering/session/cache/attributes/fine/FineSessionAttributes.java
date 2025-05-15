@@ -15,7 +15,7 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
-import org.wildfly.clustering.server.util.ReferenceMap;
+import org.wildfly.clustering.server.util.BlockingReferenceMap;
 import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
 
 /**
@@ -33,7 +33,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 	private final Immutability immutability;
 	private final CacheProperties properties;
 	private final SessionAttributeActivationNotifier notifier;
-	private final ReferenceMap<String, Object> updates = ReferenceMap.of(new TreeMap<>());
+	private final BlockingReferenceMap<String, Object> updates = BlockingReferenceMap.of(new TreeMap<>());
 
 	public FineSessionAttributes(K key, Map<String, Object> attributes, CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory, Marshaller<Object, V> marshaller, Immutability immutability, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
 		super(attributes);

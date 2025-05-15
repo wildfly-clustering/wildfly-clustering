@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.clustering.server.util.Reference;
+import org.wildfly.clustering.server.util.BlockingReference;
 
 /**
  * Scheduler that uses a single scheduled task in concert with a {@link ScheduledEntries}.
@@ -37,8 +37,8 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	private final Duration closeTimeout;
 	private final Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> schedule;
 	private final Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> scheduleIfAbsent;
-	private final Reference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel;
-	private final Reference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule;
+	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel;
+	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule;
 
 	public LocalScheduler(LocalSchedulerConfiguration<T> configuration) {
 		this.name = configuration.getName();
@@ -60,8 +60,8 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 			cancel.apply(entry);
 			return scheduleFirst.get();
 		};
-		Reference<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntry = Reference.of(null);
-		Reference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntryWriter = futureEntry.writer(scheduleFirst);
+		BlockingReference<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntry = BlockingReference.of(null);
+		BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntryWriter = futureEntry.writer(scheduleFirst);
 		this.schedule = futureEntryWriter;
 		this.scheduleIfAbsent = futureEntryWriter.when(Objects::isNull);
 		this.cancel = futureEntry.writer(cancel);
