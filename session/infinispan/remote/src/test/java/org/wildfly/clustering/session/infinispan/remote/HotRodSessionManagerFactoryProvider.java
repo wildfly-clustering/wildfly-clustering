@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.infinispan.remote;
 
 import java.util.OptionalInt;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
@@ -13,6 +14,7 @@ import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
@@ -54,7 +56,28 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 		this.accept(this.container::stop);
 
 		Configuration configuration = this.container.getConfiguration();
-		configuration.addRemoteCache(this.deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(parameters.getNearCacheMode()).transactionMode(TransactionMode.NONE).configuration("<local-cache><expiration interval=\"1000\"/></local-cache>"));
+// Use local cache since our remote cluster has a single member
+// Reduce expiration interval to speed up expiration verification
+		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration("""
+{
+	"local-cache" : {
+		"expiration" : {
+			"interval" : 1000
+		},
+		"locking" : {
+			"isolation" : "REPEATABLE_READ"
+		},
+		"transaction" : {
+			"mode" : "BATCH",
+			"locking" : "PESSIMISTIC"
+		}
+	}
+}""")
+				.forceReturnValues(false)
+				.nearCacheMode(parameters.getNearCacheMode())
+				.transactionMode(TransactionMode.NONE)
+				;
+		configuration.addRemoteCache(this.deploymentName, configurator);
 		this.accept(() -> configuration.removeRemoteCache(this.deploymentName));
 	}
 
