@@ -56,16 +56,13 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 		this.accept(this.container::stop);
 
 		Configuration configuration = this.container.getConfiguration();
-// Use local cache since our remote cluster has a single member
-// Reduce expiration interval to speed up expiration verification
+		// Use local cache since our remote cluster has a single member
+		// Reduce expiration interval to speed up expiration verification
 		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration("""
 {
 	"local-cache" : {
 		"expiration" : {
 			"interval" : 1000
-		},
-		"locking" : {
-			"isolation" : "REPEATABLE_READ"
 		},
 		"transaction" : {
 			"mode" : "BATCH",
