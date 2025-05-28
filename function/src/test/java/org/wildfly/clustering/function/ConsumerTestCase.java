@@ -44,7 +44,7 @@ public class ConsumerTestCase {
 	public void close() throws Exception {
 		AutoCloseable resource = Mockito.mock(AutoCloseable.class);
 
-		Consumer<AutoCloseable> consumer = Consumer.close();
+		Consumer<AutoCloseable> consumer = Consumer.close(Consumer.debug());
 
 		consumer.accept(resource);
 
