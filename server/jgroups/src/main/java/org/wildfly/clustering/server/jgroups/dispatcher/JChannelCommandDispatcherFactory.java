@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
@@ -23,6 +22,7 @@ import org.jgroups.protocols.RSVP;
 import org.jgroups.stack.ProtocolStack;
 import org.wildfly.clustering.context.Contextualizer;
 import org.wildfly.clustering.context.DefaultContextualizerFactory;
+import org.wildfly.clustering.function.Callable;
 import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshalledValue;
@@ -42,12 +42,7 @@ import org.wildfly.clustering.server.util.BlockingExecutor;
  * @author Paul Ferraro
  */
 public class JChannelCommandDispatcherFactory implements ChannelCommandDispatcherFactory, RequestHandler, Runnable {
-	private static final Callable<Object> NO_SUCH_SERVICE_SUPPLIER = new Callable<>() {
-		@Override
-		public Object call() throws Exception {
-			return ServiceResponse.NO_SUCH_SERVICE;
-		}
-	};
+	private static final Callable<Object> NO_SUCH_SERVICE_CALLER = Callable.of(ServiceResponse.NO_SUCH_SERVICE);
 
 	private final JChannelGroup group;
 	private final Map<Object, CommandDispatcherContext<?, ?>> contexts = new ConcurrentHashMap<>();
@@ -120,7 +115,7 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 		Map.Entry<Object, MarshalledValue<Command<Object, Object, Exception>, Object>> entry = (Map.Entry<Object, MarshalledValue<Command<Object, Object, Exception>, Object>>) this.marshaller.read(buffer);
 		Object clientId = entry.getKey();
 		CommandDispatcherContext<?, ?> context = this.contexts.get(clientId);
-		if (context == null) return NO_SUCH_SERVICE_SUPPLIER;
+		if (context == null) return NO_SUCH_SERVICE_CALLER;
 		Object commandContext = context.getCommandContext();
 		Contextualizer contextualizer = context.getContextualizer();
 		MarshalledValue<Command<Object, Object, Exception>, Object> value = entry.getValue();

@@ -5,8 +5,12 @@
 
 package org.wildfly.clustering.function;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * An enhanced unary consumer.
@@ -40,22 +44,9 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		public void accept(Object value) {
 		}
 	};
-	Consumer<AutoCloseable> CLOSE = new Consumer<>() {
-		private final System.Logger logger = System.getLogger(Consumer.class.getName());
-
-		@Override
-		public void accept(AutoCloseable object) {
-			if (object != null) {
-				try {
-					object.close();
-				} catch (RuntimeException e) {
-					throw e;
-				} catch (Exception e) {
-					this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-				}
-			}
-		}
-	};
+	Map<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), ExceptionLogger::new, BinaryOperator.former(), () -> new EnumMap<>(System.Logger.Level.class)));
+	Function<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGER = EXCEPTION_LOGGERS::get;
+	Map<System.Logger.Level, Consumer<AutoCloseable>> SILENT_CLOSERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), EXCEPTION_LOGGER.andThen(Consumer::close), BinaryOperator.former(), () -> new EnumMap<>(System.Logger.Level.class)));
 
 	/**
 	 * Returns a consumer that performs no action.
@@ -68,13 +59,75 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	}
 
 	/**
-	 * Returns a consumer that performs no action.
-	 * @param <V> the consumed type
-	 * @return an empty consumer
+	 * Returns a consumer that silently closes its object.
+	 * @param <V> the auto-closeable type
+	 * @return an closing consumer
 	 */
 	@SuppressWarnings("unchecked")
 	static <V extends AutoCloseable> Consumer<V> close() {
-		return (Consumer<V>) CLOSE;
+		return (Consumer<V>) close(warning());
+	}
+
+	/**
+	 * Returns a consumer that logs an exception at the specified level.
+	 * @param level the log level
+	 * @return an exception logging consumer
+	 */
+	static Consumer<Exception> log(System.Logger.Level level) {
+		return EXCEPTION_LOGGER.apply(level);
+	}
+
+	/**
+	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#ERROR} level.
+	 * @return an exception logging consumer
+	 */
+	static Consumer<Exception> error() {
+		return log(System.Logger.Level.ERROR);
+	}
+
+	/**
+	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#WARNING} level.
+	 * @return an exception logging consumer
+	 */
+	static Consumer<Exception> warning() {
+		return log(System.Logger.Level.WARNING);
+	}
+
+	/**
+	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#INFO} level.
+	 * @return an exception logging consumer
+	 */
+	static Consumer<Exception> info() {
+		return log(System.Logger.Level.INFO);
+	}
+
+	/**
+	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#DEBUG} level.
+	 * @return an exception logging consumer
+	 */
+	static Consumer<Exception> debug() {
+		return log(System.Logger.Level.DEBUG);
+	}
+
+	/**
+	 * Returns a consumer that silently closes its object using the specified exception handler.
+	 * @param <V> the auto-closeable type
+	 * @param handler an exception handler
+	 * @return a silent closing consumer
+	 */
+	static <V extends AutoCloseable> Consumer<V> close(Consumer<Exception> handler) {
+		return new Consumer<>() {
+			@Override
+			public void accept(AutoCloseable object) {
+				if (object != null) {
+					try {
+						object.close();
+					} catch (Exception e) {
+						handler.accept(e);
+					}
+				}
+			}
+		};
 	}
 
 	/**
@@ -107,5 +160,21 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 				}
 			}
 		};
+	}
+
+	class ExceptionLogger implements Consumer<Exception> {
+		private static final System.Logger LOGGER = System.getLogger(Consumer.class.getName());
+		private final System.Logger.Level level;
+
+		ExceptionLogger(System.Logger.Level level) {
+			this.level = level;
+		}
+
+		@Override
+		public void accept(Exception exception) {
+			if (exception != null) {
+				LOGGER.log(this.level, exception.getLocalizedMessage(), exception);
+			}
+		}
 	}
 }

@@ -172,12 +172,7 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 */
 	@SuppressWarnings("unchecked")
 	static <T, U, R> BiFunction<T, U, R> of(R result) {
-		return (result != null) ? new BiFunction<>() {
-			@Override
-			public R apply(T ignore1, U ignore2) {
-				return result;
-			}
-		} : (BiFunction<T, U, R>) NULL;
+		return (result != null) ? of(Supplier.of(result)) : (BiFunction<T, U, R>) NULL;
 	}
 
 	/**
