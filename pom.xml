@@ -18,13 +18,6 @@
 
 	<name>WildFly Clustering</name>
 
-	<scm>
-		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering.git</connection>
-		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering.git</developerConnection>
-		<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
-		<tag>HEAD</tag>
-	</scm>
-
 	<properties>
 		<jdk.runtime.args>-Djava.util.logging.manager=org.jboss.logmanager.LogManager --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
 		<jacoco.skip>true</jacoco.skip>
@@ -177,6 +170,7 @@
 				<artifactId>jboss-logmanager</artifactId>
 				<version>${version.org.jboss.logmanager}</version>
 				<exclusions>
+					<!-- Infinispan requires more recent version -->
 					<exclusion>
 						<groupId>org.jboss.logging</groupId>
 						<artifactId>jboss-logging</artifactId>
