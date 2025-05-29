@@ -10,19 +10,9 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  * @param <T> the operator type
  */
-public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T> {
-	BinaryOperator<?> FORMER_IDENTITY = new BinaryOperator<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return value1;
-		}
-	};
-	BinaryOperator<?> LATTER_IDENTITY = new BinaryOperator<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return value2;
-		}
-	};
+public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>, BiFunction<T, T, T> {
+	BinaryOperator<?> FORMER_IDENTITY = new FormerIdentityOperator<>();
+	BinaryOperator<?> LATTER_IDENTITY = new LatterIdentityOperator<>();
 	BinaryOperator<?> NULL = new BinaryOperator<>() {
 		@Override
 		public Object apply(Object value1, Object value2) {
@@ -144,5 +134,13 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T> 
 				return supplier.get();
 			}
 		} : (BinaryOperator<T>) BinaryOperator.NULL;
+	}
+
+	class FormerIdentityOperator<T> extends BiFunction.FormerIdentityFunction<T, T, T> implements BinaryOperator<T> {
+		private static final long serialVersionUID = 1776702302523048465L;
+	}
+
+	class LatterIdentityOperator<T> extends BiFunction.LatterIdentityFunction<T, T, T> implements BinaryOperator<T> {
+		private static final long serialVersionUID = -8741076230246655393L;
 	}
 }

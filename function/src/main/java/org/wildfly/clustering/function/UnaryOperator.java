@@ -11,12 +11,7 @@ package org.wildfly.clustering.function;
  * @param <T> the operating type
  */
 public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, Function<T, T> {
-	UnaryOperator<?> IDENTITY = new UnaryOperator<>() {
-		@Override
-		public Object apply(Object value) {
-			return value;
-		}
-	};
+	UnaryOperator<?> IDENTITY = new IdentityOperator<>();
 	UnaryOperator<?> NULL = new UnaryOperator<>() {
 		@Override
 		public Object apply(Object value) {
@@ -141,5 +136,9 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 				return function.apply(value);
 			}
 		} : (UnaryOperator<T>) NULL;
+	}
+
+	class IdentityOperator<T> extends Function.IdentityFunction<T, T> implements UnaryOperator<T> {
+		private static final long serialVersionUID = -8748688112674469563L;
 	}
 }

@@ -53,6 +53,17 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 		return this.getCache().getTransactionManager();
 	}
 
+	/**
+	 * Returns a cache with select-for-update semantics.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @return a cache with select-for-update semantics.
+	 */
+	default <K, V> RemoteCache<K, V> getReadForUpdateCache() {
+		RemoteCache<K, V> cache = this.getCache();
+		return this.getCacheProperties().isLockOnRead() ? new ReadForUpdateRemoteCache<>(cache) : cache;
+	}
+
 	default <K, V> RemoteCache<K, V> getIgnoreReturnCache() {
 		RemoteCache<K, V> cache = this.getCache();
 		return this.getNearCacheMode().enabled() ? cache : cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION);

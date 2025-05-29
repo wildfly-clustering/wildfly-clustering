@@ -37,7 +37,6 @@ import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
  * @author Paul Ferraro
  */
 public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvider implements SessionManagerFactoryProvider<C> {
-
 	private static final String SERVER_NAME = "server";
 	private static final String DEPLOYMENT_NAME_PATTERN = "%s-%s.war";
 
@@ -65,7 +64,7 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 			"interval" : 1000
 		},
 		"transaction" : {
-			"mode" : "BATCH",
+			"mode" : "NON_XA",
 			"locking" : "PESSIMISTIC"
 		}
 	}
@@ -73,6 +72,9 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 				.forceReturnValues(false)
 				.nearCacheMode(parameters.getNearCacheMode())
 				.transactionMode(TransactionMode.NONE)
+// Currently fails due to https://github.com/infinispan/infinispan/issues/14926
+//				.transactionMode(TransactionMode.NON_XA)
+//				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
 				;
 		configuration.addRemoteCache(this.deploymentName, configurator);
 		this.accept(() -> configuration.removeRemoteCache(this.deploymentName));
