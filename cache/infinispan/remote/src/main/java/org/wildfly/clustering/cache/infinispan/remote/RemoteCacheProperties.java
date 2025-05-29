@@ -5,7 +5,10 @@
 
 package org.wildfly.clustering.cache.infinispan.remote;
 
+import java.util.Optional;
+
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.wildfly.clustering.cache.CacheProperties;
 
 /**
@@ -14,19 +17,25 @@ import org.wildfly.clustering.cache.CacheProperties;
 public class RemoteCacheProperties implements CacheProperties {
 
 	private final boolean transactional;
+	private final boolean cached;
 
 	public RemoteCacheProperties(RemoteCache<?, ?> cache) {
-		this.transactional = cache.getTransactionManager() != null;
+		// TODO query server configuration to determine whether reads are actually repeatable.
+		this.transactional = cache.isTransactional();
+		org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration config = cache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(cache.getName());
+		this.cached = Optional.ofNullable(config).map(org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration::nearCacheMode).orElse(NearCacheMode.DISABLED).enabled();
 	}
 
 	@Override
 	public boolean isLockOnRead() {
-		return false;
+		// Assume REPEATABLE_READ semantics, unless thwarted by near caching
+		return this.transactional && !this.cached;
 	}
 
 	@Override
 	public boolean isLockOnWrite() {
-		return false;
+		// Assume PESSIMISTIC locking
+		return this.transactional;
 	}
 
 	@Override
