@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.function;
 
+import java.io.Serializable;
+
 /**
  * An enhanced binary function.
  * @author Paul Ferraro
@@ -13,18 +15,8 @@ package org.wildfly.clustering.function;
  * @param <R> the result type
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
-	BiFunction<?, ?, ?> FORMER_IDENTITY = new BiFunction<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return value1;
-		}
-	};
-	BiFunction<?, ?, ?> LATTER_IDENTITY = new BiFunction<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return value2;
-		}
-	};
+	BiFunction<?, ?, ?> FORMER_IDENTITY = new FormerIdentityFunction<>();
+	BiFunction<?, ?, ?> LATTER_IDENTITY = new LatterIdentityFunction<>();
 	BiFunction<?, ?, ?> NULL = new BiFunction<>() {
 		@Override
 		public Object apply(Object value1, Object value2) {
@@ -191,5 +183,23 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 				return supplier.get();
 			}
 		} : (BiFunction<T, U, R>) BiFunction.NULL;
+	}
+
+	class FormerIdentityFunction<T extends R, U, R> implements BiFunction<T, U, R>, Serializable {
+		private static final long serialVersionUID = 9008279150648512886L;
+
+		@Override
+		public R apply(T value1, U value2) {
+			return value1;
+		}
+	}
+
+	class LatterIdentityFunction<T, U extends R, R> implements BiFunction<T, U, R>, Serializable {
+		private static final long serialVersionUID = 1481217198136411335L;
+
+		@Override
+		public R apply(T value1, U value2) {
+			return value2;
+		}
 	}
 }

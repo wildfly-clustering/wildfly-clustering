@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.function;
 
+import java.io.Serializable;
+
 /**
  * An enhanced function.
  * @author Paul Ferraro
@@ -12,12 +14,7 @@ package org.wildfly.clustering.function;
  * @param <R> the function return type
  */
 public interface Function<T, R> extends java.util.function.Function<T, R> {
-	Function<?, ?> IDENTITY = new Function<>() {
-		@Override
-		public Object apply(Object value) {
-			return value;
-		}
-	};
+	Function<?, ?> IDENTITY = new IdentityFunction<>();
 	Function<?, ?> NULL = new Function<>() {
 		@Override
 		public Object apply(Object value) {
@@ -118,5 +115,14 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 				return supplier.get();
 			}
 		} : (Function<T, R>) Function.NULL;
+	}
+
+	class IdentityFunction<T extends R, R> implements Function<T, R>, Serializable {
+		private static final long serialVersionUID = 8125088982681052323L;
+
+		@Override
+		public R apply(T value) {
+			return value;
+		}
 	}
 }
