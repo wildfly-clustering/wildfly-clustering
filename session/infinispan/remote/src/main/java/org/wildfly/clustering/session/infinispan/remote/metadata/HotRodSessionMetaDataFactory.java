@@ -9,13 +9,13 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryComputer;
 import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.offset.OffsetValue;
@@ -51,7 +51,7 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 	private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaDataEntry> writeAccessMetaDataCache;
 
 	public HotRodSessionMetaDataFactory(RemoteCacheConfiguration configuration) {
-		this.readCreationMetaDataCache = configuration.getCache();
+		this.readCreationMetaDataCache = configuration.getReadForUpdateCache();
 		this.writeCreationMetaDataCache = configuration.getIgnoreReturnCache();
 		this.readAccessMetaDataCache = configuration.getCache();
 		this.writeAccessMetaDataCache = configuration.getIgnoreReturnCache();
