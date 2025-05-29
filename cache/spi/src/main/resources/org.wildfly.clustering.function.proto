@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package org.wildfly.clustering.function;
+
+// IDs: 165 - 169
+
+/**
+ * @TypeId(165)
+ */
+message IdentityFunction {
+}
+
+/**
+ * @TypeId(166)
+ */
+message FormerIdentityFunction {
+}
+
+/**
+ * @TypeId(167)
+ */
+message LatterIdentityFunction {
+}

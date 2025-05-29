@@ -5,7 +5,7 @@ package org.wildfly.clustering.cache.function;
 import "java.util.proto";
 import "org.wildfly.clustering.marshalling.protostream.proto";
 
-// IDs: 160 - 169
+// IDs: 160 - 163
 
 /**
  * @TypeId(160)
