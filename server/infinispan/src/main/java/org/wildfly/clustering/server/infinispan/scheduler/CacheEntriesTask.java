@@ -34,7 +34,7 @@ public class CacheEntriesTask<K, V> implements Consumer<CacheStreamFilter<Map.En
 	public static <I, K extends Key<I>, V, M> CacheEntriesTask<K, V> cancel(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<I, K, V, M> scheduler) {
 		org.wildfly.clustering.function.Consumer<I> cancel = scheduler::cancel;
 		Function<Map.Entry<K, V>, K> key = Map.Entry::getKey;
-		return new CacheEntriesTask<>(cache, filter, cancel.map(key.andThen(Key::getId)));
+		return new CacheEntriesTask<>(cache, filter, cancel.compose(key.andThen(Key::getId)));
 	}
 
 	public CacheEntriesTask(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, Consumer<Map.Entry<K, V>> task) {

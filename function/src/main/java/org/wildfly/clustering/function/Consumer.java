@@ -30,7 +30,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param mapper a mapping function
 	 * @return a mapped consumer
 	 */
-	default <V> Consumer<V> map(Function<V, T> mapper) {
+	default <V> Consumer<V> compose(Function<V, T> mapper) {
 		return new Consumer<>() {
 			@Override
 			public void accept(V value) {
