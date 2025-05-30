@@ -15,7 +15,7 @@
 
 	<groupId>org.wildfly.clustering</groupId>
 	<artifactId>wildfly-clustering-bom</artifactId>
-	<version>7.0.2.Final</version>
+	<version>8.0.0.Beta1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering: BOM</name>
@@ -24,7 +24,7 @@
 		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering.git</connection>
 		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering.git</developerConnection>
 		<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
-		<tag>7.0.2.Final</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencyManagement>
