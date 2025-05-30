@@ -31,6 +31,24 @@ public class BiConsumerTestCase {
 	}
 
 	@Test
+	public void compose() {
+		BiConsumer<Object, Object> consumer = Mockito.mock(BiConsumer.class);
+		Mockito.doCallRealMethod().when(consumer).compose(ArgumentMatchers.any(), ArgumentMatchers.any());
+		Function<Object, Object> mapper1 = Mockito.mock(Function.class);
+		Function<Object, Object> mapper2 = Mockito.mock(Function.class);
+		Object value1 = new Object();
+		Object value2 = new Object();
+		Object mapped1 = new Object();
+		Object mapped2 = new Object();
+		Mockito.doReturn(mapped1).when(mapper1).apply(value1);
+		Mockito.doReturn(mapped2).when(mapper2).apply(value2);
+
+		consumer.compose(mapper1, mapper2).accept(value1, value2);
+
+		Mockito.verify(consumer).accept(mapped1, mapped2);
+	}
+
+	@Test
 	public void andThen() {
 		BiConsumer<Object, Object> before = Mockito.mock(BiConsumer.class);
 		BiConsumer<Object, Object> after = Mockito.mock(BiConsumer.class);
@@ -86,7 +104,7 @@ public class BiConsumerTestCase {
 	}
 
 	@Test
-	public void compose() {
+	public void of() {
 		Consumer<Object> consumer1 = Mockito.mock(Consumer.class);
 		Consumer<Object> consumer2 = Mockito.mock(Consumer.class);
 		InOrder order = Mockito.inOrder(consumer1, consumer2);

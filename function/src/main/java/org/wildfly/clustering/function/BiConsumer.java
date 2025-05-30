@@ -28,6 +28,23 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	}
 
 	/**
+	 * Composes a consumer this consumer using result of the specified mapping functions.
+	 * @param <V1> the former mapped type
+	 * @param <V2> the latter mapped type
+	 * @param mapper1 a mapping function for the former parameter
+	 * @param mapper2 a mapping function for the latter parameter
+	 * @return a mapped consumer
+	 */
+	default <V1, V2> BiConsumer<V1, V2> compose(Function<V1, T> mapper1, Function<V2, U> mapper2) {
+		return new BiConsumer<>() {
+			@Override
+			public void accept(V1 value1, V2 value2) {
+				BiConsumer.this.accept(mapper1.apply(value1), mapper2.apply(value2));
+			}
+		};
+	}
+
+	/**
 	 * Returns a consumer that processes this consumer with reversed parameter order.
 	 * @return a consumer that processes this consumer with reversed parameter order.
 	 */

@@ -386,7 +386,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 		TestSessionManagerConfiguration(BlockingQueue<ImmutableSession> expired, C context) {
 			org.wildfly.clustering.function.Consumer<ImmutableSession> queue = expired::add;
-			this.expirationListener = queue.map(SimpleImmutableSession::new);
+			this.expirationListener = queue.compose(SimpleImmutableSession::new);
 			this.context = context;
 		}
 

@@ -20,15 +20,15 @@ import org.mockito.Mockito;
 public class ConsumerTestCase {
 
 	@Test
-	public void map() {
+	public void compose() {
 		Consumer<Object> consumer = Mockito.mock(Consumer.class);
-		Mockito.doCallRealMethod().when(consumer).map(ArgumentMatchers.any());
+		Mockito.doCallRealMethod().when(consumer).compose(ArgumentMatchers.any());
 		Function<Object, Object> mapper = Mockito.mock(Function.class);
 		Object value = new Object();
 		Object result = new Object();
 		Mockito.doReturn(result).when(mapper).apply(value);
 
-		consumer.map(mapper).accept(value);
+		consumer.compose(mapper).accept(value);
 
 		Mockito.verify(consumer).accept(result);
 	}

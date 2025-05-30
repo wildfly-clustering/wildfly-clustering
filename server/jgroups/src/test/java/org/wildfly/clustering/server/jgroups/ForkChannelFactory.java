@@ -62,7 +62,18 @@ public class ForkChannelFactory implements Function<String, JChannel> {
 	@Override
 	public JChannel apply(String fork) {
 		try {
-			return new ForkChannel(this.channel, this.channel.getClusterName(), fork);
+			// Silence log messages when Infinispan calls ForkChannel.setName(...)
+			return new ForkChannel(this.channel, this.channel.getClusterName(), fork) {
+				@Override
+				public ForkChannel setName(String name) {
+					return this;
+				}
+
+				@Override
+				public JChannel name(String name) {
+					return this;
+				}
+			};
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
