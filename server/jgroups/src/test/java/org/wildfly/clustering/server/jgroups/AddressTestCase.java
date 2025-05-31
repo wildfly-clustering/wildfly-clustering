@@ -23,7 +23,7 @@ public class AddressTestCase {
 
 	@ParameterizedTest
 	@TesterFactorySource
-	private void test(TesterFactory factory) throws UnknownHostException {
+	public void test(TesterFactory factory) throws UnknownHostException {
 		Consumer<Address> tester = factory.createTester();
 		tester.accept(UUID.randomUUID());
 		tester.accept(new IpAddress(InetAddress.getLocalHost(), Short.MAX_VALUE));
