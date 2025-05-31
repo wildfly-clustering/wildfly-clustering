@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.AnnotationBasedArgumentsProvider;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.wildfly.clustering.marshalling.TesterFactory;
 
 /**
@@ -21,7 +22,7 @@ import org.wildfly.clustering.marshalling.TesterFactory;
 public class TesterFactoryArgumentsProvider extends AnnotationBasedArgumentsProvider<TesterFactorySource> {
 
 	@Override
-	protected Stream<? extends Arguments> provideArguments(ExtensionContext context, TesterFactorySource annotation) {
+	protected Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context, TesterFactorySource annotation) {
 		Stream.Builder<Arguments> builder = Stream.builder();
 		for (Class<? extends TesterFactory> factoryClass : annotation.value()) {
 			Iterator<? extends TesterFactory> factories = ServiceLoader.load(factoryClass, factoryClass.getClassLoader()).iterator();
