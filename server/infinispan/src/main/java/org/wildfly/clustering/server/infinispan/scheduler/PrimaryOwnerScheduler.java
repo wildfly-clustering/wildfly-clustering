@@ -128,7 +128,7 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 		public CompletionStage<R> apply(T value) throws IOException {
 			PrimaryOwnerCommand<I, M, R> command = this.commandFactory.apply(value);
 			CacheContainerGroupMember primaryOwner = this.affinity.apply(command.getId());
-			LOGGER.log(System.Logger.Level.DEBUG, "Executing command %s on %s", command, primaryOwner);
+			LOGGER.log(System.Logger.Level.DEBUG, "Executing command {0} on {1}", command, primaryOwner);
 			// This should only go remote following a failover
 			return this.dispatcher.dispatchToMember(command, primaryOwner);
 		}
