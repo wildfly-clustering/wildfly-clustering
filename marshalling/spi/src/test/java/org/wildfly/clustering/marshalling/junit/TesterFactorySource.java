@@ -16,6 +16,7 @@ import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.TesterFactory;
 
 /**
+ * Defines the tester factory parameter of a marshalling test method.
  * @author Paul Ferraro
  */
 @Retention(RUNTIME)

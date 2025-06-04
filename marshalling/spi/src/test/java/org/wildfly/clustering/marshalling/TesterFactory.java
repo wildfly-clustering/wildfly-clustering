@@ -19,6 +19,7 @@ import org.assertj.core.api.ObjectArrayAssert;
 import org.assertj.core.api.ObjectAssert;
 
 /**
+ * Factory for creating marshalling testers.
  * @author Paul Ferraro
  */
 public interface TesterFactory {

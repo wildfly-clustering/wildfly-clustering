@@ -34,25 +34,31 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 		Instant expected = Instant.now();
 		OffsetValue<Instant> lastAccessStartTime = Mockito.mock(OffsetValue.class);
 
+		doReturn(false).when(entry).isNew();
 		doReturn(lastAccessStartTime).when(entry).getLastAccessStartTime();
 		doReturn(expected).when(lastAccessStartTime).get();
 
-		Instant result = metaData.getLastAccessStartTime();
+		assertThat(metaData.getLastAccessStartTime()).isSameAs(expected);
 
-		assertThat(result).isSameAs(expected);
+		doReturn(true).when(entry).isNew();
+
+		assertThat(metaData.getLastAccessStartTime()).isNull();
 	}
 
 	void testLastAccessEndTime(ImmutableSessionMetaDataEntry entry, ImmutableSessionMetaData metaData) {
 		Instant expected = Instant.now();
 		OffsetValue<Instant> lastAccessEndTime = Mockito.mock(OffsetValue.class);
 
+		doReturn(false).when(entry).isNew();
 		doReturn(lastAccessEndTime).when(entry).getLastAccessEndTime();
 		doReturn(expected).when(lastAccessEndTime).get();
 
-		Instant result = metaData.getLastAccessEndTime();
-
-		assertThat(result).isEqualTo(expected);
+		assertThat(metaData.getLastAccessEndTime()).isEqualTo(expected);
 		assertThat(metaData.getLastAccessTime()).isEqualTo(expected);
+
+		doReturn(true).when(entry).isNew();
+
+		assertThat(metaData.getLastAccessEndTime()).isNull();
 	}
 
 	void testTimeout(ImmutableSessionMetaDataEntry entry, ImmutableSessionMetaData metaData) {
