@@ -17,17 +17,13 @@ import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.wildfly.clustering.marshalling.TesterFactory;
 
 /**
+ * Provides marshalling test method arguments via a {@link TesterFactorySource}.
  * @author Paul Ferraro
  */
 public class TesterFactoryArgumentsProvider extends AnnotationBasedArgumentsProvider<TesterFactorySource> {
 
 	@Override
 	protected Stream<? extends Arguments> provideArguments(ExtensionContext context, TesterFactorySource annotation) {
-		return super.provideArguments(null, context, annotation);
-	}
-
-	@Override
-	protected Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context, TesterFactorySource annotation) {
 		Stream.Builder<Arguments> builder = Stream.builder();
 		for (Class<? extends TesterFactory> factoryClass : annotation.value()) {
 			Iterator<? extends TesterFactory> factories = ServiceLoader.load(factoryClass, factoryClass.getClassLoader()).iterator();
@@ -39,5 +35,10 @@ public class TesterFactoryArgumentsProvider extends AnnotationBasedArgumentsProv
 			}
 		}
 		return builder.build();
+	}
+
+	@Override
+	protected Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context, TesterFactorySource annotation) {
+		return this.provideArguments(context, annotation);
 	}
 }
