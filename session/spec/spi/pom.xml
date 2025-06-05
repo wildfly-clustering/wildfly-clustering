@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-session-spec-spi</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Session specification SPI</name>
+	<name>WildFly Clustering: Session Management: Specification: SPI</name>
 
 	<dependencies>
 		<dependency>
