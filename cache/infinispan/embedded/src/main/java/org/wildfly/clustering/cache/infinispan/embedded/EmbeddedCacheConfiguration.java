@@ -8,6 +8,8 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import jakarta.transaction.TransactionManager;
 
@@ -18,6 +20,7 @@ import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.BasicCacheConfiguration;
 
@@ -28,6 +31,16 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 
 	@Override
 	<K, V> Cache<K, V> getCache();
+
+	@Override
+	default <K, V> CacheEntryMutatorFactory<K, V> getCacheEntryMutatorFactory() {
+		return new EmbeddedCacheEntryMutatorFactory<>(this.getCache());
+	}
+
+	@Override
+	default <K, V, O> CacheEntryMutatorFactory<K, O> getCacheEntryMutatorFactory(Function<O, BiFunction<Object, V, V>> functionFactory) {
+		return new EmbeddedCacheEntryComputerFactory<>(this.getCache(), functionFactory);
+	}
 
 	@Override
 	default TransactionManager getTransactionManager() {

@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryMutator;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.session.cache.user.MutableUserSessions;
@@ -28,16 +28,18 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 
 	private final RemoteCache<UserSessionsKey, Map<D, S>> readCache;
 	private final RemoteCache<UserSessionsKey, Map<D, S>> writeCache;
+	private final CacheEntryMutatorFactory<UserSessionsKey, Map<D, S>> mutatorFactory;
 
 	public HotRodUserSessionsFactory(RemoteCacheConfiguration configuration) {
 		this.readCache = configuration.getCache();
 		this.writeCache = configuration.getIgnoreReturnCache();
+		this.mutatorFactory = configuration.getCacheEntryMutatorFactory();
 	}
 
 	@Override
 	public UserSessions<D, S> createUserSessions(String id, Map<D, S> value) {
 		UserSessionsKey key = new UserSessionsKey(id);
-		CacheEntryMutator mutator = new RemoteCacheEntryMutator<>(this.writeCache, key, value);
+		CacheEntryMutator mutator = this.mutatorFactory.createMutator(key, value);
 		return new MutableUserSessions<>(value, mutator);
 	}
 

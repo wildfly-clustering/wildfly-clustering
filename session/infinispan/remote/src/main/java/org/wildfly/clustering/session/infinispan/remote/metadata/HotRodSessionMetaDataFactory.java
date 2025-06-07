@@ -6,15 +6,15 @@
 package org.wildfly.clustering.session.infinispan.remote.metadata;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryComputer;
-import org.wildfly.clustering.function.BiConsumer;
 import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
@@ -49,12 +49,16 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<C>> writeCreationMetaDataCache;
 	private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaDataEntry> readAccessMetaDataCache;
 	private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaDataEntry> writeAccessMetaDataCache;
+	private final CacheEntryMutatorFactory<SessionCreationMetaDataKey, OffsetValue<Duration>> creationMetaDataMutatorFactory;
+	private final CacheEntryMutatorFactory<SessionAccessMetaDataKey, MutableSessionAccessMetaDataOffsetValues> accessMetaDataMutatorFactory;
 
 	public HotRodSessionMetaDataFactory(RemoteCacheConfiguration configuration) {
 		this.readCreationMetaDataCache = configuration.getReadForUpdateCache();
 		this.writeCreationMetaDataCache = configuration.getIgnoreReturnCache();
 		this.readAccessMetaDataCache = configuration.getCache();
 		this.writeAccessMetaDataCache = configuration.getIgnoreReturnCache();
+		this.creationMetaDataMutatorFactory = configuration.getCacheEntryMutatorFactory(SessionCreationMetaDataEntryFunction::new);
+		this.accessMetaDataMutatorFactory = configuration.getCacheEntryMutatorFactory(SessionAccessMetaDataEntryFunction::new);
 	}
 
 	@Override
@@ -96,16 +100,9 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 		MutableSessionAccessMetaDataOffsetValues values = MutableSessionAccessMetaDataOffsetValues.from(entry.getAccessMetaDataEntry());
 		SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaDataEntry(), values);
 
-		CacheEntryMutator creationMetaDataMutator = new RemoteCacheEntryComputer<>(this.writeCreationMetaDataCache, new SessionCreationMetaDataKey(id), new SessionCreationMetaDataEntryFunction<>(timeoutOffset));
-		CacheEntryMutator accessMetaDataMutator = new RemoteCacheEntryComputer<>(this.writeAccessMetaDataCache, new SessionAccessMetaDataKey(id), new SessionAccessMetaDataEntryFunction(values), creationMetaData::getTimeout);
-		CacheEntryMutator mutator = new CacheEntryMutator() {
-			@Override
-			public CompletionStage<Void> mutateAsync() {
-				CompletionStage<Void> stage = !timeoutOffset.getOffset().isZero() ? creationMetaDataMutator.mutateAsync() : CompletableFuture.completedStage(null);
-				return stage.thenAcceptBoth(accessMetaDataMutator.mutateAsync(), BiConsumer.empty());
-			}
-		};
-
+		CacheEntryMutator creationMetaDataMutator = this.creationMetaDataMutatorFactory.createMutator(new SessionCreationMetaDataKey(id), timeoutOffset);
+		CacheEntryMutator accessMetaDataMutator = this.accessMetaDataMutatorFactory.createMutator(new SessionAccessMetaDataKey(id), values).withMaxIdle(creationMetaData::getTimeout);
+		CacheEntryMutator mutator = CacheEntryMutator.of(List.of(creationMetaDataMutator, accessMetaDataMutator));
 		return new CompositeSessionMetaData(creationMetaData, accessMetaData, mutator);
 	}
 

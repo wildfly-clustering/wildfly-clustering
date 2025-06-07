@@ -17,7 +17,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryComputerFactory;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.Marshaller;
@@ -57,7 +56,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = hotrod.getCacheProperties();
-		this.mutatorFactory = new RemoteCacheEntryComputerFactory<>(this.readCache, SessionAttributeMapComputeFunction::new);
+		this.mutatorFactory = hotrod.getCacheEntryMutatorFactory(SessionAttributeMapComputeFunction::new);
 		this.notifierFactory = notifierFactory;
 	}
 

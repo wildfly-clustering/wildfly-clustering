@@ -17,7 +17,6 @@ import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheEntryMutatorFactory;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.Marshallability;
@@ -56,7 +55,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = hotrod.getCacheProperties();
-		this.mutatorFactory = new RemoteCacheEntryMutatorFactory<>(this.writeCache);
+		this.mutatorFactory = hotrod.getCacheEntryMutatorFactory();
 		this.notifierFactory = notifierFactory;
 	}
 
