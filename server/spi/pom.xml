@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-server-spi</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Server SPI</name>
+	<name>WildFly Clustering: Server: SPI</name>
 
 	<dependencies>
 		<dependency>

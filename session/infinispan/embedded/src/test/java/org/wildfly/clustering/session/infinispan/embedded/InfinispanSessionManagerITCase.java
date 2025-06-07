@@ -85,7 +85,7 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 	static class ConcurrentInfinispanSessionManagerArgumentsProvider extends InfinispanSessionManagerArgumentsProvider {
 		ConcurrentInfinispanSessionManagerArgumentsProvider() {
 			this.marshallerClass = ProtoStreamTesterFactory.class;
-			//this.transactionModes = EnumSet.of(TransactionMode.NON_TRANSACTIONAL);
+			this.cacheModes = EnumSet.of(CacheMode.DIST_SYNC);
 		}
 	}
 

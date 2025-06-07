@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-marshalling</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Marshalling modules</name>
+	<name>WildFly Clustering: Marshalling: Modules</name>
 
 	<modules>
 		<module>java</module>

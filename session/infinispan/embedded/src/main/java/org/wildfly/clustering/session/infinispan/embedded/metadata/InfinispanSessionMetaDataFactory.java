@@ -10,9 +10,9 @@ import java.util.concurrent.CompletionStage;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryComputer;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
@@ -32,20 +32,20 @@ import org.wildfly.clustering.session.cache.metadata.coarse.SessionMetaDataEntry
  */
 public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFactory<ContextualSessionMetaDataEntry<C>> {
 
-	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> cache;
 	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> readForUpdateCache;
 	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> tryReadForUpdateCache;
 	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> writeOnlyCache;
 	private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> silentWriteCache;
 	private final CacheProperties properties;
+	private final CacheEntryMutatorFactory<SessionMetaDataKey, MutableSessionMetaDataOffsetValues> mutatorFactory;
 
 	public InfinispanSessionMetaDataFactory(EmbeddedCacheConfiguration configuration) {
-		this.cache = configuration.getCache();
 		this.readForUpdateCache = configuration.getReadForUpdateCache();
 		this.tryReadForUpdateCache = configuration.getTryReadForUpdateCache();
 		this.writeOnlyCache = configuration.getWriteOnlyCache();
 		this.silentWriteCache = configuration.getSilentWriteCache();
 		this.properties = configuration.getCacheProperties();
+		this.mutatorFactory = configuration.getCacheEntryMutatorFactory(SessionMetaDataEntryFunction::new);
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFacto
 	@Override
 	public InvalidatableSessionMetaData createSessionMetaData(String id, ContextualSessionMetaDataEntry<C> entry) {
 		MutableSessionMetaDataOffsetValues delta = this.properties.isTransactional() && entry.isNew() ? null : MutableSessionMetaDataOffsetValues.from(entry);
-		CacheEntryMutator mutator = (delta != null) ? new EmbeddedCacheEntryComputer<>(this.cache, new SessionMetaDataKey(id), new SessionMetaDataEntryFunction<>(delta)) : CacheEntryMutator.NO_OP;
+		CacheEntryMutator mutator = (delta != null) ? this.mutatorFactory.createMutator(new SessionMetaDataKey(id), delta) : CacheEntryMutator.EMPTY;
 		return new DefaultSessionMetaData((delta != null) ? new MutableSessionMetaDataEntry(entry, delta) : entry, mutator);
 	}
 

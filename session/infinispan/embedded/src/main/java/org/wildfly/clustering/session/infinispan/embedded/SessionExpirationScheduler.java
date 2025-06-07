@@ -110,11 +110,11 @@ public class SessionExpirationScheduler<K extends Key<String>, V> extends Abstra
 			try (Batch batch = this.batchFactory.get()) {
 				try {
 					return this.remover.test(id);
-				} catch (RuntimeException e) {
+				} catch (RuntimeException | Error e) {
 					batch.discard();
 					throw e;
 				}
-			} catch (RuntimeException e) {
+			} catch (RuntimeException | Error e) {
 				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 				return false;
 			}
