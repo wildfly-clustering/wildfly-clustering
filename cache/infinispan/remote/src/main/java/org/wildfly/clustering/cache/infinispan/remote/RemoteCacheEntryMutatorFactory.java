@@ -5,12 +5,10 @@
 
 package org.wildfly.clustering.cache.infinispan.remote;
 
-import java.time.Duration;
-import java.util.function.Function;
-
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
+import org.wildfly.clustering.cache.infinispan.TransactionalCacheEntryMutator;
 
 /**
  * Factory for creating a {@link CacheEntryMutator} for a remote cache entry.
@@ -21,19 +19,14 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 public class RemoteCacheEntryMutatorFactory<K, V> implements CacheEntryMutatorFactory<K, V> {
 
 	private final RemoteCache<K, V> cache;
-	private final Function<V, Duration> maxIdle;
 
 	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache) {
-		this(cache, null);
-	}
-
-	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache, Function<V, Duration> maxIdle) {
 		this.cache = cache;
-		this.maxIdle = maxIdle;
 	}
 
 	@Override
 	public CacheEntryMutator createMutator(K key, V value) {
-		return (this.maxIdle != null) ? new RemoteCacheEntryMutator<>(this.cache, key, value, () -> this.maxIdle.apply(value)) : new RemoteCacheEntryMutator<>(this.cache, key, value);
+		CacheEntryMutator mutator = new RemoteCacheEntryMutator<>(this.cache, key, value);
+		return this.cache.isTransactional() ? new TransactionalCacheEntryMutator(mutator, this.cache.getTransactionManager()) : mutator;
 	}
 }

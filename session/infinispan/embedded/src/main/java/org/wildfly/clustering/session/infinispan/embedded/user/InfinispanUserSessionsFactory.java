@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryMutator;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.session.cache.user.MutableUserSessions;
@@ -28,16 +28,18 @@ public class InfinispanUserSessionsFactory<D, S> implements UserSessionsFactory<
 
 	private final Cache<UserSessionsKey, Map<D, S>> cache;
 	private final Cache<UserSessionsKey, Map<D, S>> writeOnlyCache;
+	private final CacheEntryMutatorFactory<UserSessionsKey, Map<D, S>> mutatorFactory;
 
 	public InfinispanUserSessionsFactory(EmbeddedCacheConfiguration configuration) {
 		this.cache = configuration.getCache();
 		this.writeOnlyCache = configuration.getWriteOnlyCache();
+		this.mutatorFactory = configuration.getCacheEntryMutatorFactory();
 	}
 
 	@Override
 	public UserSessions<D, S> createUserSessions(String id, Map<D, S> value) {
 		UserSessionsKey key = new UserSessionsKey(id);
-		CacheEntryMutator mutator = new EmbeddedCacheEntryMutator<>(this.cache, key, value);
+		CacheEntryMutator mutator = this.mutatorFactory.createMutator(key, value);
 		return new MutableUserSessions<>(value, mutator);
 	}
 

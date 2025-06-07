@@ -7,6 +7,8 @@ package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import jakarta.transaction.TransactionManager;
 
@@ -15,6 +17,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.commons.IllegalLifecycleStateException;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.BasicCacheConfiguration;
 
@@ -26,6 +29,16 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 
 	@Override
 	<K, V> RemoteCache<K, V> getCache();
+
+	@Override
+	default <K, V> CacheEntryMutatorFactory<K, V> getCacheEntryMutatorFactory() {
+		return new RemoteCacheEntryMutatorFactory<>(this.getCache());
+	}
+
+	@Override
+	default <K, V, O> CacheEntryMutatorFactory<K, O> getCacheEntryMutatorFactory(Function<O, BiFunction<Object, V, V>> functionFactory) {
+		return new RemoteCacheEntryComputerFactory<>(this.getCache(), functionFactory);
+	}
 
 	@Override
 	default RemoteCacheContainer getCacheContainer() {

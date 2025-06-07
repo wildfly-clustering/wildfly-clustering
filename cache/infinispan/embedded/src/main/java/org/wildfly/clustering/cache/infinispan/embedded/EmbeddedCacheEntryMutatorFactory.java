@@ -9,6 +9,7 @@ import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
+import org.wildfly.clustering.cache.infinispan.TransactionalCacheEntryMutator;
 
 /**
  * Factory for creating {@link CacheEntryMutator} objects for an Infinispan cache.
@@ -32,6 +33,7 @@ public class EmbeddedCacheEntryMutatorFactory<K, V> implements CacheEntryMutator
 
 	@Override
 	public CacheEntryMutator createMutator(K key, V value) {
-		return this.properties.isPersistent() ? new EmbeddedCacheEntryMutator<>(this.cache, key, value) : CacheEntryMutator.NO_OP;
+		CacheEntryMutator mutator = this.properties.isPersistent() ? new EmbeddedCacheEntryMutator<>(this.cache, key, value) : CacheEntryMutator.EMPTY;
+		return this.properties.isPersistent() && this.properties.isTransactional() ? new TransactionalCacheEntryMutator(mutator, this.cache.getAdvancedCache().getTransactionManager()) : mutator;
 	}
 }
