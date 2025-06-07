@@ -16,7 +16,7 @@
 	<artifactId>wildfly-clustering</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering</name>
+	<name>WildFly Clustering: Modules</name>
 
 	<properties>
 		<jdk.runtime.args>-Djava.util.logging.manager=org.jboss.logmanager.LogManager --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
@@ -455,32 +455,4 @@
 			</build>
 		</profile>
 	</profiles>
-
-	<repositories>
-		<repository>
-			<id>default</id>
-			<url>${maven.repository.url}</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>default</id>
-			<url>${maven.repository.url}</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 </project>

@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-cache</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Caching modules</name>
+	<name>WildFly Clustering: Cache: Modules</name>
 
 	<modules>
 		<module>infinispan</module>

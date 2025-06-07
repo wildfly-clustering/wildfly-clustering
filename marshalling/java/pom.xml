@@ -16,8 +16,6 @@
 	<packaging>jar</packaging>
 
 	<name>WildFly Clustering: Marshalling: Java serialization</name>
-	<description>
-	</description>
 
 	<dependencies>
 		<dependency>

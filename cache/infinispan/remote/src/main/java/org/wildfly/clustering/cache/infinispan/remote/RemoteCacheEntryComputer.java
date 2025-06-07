@@ -11,9 +11,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
 import org.infinispan.client.hotrod.RemoteCache;
-import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.infinispan.AbstractCacheEntryMutator;
 import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.function.Supplier;
 
 /**
  * Mutator for a cache entry using a compute function.
@@ -21,27 +20,21 @@ import org.wildfly.clustering.function.Supplier;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class RemoteCacheEntryComputer<K, V> implements CacheEntryMutator {
+public class RemoteCacheEntryComputer<K, V> extends AbstractCacheEntryMutator {
 
 	private final RemoteCache<K, V> cache;
 	private final K key;
 	private final BiFunction<Object, V, V> function;
-	private final java.util.function.Supplier<Duration> maxIdle;
 
-	public RemoteCacheEntryComputer(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function) {
-		this(cache, key, function, Supplier.of(Duration.ZERO));
-	}
-
-	public RemoteCacheEntryComputer(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function, java.util.function.Supplier<Duration> maxIdle) {
+	RemoteCacheEntryComputer(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function) {
 		this.cache = cache;
 		this.key = key;
 		this.function = function;
-		this.maxIdle = maxIdle;
 	}
 
 	@Override
 	public CompletionStage<Void> mutateAsync() {
-		Duration maxIdleDuration = this.maxIdle.get();
+		Duration maxIdleDuration = this.get();
 		long seconds = maxIdleDuration.getSeconds();
 		int nanos = maxIdleDuration.getNano();
 		if (nanos > 0) {

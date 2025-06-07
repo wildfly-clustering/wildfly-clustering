@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-cache-infinispan-common</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: SPI implementation for Infinispan caches</name>
+	<name>WildFly Clustering: Cache: Infinispan: Common</name>
 
 	<dependencies>
 		<dependency>

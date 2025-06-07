@@ -18,7 +18,6 @@ import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PostActivateBlockingListener;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PostPassivateBlockingListener;
@@ -69,7 +68,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = infinispan.getCacheProperties();
-		this.mutatorFactory = new EmbeddedCacheEntryMutatorFactory<>(this.cache, this.properties);
+		this.mutatorFactory = infinispan.getCacheEntryMutatorFactory();
 		this.notifierFactory = notifierFactory;
 		this.detachedNotifierFactory = detachedNotifierFactory;
 		this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
@@ -145,7 +144,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	@Override
 	public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
 		try {
-			CacheEntryMutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? CacheEntryMutator.NO_OP : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
+			CacheEntryMutator mutator = (this.properties.isTransactional() && metaData.isNew()) ? CacheEntryMutator.EMPTY : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
 			SessionActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : null;
 			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Marshallability.TRUE , this.immutability, notifier);
 		} catch (IOException e) {

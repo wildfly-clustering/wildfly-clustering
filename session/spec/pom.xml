@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-session-spec</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Session specification modules</name>
+	<name>WildFly Clustering: Session Management: Specification: Modules</name>
 
 	<modules>
 		<module>servlet</module>
