@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 
 /**
@@ -21,10 +20,10 @@ public class CompositeSessionMetaData extends CompositeImmutableSessionMetaData 
 
 	private final SessionCreationMetaData creationMetaData;
 	private final SessionAccessMetaData accessMetaData;
-	private final CacheEntryMutator mutator;
+	private final Runnable mutator;
 	private final AtomicBoolean valid = new AtomicBoolean(true);
 
-	public CompositeSessionMetaData(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator) {
+	public CompositeSessionMetaData(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator) {
 		super(creationMetaData, accessMetaData);
 		this.creationMetaData = creationMetaData;
 		this.accessMetaData = accessMetaData;
@@ -67,6 +66,6 @@ public class CompositeSessionMetaData extends CompositeImmutableSessionMetaData 
 
 	@Override
 	public void close() {
-		this.mutator.mutate();
+		this.mutator.run();
 	}
 }

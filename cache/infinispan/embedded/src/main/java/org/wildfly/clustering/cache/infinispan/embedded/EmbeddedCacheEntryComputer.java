@@ -36,7 +36,7 @@ public class EmbeddedCacheEntryComputer<K, V> extends AbstractCacheEntryMutator 
 	}
 
 	@Override
-	public CompletionStage<Void> mutateAsync() {
+	public CompletionStage<Void> runAsync() {
 		Duration maxIdleDuration = this.get();
 		Metadata.Builder builder = new EmbeddedMetadata.Builder();
 		if (!maxIdleDuration.isZero()) {

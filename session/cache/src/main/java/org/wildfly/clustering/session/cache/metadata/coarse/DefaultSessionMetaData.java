@@ -10,20 +10,19 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 
 /**
- * Default session metadata implementation that delegates to a cache entry, triggering {@link CacheEntryMutator#mutate()} on close.
+ * Default session metadata implementation that delegates to a cache entry, triggering its mutator {@link Runnable#run()} on close.
  * @author Paul Ferraro
  */
 public class DefaultSessionMetaData extends DefaultImmutableSessionMetaData implements InvalidatableSessionMetaData {
 
 	private final SessionMetaDataEntry entry;
-	private final CacheEntryMutator mutator;
+	private final Runnable mutator;
 	private final AtomicBoolean valid = new AtomicBoolean(true);
 
-	public DefaultSessionMetaData(SessionMetaDataEntry entry, CacheEntryMutator mutator) {
+	public DefaultSessionMetaData(SessionMetaDataEntry entry, Runnable mutator) {
 		super(entry);
 		this.entry = entry;
 		this.mutator = mutator;
@@ -66,6 +65,6 @@ public class DefaultSessionMetaData extends DefaultImmutableSessionMetaData impl
 
 	@Override
 	public void close() {
-		this.mutator.mutate();
+		this.mutator.run();
 	}
 }

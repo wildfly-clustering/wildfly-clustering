@@ -15,7 +15,6 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.marshalling.Marshallability;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
@@ -25,7 +24,7 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
  */
 public class CoarseSessionAttributesTestCase {
 
-	private final CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+	private final Runnable mutator = mock(Runnable.class);
 	private final Marshallability marshallability = mock(Marshallability.class);
 	private final Immutability immutability = mock(Immutability.class);
 	private final SessionActivationNotifier notifier = mock(SessionActivationNotifier.class);
@@ -60,7 +59,7 @@ public class CoarseSessionAttributesTestCase {
 			assertThat(attributes.remove("existing")).isSameAs(existing);
 		}
 
-		verify(this.mutator).mutate();
+		verify(this.mutator).run();
 		verify(this.notifier).prePassivate();
 	}
 
@@ -111,7 +110,7 @@ public class CoarseSessionAttributesTestCase {
 		}
 
 		verify(this.notifier).prePassivate();
-		verify(this.mutator).mutate();
+		verify(this.mutator).run();
 	}
 
 	@Test
@@ -163,6 +162,6 @@ public class CoarseSessionAttributesTestCase {
 
 		verify(this.notifier).prePassivate();
 		// Accessing mutable attribute should write
-		verify(this.mutator).mutate();
+		verify(this.mutator).run();
 	}
 }
