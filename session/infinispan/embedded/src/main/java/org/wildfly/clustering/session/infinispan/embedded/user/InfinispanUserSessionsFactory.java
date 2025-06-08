@@ -10,7 +10,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.function.Consumer;
@@ -39,7 +38,7 @@ public class InfinispanUserSessionsFactory<D, S> implements UserSessionsFactory<
 	@Override
 	public UserSessions<D, S> createUserSessions(String id, Map<D, S> value) {
 		UserSessionsKey key = new UserSessionsKey(id);
-		CacheEntryMutator mutator = this.mutatorFactory.createMutator(key, value);
+		Runnable mutator = this.mutatorFactory.createMutator(key, value);
 		return new MutableUserSessions<>(value, mutator);
 	}
 

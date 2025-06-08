@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
@@ -23,36 +22,36 @@ public class MutableUserSessionsTestCase {
 
 	@Test
 	public void getApplications() {
-		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+		Runnable mutator = mock(Runnable.class);
 		UserSessions<String, String> sessions = new MutableUserSessions<>(Map.of("deployment", "session"), mutator);
 
 		Set<String> result = sessions.getDeployments();
 
 		assertThat(result).containsExactly("deployment");
 
-		verify(mutator, never()).mutate();
+		verify(mutator, never()).run();
 	}
 
 	@Test
 	public void getSession() {
-		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+		Runnable mutator = mock(Runnable.class);
 		UserSessions<String, String> sessions = new MutableUserSessions<>(Map.of("deployment", "session"), mutator);
 
 		assertThat(sessions.getSession("deployment")).isEqualTo("session");
 		assertThat(sessions.getSession("foo")).isNull();
 
-		verify(mutator, never()).mutate();
+		verify(mutator, never()).run();
 	}
 
 	@Test
 	public void addSession() {
 		Map<String, String> deployments = new TreeMap<>();
-		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+		Runnable mutator = mock(Runnable.class);
 		UserSessions<String, String> sessions = new MutableUserSessions<>(deployments, mutator);
 
 		sessions.addSession("deployment", "session");
 
-		verify(mutator).mutate();
+		verify(mutator).run();
 
 		sessions.addSession("deployment", "session");
 
@@ -62,12 +61,12 @@ public class MutableUserSessionsTestCase {
 	@Test
 	public void removeSession() {
 		Map<String, String> deployments = new TreeMap<>(Map.of("deployment", "session"));
-		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+		Runnable mutator = mock(Runnable.class);
 		UserSessions<String, String> sessions = new MutableUserSessions<>(deployments, mutator);
 
 		sessions.removeSession("deployment");
 
-		verify(mutator).mutate();
+		verify(mutator).run();
 
 		sessions.removeSession("deployment");
 

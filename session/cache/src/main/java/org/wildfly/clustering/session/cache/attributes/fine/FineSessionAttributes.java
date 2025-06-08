@@ -112,7 +112,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 					Object value = entry.getValue();
 					updates.put(name, (value != null) ? this.write(value) : null);
 				}
-				this.mutatorFactory.createMutator(this.key, updates).mutate();
+				this.mutatorFactory.createMutator(this.key, updates).run();
 			}
 		});
 	}

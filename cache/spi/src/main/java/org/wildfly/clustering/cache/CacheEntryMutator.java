@@ -17,21 +17,19 @@ import org.wildfly.clustering.function.Runnable;
  * Updates a cache entry within the cache.
  * @author Paul Ferraro
  */
-public interface CacheEntryMutator {
+public interface CacheEntryMutator extends java.lang.Runnable {
 	System.Logger LOGGER = System.getLogger(CacheEntryMutator.class.getPackageName());
 
-	/**
-	 * Ensure that this object replicates.
-	 */
-	default void mutate() {
+	@Override
+	default void run() {
 		try {
-			this.mutateAsync().toCompletableFuture().join();
+			this.runAsync().toCompletableFuture().join();
 		} catch (CompletionException | CancellationException e) {
 			LOGGER.log(System.Logger.Level.ERROR, e.getLocalizedMessage(), e);
 		}
 	}
 
-	CompletionStage<Void> mutateAsync();
+	CompletionStage<Void> runAsync();
 
 	CacheEntryMutator withMaxIdle(Supplier<Duration> maxIdle);
 
@@ -43,7 +41,7 @@ public interface CacheEntryMutator {
 		private final CompletionStage<Void> completed = CompletableFuture.completedStage(null);
 
 		@Override
-		public CompletionStage<Void> mutateAsync() {
+		public CompletionStage<Void> runAsync() {
 			return this.completed;
 		}
 
@@ -56,10 +54,10 @@ public interface CacheEntryMutator {
 	static CacheEntryMutator of(Iterable<CacheEntryMutator> mutators) {
 		return new CacheEntryMutator() {
 			@Override
-			public CompletionStage<Void> mutateAsync() {
+			public CompletionStage<Void> runAsync() {
 				CompletionStage<Void> result = CompletableFuture.completedStage(null);
 				for (CacheEntryMutator mutator : mutators) {
-					result = result.runAfterBoth(mutator.mutateAsync(), Runnable.empty());
+					result = result.runAfterBoth(mutator.runAsync(), Runnable.empty());
 				}
 				return result;
 			}

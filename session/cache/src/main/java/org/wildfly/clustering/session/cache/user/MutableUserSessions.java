@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
@@ -19,9 +18,9 @@ import org.wildfly.clustering.session.user.UserSessions;
 public class MutableUserSessions<D, S> implements UserSessions<D, S> {
 
 	private final Map<D, S> sessions;
-	private final CacheEntryMutator mutator;
+	private final Runnable mutator;
 
-	public MutableUserSessions(Map<D, S> sessions, CacheEntryMutator mutator) {
+	public MutableUserSessions(Map<D, S> sessions, Runnable mutator) {
 		this.sessions = sessions;
 		this.mutator = mutator;
 	}
@@ -40,7 +39,7 @@ public class MutableUserSessions<D, S> implements UserSessions<D, S> {
 	public S removeSession(D deployment) {
 		S removed = this.sessions.remove(deployment);
 		if (removed != null) {
-			this.mutator.mutate();
+			this.mutator.run();
 		}
 		return removed;
 	}
@@ -49,7 +48,7 @@ public class MutableUserSessions<D, S> implements UserSessions<D, S> {
 	public boolean addSession(D deployment, S session) {
 		boolean added = this.sessions.put(deployment, session) == null;
 		if (added) {
-			this.mutator.mutate();
+			this.mutator.run();
 		}
 		return added;
 	}

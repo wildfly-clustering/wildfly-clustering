@@ -21,7 +21,6 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.server.offset.OffsetValue;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 
@@ -34,7 +33,7 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 		@Override
 		public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) throws Exception {
 			MutableSessionMetaDataEntry entry = mock(MutableSessionMetaDataEntry.class);
-			CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+			Runnable mutator = mock(Runnable.class);
 			InvalidatableSessionMetaData metaData = new DefaultSessionMetaData(entry, mutator);
 			return Stream.of(Arguments.of(entry, mutator, metaData));
 		}
@@ -42,35 +41,35 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void testCreationTime(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void testCreationTime(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.testCreationTime(entry, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void testLastAccessStartTime(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void testLastAccessStartTime(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.testLastAccessStartTime(entry, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void testLastAccessEndTime(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void testLastAccessEndTime(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.testLastAccessEndTime(entry, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void testTimeout(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void testTimeout(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.testTimeout(entry, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void setLastAccess(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void setLastAccess(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		Instant endTime = Instant.now();
 		Instant startTime = endTime.minus(Duration.ofMillis(500));
 		OffsetValue<Instant> lastAccessStartTime = Mockito.mock(OffsetValue.class);
@@ -104,7 +103,7 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void setLastAccessZeroDuration(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void setLastAccessZeroDuration(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		// Validate zero duration request
 		Instant endTime = Instant.now();
 		Instant startTime = endTime.minus(Duration.ofMillis(500));
@@ -139,7 +138,7 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void setTimeout(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void setTimeout(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		Duration timeout = Duration.ofHours(1);
 
 		metaData.setTimeout(timeout);
@@ -151,7 +150,7 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void invalidate(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void invalidate(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		assertThat(metaData.isValid()).isTrue();
 
 		metaData.invalidate();
@@ -164,10 +163,10 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 
 	@ParameterizedTest(name = ParameterizedInvocationConstants.INDEX_PLACEHOLDER)
 	@ArgumentsSource(Parameters.class)
-	public void close(MutableSessionMetaDataEntry entry, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void close(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		metaData.close();
 
 		Mockito.verifyNoInteractions(entry);
-		Mockito.verify(mutator).mutate();
+		Mockito.verify(mutator).run();
 	}
 }

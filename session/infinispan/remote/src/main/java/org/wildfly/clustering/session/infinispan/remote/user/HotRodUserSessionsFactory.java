@@ -10,7 +10,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.client.hotrod.RemoteCache;
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.function.Consumer;
@@ -39,7 +38,7 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 	@Override
 	public UserSessions<D, S> createUserSessions(String id, Map<D, S> value) {
 		UserSessionsKey key = new UserSessionsKey(id);
-		CacheEntryMutator mutator = this.mutatorFactory.createMutator(key, value);
+		Runnable mutator = this.mutatorFactory.createMutator(key, value);
 		return new MutableUserSessions<>(value, mutator);
 	}
 

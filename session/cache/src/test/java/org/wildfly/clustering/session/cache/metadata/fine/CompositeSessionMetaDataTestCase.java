@@ -21,7 +21,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.mockito.Mockito;
-import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 
 /**
@@ -35,7 +34,7 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 			SessionCreationMetaData creationMetaData = mock(SessionCreationMetaData.class);
 			SessionAccessMetaData accessMetaData = mock(SessionAccessMetaData.class);
-			CacheEntryMutator mutator = mock(CacheEntryMutator.class);
+			Runnable mutator = mock(Runnable.class);
 			InvalidatableSessionMetaData metaData = new CompositeSessionMetaData(creationMetaData, accessMetaData, mutator);
 			return Stream.of(Arguments.of(creationMetaData, accessMetaData, mutator, metaData));
 		}
@@ -43,49 +42,49 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void isNew(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void isNew(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.isNew(creationMetaData, accessMetaData, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void isExpired(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void isExpired(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.isExpired(creationMetaData, accessMetaData, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void getCreationTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void getCreationTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.getCreationTime(creationMetaData, accessMetaData, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void getLastAccessStartTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void getLastAccessStartTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.getLastAccessStartTime(creationMetaData, accessMetaData, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void getLastAccessEndTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void getLastAccessEndTime(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.getLastAccessEndTime(creationMetaData, accessMetaData, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void getMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void getMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.getMaxInactiveInterval(creationMetaData, accessMetaData, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void setLastAccessed(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void setLastAccessed(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		// New session
 		Instant creationTime = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 		Instant startTime = creationTime;
@@ -126,7 +125,7 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void setMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void setMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		Duration duration = Duration.ZERO;
 
 		metaData.setTimeout(duration);
@@ -137,9 +136,9 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void close(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, CacheEntryMutator mutator, InvalidatableSessionMetaData metaData) {
+	public void close(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		metaData.close();
 
-		verify(mutator).mutate();
+		verify(mutator).run();
 	}
 }

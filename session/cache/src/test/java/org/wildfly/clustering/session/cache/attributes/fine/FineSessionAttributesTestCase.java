@@ -93,12 +93,11 @@ public class FineSessionAttributesTestCase {
 		// Read-only request should not write
 		verifyNoInteractions(this.mutatorFactory);
 
+		reset(this.notifier);
+
 		UUID marshalledMutable = UUID.randomUUID();
 		ArgumentCaptor<Map<String, Object>> capturedUpdates = ArgumentCaptor.captor();
 		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
-
-		reset(this.notifier);
-
 		try (SessionAttributes attributes = this.createSessionAttributes("id", map)) {
 			// Verify non-existant attribute
 			assertThat(attributes.get("missing")).isNull();
@@ -116,7 +115,7 @@ public class FineSessionAttributesTestCase {
 		}
 
 		// Accessing a mutable attribute should write
-		verify(mutator).mutate();
+		verify(mutator).run();
 
 		// Only mutable attributes should have been updated
 		Map<String, Object> updates = capturedUpdates.getValue();
@@ -156,7 +155,7 @@ public class FineSessionAttributesTestCase {
 		// There should be no pre-passivate event for removed attribute
 		verify(this.notifier, never()).prePassivate(foo);
 
-		verify(mutator).mutate();
+		verify(mutator).run();
 
 		Map<String, Object> updates = capturedUpdates.getValue();
 		assertThat(updates.keySet()).containsExactly("foo");

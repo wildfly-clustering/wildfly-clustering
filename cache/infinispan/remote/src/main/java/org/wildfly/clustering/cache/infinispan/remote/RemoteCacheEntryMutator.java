@@ -31,7 +31,7 @@ public class RemoteCacheEntryMutator<K, V> extends AbstractCacheEntryMutator {
 	}
 
 	@Override
-	public CompletionStage<Void> mutateAsync() {
+	public CompletionStage<Void> runAsync() {
 		Duration maxIdleDuration = this.get();
 		long seconds = maxIdleDuration.getSeconds();
 		int nanos = maxIdleDuration.getNano();
