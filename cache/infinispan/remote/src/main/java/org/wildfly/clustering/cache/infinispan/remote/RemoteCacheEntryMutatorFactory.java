@@ -8,7 +8,6 @@ package org.wildfly.clustering.cache.infinispan.remote;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
-import org.wildfly.clustering.cache.infinispan.TransactionalCacheEntryMutator;
 
 /**
  * Factory for creating a {@link CacheEntryMutator} for a remote cache entry.
@@ -26,7 +25,6 @@ public class RemoteCacheEntryMutatorFactory<K, V> implements CacheEntryMutatorFa
 
 	@Override
 	public CacheEntryMutator createMutator(K key, V value) {
-		CacheEntryMutator mutator = new RemoteCacheEntryMutator<>(this.cache, key, value);
-		return this.cache.isTransactional() ? new TransactionalCacheEntryMutator(mutator, this.cache.getTransactionManager()) : mutator;
+		return new RemoteCacheEntryMutator<>(this.cache, key, value);
 	}
 }
