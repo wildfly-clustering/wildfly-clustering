@@ -7,6 +7,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -149,7 +150,25 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 
 		@Override
 		public ImmutableSerializationContext build() {
-			return this.context.getImmutableSerializationContext();
+			ImmutableSerializationContext context = this.context.getImmutableSerializationContext();
+			Deque<Integer> missingTypeIds = new LinkedList<>();
+			for (int typeId = 0; typeId <= Integer.MAX_VALUE; ++typeId) {
+				try {
+					String name = context.getDescriptorByTypeId(typeId).getFullName();
+					while (!missingTypeIds.isEmpty()) {
+						logTypeId(missingTypeIds.removeFirst(), "NONE");
+					}
+					logTypeId(typeId, name);
+				} catch (IllegalArgumentException e) {
+					if (missingTypeIds.size() > Byte.MAX_VALUE) break;
+					missingTypeIds.add(typeId);
+				}
+			}
+			return context;
+		}
+
+		private static void logTypeId(int typeId, String name) {
+			LOGGER.log(System.Logger.Level.DEBUG, "@TypeId({0}) = {1}", typeId, name);
 		}
 	}
 
