@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.manager;
 
-import java.util.function.Supplier;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Configuration of a manager of distributed state.

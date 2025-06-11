@@ -9,10 +9,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;

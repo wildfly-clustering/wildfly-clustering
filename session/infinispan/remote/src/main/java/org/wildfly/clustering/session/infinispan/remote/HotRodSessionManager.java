@@ -7,10 +7,10 @@ package org.wildfly.clustering.session.infinispan.remote;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -30,7 +30,7 @@ import org.wildfly.clustering.session.cache.SessionFactory;
 public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
 	private final Registrar<java.util.function.Consumer<ImmutableSession>> expirationListenerRegistrar;
 	private final java.util.function.Consumer<ImmutableSession> expirationListener;
-	private final Supplier<Batch> batchFactory;
+	private final Batch.Factory batchFactory;
 
 	private AtomicReference<Registration> expirationListenerRegistration = new AtomicReference<>();
 

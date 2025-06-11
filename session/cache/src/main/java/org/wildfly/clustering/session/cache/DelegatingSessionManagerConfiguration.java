@@ -7,8 +7,8 @@ package org.wildfly.clustering.session.cache;
 
 import java.time.Duration;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 

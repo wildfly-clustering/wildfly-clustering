@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,6 +19,7 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;

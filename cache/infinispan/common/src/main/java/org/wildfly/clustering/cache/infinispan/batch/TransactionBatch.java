@@ -6,7 +6,6 @@
 package org.wildfly.clustering.cache.infinispan.batch;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
@@ -36,7 +35,7 @@ public interface TransactionBatch extends Batch, SuspendedBatch {
 	 */
 	TransactionBatch interpose();
 
-	interface Factory extends Supplier<Batch> {
+	interface Factory extends Batch.Factory {
 		@Override
 		TransactionBatch get();
 	}

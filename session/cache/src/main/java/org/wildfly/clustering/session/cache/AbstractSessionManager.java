@@ -7,11 +7,11 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.expiration.Expiration;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
@@ -36,7 +36,7 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 	private final Expiration expiration;
 	private final Supplier<String> identifierFactory;
 	private final C context;
-	private final Supplier<Batch> batchFactory;
+	private final Batch.Factory batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
 
 	protected AbstractSessionManager(Supplier<SessionManager<SC>> manager, SessionManagerConfiguration<C> configuration, CacheConfiguration cacheConfiguration, SessionFactory<C, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {

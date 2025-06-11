@@ -6,9 +6,9 @@
 package org.wildfly.clustering.session.cache;
 
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;

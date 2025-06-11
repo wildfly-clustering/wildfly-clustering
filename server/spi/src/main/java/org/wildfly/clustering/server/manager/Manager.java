@@ -5,9 +5,8 @@
 
 package org.wildfly.clustering.server.manager;
 
-import java.util.function.Supplier;
-
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * A manager of server-side state.

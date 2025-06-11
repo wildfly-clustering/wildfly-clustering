@@ -27,11 +27,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -392,7 +392,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 		@Override
 		public Supplier<String> getIdentifierFactory() {
-			org.wildfly.clustering.function.Supplier<UUID> factory = UUID::randomUUID;
+			Supplier<UUID> factory = UUID::randomUUID;
 			return factory.map(UUID::toString);
 		}
 
