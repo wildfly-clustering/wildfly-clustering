@@ -42,11 +42,4 @@ public class JChannelGroupProvider extends AutoCloseableProvider implements Grou
 	public Group<Address, ChannelGroupMember> getGroup() {
 		return this.group;
 	}
-
-	@Override
-	public void close() {
-		this.group.close();
-		this.channel.disconnect();
-		this.channel.close();
-	}
 }
