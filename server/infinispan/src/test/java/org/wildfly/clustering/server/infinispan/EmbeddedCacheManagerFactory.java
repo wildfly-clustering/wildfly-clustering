@@ -104,7 +104,8 @@ public class EmbeddedCacheManagerFactory implements BiFunction<String, ClassLoad
 						public void registerSchema(SerializationContext context) {
 						}
 					})
-					.globalState().configurationStorage(ConfigurationStorage.VOLATILE)
+					.globalState()
+						.configurationStorage(ConfigurationStorage.VOLATILE)
 						.persistentLocation(Files.createTempDirectory(name).toString(), name)
 						.temporaryLocation(Files.createTempDirectory(name).toString(), name)
 					.build();
@@ -113,5 +114,4 @@ public class EmbeddedCacheManagerFactory implements BiFunction<String, ClassLoad
 			throw new IllegalStateException(e);
 		}
 	}
-
 }
