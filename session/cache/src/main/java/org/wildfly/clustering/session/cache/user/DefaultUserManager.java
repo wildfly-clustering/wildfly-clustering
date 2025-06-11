@@ -5,9 +5,9 @@
 package org.wildfly.clustering.session.cache.user;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;

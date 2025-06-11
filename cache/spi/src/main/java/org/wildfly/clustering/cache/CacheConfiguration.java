@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.cache;
 
-import java.util.function.Supplier;
-
 import org.wildfly.clustering.cache.batch.Batch;
 
 /**
@@ -17,5 +15,5 @@ public interface CacheConfiguration {
 
 	CacheProperties getCacheProperties();
 
-	Supplier<Batch> getBatchFactory();
+	Batch.Factory getBatchFactory();
 }

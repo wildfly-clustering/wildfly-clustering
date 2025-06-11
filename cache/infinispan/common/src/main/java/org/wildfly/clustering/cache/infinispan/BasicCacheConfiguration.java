@@ -7,7 +7,6 @@ package org.wildfly.clustering.cache.infinispan;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import jakarta.transaction.TransactionManager;
 
@@ -35,8 +34,8 @@ public interface BasicCacheConfiguration extends CacheConfiguration, BasicCacheC
 	CacheProperties getCacheProperties();
 
 	@Override
-	default Supplier<Batch> getBatchFactory() {
+	default Batch.Factory getBatchFactory() {
 		TransactionManager tm = this.getTransactionManager();
-		return (tm != null) ? TransactionBatch.factory(this.getCache().getName(), tm, CacheException::new) : Batch.factory();
+		return (tm != null) ? TransactionBatch.factory(this.getCache().getName(), tm, CacheException::new) : Batch.Factory.SIMPLE;
 	}
 }

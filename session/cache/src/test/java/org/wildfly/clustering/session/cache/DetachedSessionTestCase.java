@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.batch.Batch;
@@ -46,7 +45,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void isValid() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 
 		doReturn(batchFactory).when(this.manager).getBatchFactory();
@@ -69,7 +68,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void invalidate() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 
 		doReturn(batchFactory).when(this.manager).getBatchFactory();
@@ -94,7 +93,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void isExpired() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 
 		doReturn(batchFactory).when(this.manager).getBatchFactory();
@@ -123,7 +122,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void getCreationTime() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 
 		doReturn(batchFactory).when(this.manager).getBatchFactory();
@@ -152,7 +151,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void getLastAccessStartTime() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 
 		doReturn(batchFactory).when(this.manager).getBatchFactory();
@@ -181,7 +180,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void getLastAccessEndTime() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 
 		doReturn(batchFactory).when(this.manager).getBatchFactory();
@@ -210,7 +209,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void getMaxInactiveInterval() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 
 		doReturn(batchFactory).when(this.manager).getBatchFactory();
@@ -244,7 +243,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void setTimeout() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 		Duration duration = Duration.ZERO;
 
@@ -272,7 +271,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void getAttributeNames() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 
 		doReturn(batchFactory).when(this.manager).getBatchFactory();
@@ -301,7 +300,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void getAttribute() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 		String attributeName = "foo";
 
@@ -331,7 +330,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void setAttribute() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 		String attributeName = "foo";
 		Object attributeValue = "bar";
@@ -363,7 +362,7 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void removeAttribute() {
-		Supplier<Batch> batchFactory = mock(Supplier.class);
+		Batch.Factory batchFactory = mock(Batch.Factory.class);
 		Batch batch = mock(Batch.class);
 		String attributeName = "foo";
 

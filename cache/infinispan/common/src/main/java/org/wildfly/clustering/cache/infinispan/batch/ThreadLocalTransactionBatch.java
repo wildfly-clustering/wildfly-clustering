@@ -27,7 +27,6 @@ import org.wildfly.clustering.cache.batch.SuspendedBatch;
  */
 public class ThreadLocalTransactionBatch<E extends RuntimeException> implements TransactionBatch {
 
-	private static final Batch NOOP_BATCH = Batch.factory().get();
 	// Used to coalesce interposed transactions
 	private static final ThreadLocal<TransactionBatch> CURRENT_BATCH = new ThreadLocal<>();
 
@@ -89,7 +88,7 @@ public class ThreadLocalTransactionBatch<E extends RuntimeException> implements 
 	public SuspendedBatch suspend() {
 		Batch batch = getCurrentBatch();
 		if (batch == null) {
-			return NOOP_BATCH.suspend();
+			return Batch.Factory.SIMPLE.get().suspend();
 		}
 		if (batch != this) {
 			// Already suspended
@@ -118,7 +117,7 @@ public class ThreadLocalTransactionBatch<E extends RuntimeException> implements 
 			batch.suspend();
 		}
 		if (this.isClosed()) {
-			return NOOP_BATCH;
+			return Batch.CLOSED;
 		}
 		try {
 			this.tm.resume(this.tx);

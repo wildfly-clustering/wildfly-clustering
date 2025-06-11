@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.manager;
 
-import java.util.function.Supplier;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * A service that creating identifiers for a manager.

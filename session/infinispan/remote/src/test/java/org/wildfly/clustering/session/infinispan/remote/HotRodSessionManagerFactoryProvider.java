@@ -71,10 +71,10 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 }""")
 				.forceReturnValues(false)
 				.nearCacheMode(parameters.getNearCacheMode())
-				.transactionMode(TransactionMode.NONE)
 // Currently fails due to https://github.com/infinispan/infinispan/issues/14926
 //				.transactionMode(TransactionMode.NON_XA)
-//				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
+				.transactionMode(TransactionMode.NONE)
+				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
 				;
 		configuration.addRemoteCache(this.deploymentName, configurator);
 		this.accept(() -> configuration.removeRemoteCache(this.deploymentName));

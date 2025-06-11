@@ -4,8 +4,7 @@
  */
 package org.wildfly.clustering.cache.batch;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Instruments the batching of cache operations.
@@ -14,6 +13,16 @@ import java.util.function.Supplier;
  * @author Paul Ferraro
  */
 public interface Batch extends AutoCloseable {
+	Batch CLOSED = new SimpleBatch(false);
+
+	interface Factory extends Supplier<Batch> {
+		Factory SIMPLE = new Factory() {
+			@Override
+			public Batch get() {
+				return new SimpleBatch(true);
+			}
+		};
+	}
 
 	/**
 	 * Suspends this batch.
@@ -65,63 +74,4 @@ public interface Batch extends AutoCloseable {
 
 	@Override
 	void close();
-
-	/**
-	 * Returns a factory for creating no-op batches.
-	 * @return a batch factory
-	 */
-	static Supplier<Batch> factory() {
-		AtomicReference<Batch> reference = new AtomicReference<>();
-		BatchContext<Batch> resumedBatchContext = new BatchContext<>() {
-			@Override
-			public Batch get() {
-				return reference.getPlain();
-			}
-
-			@Override
-			public void close() {
-			}
-		};
-		SuspendedBatch suspendedBatch = new SuspendedBatch() {
-			@Override
-			public Batch resume() {
-				return reference.getPlain();
-			}
-
-			@Override
-			public BatchContext<Batch> resumeWithContext() {
-				return resumedBatchContext;
-			}
-		};
-		reference.setPlain(new Batch() {
-			@Override
-			public SuspendedBatch suspend() {
-				return suspendedBatch;
-			}
-
-			@Override
-			public void discard() {
-			}
-
-			@Override
-			public boolean isActive() {
-				return true;
-			}
-
-			@Override
-			public boolean isDiscarding() {
-				return false;
-			}
-
-			@Override
-			public boolean isClosed() {
-				return false;
-			}
-
-			@Override
-			public void close() {
-			}
-		});
-		return reference::getPlain;
-	}
 }
