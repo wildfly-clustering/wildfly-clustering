@@ -7,8 +7,12 @@ package org.wildfly.clustering.session.infinispan.remote;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.wildfly.clustering.cache.batch.Batch;
+import org.infinispan.client.hotrod.Flag;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
@@ -18,6 +22,7 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
 import org.wildfly.clustering.session.cache.SessionFactory;
+import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreationMetaDataKey;
 
 /**
  * Generic HotRod-based session manager implementation - independent of cache mapping strategy.
@@ -30,7 +35,7 @@ import org.wildfly.clustering.session.cache.SessionFactory;
 public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
 	private final Registrar<java.util.function.Consumer<ImmutableSession>> expirationListenerRegistrar;
 	private final java.util.function.Consumer<ImmutableSession> expirationListener;
-	private final Batch.Factory batchFactory;
+	private final RemoteCache<Key<String>, ?> cache;
 
 	private AtomicReference<Registration> expirationListenerRegistration = new AtomicReference<>();
 
@@ -38,7 +43,7 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 		super(manager, configuration, hotrod, factory, Consumer.empty());
 		this.expirationListenerRegistrar = hotrod.getExpirationListenerRegistrar();
 		this.expirationListener = configuration.getExpirationListener();
-		this.batchFactory = hotrod.getBatchFactory();
+		this.cache = hotrod.getCache();
 	}
 
 	@Override
@@ -57,17 +62,15 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 	}
 
 	@Override
-	public Supplier<Batch> getBatchFactory() {
-		return this.batchFactory;
-	}
-
-	@Override
 	public Set<String> getActiveSessions() {
-		return Set.of();
+		// There is no distinction between active vs passive sessions
+		return this.getSessions();
 	}
 
 	@Override
 	public Set<String> getSessions() {
-		return Set.of();
+		try (Stream<Key<String>> keys = this.cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).keySet().stream()) {
+			return keys.filter(SessionCreationMetaDataKey.class::isInstance).map(Key::getId).collect(Collectors.toUnmodifiableSet());
+		}
 	}
 }

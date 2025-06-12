@@ -25,7 +25,7 @@ import org.wildfly.clustering.cache.batch.SuspendedBatch;
  */
 public class TransactionBatchTestCase {
 	private final TransactionManager tm = mock(TransactionManager.class);
-	private final TransactionBatch.Factory factory = TransactionBatch.factory("test", this.tm, RuntimeException::new);
+	private final TransactionBatch.Factory factory = TransactionBatch.Factory.of("test-container", "test-cache", this.tm, RuntimeException::new);
 
 	@AfterEach
 	public void destroy() {
