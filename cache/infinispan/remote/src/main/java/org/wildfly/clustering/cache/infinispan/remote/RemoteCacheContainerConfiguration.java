@@ -15,4 +15,9 @@ public interface RemoteCacheContainerConfiguration extends BasicCacheContainerCo
 
 	@Override
 	RemoteCacheContainer getCacheContainer();
+
+	@Override
+	default String getName() {
+		return this.getCacheContainer().getConfiguration().statistics().jmxName();
+	}
 }

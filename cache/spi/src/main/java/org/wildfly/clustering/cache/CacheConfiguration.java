@@ -6,6 +6,7 @@
 package org.wildfly.clustering.cache;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Encapsulates the generic configuration of a cache.
@@ -15,5 +16,5 @@ public interface CacheConfiguration {
 
 	CacheProperties getCacheProperties();
 
-	Batch.Factory getBatchFactory();
+	Supplier<Batch> getBatchFactory();
 }

@@ -136,7 +136,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 	private Set<String> getLocalSessions(Cache<Key<String>, ?> cache) {
 		CacheStreamFilter<Key<String>> filter = CacheStreamFilter.local(cache);
 		try (Stream<Key<String>> keys = filter.apply(cache.keySet().stream())) {
-			return keys.filter(SessionCacheKeyFilter.META_DATA).map(Key::getId).collect(Collectors.toSet());
+			return keys.filter(SessionCacheKeyFilter.META_DATA).map(Key::getId).collect(Collectors.toUnmodifiableSet());
 		}
 	}
 }

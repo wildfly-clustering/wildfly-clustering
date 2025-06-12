@@ -36,7 +36,7 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 	private final Expiration expiration;
 	private final Supplier<String> identifierFactory;
 	private final C context;
-	private final Batch.Factory batchFactory;
+	private final Supplier<Batch> batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
 
 	protected AbstractSessionManager(Supplier<SessionManager<SC>> manager, SessionManagerConfiguration<C> configuration, CacheConfiguration cacheConfiguration, SessionFactory<C, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {

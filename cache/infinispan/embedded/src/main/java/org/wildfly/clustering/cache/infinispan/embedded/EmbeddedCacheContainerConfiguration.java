@@ -23,6 +23,11 @@ public interface EmbeddedCacheContainerConfiguration extends BasicCacheContainer
 	EmbeddedCacheManager getCacheContainer();
 
 	@Override
+	default String getName() {
+		return this.getCacheContainer().getCacheManagerConfiguration().cacheManagerName();
+	}
+
+	@Override
 	default Executor getExecutor() {
 		Executor executor = this.getBlockingManager().asExecutor(this.getClass().getSimpleName());
 		return new Executor() {

@@ -37,6 +37,7 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.local.provider.DefaultServiceProviderRegistration;
@@ -54,7 +55,7 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 public class CacheServiceProviderRegistrar<T> implements CacheContainerServiceProviderRegistrar<T>, AutoCloseable {
 	private static final System.Logger LOGGER = System.getLogger(CacheServiceProviderRegistrar.class.getName());
 
-	private final Batch.Factory batchFactory;
+	private final Supplier<Batch> batchFactory;
 	private final ConcurrentMap<T, Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
 	private final Cache<T, Set<Address>> cache;
 	private final CacheContainerGroup group;

@@ -13,6 +13,7 @@ import org.infinispan.commons.api.BasicCacheContainer;
  * @author Paul Ferraro
  */
 public interface BasicCacheContainerConfiguration {
+	String getName();
 
 	BasicCacheContainer getCacheContainer();
 
