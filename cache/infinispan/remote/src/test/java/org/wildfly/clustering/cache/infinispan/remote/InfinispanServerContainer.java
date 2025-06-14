@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.OutputFrame.OutputType;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -56,8 +56,8 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 				LOGGER.log(type == OutputType.STDERR ? System.Logger.Level.ERROR : System.Logger.Level.INFO, message);
 			}
 		});
-		// Wait for server started log message
-		this.setWaitStrategy(new LogMessageWaitStrategy().withRegEx(".*\\QISPN080001\\E.*").withTimes(1).withStartupTimeout(Duration.ofMinutes(2)));
+		// Wait until we can connect to the exposed ports of the container
+		this.setWaitStrategy(new HostPortWaitStrategy().withStartupTimeout(Duration.ofMinutes(2)));
 		this.withEnv(USERNAME_ENV, context.getConfigurationParameter(HOTROD_USERNAME_PROPERTY).orElse(DEFAULT_HOTROD_USERNAME));
 		this.withEnv(PASSWORD_ENV, context.getConfigurationParameter(HOTROD_PASSWORD_PROPERTY).orElse(DEFAULT_HOTROD_PASSWORD));
 	}
