@@ -45,7 +45,7 @@ public class DefaultEncoderRegistry implements EncoderRegistry {
 
 	@Override
 	public <T extends Transcoder> T getTranscoder(Class<T> targetClass) {
-		return targetClass.cast(this.transcoders.stream().filter(Predicate.<Class<?>>same(targetClass).map(Object::getClass)).findAny().orElse(null));
+		return targetClass.cast(this.transcoders.stream().filter(Predicate.<Class<?>>same(targetClass).compose(Object::getClass)).findAny().orElse(null));
 	}
 
 	@Override

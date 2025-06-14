@@ -26,7 +26,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param mapper
 	 * @return a mapped predicate
 	 */
-	default <V> Predicate<V> map(Function<V, T> mapper) {
+	default <V> Predicate<V> compose(Function<V, T> mapper) {
 		return new Predicate<>() {
 			@Override
 			public boolean test(V test) {
@@ -40,7 +40,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param mapper
 	 * @return a mapped predicate
 	 */
-	default DoublePredicate map(DoubleFunction<T> mapper) {
+	default DoublePredicate compose(DoubleFunction<T> mapper) {
 		return new DoublePredicate() {
 			@Override
 			public boolean test(double value) {
@@ -54,7 +54,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param mapper
 	 * @return a mapped predicate
 	 */
-	default IntPredicate map(IntFunction<T> mapper) {
+	default IntPredicate compose(IntFunction<T> mapper) {
 		return new IntPredicate() {
 			@Override
 			public boolean test(int value) {
@@ -68,7 +68,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param mapper
 	 * @return a mapped predicate
 	 */
-	default LongPredicate map(LongFunction<T> mapper) {
+	default LongPredicate compose(LongFunction<T> mapper) {
 		return new LongPredicate() {
 			@Override
 			public boolean test(long value) {
