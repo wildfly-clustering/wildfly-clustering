@@ -21,5 +21,8 @@ public interface SuspendedBatch {
 	 * Resumes this batch until {@link BatchContext#close()}.
 	 * @return a resumed batch context
 	 */
-	BatchContext<Batch> resumeWithContext();
+	default BatchContext<Batch> resumeWithContext() {
+		Batch resumed = this.resume();
+		return BatchContext.of(resumed, Batch::suspend);
+	}
 }

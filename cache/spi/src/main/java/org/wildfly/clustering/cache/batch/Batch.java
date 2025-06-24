@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.cache.batch;
 
-import org.wildfly.clustering.function.Supplier;
-
 /**
  * Instruments the batching of cache operations.
  * Write-only cache operations invoked while this batch is active (i.e. not suspended) will defer invocation until {@link Batch#close()}.
@@ -13,16 +11,8 @@ import org.wildfly.clustering.function.Supplier;
  * @author Paul Ferraro
  */
 public interface Batch extends AutoCloseable {
-	Batch CLOSED = new SimpleBatch(false);
-
-	interface Factory extends Supplier<Batch> {
-		Factory SIMPLE = new Factory() {
-			@Override
-			public Batch get() {
-				return new SimpleBatch(true);
-			}
-		};
-	}
+	System.Logger LOGGER = System.getLogger(Batch.class.getName());
+	Batch CLOSED = new SimpleBatch(0L, false);
 
 	/**
 	 * Suspends this batch.
@@ -36,17 +26,7 @@ public interface Batch extends AutoCloseable {
 	 */
 	default BatchContext<SuspendedBatch> suspendWithContext() {
 		SuspendedBatch suspended = this.suspend();
-		return new BatchContext<>() {
-			@Override
-			public SuspendedBatch get() {
-				return suspended;
-			}
-
-			@Override
-			public void close() {
-				suspended.resume();
-			}
-		};
+		return BatchContext.of(suspended, SuspendedBatch::resume);
 	}
 
 	/**
@@ -62,7 +42,7 @@ public interface Batch extends AutoCloseable {
 
 	/**
 	 * Indicates whether or not this batch will be discarded.
-	 * @return true, if this batch was discarded, false otherwise.
+	 * @return true, if this batch will be discarded, false otherwise.
 	 */
 	boolean isDiscarding();
 

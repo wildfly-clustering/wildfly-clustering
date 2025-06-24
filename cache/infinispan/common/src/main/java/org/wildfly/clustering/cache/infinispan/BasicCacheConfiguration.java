@@ -16,7 +16,8 @@ import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
+import org.wildfly.clustering.cache.batch.SimpleBatchFactory;
+import org.wildfly.clustering.cache.infinispan.batch.TransactionalBatchFactory;
 import org.wildfly.clustering.function.Supplier;
 
 /**
@@ -37,6 +38,6 @@ public interface BasicCacheConfiguration extends CacheConfiguration, BasicCacheC
 	@Override
 	default Supplier<Batch> getBatchFactory() {
 		TransactionManager tm = this.getTransactionManager();
-		return (tm != null) ? TransactionBatch.Factory.of(this.getName(), this.getCache().getName(), tm, CacheException::new) : Batch.Factory.SIMPLE;
+		return (tm != null) ? new TransactionalBatchFactory(this.getName(), tm, CacheException::new) : SimpleBatchFactory.INSTANCE;
 	}
 }

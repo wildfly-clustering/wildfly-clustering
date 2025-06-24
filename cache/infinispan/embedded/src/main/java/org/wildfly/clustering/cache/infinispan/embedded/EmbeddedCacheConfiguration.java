@@ -8,6 +8,7 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -31,6 +32,11 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 
 	@Override
 	<K, V> Cache<K, V> getCache();
+
+	@Override
+	default String getName() {
+		return Map.of("container", EmbeddedCacheContainerConfiguration.super.getName(), "cache", this.getCache().getName()).toString();
+	}
 
 	@Override
 	default <K, V> CacheEntryMutatorFactory<K, V> getCacheEntryMutatorFactory() {
