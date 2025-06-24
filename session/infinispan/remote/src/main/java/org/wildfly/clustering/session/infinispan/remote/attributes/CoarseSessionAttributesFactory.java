@@ -80,7 +80,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(Function.of(null));
+		return this.getValueAsync(id).exceptionally(Function.empty());
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {

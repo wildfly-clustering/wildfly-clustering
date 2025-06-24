@@ -32,18 +32,17 @@ public class SupplierTestCase {
 	}
 
 	@Test
-	public void ofValue() {
+	public void of() {
 		Object expected = new Object();
 		Assertions.assertThat(Supplier.of(expected).get()).isSameAs(expected);
 		Assertions.assertThat(Supplier.of(null).get()).isNull();
 	}
 
 	@Test
-	public void ofRunnable() {
+	public void run() {
 		Runnable runner = Mockito.mock(Runnable.class);
-		Assertions.assertThat(Supplier.of(runner).get()).isNull();
+		Assertions.assertThat(Supplier.run(runner).get()).isNull();
 		Mockito.verify(runner).run();
-		runner = null;
-		Assertions.assertThat(Supplier.of(runner).get()).isNull();
+		Assertions.assertThat(Supplier.run(null).get()).isNull();
 	}
 }

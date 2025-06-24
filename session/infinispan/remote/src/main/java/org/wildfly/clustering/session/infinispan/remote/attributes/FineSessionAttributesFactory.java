@@ -81,7 +81,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(Function.of(null));
+		return this.getValueAsync(id).exceptionally(Function.empty());
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {

@@ -66,7 +66,7 @@ public class ConsumerTestCase {
 	public void ofRunnable() {
 		Object value = new Object();
 		Runnable runnable = Mockito.mock(Runnable.class);
-		Consumer<Object> consumer = Consumer.of(runnable);
+		Consumer<Object> consumer = Consumer.run(runnable);
 
 		consumer.accept(value);
 
@@ -88,14 +88,14 @@ public class ConsumerTestCase {
 	}
 
 	@Test
-	public void composite() {
+	public void acceptAll() {
 		Object value = new Object();
 		Consumer<Object> consumer1 = Mockito.mock(Consumer.class);
 		Consumer<Object> consumer2 = Mockito.mock(Consumer.class);
 		Consumer<Object> consumer3 = Mockito.mock(Consumer.class);
 		InOrder order = Mockito.inOrder(consumer1, consumer2, consumer3);
 
-		Consumer<Object> consumer = Consumer.of(List.of(consumer1, consumer2, consumer3));
+		Consumer<Object> consumer = Consumer.acceptAll(List.of(consumer1, consumer2, consumer3));
 
 		consumer.accept(value);
 

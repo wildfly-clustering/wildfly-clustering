@@ -23,6 +23,6 @@ public class AutoCloseableProvider implements AutoCloseable, Consumer<Runnable> 
 
 	@Override
 	public void close() {
-		this.tasks.descendingIterator().forEachRemaining(Runnable::run);
+		org.wildfly.clustering.function.Runnable.runAll(this.tasks::descendingIterator).run();
 	}
 }

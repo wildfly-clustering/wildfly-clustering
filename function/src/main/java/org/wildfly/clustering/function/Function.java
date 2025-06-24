@@ -84,20 +84,30 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	}
 
 	/**
+	 * Returns a function that returns its parameter.
+	 * @param <T> the function parameter type
+	 * @param <R> the function return type
+	 * @return an identity function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, R> Function<T, R> empty() {
+		return (Function<T, R>) NULL;
+	}
+
+	/**
 	 * Returns a function that always returns the specified value, ignoring its parameter.
 	 * @param <T> the function parameter type
 	 * @param <R> the function return type
 	 * @param result the function result
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, R> Function<T, R> of(R result) {
 		return (result != null) ? new Function<>() {
 			@Override
 			public R apply(T ignore) {
 				return result;
 			}
-		} : (Function<T, R>) NULL;
+		} : empty();
 	}
 
 	/**
@@ -107,14 +117,13 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	 * @param supplier the function result supplier
 	 * @return a function that returns the value returned by the specified supplier, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
-	static <T, R> Function<T, R> of(java.util.function.Supplier<R> supplier) {
+	static <T, R> Function<T, R> get(java.util.function.Supplier<R> supplier) {
 		return (supplier != null) && (supplier != Supplier.NULL) ? new Function<>() {
 			@Override
 			public R apply(T ignore) {
 				return supplier.get();
 			}
-		} : (Function<T, R>) Function.NULL;
+		} : empty();
 	}
 
 	class IdentityFunction<T extends R, R> implements Function<T, R>, Serializable {

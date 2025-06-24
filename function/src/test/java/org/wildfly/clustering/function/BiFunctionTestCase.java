@@ -26,7 +26,15 @@ public class BiFunctionTestCase {
 	private Object result = new Object();
 
 	@Test
-	public void ofValue() {
+	public void empty() {
+		BiFunction<Object, Object, Object> function = BiFunction.empty();
+		Object result = function.apply(this.value1, this.value2);
+
+		Assertions.assertThat(result).isNull();
+	}
+
+	@Test
+	public void of() {
 		BiFunction<Object, Object, Object> function = BiFunction.of(this.result);
 		Object result = function.apply(this.value1, this.value2);
 
@@ -39,17 +47,16 @@ public class BiFunctionTestCase {
 	}
 
 	@Test
-	public void ofSupplier() {
+	public void get() {
 		Supplier<Object> supplier = Mockito.mock(Supplier.class);
 		Mockito.doReturn(this.result).when(supplier).get();
 
-		BiFunction<Object, Object, Object> function = BiFunction.of(supplier);
+		BiFunction<Object, Object, Object> function = BiFunction.get(supplier);
 		Object result = function.apply(this.value1, this.value2);
 
 		Assertions.assertThat(result).isSameAs(this.result);
 
-		supplier = null;
-		function = BiFunction.of(supplier);
+		function = BiFunction.get(null);
 		result = function.apply(this.value1, this.value2);
 
 		Assertions.assertThat(result).isNull();

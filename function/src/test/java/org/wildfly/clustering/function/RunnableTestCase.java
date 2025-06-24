@@ -23,7 +23,7 @@ public class RunnableTestCase {
 		Runnable runner2 = Mockito.mock(Runnable.class);
 		Runnable runner3 = Mockito.mock(Runnable.class);
 		InOrder order = Mockito.inOrder(runner1, runner2, runner3);
-		Runnable.of(List.of(runner1, runner2, runner3)).run();
+		Runnable.runAll(List.of(runner1, runner2, runner3)).run();
 		order.verify(runner1).run();
 		order.verify(runner2).run();
 		order.verify(runner3).run();
