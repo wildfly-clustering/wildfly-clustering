@@ -47,36 +47,36 @@ public abstract class AbstractRemoteCache<K, V> extends RemoteCacheSupport<K, V>
 
 	@Override
 	public CompletableFuture<Boolean> replaceWithVersionAsync(K key, V newValue, long version, long lifespanSeconds, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleTimeUnit) {
-		return this.cache.replaceWithVersionAsync(key, newValue, version);
+		return this.cache.replaceWithVersionAsync(key, newValue, version, lifespanSeconds, lifespanTimeUnit, maxIdle, maxIdleTimeUnit);
 	}
 
 	@Override
-	public CloseableIterator<Entry<Object, Object>> retrieveEntries(String filterConverterFactory, Object[] filterConverterParams, Set<Integer> segments, int batchSize) {
+	public CloseableIterator<Map.Entry<Object, Object>> retrieveEntries(String filterConverterFactory, Object[] filterConverterParams, Set<Integer> segments, int batchSize) {
 		return this.cache.retrieveEntries(filterConverterFactory, filterConverterParams, segments, batchSize);
 	}
 
 	@Override
-	public <E> Publisher<Entry<K, E>> publishEntries(String filterConverterFactory, Object[] filterConverterParams, Set<Integer> segments, int batchSize) {
+	public <E> Publisher<Map.Entry<K, E>> publishEntries(String filterConverterFactory, Object[] filterConverterParams, Set<Integer> segments, int batchSize) {
 		return this.cache.publishEntries(filterConverterFactory, filterConverterParams, segments, batchSize);
 	}
 
 	@Override
-	public CloseableIterator<Entry<Object, Object>> retrieveEntriesByQuery(Query<?> filterQuery, Set<Integer> segments, int batchSize) {
+	public CloseableIterator<Map.Entry<Object, Object>> retrieveEntriesByQuery(Query<?> filterQuery, Set<Integer> segments, int batchSize) {
 		return this.cache.retrieveEntriesByQuery(filterQuery, segments, batchSize);
 	}
 
 	@Override
-	public <E> Publisher<Entry<K, E>> publishEntriesByQuery(Query<?> filterQuery, Set<Integer> segments, int batchSize) {
+	public <E> Publisher<Map.Entry<K, E>> publishEntriesByQuery(Query<?> filterQuery, Set<Integer> segments, int batchSize) {
 		return this.cache.publishEntriesByQuery(filterQuery, segments, batchSize);
 	}
 
 	@Override
-	public CloseableIterator<Entry<Object, MetadataValue<Object>>> retrieveEntriesWithMetadata(Set<Integer> segments, int batchSize) {
+	public CloseableIterator<Map.Entry<Object, MetadataValue<Object>>> retrieveEntriesWithMetadata(Set<Integer> segments, int batchSize) {
 		return this.cache.retrieveEntriesWithMetadata(segments, batchSize);
 	}
 
 	@Override
-	public Publisher<Entry<K, MetadataValue<V>>> publishEntriesWithMetadata(Set<Integer> segments, int batchSize) {
+	public Publisher<Map.Entry<K, MetadataValue<V>>> publishEntriesWithMetadata(Set<Integer> segments, int batchSize) {
 		return this.cache.publishEntriesWithMetadata(segments, batchSize);
 	}
 
@@ -91,7 +91,7 @@ public abstract class AbstractRemoteCache<K, V> extends RemoteCacheSupport<K, V>
 	}
 
 	@Override
-	public CloseableIteratorSet<Entry<K, V>> entrySet(IntSet segments) {
+	public CloseableIteratorSet<Map.Entry<K, V>> entrySet(IntSet segments) {
 		return this.cache.entrySet(segments);
 	}
 
