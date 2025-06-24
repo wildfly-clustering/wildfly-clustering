@@ -8,19 +8,17 @@
 
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
-		<artifactId>wildfly-clustering-cache</artifactId>
+		<artifactId>wildfly-clustering-cache-infinispan</artifactId>
 		<version>8.0.0.Beta1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>wildfly-clustering-cache-infinispan</artifactId>
+	<artifactId>wildfly-clustering-cache-infinispan-persistence</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Cache: Infinispan: Modules</name>
+	<name>WildFly Clustering: Cache: Infinispan: Persistence: Modules</name>
 
 	<modules>
-		<module>common</module>
-		<module>embedded</module>
-		<module>persistence</module>
+		<module>jdbc</module>
 		<module>remote</module>
 	</modules>
 

@@ -46,7 +46,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-function</artifactId>
+			<artifactId>wildfly-clustering-server-api</artifactId>
 		</dependency>
 
 		<dependency>

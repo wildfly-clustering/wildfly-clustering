@@ -38,15 +38,12 @@ import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
  */
 public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvider implements SessionManagerFactoryProvider<C> {
 	private static final String SERVER_NAME = "server";
-	private static final String DEPLOYMENT_NAME_PATTERN = "%s-%s.war";
 
 	private final HotRodSessionManagerParameters parameters;
 	private final RemoteCacheContainer container;
-	private final String deploymentName;
 
 	public HotRodSessionManagerFactoryProvider(HotRodSessionManagerParameters parameters, String memberName) {
 		this.parameters = parameters;
-		this.deploymentName = String.format(DEPLOYMENT_NAME_PATTERN, parameters.getSessionAttributeMarshaller(), parameters.getSessionAttributePersistenceStrategy().name());
 
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();
 		Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
@@ -76,8 +73,9 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 				.transactionMode(TransactionMode.NONE)
 				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
 				;
-		configuration.addRemoteCache(this.deploymentName, configurator);
-		this.accept(() -> configuration.removeRemoteCache(this.deploymentName));
+		String deploymentName = parameters.getDeploymentName();
+		configuration.addRemoteCache(deploymentName, configurator);
+		this.accept(() -> configuration.removeRemoteCache(deploymentName));
 	}
 
 	@Override
@@ -110,7 +108,7 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 
 			@Override
 			public String getDeploymentName() {
-				return HotRodSessionManagerFactoryProvider.this.deploymentName;
+				return HotRodSessionManagerFactoryProvider.this.parameters.getDeploymentName();
 			}
 
 			@Override
@@ -123,7 +121,7 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 				return this.getClass().getClassLoader();
 			}
 		};
-		RemoteCache<?, ?> cache = this.container.getCache(this.deploymentName);
+		RemoteCache<?, ?> cache = this.container.getCache(this.parameters.getDeploymentName());
 		cache.start();
 		this.accept(cache::stop);
 		RemoteCacheConfiguration hotrod = new RemoteCacheConfiguration() {

@@ -14,8 +14,8 @@ import java.util.function.Function;
 import javax.sql.DataSource;
 
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -79,39 +79,39 @@ public class EmbeddedCacheManagerFactory implements BiFunction<String, ClassLoad
 			public void setDataSource(DataSource dataSource) {
 			}
 		};
+		GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder().cacheManagerName(name).classLoader(loader);
 		try {
-			GlobalConfiguration global = new GlobalConfigurationBuilder().cacheManagerName(name).classLoader(loader)
-					.transport().defaultTransport().clusterName(this.clusterName).nodeName(this.memberName).addProperty(JGroupsTransport.CHANNEL_CONFIGURATOR, configurator)
-					// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
-					.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
-						@Deprecated
-						@Override
-						public String getProtoFile() {
-							return null;
-						}
-
-						@Deprecated
-						@Override
-						public String getProtoFileName() {
-							return null;
-						}
-
-						@Override
-						public void registerMarshallers(SerializationContext context) {
-						}
-
-						@Override
-						public void registerSchema(SerializationContext context) {
-						}
-					})
-					.globalState()
-						.configurationStorage(ConfigurationStorage.VOLATILE)
-						.persistentLocation(Files.createTempDirectory(name).toString(), name)
-						.temporaryLocation(Files.createTempDirectory(name).toString(), name)
-					.build();
-			return new DefaultCacheManager(global, false);
+			builder.globalState()
+					.configurationStorage(ConfigurationStorage.VOLATILE)
+					.persistentLocation(Files.createTempDirectory(name).toString(), name)
+					.temporaryLocation(Files.createTempDirectory(name).toString(), name)
+					;
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
+		builder.transport().defaultTransport().clusterName(this.clusterName).nodeName(this.memberName).addProperty(JGroupsTransport.CHANNEL_CONFIGURATOR, configurator);
+		// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
+		builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
+			@Deprecated
+			@Override
+			public String getProtoFile() {
+				return null;
+			}
+
+			@Deprecated
+			@Override
+			public String getProtoFileName() {
+				return null;
+			}
+
+			@Override
+			public void registerMarshallers(SerializationContext context) {
+			}
+
+			@Override
+			public void registerSchema(SerializationContext context) {
+			}
+		});
+		return new DefaultCacheManager(new ConfigurationBuilderHolder(loader, builder), false);
 	}
 }

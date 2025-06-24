@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.util.MapEntry;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -81,7 +82,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 							this.verifySession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
 							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
 
-							this.updateSession(manager1, sessionId, Map.of("foo", new AbstractMap.SimpleEntry<>(foo, null), "bar", Map.entry(bar, 0)));
+							this.updateSession(manager1, sessionId, Map.of("foo", MapEntry.of(foo, null), "bar", Map.entry(bar, 0)));
 
 							for (int i = 1; i <= 20; i += 2) {
 								this.updateSession(manager1, sessionId, Map.of("bar", Map.entry(i - 1, i)));
@@ -329,6 +330,10 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 						assertThat(Duration.between(end, metaData.getLastAccessEndTime()).getSeconds()).isEqualTo(0);
 					}
 				}
+			} catch (RuntimeException e) {
+				this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+				batch.discard();
+				throw e;
 			}
 		}
 	}
@@ -376,6 +381,10 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		try (Batch batch = manager.getBatchFactory().get()) {
 			try (Session<AtomicReference<String>> session = manager.findSession(sessionId)) {
 				assertThat(session).isNull();
+			} catch (RuntimeException e) {
+				this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+				batch.discard();
+				throw e;
 			}
 		}
 	}

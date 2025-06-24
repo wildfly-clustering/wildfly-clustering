@@ -34,16 +34,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-cachestore-jdbc</artifactId>
-			<scope>runtime</scope>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-persistence-jdbc</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-cachestore-remote</artifactId>
-			<scope>runtime</scope>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-persistence-remote</artifactId>
+			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
@@ -52,7 +51,19 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-spi</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
@@ -100,9 +111,56 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-cachestore-jdbc</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+
+	<build>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<includes>
+					<include>logging.properties</include>
+				</includes>
+			</testResource>
+		</testResources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>integration-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<trimStackTrace>false</trimStackTrace>
+							<!-- N.B. Container uses IPv4 addresses on host network -->
+							<argLine>${jdk.runtime.args} -Djava.net.preferIPv4Stack=true</argLine>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
