@@ -53,10 +53,10 @@ import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.reactivestreams.Publisher;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionalBatchFactory;
 import org.wildfly.clustering.cache.infinispan.remote.ReadForUpdateRemoteCache;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
@@ -355,7 +355,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 	public CompletionStage<Void> prepareWithModifications(Transaction transaction, int publisherCount, Publisher<SegmentedPublisher<Object>> removePublisher, Publisher<SegmentedPublisher<MarshallableEntry<K, V>>> writePublisher) {
 		SuspendedBatch suspended = this.transactions.computeIfAbsent(transaction, org.wildfly.clustering.function.Function.get(this.batchFactory.map(Batch::suspend)));
 		CompletableTransformer batcher = upstream -> observer -> {
-			try (BatchContext<Batch> context = suspended.resumeWithContext()) {
+			try (Context<Batch> context = suspended.resumeWithContext()) {
 				upstream.subscribe(observer);
 			}
 		};

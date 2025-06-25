@@ -15,14 +15,14 @@ import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
  */
 public abstract class AbstractByteBufferMarshaller implements ByteBufferMarshaller {
 
-	private final Supplier<Context> contextProvider;
+	private final Supplier<Context<ClassLoader>> contextProvider;
 
 	protected AbstractByteBufferMarshaller(ClassLoader loader) {
 		this.contextProvider = ThreadContextClassLoaderReference.CURRENT.provide(loader);
 	}
 
 	@Override
-	public Supplier<Context> getContextProvider() {
+	public Supplier<Context<ClassLoader>> getContextClassLoaderProvider() {
 		return this.contextProvider;
 	}
 }

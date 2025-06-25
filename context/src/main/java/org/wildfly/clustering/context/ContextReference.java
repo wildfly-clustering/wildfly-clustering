@@ -68,21 +68,26 @@ public interface ContextReference<C> extends java.util.function.Supplier<C>, jav
 	 * @param target the target context
 	 * @return a context provider
 	 */
-	default java.util.function.Supplier<Context> provide(C target) {
+	default java.util.function.Supplier<Context<C>> provide(C target) {
 		return (target != null) ? new Supplier<>() {
 			@Override
-			public Context get() {
+			public Context<C> get() {
 				C existing = ContextReference.this.get();
-				if (existing == target) return Context.EMPTY;
+				if (existing == target) return Context.empty();
 				ContextReference.this.accept(target);
-				return new Context() {
+				return new Context<>() {
+					@Override
+					public C get() {
+						return target;
+					}
+
 					@Override
 					public void close() {
 						ContextReference.this.accept(existing);
 					}
 				};
 			}
-		} : Supplier.of(Context.EMPTY);
+		} : Supplier.of(Context.empty());
 	}
 
 	class SimpleContextReference<C> implements ContextReference<C> {

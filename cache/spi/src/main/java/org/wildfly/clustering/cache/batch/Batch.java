@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.cache.batch;
 
+import org.wildfly.clustering.context.Context;
+
 /**
  * Instruments the batching of cache operations.
  * Write-only cache operations invoked while this batch is active (i.e. not suspended) will defer invocation until {@link Batch#close()}.
@@ -21,12 +23,12 @@ public interface Batch extends AutoCloseable {
 	SuspendedBatch suspend();
 
 	/**
-	 * Suspends this batch until {@link BatchContext#close}.
+	 * Suspends this batch until {@link Context#close}.
 	 * @return a suspended batch context
 	 */
-	default BatchContext<SuspendedBatch> suspendWithContext() {
+	default Context<SuspendedBatch> suspendWithContext() {
 		SuspendedBatch suspended = this.suspend();
-		return BatchContext.of(suspended, SuspendedBatch::resume);
+		return Context.of(suspended, SuspendedBatch::resume);
 	}
 
 	/**

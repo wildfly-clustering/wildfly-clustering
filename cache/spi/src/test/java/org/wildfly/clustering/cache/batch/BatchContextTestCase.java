@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.context.Context;
 
 /**
  * Verifies behavior of default batch context methods.
@@ -25,7 +26,7 @@ public class BatchContextTestCase {
 		doReturn(batch).when(suspended).resume();
 		doCallRealMethod().when(batch).suspendWithContext();
 
-		try (BatchContext<SuspendedBatch> context = batch.suspendWithContext()) {
+		try (Context<SuspendedBatch> context = batch.suspendWithContext()) {
 			verify(batch).suspendWithContext();
 			verify(batch).suspend();
 			verifyNoMoreInteractions(batch);
@@ -47,7 +48,7 @@ public class BatchContextTestCase {
 		doReturn(batch).when(suspended).resume();
 		doCallRealMethod().when(suspended).resumeWithContext();
 
-		try (BatchContext<Batch> context = suspended.resumeWithContext()) {
+		try (Context<Batch> context = suspended.resumeWithContext()) {
 			verify(suspended).resumeWithContext();
 			verify(suspended).resume();
 			verifyNoMoreInteractions(suspended);
