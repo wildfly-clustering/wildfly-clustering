@@ -128,7 +128,7 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 	}
 
 	InfinispanSessionManagerITCase() {
-		super(InfinispanSessionManagerFactoryProvider::new);
+		super(InfinispanSessionManagerFactoryContext::new);
 	}
 
 	@ParameterizedTest

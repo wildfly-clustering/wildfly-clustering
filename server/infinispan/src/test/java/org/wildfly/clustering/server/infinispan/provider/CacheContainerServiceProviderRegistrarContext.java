@@ -5,33 +5,31 @@
 
 package org.wildfly.clustering.server.infinispan.provider;
 
-import java.util.function.Supplier;
-
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.CacheType;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.wildfly.clustering.server.AutoCloseableProvider;
+import org.wildfly.clustering.context.AbstractContext;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
-import org.wildfly.clustering.server.infinispan.CacheContainerGroupProvider;
-import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupProvider;
+import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupContext;
 
 /**
  * Provides a {@link CacheContainerServiceProviderRegistrar} to an integration test.
  * @author Paul Ferraro
  * @param <T> service type
  */
-public class CacheContainerServiceProviderRegistrarProvider<T> extends AutoCloseableProvider implements Supplier<CacheContainerServiceProviderRegistrar<T>> {
+public class CacheContainerServiceProviderRegistrarContext<T> extends AbstractContext<CacheContainerServiceProviderRegistrar<T>> {
 	private static final String CACHE_NAME = "registry";
 
 	private final CacheServiceProviderRegistrar<T> registrar;
 
-	public CacheContainerServiceProviderRegistrarProvider(String clusterName, String memberName) throws Exception {
-		CacheContainerGroupProvider provider = new EmbeddedCacheManagerGroupProvider(clusterName, memberName);
-		this.accept(provider::close);
+	public CacheContainerServiceProviderRegistrarContext(String clusterName, String memberName) throws Exception {
+		Context<CacheContainerGroup> groupContext = new EmbeddedCacheManagerGroupContext(clusterName, memberName);
+		this.accept(groupContext::close);
 
-		EmbeddedCacheManager manager = provider.getCacheManager();
-		manager.defineConfiguration(CACHE_NAME, new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
+		EmbeddedCacheManager manager = groupContext.get().getCacheContainer();
+		manager.defineConfiguration(CACHE_NAME, new ConfigurationBuilder().clustering().cacheType(CacheType.REPLICATION).build());
 		this.accept(() -> manager.undefineConfiguration(CACHE_NAME));
 
 		Cache<?, ?> cache = manager.getCache(CACHE_NAME);
@@ -52,7 +50,7 @@ public class CacheContainerServiceProviderRegistrarProvider<T> extends AutoClose
 
 			@Override
 			public CacheContainerGroup getGroup() {
-				return provider.getGroup();
+				return groupContext.get();
 			}
 		});
 		this.accept(this.registrar::close);

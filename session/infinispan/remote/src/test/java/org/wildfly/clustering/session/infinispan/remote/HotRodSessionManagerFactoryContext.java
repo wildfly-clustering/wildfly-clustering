@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
@@ -20,38 +19,34 @@ import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
 import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
+import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.server.AutoCloseableProvider;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.cache.MockSessionSpecificationProvider;
-import org.wildfly.clustering.session.cache.SessionManagerFactoryProvider;
 
 /**
  * @param <C> the session manager context type
+ * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvider implements SessionManagerFactoryProvider<C> {
+public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<SessionManagerFactory<C, SC>> {
 	private static final String SERVER_NAME = "server";
 
-	private final HotRodSessionManagerParameters parameters;
-	private final RemoteCacheContainer container;
+	private final SessionManagerFactory<C, SC> factory;
 
-	public HotRodSessionManagerFactoryProvider(HotRodSessionManagerParameters parameters, String memberName) {
-		this.parameters = parameters;
-
+	public HotRodSessionManagerFactoryContext(HotRodSessionManagerParameters parameters, String memberName, Supplier<SC> contextFactory) {
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();
 		Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
-		this.container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder().marshaller(marshaller)), false);
-		this.container.start();
-		this.accept(this.container::stop);
+		RemoteCacheManager container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder().marshaller(marshaller)));
+		this.accept(container::close);
 
-		Configuration configuration = this.container.getConfiguration();
+		Configuration configuration = container.getConfiguration();
 		// Use local cache since our remote cluster has a single member
 		// Reduce expiration interval to speed up expiration verification
 		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration("""
@@ -76,19 +71,15 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 		String deploymentName = parameters.getDeploymentName();
 		configuration.addRemoteCache(deploymentName, configurator);
 		this.accept(() -> configuration.removeRemoteCache(deploymentName));
-	}
-
-	@Override
-	public <SC> SessionManagerFactory<C, SC> createSessionManagerFactory(Supplier<SC> contextFactory) {
 		SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 			@Override
 			public OptionalInt getMaxActiveSessions() {
-				return HotRodSessionManagerFactoryProvider.this.parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
+				return parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
 			}
 
 			@Override
 			public ByteBufferMarshaller getMarshaller() {
-				return HotRodSessionManagerFactoryProvider.this.parameters.getSessionAttributeMarshaller();
+				return parameters.getSessionAttributeMarshaller();
 			}
 
 			@Override
@@ -103,12 +94,12 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 
 			@Override
 			public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
-				return HotRodSessionManagerFactoryProvider.this.parameters.getSessionAttributePersistenceStrategy();
+				return parameters.getSessionAttributePersistenceStrategy();
 			}
 
 			@Override
 			public String getDeploymentName() {
-				return HotRodSessionManagerFactoryProvider.this.parameters.getDeploymentName();
+				return parameters.getDeploymentName();
 			}
 
 			@Override
@@ -121,7 +112,7 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 				return this.getClass().getClassLoader();
 			}
 		};
-		RemoteCache<?, ?> cache = this.container.getCache(this.parameters.getDeploymentName());
+		RemoteCache<?, ?> cache = container.getCache(parameters.getDeploymentName());
 		cache.start();
 		this.accept(cache::stop);
 		RemoteCacheConfiguration hotrod = new RemoteCacheConfiguration() {
@@ -132,6 +123,12 @@ public class HotRodSessionManagerFactoryProvider<C> extends AutoCloseableProvide
 			}
 		};
 		MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
-		return new HotRodSessionManagerFactory<>(managerFactoryConfiguration, provider, provider, hotrod);
+		this.factory = new HotRodSessionManagerFactory<>(managerFactoryConfiguration, provider, provider, hotrod);
+		this.accept(this.factory::close);
+	}
+
+	@Override
+	public SessionManagerFactory<C, SC> get() {
+		return this.factory;
 	}
 }

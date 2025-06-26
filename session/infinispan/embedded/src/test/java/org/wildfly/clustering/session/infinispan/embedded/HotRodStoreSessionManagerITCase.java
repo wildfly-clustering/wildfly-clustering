@@ -113,7 +113,7 @@ public class HotRodStoreSessionManagerITCase extends SessionManagerITCase<Infini
 	}
 
 	HotRodStoreSessionManagerITCase() {
-		super(InfinispanSessionManagerFactoryProvider::new);
+		super(InfinispanSessionManagerFactoryContext::new);
 	}
 
 	@ParameterizedTest

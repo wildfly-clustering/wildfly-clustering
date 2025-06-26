@@ -3,16 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.server;
+package org.wildfly.clustering.context;
 
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.function.Consumer;
 
 /**
+ * An abstract context that can accumulate actions to run on close.
  * @author Paul Ferraro
+ * @param <T> the context value type
  */
-public class AutoCloseableProvider implements AutoCloseable, Consumer<Runnable> {
+public abstract class AbstractContext<T> implements Context<T>, Consumer<Runnable> {
 
 	private final Deque<Runnable> tasks = new LinkedList<>();
 

@@ -5,20 +5,18 @@
 
 package org.wildfly.clustering.server.infinispan.registry;
 
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.CacheType;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.wildfly.clustering.server.AutoCloseableProvider;
+import org.wildfly.clustering.context.AbstractContext;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.infinispan.CacheContainerGroupProvider;
-import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupProvider;
+import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupContext;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryFactory;
 
@@ -28,18 +26,18 @@ import org.wildfly.clustering.server.registry.RegistryFactory;
  * @param <K> the registry key type
  * @param <V> the registry value type
  */
-public class CacheContainerRegistryProvider<K, V> extends AutoCloseableProvider implements Function<Map.Entry<K, V>, Registry<CacheContainerGroupMember, K, V>> {
+public class CacheContainerRegistryFactoryContext<K, V> extends AbstractContext<RegistryFactory<CacheContainerGroupMember, K, V>> {
 	private static final String CACHE_NAME = "registry";
 
 	private final RegistryFactory<CacheContainerGroupMember, K, V> factory;
 
-	@SuppressWarnings("resource")
-	public CacheContainerRegistryProvider(String clusterName, String memberName) throws Exception {
-		CacheContainerGroupProvider provider = new EmbeddedCacheManagerGroupProvider(clusterName, memberName);
-		this.accept(provider::close);
+	public CacheContainerRegistryFactoryContext(String clusterName, String memberName) throws Exception {
+		Context<CacheContainerGroup> groupContext = new EmbeddedCacheManagerGroupContext(clusterName, memberName);
+		this.accept(groupContext::close);
 
-		EmbeddedCacheManager manager = provider.getCacheManager();
-		manager.defineConfiguration(CACHE_NAME, new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
+		CacheContainerGroup group = groupContext.get();
+		EmbeddedCacheManager manager = group.getCacheContainer();
+		manager.defineConfiguration(CACHE_NAME, new ConfigurationBuilder().clustering().cacheType(CacheType.REPLICATION).build());
 		this.accept(() -> manager.undefineConfiguration(CACHE_NAME));
 
 		Cache<?, ?> cache = manager.getCache(CACHE_NAME);
@@ -55,7 +53,7 @@ public class CacheContainerRegistryProvider<K, V> extends AutoCloseableProvider 
 
 			@Override
 			public CacheContainerGroup getGroup() {
-				return provider.getGroup();
+				return group;
 			}
 		};
 		this.factory = RegistryFactory.singleton(new BiFunction<>() {
@@ -67,7 +65,7 @@ public class CacheContainerRegistryProvider<K, V> extends AutoCloseableProvider 
 	}
 
 	@Override
-	public Registry<CacheContainerGroupMember, K, V> apply(Map.Entry<K, V> entry) {
-		return this.factory.createRegistry(new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()));
+	public RegistryFactory<CacheContainerGroupMember, K, V> get() {
+		return this.factory;
 	}
 }

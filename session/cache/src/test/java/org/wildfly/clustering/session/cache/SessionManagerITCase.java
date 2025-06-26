@@ -24,12 +24,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.MapEntry;
@@ -46,15 +46,14 @@ import org.wildfly.clustering.session.SessionMetaData;
  * @author Paul Ferraro
  */
 public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
-
-	private static final String DEPLOYMENT_CONTEXT = "deployment";
 	private static final Supplier<AtomicReference<String>> SESSION_CONTEXT_FACTORY = AtomicReference::new;
+	private static final String DEPLOYMENT_CONTEXT = "deployment";
 
 	private final System.Logger logger = System.getLogger(this.getClass().getName());
-	private final BiFunction<P, String, SessionManagerFactoryProvider<String>> factory;
+	private final SessionManagerFactoryContextProvider<P, String> factory;
 	private final String threadGroupName = this.getClass().getSimpleName();
 
-	protected SessionManagerITCase(BiFunction<P, String, SessionManagerFactoryProvider<String>> factory) {
+	protected SessionManagerITCase(SessionManagerFactoryContextProvider<P, String> factory) {
 		this.factory = factory;
 	}
 
@@ -62,46 +61,44 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
-		try (SessionManagerFactoryProvider<String> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-				SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
-				manager1.start();
-				try (SessionManagerFactoryProvider<String> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-						SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
-						manager2.start();
-						try {
-							String sessionId = manager1.getIdentifierFactory().get();
-							this.verifyNoSession(manager1, sessionId);
-							this.verifyNoSession(manager2, sessionId);
-							UUID foo = UUID.randomUUID();
-							UUID bar = UUID.randomUUID();
+		try (Context<SessionManagerFactory<String, AtomicReference<String>>> factory1Context = this.factory.createContext(parameters, "member1", SESSION_CONTEXT_FACTORY)) {
+			SessionManagerFactory<String, AtomicReference<String>> factory1 = factory1Context.get();
+			SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
+			manager1.start();
+			try (Context<SessionManagerFactory<String, AtomicReference<String>>> factory2Context = this.factory.createContext(parameters, "member2", SESSION_CONTEXT_FACTORY)) {
+				SessionManagerFactory<String, AtomicReference<String>> factory2 = factory2Context.get();
+				SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
+				manager2.start();
+				try {
+					String sessionId = manager1.getIdentifierFactory().get();
+					this.verifyNoSession(manager1, sessionId);
+					this.verifyNoSession(manager2, sessionId);
+					UUID foo = UUID.randomUUID();
+					UUID bar = UUID.randomUUID();
 
-							this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
+					this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
 
-							this.verifySession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
-							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
+					this.verifySession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
+					this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
 
-							this.updateSession(manager1, sessionId, Map.of("foo", MapEntry.of(foo, null), "bar", Map.entry(bar, 0)));
+					this.updateSession(manager1, sessionId, Map.of("foo", MapEntry.of(foo, null), "bar", Map.entry(bar, 0)));
 
-							for (int i = 1; i <= 20; i += 2) {
-								this.updateSession(manager1, sessionId, Map.of("bar", Map.entry(i - 1, i)));
-								this.updateSession(manager2, sessionId, Map.of("bar", Map.entry(i, i + 1)));
-							}
-
-							this.invalidateSession(manager1, sessionId);
-
-							this.verifyNoSession(manager1, sessionId);
-							this.verifyNoSession(manager2, sessionId);
-
-							assertThat(expiredSessions).isEmpty();
-						} finally {
-							manager2.stop();
-						}
+					for (int i = 1; i <= 20; i += 2) {
+						this.updateSession(manager1, sessionId, Map.of("bar", Map.entry(i - 1, i)));
+						this.updateSession(manager2, sessionId, Map.of("bar", Map.entry(i, i + 1)));
 					}
+
+					this.invalidateSession(manager1, sessionId);
+
+					this.verifyNoSession(manager1, sessionId);
+					this.verifyNoSession(manager2, sessionId);
+
+					assertThat(expiredSessions).isEmpty();
 				} finally {
-					manager1.stop();
+					manager2.stop();
 				}
+			} finally {
+				manager1.stop();
 			}
 		}
 	}
@@ -112,86 +109,84 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
-		try (SessionManagerFactoryProvider<String> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-				SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
-				manager1.start();
-				try (SessionManagerFactoryProvider<String> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-						SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
-						manager2.start();
-						try {
-							String sessionId = manager1.getIdentifierFactory().get();
-							AtomicInteger value = new AtomicInteger();
+		try (Context<SessionManagerFactory<String, AtomicReference<String>>> factory1Context = this.factory.createContext(parameters, "member1", SESSION_CONTEXT_FACTORY)) {
+			SessionManagerFactory<String, AtomicReference<String>> factory1 = factory1Context.get();
+			SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
+			manager1.start();
+			try (Context<SessionManagerFactory<String, AtomicReference<String>>> factory2Context = this.factory.createContext(parameters, "member2", SESSION_CONTEXT_FACTORY)) {
+				SessionManagerFactory<String, AtomicReference<String>> factory2 = factory2Context.get();
+				SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
+				manager2.start();
+				try {
+					String sessionId = manager1.getIdentifierFactory().get();
+					AtomicInteger value = new AtomicInteger();
 
-							this.createSession(manager1, sessionId, Map.of("value", value));
+					this.createSession(manager1, sessionId, Map.of("value", value));
 
-							List<Runnable> tasks = new ArrayList<>(threads);
-							// Trigger a number of concurrent sequences of requests for the same session
-							for (int i = 0; i < threads; ++i) {
-								tasks.add(() -> {
-									for (int j = 0; j < requests; ++j) {
-										this.requestSession(manager1, sessionId, session -> {
-											AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
-											assertThat(v).isNotNull();
-											v.incrementAndGet();
-										});
-									}
+					List<Runnable> tasks = new ArrayList<>(threads);
+					// Trigger a number of concurrent sequences of requests for the same session
+					for (int i = 0; i < threads; ++i) {
+						tasks.add(() -> {
+							for (int j = 0; j < requests; ++j) {
+								this.requestSession(manager1, sessionId, session -> {
+									AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
+									assertThat(v).isNotNull();
+									v.incrementAndGet();
 								});
 							}
-							List<Future<?>> futures = new ArrayList<>(threads);
-							ExecutorService executor = Executors.newFixedThreadPool(threads, new DefaultThreadFactory(new ThreadGroup(this.threadGroupName), Thread.currentThread().getContextClassLoader()));
-							try {
-								Instant start = Instant.now();
-								for (Runnable task : tasks) {
-									futures.add(executor.submit(task));
-								}
-								for (Future<?> future : futures) {
-									future.get();
-								}
-								Instant stop = Instant.now();
-								Duration concurrentDuration = Duration.between(start, stop);
-								this.logger.log(System.Logger.Level.INFO, "{0} concurrent requests completed in {1}", threads * requests, concurrentDuration);
-
-								// Verify integrity of value on other manager
-								this.requestSession(manager2, sessionId, session -> {
-									assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests);
-								});
-
-								start = Instant.now();
-								// Trigger sequences of the same number of requests for the same session
-								for (int i = 0; i < threads; ++i) {
-									for (int j = 0; j < requests; ++j) {
-										this.requestSession(manager1, sessionId, session -> {
-											AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
-											assertThat(v).isNotNull();
-											v.incrementAndGet();
-										});
-									}
-								}
-								stop = Instant.now();
-								Duration serialDuration = Duration.between(start, stop);
-								this.logger.log(System.Logger.Level.INFO, "{0} serial requests completed in {1}", threads * requests, serialDuration);
-
-								// Verify integrity of value on other manager
-								this.requestSession(manager2, sessionId, session -> {
-									assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests * 2);
-								});
-
-								// Ensure that concurrent requests complete faster than same number of serial requests
-								assertThat(concurrentDuration).isLessThan(serialDuration);
-							} finally {
-								executor.shutdown();
-							}
-
-							this.invalidateSession(manager2, sessionId);
-						} finally {
-							manager2.stop();
-						}
+						});
 					}
+					List<Future<?>> futures = new ArrayList<>(threads);
+					ExecutorService executor = Executors.newFixedThreadPool(threads, new DefaultThreadFactory(new ThreadGroup(this.threadGroupName), Thread.currentThread().getContextClassLoader()));
+					try {
+						Instant start = Instant.now();
+						for (Runnable task : tasks) {
+							futures.add(executor.submit(task));
+						}
+						for (Future<?> future : futures) {
+							future.get();
+						}
+						Instant stop = Instant.now();
+						Duration concurrentDuration = Duration.between(start, stop);
+						this.logger.log(System.Logger.Level.INFO, "{0} concurrent requests completed in {1}", threads * requests, concurrentDuration);
+
+						// Verify integrity of value on other manager
+						this.requestSession(manager2, sessionId, session -> {
+							assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests);
+						});
+
+						start = Instant.now();
+						// Trigger sequences of the same number of requests for the same session
+						for (int i = 0; i < threads; ++i) {
+							for (int j = 0; j < requests; ++j) {
+								this.requestSession(manager1, sessionId, session -> {
+									AtomicInteger v = (AtomicInteger) session.getAttributes().get("value");
+									assertThat(v).isNotNull();
+									v.incrementAndGet();
+								});
+							}
+						}
+						stop = Instant.now();
+						Duration serialDuration = Duration.between(start, stop);
+						this.logger.log(System.Logger.Level.INFO, "{0} serial requests completed in {1}", threads * requests, serialDuration);
+
+						// Verify integrity of value on other manager
+						this.requestSession(manager2, sessionId, session -> {
+							assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests * 2);
+						});
+
+						// Ensure that concurrent requests complete faster than same number of serial requests
+						assertThat(concurrentDuration).isLessThan(serialDuration);
+					} finally {
+						executor.shutdown();
+					}
+
+					this.invalidateSession(manager2, sessionId);
 				} finally {
-					manager1.stop();
+					manager2.stop();
 				}
+			} finally {
+				manager1.stop();
 			}
 		}
 	}
@@ -201,67 +196,65 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
-		try (SessionManagerFactoryProvider<String> provider1 = this.factory.apply(parameters, "member1")) {
-			try (SessionManagerFactory<String, AtomicReference<String>> factory1 = provider1.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-				SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
-				manager1.start();
-				try (SessionManagerFactoryProvider<String> provider2 = this.factory.apply(parameters, "member2")) {
-					try (SessionManagerFactory<String, AtomicReference<String>> factory2 = provider2.createSessionManagerFactory(SESSION_CONTEXT_FACTORY)) {
-						SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
-						manager2.start();
-						try {
-							String sessionId = manager1.getIdentifierFactory().get();
-							UUID foo = UUID.randomUUID();
-							UUID bar = UUID.randomUUID();
+		try (Context<SessionManagerFactory<String, AtomicReference<String>>> factory1Context = this.factory.createContext(parameters, "member1", SESSION_CONTEXT_FACTORY)) {
+			SessionManagerFactory<String, AtomicReference<String>> factory1 = factory1Context.get();
+			SessionManager<AtomicReference<String>> manager1 = factory1.createSessionManager(managerConfig1);
+			manager1.start();
+			try (Context<SessionManagerFactory<String, AtomicReference<String>>> factory2Context = this.factory.createContext(parameters, "member2", SESSION_CONTEXT_FACTORY)) {
+				SessionManagerFactory<String, AtomicReference<String>> factory2 = factory2Context.get();
+				SessionManager<AtomicReference<String>> manager2 = factory2.createSessionManager(managerConfig2);
+				manager2.start();
+				try {
+					String sessionId = manager1.getIdentifierFactory().get();
+					UUID foo = UUID.randomUUID();
+					UUID bar = UUID.randomUUID();
 
-							this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
+					this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
 
-							// Setup session to expire soon
-							this.requestSession(manager1, sessionId, session -> {
-								session.getMetaData().setTimeout(Duration.ofSeconds(2));
-							});
+					// Setup session to expire soon
+					this.requestSession(manager1, sessionId, session -> {
+						session.getMetaData().setTimeout(Duration.ofSeconds(2));
+					});
 
-							// Verify that session does not expire prematurely
-							TimeUnit.SECONDS.sleep(1);
+					// Verify that session does not expire prematurely
+					TimeUnit.SECONDS.sleep(1);
 
-							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
+					this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
 
-							// Verify that session does not expire prematurely
-							TimeUnit.SECONDS.sleep(1);
+					// Verify that session does not expire prematurely
+					TimeUnit.SECONDS.sleep(1);
 
-							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
+					this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
 
-							// Verify that session does not expire prematurely
-							TimeUnit.SECONDS.sleep(1);
+					// Verify that session does not expire prematurely
+					TimeUnit.SECONDS.sleep(1);
 
-							this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
+					this.verifySession(manager2, sessionId, Map.of("foo", foo, "bar", bar));
 
-							try {
-								Instant start = Instant.now();
-								ImmutableSession expiredSession = expiredSessions.poll(expirationDuration.getSeconds(), TimeUnit.SECONDS);
-								assertThat(expiredSession).as("No expiration event received within %s seconds", expirationDuration.getSeconds()).isNotNull();
-								this.logger.log(System.Logger.Level.INFO, "Received expiration event for {0} after {1}", expiredSession.getId(), Duration.between(start, Instant.now()));
-								assertThat(sessionId).isEqualTo(expiredSession.getId());
-								assertThat(expiredSession.isValid()).isFalse();
-								assertThat(expiredSession.getMetaData().isNew()).isFalse();
-								assertThat(expiredSession.getMetaData().isExpired()).isTrue();
-								assertThat(expiredSession.getMetaData().isImmortal()).isFalse();
-								this.verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
+					try {
+						Instant start = Instant.now();
+						ImmutableSession expiredSession = expiredSessions.poll(expirationDuration.getSeconds(), TimeUnit.SECONDS);
+						assertThat(expiredSession).as("No expiration event received within %s seconds", expirationDuration.getSeconds()).isNotNull();
+						this.logger.log(System.Logger.Level.INFO, "Received expiration event for {0} after {1}", expiredSession.getId(), Duration.between(start, Instant.now()));
+						assertThat(sessionId).isEqualTo(expiredSession.getId());
+						assertThat(expiredSession.isValid()).isFalse();
+						assertThat(expiredSession.getMetaData().isNew()).isFalse();
+						assertThat(expiredSession.getMetaData().isExpired()).isTrue();
+						assertThat(expiredSession.getMetaData().isImmortal()).isFalse();
+						this.verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
 
-								assertThat(expiredSessions).isEmpty();
-							} catch (InterruptedException e) {
-								Thread.currentThread().interrupt();
-							}
-
-							this.verifyNoSession(manager1, sessionId);
-							this.verifyNoSession(manager2, sessionId);
-						} finally {
-							manager2.stop();
-						}
+						assertThat(expiredSessions).isEmpty();
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
 					}
+
+					this.verifyNoSession(manager1, sessionId);
+					this.verifyNoSession(manager2, sessionId);
 				} finally {
-					manager1.stop();
+					manager2.stop();
 				}
+			} finally {
+				manager1.stop();
 			}
 		}
 	}

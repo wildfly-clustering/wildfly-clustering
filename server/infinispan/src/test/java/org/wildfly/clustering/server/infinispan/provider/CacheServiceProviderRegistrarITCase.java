@@ -31,7 +31,7 @@ public class CacheServiceProviderRegistrarITCase {
 		String foo = "foo";
 		String bar = "bar";
 
-		try (CacheContainerServiceProviderRegistrarProvider<String> provider1 = new CacheContainerServiceProviderRegistrarProvider<>(CLUSTER_NAME, MEMBER_1)) {
+		try (CacheContainerServiceProviderRegistrarContext<String> provider1 = new CacheContainerServiceProviderRegistrarContext<>(CLUSTER_NAME, MEMBER_1)) {
 			CacheContainerServiceProviderRegistrar<String> registrar1 = provider1.get();
 			CacheContainerGroupMember member1 = registrar1.getGroup().getLocalMember();
 			assertThat(registrar1.getServices()).isEmpty();
@@ -58,7 +58,7 @@ public class CacheServiceProviderRegistrarITCase {
 
 					assertThat(barEvents.poll(5, TimeUnit.SECONDS)).containsExactly(member1);
 
-					try (CacheContainerServiceProviderRegistrarProvider<String> provider2 = new CacheContainerServiceProviderRegistrarProvider<>(CLUSTER_NAME, MEMBER_2)) {
+					try (CacheContainerServiceProviderRegistrarContext<String> provider2 = new CacheContainerServiceProviderRegistrarContext<>(CLUSTER_NAME, MEMBER_2)) {
 						CacheContainerServiceProviderRegistrar<String> registrar2 = provider2.get();
 						CacheContainerGroupMember member2 = registrar2.getGroup().getLocalMember();
 

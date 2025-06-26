@@ -78,7 +78,7 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 	}
 
 	HotRodSessionManagerITCase() {
-		super(HotRodSessionManagerFactoryProvider::new);
+		super(HotRodSessionManagerFactoryContext::new);
 	}
 
 	@ParameterizedTest
