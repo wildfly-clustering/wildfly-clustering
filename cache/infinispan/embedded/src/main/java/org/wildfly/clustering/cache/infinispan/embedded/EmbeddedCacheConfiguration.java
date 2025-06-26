@@ -40,12 +40,12 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 
 	@Override
 	default <K, V> CacheEntryMutatorFactory<K, V> getCacheEntryMutatorFactory() {
-		return new EmbeddedCacheEntryMutatorFactory<>(this.getCache());
+		return new EmbeddedCacheEntryMutatorFactory<>(this.getWriteCache());
 	}
 
 	@Override
 	default <K, V, O> CacheEntryMutatorFactory<K, O> getCacheEntryMutatorFactory(Function<O, BiFunction<Object, V, V>> functionFactory) {
-		return new EmbeddedCacheEntryComputerFactory<>(this.getCache(), functionFactory);
+		return new EmbeddedCacheEntryComputerFactory<>(this.getWriteCache(), functionFactory);
 	}
 
 	@Override
@@ -61,6 +61,17 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	@Override
 	default CacheProperties getCacheProperties() {
 		return new EmbeddedCacheProperties(this.getCache());
+	}
+
+	/**
+	 * Returns a cache for use with write operations, e.g. put/compute/replace.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @return a cache with write semantics.
+	 */
+	default <K, V> Cache<K, V> getWriteCache() {
+		Cache<K, V> cache = this.getCache();
+		return cache.getCacheConfiguration().clustering().cacheMode().isInvalidation() ? new InvalidationCache<>(cache) : cache;
 	}
 
 	/**
@@ -100,7 +111,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 * @return a cache for use with write-only operations.
 	 */
 	default <K, V> Cache<K, V> getWriteOnlyCache() {
-		return this.<K, V>getCache().getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
+		return this.<K, V>getWriteCache().getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
 	}
 
 	/**
@@ -110,7 +121,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 * @return a cache whose write operations do not trigger cache listeners.
 	 */
 	default <K, V> Cache<K, V> getSilentWriteCache() {
-		return this.<K, V>getCache().getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LISTENER_NOTIFICATION);
+		return this.<K, V>getWriteCache().getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LISTENER_NOTIFICATION);
 	}
 
 	/**
