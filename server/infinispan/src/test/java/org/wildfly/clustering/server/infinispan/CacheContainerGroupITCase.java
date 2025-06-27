@@ -15,10 +15,10 @@ import org.wildfly.clustering.server.jgroups.GroupITCase;
  * Integration test for JChannel-based group implementation.
  * @author Paul Ferraro
  */
-public class CacheContainerGroupITCase extends GroupITCase<Address, CacheContainerGroupMember> {
+public class CacheContainerGroupITCase extends GroupITCase<Address, CacheContainerGroupMember, CacheContainerGroup> {
 	private static final Function<Address, JGroupsAddress> CAST = JGroupsAddress.class::cast;
 
 	public CacheContainerGroupITCase() {
-		super(EmbeddedCacheManagerGroupProvider::new, CAST.andThen(JGroupsAddress::getJGroupsAddress));
+		super(EmbeddedCacheManagerGroupContext::new, CAST.andThen(JGroupsAddress::getJGroupsAddress));
 	}
 }

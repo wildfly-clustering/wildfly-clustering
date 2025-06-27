@@ -19,7 +19,6 @@ public class TransactionBatchContextualizerFactory implements BatchContextualize
 
 	@Override
 	public Contextualizer createContextualizer(ClassLoader loader) {
-		TransactionBatch batch = ThreadLocalTransactionBatch.getCurrentBatch();
-		return (batch != null) ? Contextualizer.withContextProvider(batch::suspendWithContext) : Contextualizer.NONE;
+		return Contextualizer.withContextProvider(ThreadContextBatch.INSTANCE::suspendWithContext);
 	}
 }

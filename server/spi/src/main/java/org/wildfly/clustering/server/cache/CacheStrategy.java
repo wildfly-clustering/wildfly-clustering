@@ -189,7 +189,7 @@ public enum CacheStrategy implements CacheFactory {
 	private static class RemoveOrDecrementFunction<K, V> extends AbstractFunction<K, V> {
 		private static final UnaryOperator<Integer> DECREMENT = Math::decrementExact;
 		// If present and equal to initial value, return null (to remove mapping), otherwise decrement
-		private static final UnaryOperator<Integer> REMOVE_OR_DECREMENT = DECREMENT.orDefault(NOT_NULL.and(Predicate.not(INITIAL_INDEX::equals)), Supplier.of(null));
+		private static final UnaryOperator<Integer> REMOVE_OR_DECREMENT = DECREMENT.orDefault(NOT_NULL.and(Predicate.not(INITIAL_INDEX::equals)), Supplier.empty());
 
 		RemoveOrDecrementFunction(BiFunction<Integer, V, Map.Entry<Integer, V>> entryFactory) {
 			super(entryFactory, REMOVE_OR_DECREMENT, UnaryOperator.identity());

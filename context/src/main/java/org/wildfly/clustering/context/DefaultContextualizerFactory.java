@@ -25,7 +25,7 @@ public enum DefaultContextualizerFactory implements ContextualizerFactory {
 		this.factories.add(new ContextualizerFactory() {
 			@Override
 			public Contextualizer createContextualizer(ClassLoader loader) {
-				return Contextualizer.withContextProvider(ContextClassLoaderReference.INSTANCE.provide(loader));
+				return Contextualizer.withContextProvider(ThreadContextClassLoaderReference.CURRENT.provide(loader));
 			}
 		});
 		AccessController.doPrivileged(new PrivilegedAction<>() {

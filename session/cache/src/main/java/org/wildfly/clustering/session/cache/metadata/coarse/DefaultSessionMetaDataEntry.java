@@ -73,7 +73,7 @@ public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaData
 		result.setTimeout(offsets.getTimeoutOffset().apply(this.timeout));
 		result.getLastAccessStartTime().set(offsets.getLastAccessStartTimeOffset().apply(this.lastAccessStartTime.get()));
 		result.getLastAccessEndTime().set(offsets.getLastAccessEndTimeOffset().apply(this.lastAccessEndTime.get()));
-		result.getContext().get(Supplier.of(this.context.get(Supplier.of(null))));
+		result.getContext().get(Supplier.of(this.context.get(Supplier.empty())));
 		return result;
 	}
 

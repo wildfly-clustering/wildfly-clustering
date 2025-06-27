@@ -18,7 +18,7 @@ import org.wildfly.clustering.function.Runnable;
  * @author Paul Ferraro
  */
 public interface CacheEntryMutator extends java.lang.Runnable {
-	System.Logger LOGGER = System.getLogger(CacheEntryMutator.class.getPackageName());
+	System.Logger LOGGER = System.getLogger(CacheEntryMutator.class.getName());
 
 	@Override
 	default void run() {

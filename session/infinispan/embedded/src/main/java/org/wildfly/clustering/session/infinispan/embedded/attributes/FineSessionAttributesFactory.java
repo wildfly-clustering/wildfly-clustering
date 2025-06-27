@@ -18,7 +18,6 @@ import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryComputerFactory;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PostActivateBlockingListener;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PostPassivateBlockingListener;
@@ -69,7 +68,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 		this.marshaller = configuration.getMarshaller();
 		this.immutability = configuration.getImmutability();
 		this.properties = infinispan.getCacheProperties();
-		this.mutatorFactory = new EmbeddedCacheEntryComputerFactory<>(this.cache, SessionAttributeMapComputeFunction::new);
+		this.mutatorFactory = infinispan.getCacheEntryMutatorFactory(SessionAttributeMapComputeFunction::new);
 		this.notifierFactory = notifierFactory;
 		this.detachedNotifierFactory = detachedNotifierFactory;
 		this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
@@ -109,7 +108,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(Function.of(null));
+		return this.getValueAsync(id).exceptionally(Function.empty());
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {

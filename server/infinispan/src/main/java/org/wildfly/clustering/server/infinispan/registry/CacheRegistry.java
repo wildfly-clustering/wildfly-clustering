@@ -48,6 +48,7 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryListener;
+import org.wildfly.clustering.server.util.MapEntry;
 
 /**
  * Clustered {@link Registry} backed by an Infinispan cache.
@@ -79,7 +80,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		this.group = config.getGroup();
 		this.closeTask = closeTask;
 		this.executor = config.getExecutor();
-		this.entry = entry;
+		this.entry = MapEntry.of(entry.getKey(), entry.getValue());
 		Address localAddress = this.cache.getCacheManager().getAddress();
 		try (Batch batch = this.batchFactory.get()) {
 			this.cache.put(localAddress, this.entry);
@@ -154,7 +155,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		List<Address> members = hash.getMembers();
 
 		if (!members.equals(previousMembers)) {
-			Cache<Address, Map.Entry<K, V>> cache = event.getCache().getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
+			Cache<Address, Map.Entry<K, V>> cache = event.getCache();
 			EmbeddedCacheManager container = cache.getCacheManager();
 			Address localAddress = container.getAddress();
 

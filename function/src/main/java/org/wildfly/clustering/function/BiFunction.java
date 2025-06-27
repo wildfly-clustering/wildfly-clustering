@@ -155,6 +155,19 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	}
 
 	/**
+	 * Returns a function that always returns the specified value, ignoring its parameters.
+	 * @param <T> the first parameter type
+	 * @param <U> the second parameter type
+	 * @param <R> the function return type
+	 * @param result the function result
+	 * @return a function that always returns the specified value, ignoring its parameters.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U, R> BiFunction<T, U, R> empty() {
+		return (BiFunction<T, U, R>) NULL;
+	}
+
+	/**
 	 * Returns a function that always returns the specified value, ignoring its parameter.
 	 * @param <T> the first parameter type
 	 * @param <U> the second parameter type
@@ -162,9 +175,8 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param result the function result
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, U, R> BiFunction<T, U, R> of(R result) {
-		return (result != null) ? of(Supplier.of(result)) : (BiFunction<T, U, R>) NULL;
+		return (result != null) ? get(Supplier.of(result)) : empty();
 	}
 
 	/**
@@ -175,14 +187,13 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param supplier the function result supplier
 	 * @return a function that returns the value returned by the specified supplier, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
-	static <T, U, R> BiFunction<T, U, R> of(java.util.function.Supplier<R> supplier) {
+	static <T, U, R> BiFunction<T, U, R> get(java.util.function.Supplier<R> supplier) {
 		return (supplier != null) && (supplier != Supplier.NULL) ? new BiFunction<>() {
 			@Override
 			public R apply(T ignore1, U ignore2) {
 				return supplier.get();
 			}
-		} : (BiFunction<T, U, R>) BiFunction.NULL;
+		} : empty();
 	}
 
 	class FormerIdentityFunction<T extends R, U, R> implements BiFunction<T, U, R>, Serializable {

@@ -59,6 +59,16 @@
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
+				<artifactId>wildfly-clustering-cache-infinispan-persistence-jdbc</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>wildfly-clustering-cache-infinispan-persistence-remote</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
 				<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
 				<version>${project.version}</version>
 			</dependency>

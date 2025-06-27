@@ -38,7 +38,7 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 
 	@Override
 	default Object read(ByteBuffer buffer) throws IOException {
-		try (Context context = this.getContextProvider().get()) {
+		try (Context<ClassLoader> context = this.getContextClassLoaderProvider().get()) {
 			try (InputStream input = new ByteBufferInputStream(buffer)) {
 				return this.readFrom(input);
 			}
@@ -47,7 +47,7 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 
 	@Override
 	default ByteBuffer write(Object object) throws IOException {
-		try (Context context = this.getContextProvider().get()) {
+		try (Context<ClassLoader> context = this.getContextClassLoaderProvider().get()) {
 			OptionalInt size = this.size(object);
 			try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
 				this.writeTo(output, object);
@@ -81,7 +81,7 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 	 * Returns a provider of context to use during read/write operations.
 	 * @return a context provider
 	 */
-	default java.util.function.Supplier<Context> getContextProvider() {
-		return Supplier.of(Context.EMPTY);
+	default java.util.function.Supplier<Context<ClassLoader>> getContextClassLoaderProvider() {
+		return Supplier.of(Context.empty());
 	}
 }

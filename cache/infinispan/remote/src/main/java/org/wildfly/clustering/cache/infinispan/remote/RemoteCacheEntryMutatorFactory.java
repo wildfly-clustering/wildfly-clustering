@@ -19,7 +19,7 @@ public class RemoteCacheEntryMutatorFactory<K, V> implements CacheEntryMutatorFa
 
 	private final RemoteCache<K, V> cache;
 
-	public RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache) {
+	RemoteCacheEntryMutatorFactory(RemoteCache<K, V> cache) {
 		this.cache = cache;
 	}
 

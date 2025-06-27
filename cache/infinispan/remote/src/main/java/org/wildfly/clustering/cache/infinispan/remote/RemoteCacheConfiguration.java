@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.remote;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiFunction;
@@ -29,6 +30,11 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 
 	@Override
 	<K, V> RemoteCache<K, V> getCache();
+
+	@Override
+	default String getName() {
+		return Map.of("container", RemoteCacheContainerConfiguration.super.getName(), "cache", this.getCache().getName()).toString();
+	}
 
 	@Override
 	default <K, V> CacheEntryMutatorFactory<K, V> getCacheEntryMutatorFactory() {

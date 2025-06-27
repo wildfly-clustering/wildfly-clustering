@@ -12,288 +12,451 @@ import jakarta.transaction.Synchronization;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.function.Supplier;
 
 /**
- * Unit test for {@link TransactionBatch}.
+ * Unit test for a {@link TransactionalBatch}.
  * @author Paul Ferraro
  */
 public class TransactionBatchTestCase {
 	private final TransactionManager tm = mock(TransactionManager.class);
-	private final TransactionBatch.Factory factory = TransactionBatch.Factory.of("test-container", "test-cache", this.tm, RuntimeException::new);
+	private final Supplier<Batch> factory = new TransactionalBatchFactory("test", this.tm, RuntimeException::new);
 
 	@AfterEach
 	public void destroy() {
-		ThreadLocalTransactionBatch.setCurrentBatch(null);
+		// Reset thread context
+		ThreadContextBatch.INSTANCE.accept(null);
+	}
+
+	@BeforeEach
+	public void init() {
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 
 	@Test
-	public void createExistingActiveBatch() throws Exception {
-		TransactionBatch existingBatch = mock(TransactionBatch.class);
+	public void nestedBatch() throws Exception {
+		TransactionalBatch existingBatch = mock(TransactionalBatch.class);
 
-		ThreadLocalTransactionBatch.setCurrentBatch(existingBatch);
-		doReturn(true).when(existingBatch).isActive();
-		doReturn(existingBatch).when(existingBatch).interpose();
+		ThreadContextBatch.INSTANCE.accept(existingBatch);
 
-		TransactionBatch result = this.factory.get();
+		Batch result = this.factory.get();
 
-		verify(existingBatch).interpose();
+		verify(existingBatch, only()).get();
 		verifyNoInteractions(this.tm);
 
-		assertThat(result).isSameAs(existingBatch);
+		assertThat(result).isSameAs(ThreadContextBatch.INSTANCE);
 	}
 
 	@Test
-	public void createExistingClosedBatch() throws Exception {
-		TransactionBatch existingBatch = mock(TransactionBatch.class);
+	public void illegalCurrentTransaction() throws Exception {
+		Transaction existingTx = mock(Transaction.class);
+		doReturn(existingTx).when(this.tm).getTransaction();
+
+		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(this.factory::get);
+
+		verify(this.tm, only()).getTransaction();
+	}
+
+	@Test
+	public void close() throws Exception {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		ThreadLocalTransactionBatch.setCurrentBatch(existingBatch);
-		doReturn(true).when(existingBatch).isClosed();
-		doReturn(tx).when(this.tm).getTransaction();
+		doReturn(null, tx).when(this.tm).getTransaction();
 
-		try (TransactionBatch batch = this.factory.get()) {
+		try (Batch batch = this.factory.get()) {
 			verify(this.tm).begin();
-			verify(tx).registerSynchronization(capturedSync.capture());
+			verify(this.tm, times(2)).getTransaction();
+			verifyNoMoreInteractions(this.tm);
+			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
-			assertThat(batch.getTransaction()).isSameAs(tx);
-			assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch);
+			assertThat(batch).isSameAs(ThreadContextBatch.INSTANCE);
+			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+			doReturn(Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
 		} finally {
-			capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
+			}
 		}
 
+		verify(tx, times(2)).getStatus();
 		verify(tx).commit();
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
-	}
-
-
-	@Test
-	public void createBatchClose() throws Exception {
-		Transaction tx = mock(Transaction.class);
-		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
-
-		doReturn(tx).when(this.tm).getTransaction();
-
-		try (TransactionBatch batch = this.factory.get()) {
-			verify(this.tm).begin();
-			verify(tx).registerSynchronization(capturedSync.capture());
-
-			assertThat(batch.getTransaction()).isSameAs(tx);
-		} finally {
-			capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
-		}
-
-		verify(tx).commit();
-
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 
 	@Test
-	public void createBatchDiscard() throws Exception {
+	public void discard() throws Exception {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		doReturn(tx).when(this.tm).getTransaction();
+		doReturn(null, tx).when(this.tm).getTransaction();
 
-		try (TransactionBatch batch = this.factory.get()) {
+		try (Batch batch = this.factory.get()) {
 			verify(this.tm).begin();
-			verify(tx).registerSynchronization(capturedSync.capture());
+			verify(this.tm, times(2)).getTransaction();
+			verifyNoMoreInteractions(this.tm);
+			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
-			assertThat(batch.getTransaction()).isSameAs(tx);
+			assertThat(batch).isSameAs(ThreadContextBatch.INSTANCE);
+			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
 
 			batch.discard();
+
+			verifyNoMoreInteractions(tx);
+
+			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ROLLEDBACK).when(tx).getStatus();
 		} finally {
-			capturedSync.getValue().afterCompletion(Status.STATUS_ROLLEDBACK);
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_ROLLEDBACK);
+			}
 		}
 
-		verify(tx, never()).commit();
+		verify(tx, times(2)).getStatus();
 		verify(tx).rollback();
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 
 	@Test
-	public void createNestedBatchClose() throws Exception {
+	public void closeNested() throws Exception {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		doReturn(tx).when(this.tm).getTransaction();
+		doReturn(null, tx).when(this.tm).getTransaction();
 
-		try (TransactionBatch outerBatch = this.factory.get()) {
-			assertThat(outerBatch.getTransaction()).isSameAs(tx);
-
-			verify(this.tm).suspend();
+		try (Batch outerBatch = this.factory.get()) {
 			verify(this.tm).begin();
-			verify(tx).registerSynchronization(capturedSync.capture());
+			verify(this.tm, times(2)).getTransaction();
+			verifyNoMoreInteractions(this.tm);
+			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
-			try (TransactionBatch innerBatch = this.factory.get()) {
+			assertThat(ThreadContextBatch.INSTANCE).isSameAs(outerBatch);
+			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+			try (Batch innerBatch = this.factory.get()) {
 				// No new interactions
-				verify(this.tm, times(1)).suspend();
-				verify(this.tm, times(1)).begin();
+				verifyNoMoreInteractions(this.tm);
+				verifyNoMoreInteractions(tx);
+
+				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
+				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+				doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
 			}
 
-			verify(tx, never()).rollback();
-			verify(tx, never()).commit();
+			verifyNoMoreInteractions(this.tm);
+			verify(tx).getStatus();
+			verifyNoMoreInteractions(tx);
+
+			doReturn(Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
 		} finally {
-			capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
+			}
 		}
 
-		verify(tx, never()).rollback();
+		verify(tx, times(3)).getStatus();
 		verify(tx).commit();
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 
 	@Test
-	public void createNestedBatchDiscard() throws Exception {
+	public void discardNestedInner() throws Exception {
 		Transaction tx = mock(Transaction.class);
 		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
 
-		doReturn(tx).when(this.tm).getTransaction();
+		doReturn(null, tx).when(this.tm).getTransaction();
 
-		try (TransactionBatch outerBatch = this.factory.get()) {
-			verify(this.tm).suspend();
+		try (Batch outerBatch = this.factory.get()) {
+			verify(this.tm, times(2)).getTransaction();
 			verify(this.tm).begin();
-			verify(tx).registerSynchronization(capturedSync.capture());
+			verifyNoMoreInteractions(this.tm);
+			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
-			assertThat(outerBatch.getTransaction()).isSameAs(tx);
+			assertThat(ThreadContextBatch.INSTANCE).isSameAs(outerBatch);
+			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
 
-			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
-			doReturn(tx).when(this.tm).getTransaction();
-
-			try (TransactionBatch innerBatch = this.factory.get()) {
+			try (Batch innerBatch = this.factory.get()) {
 				// No new interactions
-				verify(this.tm, times(1)).suspend();
-				verify(this.tm, times(1)).begin();
+				verifyNoMoreInteractions(this.tm);
+				verifyNoMoreInteractions(tx);
 
-				innerBatch.discard();
-			}
-
-			verify(tx, never()).commit();
-			verify(tx, never()).rollback();
-		} finally {
-			capturedSync.getValue().afterCompletion(Status.STATUS_ROLLEDBACK);
-		}
-
-		verify(tx).rollback();
-		verify(tx, never()).commit();
-
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
-	}
-
-	@Test
-	public void createOverlappingBatchClose() throws Exception {
-		Transaction tx = mock(Transaction.class);
-		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
-
-		doReturn(tx).when(this.tm).getTransaction();
-
-		TransactionBatch batch = this.factory.get();
-
-		verify(this.tm).suspend();
-		verify(this.tm).begin();
-		verify(tx).registerSynchronization(capturedSync.capture());
-
-		try {
-			assertThat(batch.getTransaction()).isSameAs(tx);
-
-			doReturn(tx).when(this.tm).getTransaction();
-			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
-
-			try (TransactionBatch innerBatch = this.factory.get()) {
-				// No new interactions
-				verify(this.tm, times(1)).suspend();
-				verify(this.tm, times(1)).begin();
-
-				batch.close();
-
-				verify(tx, never()).rollback();
-				verify(tx, never()).commit();
-			}
-		} finally {
-			capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
-		}
-
-		verify(tx, never()).rollback();
-		verify(tx).commit();
-
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
-	}
-
-	@Test
-	public void createOverlappingBatchDiscard() throws Exception {
-		Transaction tx = mock(Transaction.class);
-		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
-
-		doReturn(tx).when(this.tm).getTransaction();
-
-		TransactionBatch batch = this.factory.get();
-
-		verify(this.tm).begin();
-		verify(tx).registerSynchronization(capturedSync.capture());
-
-		try {
-			assertThat(batch.getTransaction()).isSameAs(tx);
-
-			doReturn(tx).when(this.tm).getTransaction();
-			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
-
-			try (TransactionBatch innerBatch = this.factory.get()) {
-				// Verify no new interactions
-				verify(this.tm, times(1)).suspend();
-				verify(this.tm, times(1)).begin();
+				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
+				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
 
 				innerBatch.discard();
 
-				batch.close();
+				verifyNoMoreInteractions(this.tm);
+				verifyNoMoreInteractions(tx);
 
-				verify(tx, never()).commit();
-				verify(tx, never()).rollback();
+				doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
 			}
+
+			verifyNoMoreInteractions(this.tm);
+			verify(tx).getStatus();
+			verifyNoMoreInteractions(tx);
+
+			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ROLLEDBACK).when(tx).getStatus();
 		} finally {
-			capturedSync.getValue().afterCompletion(Status.STATUS_ROLLEDBACK);
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_ROLLEDBACK);
+			}
 		}
 
+		verify(tx, times(3)).getStatus();
 		verify(tx).rollback();
-		verify(tx, never()).commit();
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+	}
+
+	@Test
+	public void discardNestedOuter() throws Exception {
+		Transaction tx = mock(Transaction.class);
+		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
+
+		doReturn(null, tx).when(this.tm).getTransaction();
+
+		try (Batch outerBatch = this.factory.get()) {
+			verify(this.tm, times(2)).getTransaction();
+			verify(this.tm).begin();
+			verifyNoMoreInteractions(this.tm);
+			verify(tx, only()).registerSynchronization(capturedSync.capture());
+
+			assertThat(ThreadContextBatch.INSTANCE).isSameAs(outerBatch);
+			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+			outerBatch.discard();
+
+			verifyNoMoreInteractions(this.tm);
+			verifyNoMoreInteractions(tx);
+
+			try (Batch innerBatch = this.factory.get()) {
+				// No new interactions
+				verifyNoMoreInteractions(this.tm);
+				verifyNoMoreInteractions(tx);
+
+				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
+				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			}
+
+			verifyNoMoreInteractions(this.tm);
+			verify(tx).getStatus();
+			verifyNoMoreInteractions(tx);
+
+			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ROLLEDBACK).when(tx).getStatus();
+		} finally {
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_ROLLEDBACK);
+			}
+		}
+
+		verify(tx, times(3)).getStatus();
+		verify(tx).rollback();
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+	}
+
+	@Test
+	public void closeOverlapping() throws Exception {
+		Transaction tx = mock(Transaction.class);
+		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
+
+		doReturn(null, tx).when(this.tm).getTransaction();
+
+		Batch batch1 = this.factory.get();
+
+		try {
+			assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch1);
+			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+			verify(this.tm, times(2)).getTransaction();
+			verify(this.tm).begin();
+			verifyNoMoreInteractions(this.tm);
+			verify(tx, only()).registerSynchronization(capturedSync.capture());
+			verifyNoMoreInteractions(tx);
+
+			try (Batch batch2 = this.factory.get()) {
+				// No new interactions
+				verifyNoMoreInteractions(this.tm);
+				verifyNoMoreInteractions(tx);
+
+				assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch2);
+				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+				doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
+
+				batch1.close();
+
+				verify(tx).getStatus();
+				verifyNoMoreInteractions(tx);
+				verifyNoMoreInteractions(this.tm);
+			}
+
+			doReturn(Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
+		} finally {
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
+			}
+		}
+
+		verify(tx, times(3)).getStatus();
+		verify(tx).commit();
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+	}
+
+	@Test
+	public void discardOverlapping() throws Exception {
+		Transaction tx = mock(Transaction.class);
+		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.forClass(Synchronization.class);
+
+		doReturn(null, tx).when(this.tm).getTransaction();
+
+		Batch batch1 = this.factory.get();
+
+		try {
+			assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch1);
+			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+			verify(this.tm, times(2)).getTransaction();
+			verify(this.tm).begin();
+			verifyNoMoreInteractions(this.tm);
+			verify(tx, only()).registerSynchronization(capturedSync.capture());
+
+			try (Batch batch2 = this.factory.get()) {
+				// No new interactions
+				verifyNoMoreInteractions(this.tm);
+				verifyNoMoreInteractions(tx);
+
+				assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch2);
+				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+				batch2.discard();
+
+				verifyNoMoreInteractions(this.tm);
+				verifyNoMoreInteractions(tx);
+
+				doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
+
+				batch1.close();
+
+				verify(tx).getStatus();
+				verifyNoMoreInteractions(tx);
+				verifyNoMoreInteractions(this.tm);
+			}
+
+			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ROLLEDBACK).when(tx).getStatus();
+		} finally {
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_ROLLEDBACK);
+			}
+		}
+
+		verify(tx, times(3)).getStatus();
+		verify(tx).rollback();
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 
 	@Test
 	public void suspendClosed() throws Exception {
 		Transaction tx = mock(Transaction.class);
-		ArgumentCaptor<Synchronization> sync = ArgumentCaptor.captor();
+		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.captor();
 
-		doReturn(tx).when(this.tm).getTransaction();
+		doReturn(null, tx).when(this.tm).getTransaction();
 
-		TransactionBatch batch = this.factory.get();
+		Batch batch = this.factory.get();
 
-		verify(this.tm).suspend();
+		verify(this.tm, times(2)).getTransaction();
 		verify(this.tm).begin();
-		verify(this.tm).getTransaction();
 		verifyNoMoreInteractions(this.tm);
-		verify(tx).registerSynchronization(sync.capture());
+		verify(tx, only()).registerSynchronization(capturedSync.capture());
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch);
-		assertThat(batch.getTransaction()).isSameAs(tx);
+		assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch);
+		assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
 
-		batch.close();
+		doReturn(Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
 
+		try {
+			batch.close();
+		} finally {
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
+			}
+		}
+
+		verify(tx, times(2)).getStatus();
 		verify(tx).commit();
+		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
-		sync.getValue().afterCompletion(Status.STATUS_COMMITTED);
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 
-		assertThat(batch.suspend().resume()).isNotSameAs(batch);
+		this.validateDisassociated(tx);
+	}
+
+	private void validateDisassociated(Transaction tx) {
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+
+		// Verify behavior when no batch is associated with the current thread
+		SuspendedBatch suspend = ThreadContextBatch.INSTANCE.suspend();
+
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+
+		Batch resumed = suspend.resume();
+
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
+
+		assertThat(ThreadContextBatch.INSTANCE).isSameAs(resumed);
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+
+		ThreadContextBatch.INSTANCE.discard();
+
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+
+		ThreadContextBatch.INSTANCE.close();
+
+		verifyNoMoreInteractions(tx);
+		verifyNoMoreInteractions(this.tm);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+
+		assertThat(ThreadContextBatch.INSTANCE.isActive()).isFalse();
+		assertThat(ThreadContextBatch.INSTANCE.isDiscarding()).isFalse();
+		assertThat(ThreadContextBatch.INSTANCE.isClosed()).isTrue();
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 
 	@Test
@@ -301,144 +464,85 @@ public class TransactionBatchTestCase {
 		ArgumentCaptor<Synchronization> sync = ArgumentCaptor.captor();
 		Transaction tx = mock(Transaction.class);
 
-		doReturn(tx).when(this.tm).getTransaction();
-		doReturn(null, tx).when(this.tm).suspend();
+		doReturn(null, tx).when(this.tm).getTransaction();
 
-		TransactionBatch batch = this.factory.get();
+		Batch batch = this.factory.get();
 
-		verify(this.tm).suspend();
+		verify(this.tm, times(2)).getTransaction();
 		verify(this.tm).begin();
-		verify(this.tm).getTransaction();
 		verifyNoMoreInteractions(this.tm);
-		verify(tx).registerSynchronization(sync.capture());
+		verify(tx, only()).registerSynchronization(sync.capture());
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch);
-		assertThat(batch.getTransaction()).isSameAs(tx);
+		assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch);
+		assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+		doReturn(tx).when(this.tm).suspend();
 
 		SuspendedBatch suspended = batch.suspend();
 
-		verify(this.tm, times(2)).suspend();
+		verify(this.tm).suspend();
 		verifyNoMoreInteractions(this.tm);
+		verifyNoMoreInteractions(tx);
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 
-		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(batch::discard);
-		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(batch::interpose);
-		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(batch::close);
+		this.validateDisassociated(tx);
 
 		Batch resumed = suspended.resume();
 
 		verify(this.tm).resume(tx);
 		verifyNoMoreInteractions(this.tm);
+		verifyNoMoreInteractions(tx);
 
-		assertThat(resumed).isSameAs(batch);
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(resumed);
+		assertThat(ThreadContextBatch.INSTANCE).isSameAs(resumed);
 	}
 
 	@Test
 	public void suspendResumeClosed() throws Exception {
-		ArgumentCaptor<Synchronization> sync = ArgumentCaptor.captor();
+		ArgumentCaptor<Synchronization> capturedSync = ArgumentCaptor.captor();
 		Transaction tx = mock(Transaction.class);
 
-		doReturn(tx).when(this.tm).getTransaction();
-		doReturn(null, tx, tx).when(this.tm).suspend();
+		doReturn(null, tx).when(this.tm).getTransaction();
 
-		TransactionBatch batch = this.factory.get();
+		Batch batch = this.factory.get();
 
-		verify(this.tm).suspend();
+		verify(this.tm, times(2)).getTransaction();
 		verify(this.tm).begin();
-		verify(this.tm).getTransaction();
 		verifyNoMoreInteractions(this.tm);
-		verify(tx).registerSynchronization(sync.capture());
+		verify(tx, only()).registerSynchronization(capturedSync.capture());
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch);
-		assertThat(batch.getTransaction()).isSameAs(tx);
+		assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch);
+		assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+
+		doReturn(tx).when(this.tm).suspend();
 
 		SuspendedBatch suspended = batch.suspend();
 
-		verify(this.tm, times(2)).suspend();
+		verify(this.tm).suspend();
 		verifyNoMoreInteractions(this.tm);
+		verifyNoMoreInteractions(tx);
 
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 
 		try (Batch resumed = suspended.resume()) {
 			verify(this.tm).resume(tx);
 			verifyNoMoreInteractions(this.tm);
 
-			assertThat(resumed).isSameAs(batch);
-			assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(resumed);
-		}
+			assertThat(ThreadContextBatch.INSTANCE).isSameAs(resumed);
+			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
 
-		verify(tx).commit();
-		sync.getValue().afterCompletion(Status.STATUS_COMMITTED);
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
-		verifyNoMoreInteractions(this.tm);
-
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
-	}
-
-	@Test
-	public void suspendActiveResume() throws Exception {
-		ArgumentCaptor<Synchronization> sync1 = ArgumentCaptor.captor();
-		ArgumentCaptor<Synchronization> sync2 = ArgumentCaptor.captor();
-		Transaction tx1 = mock(Transaction.class, "tx1");
-		Transaction tx2 = mock(Transaction.class, "tx2");
-
-		doReturn(tx1, tx2).when(this.tm).getTransaction();
-		doReturn(null, tx1, null, tx2, tx1).when(this.tm).suspend();
-
-		TransactionBatch batch1 = this.factory.get();
-
-		verify(this.tm).suspend();
-		verify(this.tm).begin();
-		verify(this.tm).getTransaction();
-		verifyNoMoreInteractions(this.tm);
-		verify(tx1).registerSynchronization(sync1.capture());
-
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch1);
-		assertThat(batch1.getTransaction()).isSameAs(tx1);
-
-		SuspendedBatch suspended = batch1.suspend();
-
-		verify(this.tm, times(2)).suspend();
-		verifyNoMoreInteractions(this.tm);
-
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
-
-		try (TransactionBatch batch2 = this.factory.get()) {
-			verify(this.tm, times(3)).suspend();
-			verify(this.tm, times(2)).begin();
-			verify(this.tm, times(2)).getTransaction();
-			verifyNoMoreInteractions(this.tm);
-			verify(tx2).registerSynchronization(sync2.capture());
-
-			assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch2);
-			assertThat(batch2.getTransaction()).isSameAs(tx2);
-
-			try (BatchContext<Batch> context = suspended.resumeWithContext()) {
-				verify(this.tm, times(4)).suspend();
-				verify(this.tm).resume(tx1);
-				verifyNoMoreInteractions(this.tm);
-
-				try (Batch resumed = context.get()) {
-					assertThat(resumed).isSameAs(batch1);
-					assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(resumed);
-				}
-
-				verify(tx1).commit();
-				sync1.getValue().afterCompletion(Status.STATUS_COMMITTED);
-				assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
+			doReturn(Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
+		} finally {
+			if (!capturedSync.getAllValues().isEmpty()) {
+				capturedSync.getValue().afterCompletion(Status.STATUS_COMMITTED);
 			}
-
-			verify(this.tm).resume(tx2);
-			verifyNoMoreInteractions(this.tm);
-
-			assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isSameAs(batch2);
 		}
 
-		sync2.getValue().afterCompletion(Status.STATUS_COMMITTED);
-		assertThat(ThreadLocalTransactionBatch.getCurrentBatch()).isNull();
-
+		verify(tx, times(2)).getStatus();
+		verify(tx).commit();
+		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 }

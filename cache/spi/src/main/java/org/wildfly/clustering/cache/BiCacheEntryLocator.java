@@ -41,13 +41,13 @@ public interface BiCacheEntryLocator<I, K, V> extends CacheEntryLocator<I, Map.E
 	default CompletionStage<Map.Entry<K, V>> findValueAsync(I id) {
 		Map.Entry<CompletionStage<K>, CompletionStage<V>> entry = this.findEntry(id);
 		BiFunction<K, V, Map.Entry<K, V>> entryFactory = Map::entry;
-		return entry.getKey().thenCombine(entry.getValue(), entryFactory.orDefault(BiPredicate.and(Objects::nonNull, Objects::nonNull), Supplier.of(null)));
+		return entry.getKey().thenCombine(entry.getValue(), entryFactory.orDefault(BiPredicate.and(Objects::nonNull, Objects::nonNull), Supplier.empty()));
 	}
 
 	@Override
 	default CompletionStage<Map.Entry<K, V>> tryValueAsync(I id) {
 		Map.Entry<CompletionStage<K>, CompletionStage<V>> entry = this.tryEntry(id);
 		BiFunction<K, V, Map.Entry<K, V>> entryFactory = Map::entry;
-		return entry.getKey().thenCombine(entry.getValue(), entryFactory.orDefault(BiPredicate.and(Objects::nonNull, Objects::nonNull), Supplier.of(null)));
+		return entry.getKey().thenCombine(entry.getValue(), entryFactory.orDefault(BiPredicate.and(Objects::nonNull, Objects::nonNull), Supplier.empty()));
 	}
 }

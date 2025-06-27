@@ -29,14 +29,14 @@ import org.wildfly.clustering.server.local.listener.LocalListenerRegistrar;
 public class JChannelGroup implements ChannelGroup, Receiver {
 	private static final System.Logger LOGGER = System.getLogger(JChannelGroup.class.getName());
 
-	private final String name;
+	private final JChannel channel;
 	private final ChannelGroupMemberFactory memberFactory = JChannelGroupMember::new;
 	private final ChannelGroupMember localMember;
 	private final ListenerRegistrar<GroupMembershipListener<ChannelGroupMember>> listeners;
 	private final AtomicReference<View> view = new AtomicReference<>();
 
 	public JChannelGroup(JChannel channel) {
-		this.name = channel.getClusterName();
+		this.channel = channel;
 		this.localMember = this.memberFactory.createGroupMember(channel.getAddress());
 		this.listeners = new LocalListenerRegistrar<>(Duration.ofMillis(channel.getProtocolStack().getTransport().getWhoHasCacheTimeout()));
 		channel.setReceiver(this);
@@ -44,13 +44,13 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 	}
 
 	@Override
-	public Registration register(GroupMembershipListener<ChannelGroupMember> listener) {
-		return this.listeners.register(listener);
+	public JChannel getChannel() {
+		return this.channel;
 	}
 
 	@Override
-	public String getName() {
-		return this.name;
+	public Registration register(GroupMembershipListener<ChannelGroupMember> listener) {
+		return this.listeners.register(listener);
 	}
 
 	@Override
@@ -66,11 +66,6 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 	@Override
 	public ChannelGroupMemberFactory getGroupMemberFactory() {
 		return this.memberFactory;
-	}
-
-	@Override
-	public boolean isSingleton() {
-		return false;
 	}
 
 	@Override

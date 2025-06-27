@@ -114,7 +114,7 @@ public interface Contextualizer {
 		}
 	};
 
-	static Contextualizer withContextProvider(Supplier<Context> provider) {
+	static <C> Contextualizer withContextProvider(Supplier<Context<C>> provider) {
 		ContextualExecutor executor = ContextualExecutor.withContextProvider(provider);
 		return new Contextualizer() {
 			@Override

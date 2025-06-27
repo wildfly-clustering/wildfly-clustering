@@ -24,7 +24,7 @@ public class SessionMetaDataEntryFunctionTestCase extends AbstractSessionMetaDat
 	public void accept(ContextualSessionMetaDataEntry<Object> entry) {
 		Object context = UUID.randomUUID();
 		assertThat(entry.getContext().get(Supplier.of(context))).isSameAs(context);
-		assertThat(entry.getContext().get(Supplier.of(null))).isSameAs(context);
+		assertThat(entry.getContext().get(Supplier.empty())).isSameAs(context);
 
 		MutableSessionMetaDataOffsetValues delta = MutableSessionMetaDataOffsetValues.from(entry);
 
@@ -42,6 +42,6 @@ public class SessionMetaDataEntryFunctionTestCase extends AbstractSessionMetaDat
 
 		this.verifyUpdatedState(resultEntry);
 
-		assertThat(resultEntry.getContext().get(Supplier.of(null))).isSameAs(context);
+		assertThat(resultEntry.getContext().get(Supplier.empty())).isSameAs(context);
 	}
 }

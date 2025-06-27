@@ -16,6 +16,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
@@ -25,21 +26,22 @@ import org.wildfly.clustering.server.jgroups.dispatcher.test.IdentityCommand;
 /**
  * Base integration test for {@link CommandDispatcher} implementations.
  * @param <M> the group member type
+ * @param <F> the command dispatcher factory type
  * @author Paul Ferraro
  */
-public abstract class CommandDispatcherITCase<M extends GroupMember> {
+public abstract class CommandDispatcherITCase<M extends GroupMember, F extends CommandDispatcherFactory<M>> {
 	private static final String CLUSTER_NAME = "cluster";
 
-	private final BiFunction<String, String, CommandDispatcherFactoryProvider<M>> factory;
+	private final BiFunction<String, String, Context<F>> contextFactory;
 
-	protected CommandDispatcherITCase(BiFunction<String, String, CommandDispatcherFactoryProvider<M>> factory) {
-		this.factory = factory;
+	protected CommandDispatcherITCase(BiFunction<String, String, Context<F>> contextFactory) {
+		this.contextFactory = contextFactory;
 	}
 
 	@Test
 	public void test() throws IOException {
-		try (CommandDispatcherFactoryProvider<M> provider1 = this.factory.apply(CLUSTER_NAME, "member1")) {
-			CommandDispatcherFactory<M> factory1 = provider1.getCommandDispatcherFactory();
+		try (Context<F> factory1Context = this.contextFactory.apply(CLUSTER_NAME, "member1")) {
+			CommandDispatcherFactory<M> factory1 = factory1Context.get();
 			Group<M> group1 = factory1.getGroup();
 			UUID fooContext1 = UUID.randomUUID();
 
@@ -54,8 +56,8 @@ public abstract class CommandDispatcherITCase<M extends GroupMember> {
 
 				assertThat(dispatcher1.dispatchToGroup(new IdentityCommand<>(), Set.of(group1.getLocalMember()))).isEmpty();
 
-				try (CommandDispatcherFactoryProvider<M> provider2 = this.factory.apply(CLUSTER_NAME, "member2")) {
-					CommandDispatcherFactory<M> factory2 = provider2.getCommandDispatcherFactory();
+				try (Context<F> factory2Context = this.contextFactory.apply(CLUSTER_NAME, "member2")) {
+					CommandDispatcherFactory<M> factory2 = factory2Context.get();
 					Group<M> group2 = factory2.getGroup();
 					UUID fooContext2 = UUID.randomUUID();
 

@@ -22,9 +22,13 @@ public class InfinispanServerExtension extends ContainerExtension<InfinispanServ
 	@Override
 	public Configuration configure(ConfigurationBuilder builder) {
 		InfinispanServerContainer container = this.getContainer();
-		return builder.addServer().host(container.getHost()).port(container.getPort()).security().authentication()
-			.username(container.getUsername())
-			.password(container.getPassword())
+		return builder.security()
+			.authentication()
+				.username(container.getUsername())
+				.password(container.getPassword())
+			.addServer()
+				.host(container.getHost())
+				.port(container.getPort())
 			.build();
 	}
 }

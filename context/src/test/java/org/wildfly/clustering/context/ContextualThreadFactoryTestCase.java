@@ -6,6 +6,7 @@
 package org.wildfly.clustering.context;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.ThreadFactory;
@@ -20,13 +21,11 @@ public class ContextualThreadFactoryTestCase {
 	@Test
 	public void test() {
 		ThreadFactory factory = mock(ThreadFactory.class);
-		Object targetContext = new Object();
-		ThreadContextReference<Object> reference = mock(ThreadContextReference.class);
+		Thread expected = new Thread();
 		Contextualizer contextualizer = mock(Contextualizer.class);
-		ThreadFactory subject = new ContextualThreadFactory<>(factory, targetContext, reference, contextualizer);
+		ThreadFactory subject = new ContextualThreadFactory<>(factory, contextualizer);
 		Runnable task = mock(Runnable.class);
 		Runnable contextualTask = mock(Runnable.class);
-		Thread expected = new Thread();
 
 		when(contextualizer.contextualize(task)).thenReturn(contextualTask);
 		when(factory.newThread(same(contextualTask))).thenReturn(expected);
@@ -35,6 +34,6 @@ public class ContextualThreadFactoryTestCase {
 
 		assertThat(result).isSameAs(expected);
 
-		verify(reference).accept(same(expected), same(targetContext));
+		verify(contextualizer).contextualize(any(Runnable.class));
 	}
 }

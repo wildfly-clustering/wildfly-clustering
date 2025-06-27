@@ -46,7 +46,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-function</artifactId>
+			<artifactId>wildfly-clustering-server-api</artifactId>
 		</dependency>
 
 		<dependency>
@@ -63,6 +63,23 @@
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
 			<scope>test</scope>
 			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-server-jgroups</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-cachestore-jdbc</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

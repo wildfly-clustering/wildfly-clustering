@@ -13,7 +13,7 @@ import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(MarshallingTesterFactory.class)
+@MetaInfServices({ MarshallingTesterFactory.class, JBossMarshallingTesterFactory.class })
 public class JBossMarshallingTesterFactory implements MarshallingTesterFactory {
 
 	private final ByteBufferMarshaller marshaller;

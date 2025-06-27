@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.cache.batch;
 
+import org.wildfly.clustering.context.Context;
+
 /**
  * A suspended batch.
  * @author Paul Ferraro
@@ -18,8 +20,11 @@ public interface SuspendedBatch {
 	Batch resume();
 
 	/**
-	 * Resumes this batch until {@link BatchContext#close()}.
+	 * Resumes this batch until {@link Context#close()}.
 	 * @return a resumed batch context
 	 */
-	BatchContext<Batch> resumeWithContext();
+	default Context<Batch> resumeWithContext() {
+		Batch resumed = this.resume();
+		return Context.of(resumed, Batch::suspend);
+	}
 }

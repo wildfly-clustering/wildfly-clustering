@@ -11,6 +11,13 @@ package org.wildfly.clustering.function;
  * @param <T> the result type
  */
 public interface Callable<T> extends java.util.concurrent.Callable<T> {
+	Callable<?> NULL = new Callable<>() {
+		@Override
+		public Object call() {
+			return null;
+		}
+	};
+
 	/**
 	 * Returns a callable whose result is mapped by the specified function.
 	 * @param <R> the mapped result type
@@ -27,18 +34,28 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	}
 
 	/**
+	 * Returns a callable that returns null.
+	 * @param value the result value
+	 * @return a callable that returns null.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T> Callable<T> empty() {
+		return (Callable<T>) NULL;
+	}
+
+	/**
 	 * Returns a callable that runs the specified runner and returns <code>null</code>.
 	 * @param runner a runner
 	 * @return a callable that runs the specified runner and returns <code>null</code>.
 	 */
-	static Callable<Void> of(Runnable runner) {
-		return new Callable<>() {
+	static Callable<Void> run(Runnable runner) {
+		return (runner != null) && (runner != Runnable.EMPTY) ? new Callable<>() {
 			@Override
 			public Void call() {
 				runner.run();
 				return null;
 			}
-		};
+		} : empty();
 	}
 
 	/**
@@ -46,13 +63,13 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @param supplier a supplier
 	 * @return the result of the specified supplier.
 	 */
-	static <T> Callable<T> of(Supplier<T> supplier) {
-		return new Callable<>() {
+	static <T> Callable<T> get(Supplier<T> supplier) {
+		return (supplier != null) && (supplier != Supplier.NULL) ? new Callable<>() {
 			@Override
 			public T call() {
 				return supplier.get();
 			}
-		};
+		} : empty();
 	}
 
 	/**
@@ -61,11 +78,11 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @return a callable that returns the specified value.
 	 */
 	static <T> Callable<T> of(T value) {
-		return new Callable<>() {
+		return (value != null) ? new Callable<>() {
 			@Override
 			public T call() {
 				return value;
 			}
-		};
+		} : empty();
 	}
 }

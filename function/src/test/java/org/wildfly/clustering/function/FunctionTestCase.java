@@ -17,20 +17,24 @@ import org.mockito.Mockito;
 public class FunctionTestCase {
 
 	@Test
-	public void ofValue() {
+	public void empty() {
+		Assertions.assertThat(Function.empty().apply(new Object())).isNull();
+	}
+
+	@Test
+	public void of() {
 		Object expected = new Object();
 		Assertions.assertThat(Function.of(expected).apply(new Object())).isSameAs(expected);
 		Assertions.assertThat(Function.of(null).apply(new Object())).isNull();
 	}
 
 	@Test
-	public void ofRunnable() {
+	public void get() {
 		Object expected = new Object();
 		Supplier<Object> supplier = Mockito.mock(Supplier.class);
 		Mockito.doReturn(expected).when(supplier).get();
-		Assertions.assertThat(Function.of(supplier).apply(new Object())).isSameAs(expected);
-		supplier = null;
-		Assertions.assertThat(Function.of(supplier).apply(new Object())).isNull();
+		Assertions.assertThat(Function.get(supplier).apply(new Object())).isSameAs(expected);
+		Assertions.assertThat(Function.get(null).apply(new Object())).isNull();
 	}
 
 	@Test

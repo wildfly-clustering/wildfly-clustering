@@ -29,8 +29,8 @@ public class CacheRegistryITCase {
 	public void test() throws Exception {
 		Map.Entry<String, UUID> entry1 = Map.entry("foo", UUID.randomUUID());
 		Map.Entry<String, UUID> entry2 = Map.entry("bar", UUID.randomUUID());
-		try (CacheContainerRegistryProvider<String, UUID> provider1 = new CacheContainerRegistryProvider<>(CLUSTER_NAME, MEMBER_1)) {
-			try (Registry<CacheContainerGroupMember, String, UUID> registry1 = provider1.apply(entry1)) {
+		try (CacheContainerRegistryFactoryContext<String, UUID> factory1 = new CacheContainerRegistryFactoryContext<>(CLUSTER_NAME, MEMBER_1)) {
+			try (Registry<CacheContainerGroupMember, String, UUID> registry1 = factory1.get().createRegistry(entry1)) {
 				CacheContainerGroupMember member1 = registry1.getGroup().getLocalMember();
 				assertThat(registry1.getEntry(member1)).isEqualTo(entry1);
 				assertThat(registry1.getEntries()).containsExactlyEntriesOf(Map.ofEntries(entry1));
@@ -40,8 +40,8 @@ public class CacheRegistryITCase {
 
 					verifyNoInteractions(listener);
 
-					try (CacheContainerRegistryProvider<String, UUID> provider2 = new CacheContainerRegistryProvider<>(CLUSTER_NAME, MEMBER_2)) {
-						try (Registry<CacheContainerGroupMember, String, UUID> registry2 = provider2.apply(entry2)) {
+					try (CacheContainerRegistryFactoryContext<String, UUID> factory2 = new CacheContainerRegistryFactoryContext<>(CLUSTER_NAME, MEMBER_2)) {
+						try (Registry<CacheContainerGroupMember, String, UUID> registry2 = factory2.get().createRegistry(entry2)) {
 							CacheContainerGroupMember member2 = registry2.getGroup().getLocalMember();
 
 							assertThat(registry1.getEntry(member1)).isEqualTo(entry1);

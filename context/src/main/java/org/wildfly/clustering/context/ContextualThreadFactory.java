@@ -15,18 +15,14 @@ import java.util.concurrent.ThreadFactory;
  */
 public class ContextualThreadFactory<C> implements ThreadFactory {
 	private final ThreadFactory factory;
-	private final C targetContext;
-	private final ThreadContextReference<C> reference;
 	private final Contextualizer contextualizer;
 
-	public ContextualThreadFactory(ThreadFactory factory, C targetContext, ThreadContextReference<C> reference) {
-		this(factory, targetContext, reference, Contextualizer.withContextProvider(reference.provide(targetContext)));
+	public ContextualThreadFactory(ThreadFactory factory, C targetContext, ContextReference<C> contextReference) {
+		this(factory, Contextualizer.withContextProvider(contextReference.provide(targetContext)));
 	}
 
-	ContextualThreadFactory(ThreadFactory factory, C targetContext, ThreadContextReference<C> reference, Contextualizer contextualizer) {
+	ContextualThreadFactory(ThreadFactory factory, Contextualizer contextualizer) {
 		this.factory = factory;
-		this.targetContext = targetContext;
-		this.reference = reference;
 		this.contextualizer = contextualizer;
 	}
 
@@ -39,7 +35,6 @@ public class ContextualThreadFactory<C> implements ThreadFactory {
 				return ContextualThreadFactory.this.factory.newThread(ContextualThreadFactory.this.contextualizer.contextualize(task));
 			}
 		});
-		this.reference.accept(thread, this.targetContext);
 		return thread;
 	}
 }

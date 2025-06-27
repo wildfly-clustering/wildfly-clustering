@@ -6,6 +6,7 @@
 package org.wildfly.clustering.server.infinispan;
 
 import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.server.GroupMembership;
 import org.wildfly.clustering.server.GroupMembershipListener;
@@ -17,6 +18,8 @@ import org.wildfly.clustering.server.group.Group;
  */
 public interface CacheContainerGroup extends Group<Address, CacheContainerGroupMember> {
 
+	EmbeddedCacheManager getCacheContainer();
+
 	@Override
 	CacheContainerGroupMemberFactory getGroupMemberFactory();
 
@@ -25,6 +28,11 @@ public interface CacheContainerGroup extends Group<Address, CacheContainerGroupM
 		// If cache is local, return a singleton group
 		return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? group : new CacheContainerGroup() {
 			private final GroupMembership<CacheContainerGroupMember> membership = org.wildfly.clustering.server.group.GroupMembership.singleton(group.getLocalMember());
+
+			@Override
+			public EmbeddedCacheManager getCacheContainer() {
+				return group.getCacheContainer();
+			}
 
 			@Override
 			public String getName() {

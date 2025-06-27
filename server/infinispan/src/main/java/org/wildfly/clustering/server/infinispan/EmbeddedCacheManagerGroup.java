@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.wildfly.clustering.server.GroupMembership;
 import org.wildfly.clustering.server.GroupMembershipEvent;
 import org.wildfly.clustering.server.GroupMembershipListener;
@@ -25,16 +26,23 @@ import org.wildfly.clustering.server.group.GroupMember;
  */
 public class EmbeddedCacheManagerGroup<A extends Comparable<A>, M extends GroupMember<A>> implements CacheContainerGroup {
 
+	private final EmbeddedCacheManager manager;
 	private final Group<A, M> group;
 	private final Function<M, CacheContainerGroupMember> wrapper;
 	private final CacheContainerGroupMemberFactory factory;
 	private final CacheContainerGroupMember localMember;
 
 	public EmbeddedCacheManagerGroup(EmbeddedCacheManagerGroupConfiguration<A, M> configuration) {
+		this.manager = configuration.getCacheContainer();
 		this.group = configuration.getGroup();
 		this.factory = new EmbeddedCacheManagerGroupMemberFactory(configuration);
 		this.wrapper = configuration.getAddressWrapper().<M>compose(GroupMember::getAddress).andThen(this.factory::createGroupMember);
 		this.localMember = this.wrapper.apply(this.group.getLocalMember());
+	}
+
+	@Override
+	public EmbeddedCacheManager getCacheContainer() {
+		return this.manager;
 	}
 
 	@Override
