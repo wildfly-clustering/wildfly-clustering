@@ -24,7 +24,7 @@ public class RemoteCacheEntryComputerFactory<K, V, O> implements CacheEntryMutat
 	private final RemoteCache<K, V> cache;
 	private final Function<O, BiFunction<Object, V, V>> functionFactory;
 
-	public RemoteCacheEntryComputerFactory(RemoteCache<K, V> cache, Function<O, BiFunction<Object, V, V>> functionFactory) {
+	RemoteCacheEntryComputerFactory(RemoteCache<K, V> cache, Function<O, BiFunction<Object, V, V>> functionFactory) {
 		this.cache = cache;
 		this.functionFactory = functionFactory;
 	}

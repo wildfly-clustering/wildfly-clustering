@@ -30,7 +30,7 @@ public class InfinispanUserSessionsFactory<D, S> implements UserSessionsFactory<
 	private final CacheEntryMutatorFactory<UserSessionsKey, Map<D, S>> mutatorFactory;
 
 	public InfinispanUserSessionsFactory(EmbeddedCacheConfiguration configuration) {
-		this.cache = configuration.getCache();
+		this.cache = configuration.getReadForUpdateCache();
 		this.writeOnlyCache = configuration.getWriteOnlyCache();
 		this.mutatorFactory = configuration.getCacheEntryMutatorFactory();
 	}
