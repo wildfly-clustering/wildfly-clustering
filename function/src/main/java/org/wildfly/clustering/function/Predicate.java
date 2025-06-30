@@ -21,6 +21,24 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	Predicate<?> NEVER = new SimplePredicate<>(false);
 
 	/**
+	 * Returns a new predicate that delegates to this predicate using the specified exception handler.
+	 * @param handler an exception handler
+	 * @return a new predicate that delegates to this predicate using the specified exception handler.
+	 */
+	default Predicate<T> handle(java.util.function.BiPredicate<T, RuntimeException> handler) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				try {
+					return Predicate.this.test(value);
+				} catch (RuntimeException e) {
+					return handler.test(value, e);
+				}
+			}
+		};
+	}
+
+	/**
 	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
 	 * @param <V> the mapped type
 	 * @param mapper
@@ -105,6 +123,16 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 				return Predicate.this.test(test) || other.test(test);
 			}
 		};
+	}
+
+	/**
+	 * Returns a predicate that always evaluates to the specified result.
+	 * @param <T> the argument type
+	 * @param result the fixed result
+	 * @return a predicate that always evaluates to the specified value.
+	 */
+	static <T> Predicate<T> of(boolean result) {
+		return result ? Predicate.always() : Predicate.never();
 	}
 
 	/**

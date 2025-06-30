@@ -5,13 +5,13 @@
 
 package org.wildfly.clustering.function;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import java.util.List;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
-import org.mockito.Mockito;
 
 /**
  * Unit test for {@link Consumer}.
@@ -21,16 +21,16 @@ public class ConsumerTestCase {
 
 	@Test
 	public void compose() {
-		Consumer<Object> consumer = Mockito.mock(Consumer.class);
-		Mockito.doCallRealMethod().when(consumer).compose(ArgumentMatchers.any());
-		Function<Object, Object> mapper = Mockito.mock(Function.class);
+		Consumer<Object> consumer = mock(Consumer.class);
+		doCallRealMethod().when(consumer).compose(any());
+		Function<Object, Object> mapper = mock(Function.class);
 		Object value = new Object();
 		Object result = new Object();
-		Mockito.doReturn(result).when(mapper).apply(value);
+		doReturn(result).when(mapper).apply(value);
 
 		consumer.compose(mapper).accept(value);
 
-		Mockito.verify(consumer).accept(result);
+		verify(consumer).accept(result);
 	}
 
 	@Test
@@ -41,45 +41,67 @@ public class ConsumerTestCase {
 	}
 
 	@Test
+	public void handle() {
+		Consumer<Object> consumer = mock(Consumer.class);
+		BiConsumer<Object, RuntimeException> handler = mock(BiConsumer.class);
+		doCallRealMethod().when(consumer).handle(any());
+		Object goodValue = new Object();
+		Object badValue = new Object();
+		RuntimeException exception = new RuntimeException();
+
+		doNothing().when(consumer).accept(goodValue);
+		doThrow(exception).when(consumer).accept(badValue);
+
+		consumer.handle(handler).accept(goodValue);
+
+		verify(consumer).accept(goodValue);
+		verify(handler, never()).accept(any(), any());
+
+		consumer.handle(handler).accept(badValue);
+
+		verify(handler).accept(badValue, exception);
+	}
+
+	@Test
 	public void close() throws Exception {
-		AutoCloseable resource = Mockito.mock(AutoCloseable.class);
+		AutoCloseable resource = mock(AutoCloseable.class);
 
 		Consumer<AutoCloseable> consumer = Consumer.close(Consumer.debug());
 
 		consumer.accept(resource);
 
-		Mockito.verify(resource).close();
+		verify(resource).close();
 
-		Mockito.doThrow(new Exception()).when(resource).close();
+		doThrow(new Exception()).when(resource).close();
 
 		// Verify silent close
 		consumer.accept(resource);
 
 		IllegalStateException exception = new IllegalStateException();
-		Mockito.doThrow(exception).when(resource).close();
+		doThrow(exception).when(resource).close();
 
 		// Verify runtime exception propagated
-		Assertions.assertThatThrownBy(resource::close).isSameAs(exception);
+		assertThatThrownBy(resource::close).isSameAs(exception);
 	}
 
 	@Test
 	public void ofRunnable() {
 		Object value = new Object();
-		Runnable runnable = Mockito.mock(Runnable.class);
+		Runnable runnable = mock(Runnable.class);
 		Consumer<Object> consumer = Consumer.run(runnable);
 
 		consumer.accept(value);
 
-		Mockito.verify(runnable).run();
+		verify(runnable).run();
 	}
 
 	@Test
 	public void andThen() {
 		Object value = new Object();
-		Consumer<Object> before = Mockito.mock(Consumer.class);
-		Mockito.doCallRealMethod().when(before).andThen(ArgumentMatchers.any());
-		Consumer<Object> after = Mockito.mock(Consumer.class);
-		InOrder order = Mockito.inOrder(before, after);
+		Consumer<Object> before = mock(Consumer.class);
+		doCallRealMethod().when(before).andThen(any());
+		Consumer<Object> after = mock(Consumer.class);
+		InOrder order = inOrder(before, after);
 
 		before.andThen(after).accept(value);
 
@@ -90,10 +112,10 @@ public class ConsumerTestCase {
 	@Test
 	public void acceptAll() {
 		Object value = new Object();
-		Consumer<Object> consumer1 = Mockito.mock(Consumer.class);
-		Consumer<Object> consumer2 = Mockito.mock(Consumer.class);
-		Consumer<Object> consumer3 = Mockito.mock(Consumer.class);
-		InOrder order = Mockito.inOrder(consumer1, consumer2, consumer3);
+		Consumer<Object> consumer1 = mock(Consumer.class);
+		Consumer<Object> consumer2 = mock(Consumer.class);
+		Consumer<Object> consumer3 = mock(Consumer.class);
+		InOrder order = inOrder(consumer1, consumer2, consumer3);
 
 		Consumer<Object> consumer = Consumer.acceptAll(List.of(consumer1, consumer2, consumer3));
 

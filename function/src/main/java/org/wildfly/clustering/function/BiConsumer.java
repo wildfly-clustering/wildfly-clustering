@@ -24,7 +24,7 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 
 	@Override
 	default BiConsumer<T, U> andThen(java.util.function.BiConsumer<? super T, ? super U> after) {
-		return of(List.of(this, after));
+		return acceptAll(List.<java.util.function.BiConsumer<? super T, ? super U>>of(this, after));
 	}
 
 	/**
@@ -58,6 +58,24 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	}
 
 	/**
+	 * Returns a new consumer that delegates to the specified handler in the event of an exception.
+	 * @param handler an exception handler
+	 * @return a new consumer that delegates to the specified handler in the event of an exception.
+	 */
+	default BiConsumer<T, U> handle(java.util.function.Consumer<RuntimeException> handler) {
+		return new BiConsumer<>() {
+			@Override
+			public void accept(T value1, U value2) {
+				try {
+					BiConsumer.this.accept(value1, value2);
+				} catch (RuntimeException e) {
+					handler.accept(e);
+				}
+			}
+		};
+	}
+
+	/**
 	 * Returns a consumer that performs no action.
 	 * @param <T> the first consumed type
 	 * @param <U> the second consumed type
@@ -66,24 +84,6 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	@SuppressWarnings("unchecked")
 	static <T, U> BiConsumer<T, U> empty() {
 		return (BiConsumer<T, U>) EMPTY;
-	}
-
-	/**
-	 * Returns a composite consumer that delegates to zero or more consumers.
-	 * @param <T> the first consumed type
-	 * @param <U> the second consumed type
-	 * @param consumers zero or more consumers
-	 * @return a composite consumer
-	 */
-	static <T, U> BiConsumer<T, U> of(Iterable<java.util.function.BiConsumer<? super T, ? super U>> consumers) {
-		return new BiConsumer<>() {
-			@Override
-			public void accept(T value1, U value2) {
-				for (java.util.function.BiConsumer<? super T, ? super U> consumer : consumers) {
-					consumer.accept(value1, value2);
-				}
-			}
-		};
 	}
 
 	/**
@@ -122,6 +122,24 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 			public void accept(T value1, U value2) {
 				consumer1.accept(value1);
 				consumer2.accept(value2);
+			}
+		};
+	}
+
+	/**
+	 * Returns a composite consumer that delegates to zero or more consumers.
+	 * @param <T> the first consumed type
+	 * @param <U> the second consumed type
+	 * @param consumers zero or more consumers
+	 * @return a composite consumer
+	 */
+	static <T, U> BiConsumer<T, U> acceptAll(Iterable<? extends java.util.function.BiConsumer<? super T, ? super U>> consumers) {
+		return new BiConsumer<>() {
+			@Override
+			public void accept(T value1, U value2) {
+				for (java.util.function.BiConsumer<? super T, ? super U> consumer : consumers) {
+					consumer.accept(value1, value2);
+				}
 			}
 		};
 	}

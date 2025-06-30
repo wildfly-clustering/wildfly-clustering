@@ -48,10 +48,10 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @param runner a runner
 	 * @return a callable that runs the specified runner and returns <code>null</code>.
 	 */
-	static Callable<Void> run(Runnable runner) {
+	static <T> Callable<T> run(Runnable runner) {
 		return (runner != null) && (runner != Runnable.EMPTY) ? new Callable<>() {
 			@Override
-			public Void call() {
+			public T call() {
 				runner.run();
 				return null;
 			}
@@ -84,5 +84,19 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 				return value;
 			}
 		} : empty();
+	}
+
+	/**
+	 * Returns a callable that throws the provided exception.
+	 * @param exceptionProvider a provider of an exception
+	 * @return a callable that throws the provided exception.
+	 */
+	static <T> Callable<T> exceptional(Supplier<? extends Exception> exceptionProvider) {
+		return new Callable<>() {
+			@Override
+			public T call() throws Exception {
+				throw exceptionProvider.get();
+			}
+		};
 	}
 }

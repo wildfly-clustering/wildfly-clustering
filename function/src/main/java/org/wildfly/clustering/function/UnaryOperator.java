@@ -11,7 +11,12 @@ package org.wildfly.clustering.function;
  * @param <T> the operating type
  */
 public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, Function<T, T> {
-	UnaryOperator<?> IDENTITY = new IdentityOperator<>();
+	UnaryOperator<?> IDENTITY = new UnaryOperator<>() {
+		@Override
+		public Object apply(Object value) {
+			return value;
+		}
+	};
 	UnaryOperator<?> NULL = new UnaryOperator<>() {
 		@Override
 		public Object apply(Object value) {
@@ -75,6 +80,24 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 			@Override
 			public T apply(T value) {
 				return UnaryOperator.this.apply(operator.apply(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a new operator that delegates to this operator using the specified exception handler.
+	 * @param handler an exception handler
+	 * @return a new operator that delegates to this operator using the specified exception handler.
+	 */
+	default UnaryOperator<T> handle(java.util.function.BiFunction<T, RuntimeException, T> handler) {
+		return new UnaryOperator<>() {
+			@Override
+			public T apply(T value) {
+				try {
+					return UnaryOperator.this.apply(value);
+				} catch (RuntimeException e) {
+					return handler.apply(value, e);
+				}
 			}
 		};
 	}
@@ -144,9 +167,5 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 				return function.apply(value);
 			}
 		} : empty();
-	}
-
-	class IdentityOperator<T> extends Function.IdentityFunction<T, T> implements UnaryOperator<T> {
-		private static final long serialVersionUID = -8748688112674469563L;
 	}
 }

@@ -14,6 +14,24 @@ public interface BooleanSupplier extends java.util.function.BooleanSupplier {
 	BooleanSupplier FALSE = Boolean.FALSE::booleanValue;
 
 	/**
+	 * Returns a new supplier that delegates to this supplier using the specified exception handler.
+	 * @param handler an exception handler
+	 * @return a new supplier that delegates to this supplier using the specified exception handler.
+	 */
+	default BooleanSupplier handle(java.util.function.Predicate<RuntimeException> handler) {
+		return new BooleanSupplier() {
+			@Override
+			public boolean getAsBoolean() {
+				try {
+					return BooleanSupplier.this.getAsBoolean();
+				} catch (RuntimeException e) {
+					return handler.test(e);
+				}
+			}
+		};
+	}
+
+	/**
 	 * Returns a supplier that always returns the specified value.
 	 * @param value the supplied value
 	 * @return a supplier that always returns the specified value.

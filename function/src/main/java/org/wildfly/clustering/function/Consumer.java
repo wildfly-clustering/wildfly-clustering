@@ -21,7 +21,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 
 	@Override
 	default Consumer<T> andThen(java.util.function.Consumer<? super T> after) {
-		return acceptAll(List.of(this, after));
+		return acceptAll(List.<java.util.function.Consumer<? super T>>of(this, after));
 	}
 
 	/**
@@ -35,6 +35,24 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 			@Override
 			public void accept(V value) {
 				Consumer.this.accept(mapper.apply(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a new consumer that delegates to the specified handler in the event of an exception.
+	 * @param handler an exception handler
+	 * @return a new consumer that delegates to the specified handler in the event of an exception.
+	 */
+	default Consumer<T> handle(java.util.function.BiConsumer<T, RuntimeException> handler) {
+		return new Consumer<>() {
+			@Override
+			public void accept(T value) {
+				try {
+					Consumer.this.accept(value);
+				} catch (RuntimeException e) {
+					handler.accept(value, e);
+				}
 			}
 		};
 	}
@@ -146,41 +164,17 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	}
 
 	/**
-	 * Adds runtime exception handling to a {@link java.util.function.Consumer}.
-	 * @param <V> the consumed type
-	 * @param consumer a consumer
-	 * @param exceptionHandler a runtime exception handler
-	 * @return a consumer that handles runtime exceptions thrown by the specified consumer.
-	 */
-	static <V> Consumer<V> accept(java.util.function.Consumer<V> consumer, java.util.function.Consumer<RuntimeException> exceptionHandler) {
-		return new Consumer<>() {
-			@Override
-			public void accept(V value) {
-				try {
-					consumer.accept(value);
-				} catch (RuntimeException e) {
-					exceptionHandler.accept(e);
-				}
-			}
-		};
-	}
-
-	/**
 	 * Returns a composite consumer that delegates to zero or more consumers.
 	 * @param <V> the consumed type
 	 * @param consumers zero or more consumers
 	 * @return a composite consumer
 	 */
-	static <V> Consumer<V> acceptAll(Iterable<java.util.function.Consumer<? super V>> consumers) {
+	static <V> Consumer<V> acceptAll(Iterable<? extends java.util.function.Consumer<? super V>> consumers) {
 		return new Consumer<>() {
 			@Override
 			public void accept(V value) {
 				for (java.util.function.Consumer<? super V> consumer : consumers) {
-					try {
-						consumer.accept(value);
-					} catch (RuntimeException e) {
-						Consumer.warning().accept(e);
-					}
+					consumer.accept(value);
 				}
 			}
 		};

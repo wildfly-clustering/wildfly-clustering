@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.function;
 
-import java.io.Serializable;
-
 /**
  * An enhanced function.
  * @author Paul Ferraro
@@ -14,7 +12,12 @@ import java.io.Serializable;
  * @param <R> the function return type
  */
 public interface Function<T, R> extends java.util.function.Function<T, R> {
-	Function<?, ?> IDENTITY = new IdentityFunction<>();
+	Function<?, ?> IDENTITY = new Function<>() {
+		@Override
+		public Object apply(Object value) {
+			return value;
+		}
+	};
 	Function<?, ?> NULL = new Function<>() {
 		@Override
 		public Object apply(Object value) {
@@ -73,6 +76,24 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	}
 
 	/**
+	 * Returns a new function that delegates to this function using the specified exception handler.
+	 * @param handler an exception handler
+	 * @return a new function that delegates to this function using the specified exception handler.
+	 */
+	default Function<T, R> handle(java.util.function.BiFunction<T, RuntimeException, R> handler) {
+		return new Function<>() {
+			@Override
+			public R apply(T value) {
+				try {
+					return Function.this.apply(value);
+				} catch (RuntimeException e) {
+					return handler.apply(value, e);
+				}
+			}
+		};
+	}
+
+	/**
 	 * Returns a function that returns its parameter.
 	 * @param <T> the function parameter type
 	 * @param <R> the function return type
@@ -124,14 +145,5 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 				return supplier.get();
 			}
 		} : empty();
-	}
-
-	class IdentityFunction<T extends R, R> implements Function<T, R>, Serializable {
-		private static final long serialVersionUID = 8125088982681052323L;
-
-		@Override
-		public R apply(T value) {
-			return value;
-		}
 	}
 }

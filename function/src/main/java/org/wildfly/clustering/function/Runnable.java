@@ -30,30 +30,29 @@ public interface Runnable extends java.lang.Runnable {
 	}
 
 	/**
+	 * Returns a new runnable that delegates to the specified handler in the event of an exception.
+	 * @param handler a runtime exception handler
+	 * @return a new runnable that delegates to the specified handler in the event of an exception.
+	 */
+	default Runnable handle(Consumer<RuntimeException> handler) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Runnable.this.run();
+				} catch (RuntimeException e) {
+					handler.accept(e);
+				}
+			}
+		};
+	}
+
+	/**
 	 * Returns an empty task.
 	 * @return an empty task.
 	 */
 	static Runnable empty() {
 		return EMPTY;
-	}
-
-	/**
-	 * Adds runtime exception handling to a {@link java.lang.Runnable}.
-	 * @param runner a runnable
-	 * @param exceptionHandler a runtime exception handler
-	 * @return a runnable that handles runtime exceptions thrown by the specified runnable.
-	 */
-	static Runnable run(java.lang.Runnable runner, Consumer<RuntimeException> exceptionHandler) {
-		return new Runnable() {
-			@Override
-			public void run() {
-				try {
-					runner.run();
-				} catch (RuntimeException e) {
-					exceptionHandler.accept(e);
-				}
-			}
-		};
 	}
 
 	/**
@@ -81,13 +80,7 @@ public interface Runnable extends java.lang.Runnable {
 		return new Runnable() {
 			@Override
 			public void run() {
-				for (java.lang.Runnable runner : runners) {
-					try {
-						runner.run();
-					} catch (RuntimeException e) {
-						Consumer.warning().accept(e);
-					}
-				}
+				runners.forEach(java.lang.Runnable::run);
 			}
 		};
 	}
