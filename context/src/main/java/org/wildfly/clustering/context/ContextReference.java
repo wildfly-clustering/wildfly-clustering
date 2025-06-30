@@ -52,10 +52,6 @@ public interface ContextReference<C> extends java.util.function.Supplier<C>, jav
 		return of(reference::get, reference::set, reference::getAndSet);
 	}
 
-	default <T extends C> T get(Class<T> contextType) {
-		return contextType.cast(this.get());
-	}
-
 	@Override
 	default C apply(C context) {
 		C current = this.get();

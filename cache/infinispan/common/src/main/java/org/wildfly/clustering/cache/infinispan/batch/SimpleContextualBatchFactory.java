@@ -7,26 +7,17 @@ package org.wildfly.clustering.cache.infinispan.batch;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.function.Supplier;
-
 /**
- * A factory that creates simple nestable batches.
+ * A factory for creating thread context batches referencing simple batches.
  * @author Paul Ferraro
  */
-public class SimpleContextualBatchFactory implements Supplier<Batch> {
-	private final AtomicLong idFactory = new AtomicLong(0L);
-	private final String name;
+public class SimpleContextualBatchFactory extends ThreadContextBatchFactory {
 
 	public SimpleContextualBatchFactory(String name) {
-		this.name = name;
+		this(name, new AtomicLong(0L));
 	}
 
-	@Override
-	public Batch get() {
-		TransactionalBatch batch = ThreadContextBatch.INSTANCE.get(TransactionalBatch.class);
-		// If there is already an active batch associated with this thread, create a nested batch, otherwise, create a new transactional batch
-		ThreadContextBatch.INSTANCE.accept((batch != null) ? batch.get() : new SimpleContextualBatch(this.name, this.idFactory.incrementAndGet()));
-		return ThreadContextBatch.INSTANCE;
+	private SimpleContextualBatchFactory(String name, AtomicLong identifierFactory) {
+		super(() -> new SimpleContextualBatch(name, identifierFactory.incrementAndGet()));
 	}
 }
