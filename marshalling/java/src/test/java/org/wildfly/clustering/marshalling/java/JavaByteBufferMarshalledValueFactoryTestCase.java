@@ -10,7 +10,7 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactoryTestCa
  * Java serialization variant of {@link ByteBufferMarshalledValueFactoryTestCase}.
  * @author Paul Ferraro
  */
-public class JavaByteBufferMarshalledValueFactoryTestCase  extends ByteBufferMarshalledValueFactoryTestCase {
+public class JavaByteBufferMarshalledValueFactoryTestCase extends ByteBufferMarshalledValueFactoryTestCase {
 
 	public JavaByteBufferMarshalledValueFactoryTestCase() {
 		super(new JavaSerializationTesterFactory());

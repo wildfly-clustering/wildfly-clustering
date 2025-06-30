@@ -44,7 +44,7 @@ public interface Reference<T> {
 		private final Supplier<T> reader;
 		private final Function<T, V> mapper;
 
-		ReferenceReader(StampedLock lock,Supplier<T> reader, Function<T, V> mapper) {
+		ReferenceReader(StampedLock lock, Supplier<T> reader, Function<T, V> mapper) {
 			this.lock = lock;
 			this.reader = reader;
 			this.mapper = mapper;
