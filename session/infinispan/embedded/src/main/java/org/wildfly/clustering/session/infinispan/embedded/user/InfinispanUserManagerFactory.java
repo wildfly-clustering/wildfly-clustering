@@ -12,8 +12,10 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueMarshaller;
 import org.wildfly.clustering.marshalling.Marshaller;
+import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactory;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
+import org.wildfly.clustering.session.cache.user.CachedUserManager;
 import org.wildfly.clustering.session.cache.user.CompositeUserFactory;
 import org.wildfly.clustering.session.cache.user.DefaultUserManager;
 import org.wildfly.clustering.session.cache.user.UserContext;
@@ -44,8 +46,8 @@ public class InfinispanUserManagerFactory<C, D, S> implements UserManagerFactory
 		Marshaller<C, MarshalledValue<C, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller()));
 		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T> contextFactory = new InfinispanUserContextFactory<>(this.configuration, marshaller, configuration.getTransientContextFactory());
 		UserSessionsFactory<Map<D, S>, D, S> sessionsFactory = new InfinispanUserSessionsFactory<>(this.configuration);
-		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory);
+		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory, this.configuration.getCacheProperties());
 		IdentifierFactory<String> identifierFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), this.configuration.getCache());
-		return new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatchFactory());
+		return new CachedUserManager<>(new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatchFactory()), CacheStrategy.CONCURRENT);
 	}
 }

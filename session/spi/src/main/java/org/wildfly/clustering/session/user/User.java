@@ -12,7 +12,7 @@ package org.wildfly.clustering.session.user;
  * @param <D> the deployment identifier type
  * @param <S> the session identifier type
  */
-public interface User<C, T, D, S> {
+public interface User<C, T, D, S> extends AutoCloseable {
 	/**
 	 * Returns the unique identifier for this user.
 	 * @return a unique identifier
@@ -38,7 +38,20 @@ public interface User<C, T, D, S> {
 	UserSessions<D, S> getSessions();
 
 	/**
+	 * Returns true unless this user was invalidated.
+	 * @return false if this user was invalidated, true otherwise.
+	 */
+	boolean isValid();
+
+	/**
 	 * Invalidates this user and any associated sessions.
 	 */
 	void invalidate();
+
+	@Override
+	default void close() {
+		if (this.isValid()) {
+			this.getSessions().close();
+		}
+	}
 }

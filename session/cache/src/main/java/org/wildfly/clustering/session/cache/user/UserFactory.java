@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.session.cache.user;
 
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -12,6 +11,7 @@ import java.util.concurrent.CompletionStage;
 import org.wildfly.clustering.cache.BiCacheEntryCreator;
 import org.wildfly.clustering.cache.BiCacheEntryLocator;
 import org.wildfly.clustering.cache.CacheEntryRemover;
+import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.user.User;
 
 /**
@@ -28,12 +28,9 @@ public interface UserFactory<CV, C, T, SV, D, S> extends BiCacheEntryCreator<Str
 
 	UserContextFactory<CV, C, T> getUserContextFactory();
 	UserSessionsFactory<SV, D, S> getUserSessionsFactory();
+	CacheProperties getCacheProperties();
 
 	User<C, T, D, S> createUser(String id, Map.Entry<CV, SV> value);
-
-	default CompletionStage<User<C, T, D, S>> createUserAsync(String id, Map.Entry<CompletionStage<CV>, CompletionStage<SV>> entry) {
-		return entry.getKey().thenCombine(entry.getValue(), AbstractMap.SimpleImmutableEntry::new).thenApply(value -> this.createUser(id, value));
-	}
 
 	@Override
 	default Map.Entry<CompletionStage<CV>, CompletionStage<SV>> createEntry(String id, C context) {
@@ -42,12 +39,18 @@ public interface UserFactory<CV, C, T, SV, D, S> extends BiCacheEntryCreator<Str
 
 	@Override
 	default Map.Entry<CompletionStage<CV>, CompletionStage<SV>> findEntry(String id) {
-		return Map.entry(this.getUserContextFactory().findValueAsync(id), this.getUserSessionsFactory().findValueAsync(id));
+		CompletionStage<CV> contextStage = this.getUserContextFactory().findValueAsync(id);
+		// If cache locks on read, find meta data first
+		CompletionStage<SV> sessionsStage = this.getCacheProperties().isLockOnRead() ? contextStage.thenCompose(metaData -> (metaData != null) ? this.getUserSessionsFactory().findValueAsync(id) : CompletableFuture.completedStage(null)) : this.getUserSessionsFactory().findValueAsync(id);
+		return Map.entry(contextStage, sessionsStage);
 	}
 
 	@Override
 	default Map.Entry<CompletionStage<CV>, CompletionStage<SV>> tryEntry(String id) {
-		return Map.entry(this.getUserContextFactory().tryValueAsync(id), this.getUserSessionsFactory().tryValueAsync(id));
+		CompletionStage<CV> contextStage = this.getUserContextFactory().tryValueAsync(id);
+		// If cache locks on read, find meta data first
+		CompletionStage<SV> sessionsStage = this.getCacheProperties().isLockOnRead() ? contextStage.thenCompose(metaData -> (metaData != null) ? this.getUserSessionsFactory().tryValueAsync(id) : CompletableFuture.completedStage(null)) : this.getUserSessionsFactory().tryValueAsync(id);
+		return Map.entry(contextStage, sessionsStage);
 	}
 
 	@Override

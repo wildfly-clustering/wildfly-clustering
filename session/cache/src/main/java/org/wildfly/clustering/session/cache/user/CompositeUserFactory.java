@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.cache.user;
 
 import java.util.Map;
 
+import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserSessions;
 
@@ -23,10 +24,12 @@ public class CompositeUserFactory<CV, C, T, SV, D, S> implements UserFactory<CV,
 
 	private final UserContextFactory<CV, C, T> contextFactory;
 	private final UserSessionsFactory<SV, D, S> sessionsFactory;
+	private final CacheProperties properties;
 
-	public CompositeUserFactory(UserContextFactory<CV, C, T> contextFactory, UserSessionsFactory<SV, D, S> sessionsFactory) {
+	public CompositeUserFactory(UserContextFactory<CV, C, T> contextFactory, UserSessionsFactory<SV, D, S> sessionsFactory, CacheProperties properties) {
 		this.contextFactory = contextFactory;
 		this.sessionsFactory = sessionsFactory;
+		this.properties = properties;
 	}
 
 	@Override
@@ -47,5 +50,10 @@ public class CompositeUserFactory<CV, C, T, SV, D, S> implements UserFactory<CV,
 	@Override
 	public UserSessionsFactory<SV, D, S> getUserSessionsFactory() {
 		return this.sessionsFactory;
+	}
+
+	@Override
+	public CacheProperties getCacheProperties() {
+		return this.properties;
 	}
 }

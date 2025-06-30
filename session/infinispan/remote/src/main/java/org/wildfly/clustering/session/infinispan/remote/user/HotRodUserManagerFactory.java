@@ -45,7 +45,7 @@ public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, 
 		Marshaller<C, MarshalledValue<C, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(configuration.getMarshaller()));
 		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T> contextFactory = new HotRodUserContextFactory<>(this.configuration, marshaller, configuration.getTransientContextFactory());
 		UserSessionsFactory<Map<D, S>, D, S> sessionsFactory = new HotRodUserSessionsFactory<>(this.configuration);
-		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory);
+		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory, this.configuration.getCacheProperties());
 		IdentifierFactory<String> identifierFactory = new SimpleIdentifierFactory<>(configuration.getIdentifierFactory());
 		return new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatchFactory());
 	}

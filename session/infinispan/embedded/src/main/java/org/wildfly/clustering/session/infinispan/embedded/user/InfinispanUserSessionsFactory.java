@@ -6,14 +6,15 @@
 package org.wildfly.clustering.session.infinispan.embedded.user;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
+import org.wildfly.clustering.cache.function.MapComputeFunction;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.session.cache.user.MutableUserSessions;
 import org.wildfly.clustering.session.cache.user.UserSessionsFactory;
 import org.wildfly.clustering.session.user.UserSessions;
@@ -32,25 +33,27 @@ public class InfinispanUserSessionsFactory<D, S> implements UserSessionsFactory<
 	public InfinispanUserSessionsFactory(EmbeddedCacheConfiguration configuration) {
 		this.cache = configuration.getReadForUpdateCache();
 		this.writeOnlyCache = configuration.getWriteOnlyCache();
-		this.mutatorFactory = configuration.getCacheEntryMutatorFactory();
+		this.mutatorFactory = configuration.getCacheEntryMutatorFactory(MapComputeFunction::new);
 	}
 
 	@Override
 	public UserSessions<D, S> createUserSessions(String id, Map<D, S> value) {
-		UserSessionsKey key = new UserSessionsKey(id);
-		Runnable mutator = this.mutatorFactory.createMutator(key, value);
-		return new MutableUserSessions<>(value, mutator);
+		return new MutableUserSessions<>(new UserSessionsKey(id), value, this.mutatorFactory);
+	}
+
+	@Override
+	public Map<D, S> createValue(String id, Void context) {
+		return new ConcurrentHashMap<>();
 	}
 
 	@Override
 	public CompletionStage<Map<D, S>> createValueAsync(String id, Void context) {
-		Map<D, S> sessions = new ConcurrentHashMap<>();
-		return this.writeOnlyCache.putAsync(new UserSessionsKey(id), sessions).thenApply(Function.of(sessions));
+		return CompletableFuture.completedStage(this.createValue(id, context));
 	}
 
 	@Override
 	public CompletionStage<Map<D, S>> findValueAsync(String id) {
-		return this.cache.getAsync(new UserSessionsKey(id));
+		return this.cache.getAsync(new UserSessionsKey(id)).thenApply(sessions -> (sessions != null) ? sessions : this.createValue(id, null));
 	}
 
 	@Override
