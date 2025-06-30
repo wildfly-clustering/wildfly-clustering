@@ -78,7 +78,7 @@ public class TransactionBatchTestCase {
 			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
 			assertThat(batch).isSameAs(ThreadContextBatch.INSTANCE);
-			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
 		} finally {
@@ -109,7 +109,7 @@ public class TransactionBatchTestCase {
 			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
 			assertThat(batch).isSameAs(ThreadContextBatch.INSTANCE);
-			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 			batch.discard();
 
@@ -144,7 +144,7 @@ public class TransactionBatchTestCase {
 			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
 			assertThat(ThreadContextBatch.INSTANCE).isSameAs(outerBatch);
-			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
 
@@ -155,7 +155,7 @@ public class TransactionBatchTestCase {
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
-				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+				assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 			}
 
 			verifyNoMoreInteractions(this.tm);
@@ -191,7 +191,7 @@ public class TransactionBatchTestCase {
 			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
 			assertThat(ThreadContextBatch.INSTANCE).isSameAs(outerBatch);
-			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 			doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
 
@@ -202,7 +202,7 @@ public class TransactionBatchTestCase {
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
-				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+				assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 				innerBatch.discard();
 
@@ -243,7 +243,7 @@ public class TransactionBatchTestCase {
 			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
 			assertThat(ThreadContextBatch.INSTANCE).isSameAs(outerBatch);
-			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 			outerBatch.discard();
 
@@ -259,7 +259,7 @@ public class TransactionBatchTestCase {
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
-				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+				assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 			}
 
 			verifyNoMoreInteractions(this.tm);
@@ -292,7 +292,7 @@ public class TransactionBatchTestCase {
 
 		try {
 			assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch1);
-			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 			verify(this.tm, times(2)).getTransaction();
 			verify(this.tm).begin();
@@ -309,7 +309,7 @@ public class TransactionBatchTestCase {
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch2);
-				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+				assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 				batch1.close();
 
@@ -344,7 +344,7 @@ public class TransactionBatchTestCase {
 
 		try {
 			assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch1);
-			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 			verify(this.tm, times(2)).getTransaction();
 			verify(this.tm).begin();
@@ -360,7 +360,7 @@ public class TransactionBatchTestCase {
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch2);
-				assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+				assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 				batch2.discard();
 
@@ -404,7 +404,7 @@ public class TransactionBatchTestCase {
 		verify(tx, only()).registerSynchronization(capturedSync.capture());
 
 		assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch);
-		assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+		assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 		doReturn(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
 
@@ -483,7 +483,7 @@ public class TransactionBatchTestCase {
 		verify(tx, only()).registerSynchronization(sync.capture());
 
 		assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch);
-		assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+		assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 		doReturn(tx).when(this.tm).suspend();
 
@@ -521,7 +521,7 @@ public class TransactionBatchTestCase {
 		verify(tx, only()).registerSynchronization(capturedSync.capture());
 
 		assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch);
-		assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+		assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 		doReturn(tx).when(this.tm).suspend();
 
@@ -538,7 +538,7 @@ public class TransactionBatchTestCase {
 			verifyNoMoreInteractions(this.tm);
 
 			assertThat(ThreadContextBatch.INSTANCE).isSameAs(resumed);
-			assertThat(ThreadContextBatch.INSTANCE.get(TransactionalBatch.class).getTransaction()).isSameAs(tx);
+			assertThat(TransactionalBatch.class.cast(ThreadContextBatch.INSTANCE.get()).getTransaction()).isSameAs(tx);
 
 			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
 		} finally {
