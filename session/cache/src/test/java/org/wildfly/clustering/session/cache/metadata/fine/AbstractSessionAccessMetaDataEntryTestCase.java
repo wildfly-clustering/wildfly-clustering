@@ -20,7 +20,7 @@ import org.wildfly.clustering.server.offset.Offset;
  */
 public abstract class AbstractSessionAccessMetaDataEntryTestCase implements Consumer<SessionAccessMetaDataEntry> {
 
-	private final Duration originalSinceCreation =  Duration.ofMinutes(1);
+	private final Duration originalSinceCreation = Duration.ofMinutes(1);
 	private final Duration originalLastAccess = Duration.ofSeconds(1);
 
 	private final Duration sinceCreationDelta = Duration.ofMinutes(1);

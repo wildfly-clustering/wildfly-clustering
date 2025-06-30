@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.function;
 
+import static org.mockito.Mockito.*;
+
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -72,13 +74,32 @@ public class BiConsumerTestCase {
 	}
 
 	@Test
+	public void handle() {
+		BiConsumer<Object, Object> consumer = Mockito.mock(BiConsumer.class);
+		Consumer<RuntimeException> handler = Mockito.mock(Consumer.class);
+		Mockito.doCallRealMethod().when(consumer).handle(ArgumentMatchers.any());
+		RuntimeException exception = new RuntimeException();
+
+		consumer.handle(handler).accept(this.value1, this.value2);
+
+		verify(consumer).accept(this.value1, this.value2);
+		verify(handler, Mockito.never()).accept(exception);
+
+		doThrow(exception).when(consumer).accept(this.value1, this.value2);
+
+		consumer.handle(handler).accept(this.value1, this.value2);
+
+		verify(handler).accept(exception);
+	}
+
+	@Test
 	public void composite() {
 		BiConsumer<Object, Object> consumer1 = Mockito.mock(BiConsumer.class);
 		BiConsumer<Object, Object> consumer2 = Mockito.mock(BiConsumer.class);
 		BiConsumer<Object, Object> consumer3 = Mockito.mock(BiConsumer.class);
 		InOrder order = Mockito.inOrder(consumer1, consumer2, consumer3);
 
-		BiConsumer.of(List.of(consumer1, consumer2, consumer3)).accept(this.value1, this.value2);
+		BiConsumer.acceptAll(List.of(consumer1, consumer2, consumer3)).accept(this.value1, this.value2);
 
 		order.verify(consumer1).accept(this.value1, this.value2);
 		order.verify(consumer2).accept(this.value1, this.value2);

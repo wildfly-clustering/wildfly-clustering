@@ -6,7 +6,6 @@
 package org.wildfly.clustering.function;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -27,7 +26,25 @@ public interface Runnable extends java.lang.Runnable {
 	 * @return a task that runs the specified task after running this task.
 	 */
 	default Runnable andThen(java.lang.Runnable task) {
-		return of(List.of(this, task));
+		return runAll(List.of(this, task));
+	}
+
+	/**
+	 * Returns a new runnable that delegates to the specified handler in the event of an exception.
+	 * @param handler a runtime exception handler
+	 * @return a new runnable that delegates to the specified handler in the event of an exception.
+	 */
+	default Runnable handle(Consumer<RuntimeException> handler) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Runnable.this.run();
+				} catch (RuntimeException e) {
+					handler.accept(e);
+				}
+			}
+		};
 	}
 
 	/**
@@ -45,7 +62,7 @@ public interface Runnable extends java.lang.Runnable {
 	 * @param supplier a supplier of the consumed value
 	 * @return a task that consumes a value from the specified supplier.
 	 */
-	static <T> Runnable of(Consumer<? super T> consumer, Supplier<? extends T> supplier) {
+	static <T> Runnable accept(java.util.function.Consumer<? super T> consumer, Supplier<? extends T> supplier) {
 		return new Runnable() {
 			@Override
 			public void run() {
@@ -55,17 +72,15 @@ public interface Runnable extends java.lang.Runnable {
 	}
 
 	/**
-	 * Returns a composite task that runs the specified task.
-	 * @param tasks zero or more tasks
-	 * @return a composite task that runs the specified task.
+	 * Returns a composite runner that runs the specified runners.
+	 * @param runners zero or more runners
+	 * @return a composite runner that runs the specified runners, logging any exceptions
 	 */
-	static Runnable of(Iterable<? extends java.lang.Runnable> tasks) {
+	static Runnable runAll(Iterable<? extends java.lang.Runnable> runners) {
 		return new Runnable() {
 			@Override
 			public void run() {
-				for (java.lang.Runnable task : tasks) {
-					task.run();
-				}
+				runners.forEach(java.lang.Runnable::run);
 			}
 		};
 	}

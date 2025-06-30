@@ -446,13 +446,13 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 
 			// Try to gc-unlink, if possible
 			// Recheck expected state of predecessor and successor
-			if ((isFirst | isLast) && (activePred.next == activeSucc) && (activeSucc.prev == activePred) && (isFirst ? activePred.prev == null : activePred.item != null) && (isLast  ? activeSucc.next == null : activeSucc.item != null)) {
+			if ((isFirst | isLast) && (activePred.next == activeSucc) && (activeSucc.prev == activePred) && (isFirst ? activePred.prev == null : activePred.item != null) && (isLast ? activeSucc.next == null : activeSucc.item != null)) {
 				updateHead(); // Ensure x is not reachable from head
 				updateTail(); // Ensure x is not reachable from tail
 
 				// Finally, actually gc-unlink
 				PREV.setRelease(x, isFirst ? prevTerminator() : x);
-				NEXT.setRelease(x, isLast  ? nextTerminator() : x);
+				NEXT.setRelease(x, isLast ? nextTerminator() : x);
 			}
 		}
 	}
@@ -1361,7 +1361,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 
 		@Override
 		Node<E> nextNode(Node<E> p) {
-			return succ( p );
+			return succ(p);
 		}
 	}
 
@@ -1378,7 +1378,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 
 		@Override
 		Node<E> nextNode(Node<E> p) {
-			return pred( p );
+			return pred(p);
 		}
 	}
 

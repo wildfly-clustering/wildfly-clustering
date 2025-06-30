@@ -8,10 +8,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
@@ -22,54 +24,70 @@ public class MutableUserSessionsTestCase {
 
 	@Test
 	public void getApplications() {
-		Runnable mutator = mock(Runnable.class);
-		UserSessions<String, String> sessions = new MutableUserSessions<>(Map.of("deployment", "session"), mutator);
+		UUID key = UUID.randomUUID();
+		CacheEntryMutatorFactory<UUID, Map<String, String>> mutatorFactory = mock(CacheEntryMutatorFactory.class);
+		Map<String, String> deployments = Map.of("deployment1", "session1", "deployment2", "session2");
+		try (UserSessions<String, String> sessions = new MutableUserSessions<>(key, deployments, mutatorFactory)) {
+			assertThat(sessions.getDeployments()).containsExactlyInAnyOrder("deployment1", "deployment2");
+		}
 
-		Set<String> result = sessions.getDeployments();
-
-		assertThat(result).containsExactly("deployment");
-
-		verify(mutator, never()).run();
+		verifyNoInteractions(mutatorFactory);
 	}
 
 	@Test
 	public void getSession() {
-		Runnable mutator = mock(Runnable.class);
-		UserSessions<String, String> sessions = new MutableUserSessions<>(Map.of("deployment", "session"), mutator);
+		UUID key = UUID.randomUUID();
+		CacheEntryMutatorFactory<UUID, Map<String, String>> mutatorFactory = mock(CacheEntryMutatorFactory.class);
+		Map<String, String> deployments = Map.of("deployment1", "session1", "deployment2", "session2");
+		try (UserSessions<String, String> sessions = new MutableUserSessions<>(key, deployments, mutatorFactory)) {
+			assertThat(sessions.getSession("deployment1")).isEqualTo("session1");
+			assertThat(sessions.getSession("deployment2")).isEqualTo("session2");
+			assertThat(sessions.getSession("foo")).isNull();
+		}
 
-		assertThat(sessions.getSession("deployment")).isEqualTo("session");
-		assertThat(sessions.getSession("foo")).isNull();
-
-		verify(mutator, never()).run();
+		verifyNoInteractions(mutatorFactory);
 	}
 
 	@Test
 	public void addSession() {
-		Map<String, String> deployments = new TreeMap<>();
-		Runnable mutator = mock(Runnable.class);
-		UserSessions<String, String> sessions = new MutableUserSessions<>(deployments, mutator);
+		UUID key = UUID.randomUUID();
+		CacheEntryMutatorFactory<UUID, Map<String, String>> mutatorFactory = mock(CacheEntryMutatorFactory.class);
+		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
 
-		sessions.addSession("deployment", "session");
+		doReturn(mutator).when(mutatorFactory).createMutator(key, Map.of("deployment2", "session2"));
+
+		Map<String, String> deployments = new TreeMap<>();
+		deployments.put("deployment1", "session1");
+		try (UserSessions<String, String> sessions = new MutableUserSessions<>(key, deployments, mutatorFactory)) {
+			assertThat(sessions.addSession("deployment1", "session3")).isFalse();
+			assertThat(sessions.addSession("deployment2", "session2")).isTrue();
+
+			verifyNoInteractions(mutatorFactory);
+		}
 
 		verify(mutator).run();
-
-		sessions.addSession("deployment", "session");
-
-		verifyNoMoreInteractions(mutator);
 	}
 
 	@Test
 	public void removeSession() {
-		Map<String, String> deployments = new TreeMap<>(Map.of("deployment", "session"));
-		Runnable mutator = mock(Runnable.class);
-		UserSessions<String, String> sessions = new MutableUserSessions<>(deployments, mutator);
+		UUID key = UUID.randomUUID();
+		CacheEntryMutatorFactory<UUID, Map<String, String>> mutatorFactory = mock(CacheEntryMutatorFactory.class);
+		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
 
-		sessions.removeSession("deployment");
+		Map<String, String> updates = new TreeMap<>();
+		updates.put("deployment1", null);
+		doReturn(mutator).when(mutatorFactory).createMutator(key, updates);
+
+		Map<String, String> deployments = new TreeMap<>();
+		deployments.put("deployment1", "session1");
+		deployments.put("deployment2", "session2");
+		try (UserSessions<String, String> sessions = new MutableUserSessions<>(key, deployments, mutatorFactory)) {
+			assertThat(sessions.removeSession("deployment1")).isEqualTo("session1");
+			assertThat(sessions.removeSession("deployment3")).isNull();
+
+			verifyNoInteractions(mutatorFactory);
+		}
 
 		verify(mutator).run();
-
-		sessions.removeSession("deployment");
-
-		verifyNoMoreInteractions(mutator);
 	}
 }

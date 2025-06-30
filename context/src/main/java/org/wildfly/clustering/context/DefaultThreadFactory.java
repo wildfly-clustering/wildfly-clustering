@@ -30,7 +30,7 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 	}
 
 	public DefaultThreadFactory(ThreadFactory factory, ClassLoader loader) {
-		super(factory, loader, ContextClassLoaderReference.INSTANCE);
+		super(factory, loader, ThreadContextClassLoaderReference.CURRENT);
 	}
 
 	private static class ThreadGroupThreadFactory implements ThreadFactory {

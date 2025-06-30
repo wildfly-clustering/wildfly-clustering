@@ -18,6 +18,10 @@ public interface SessionManagerParameters {
 		return "cluster";
 	}
 
+	default String getDeploymentName() {
+		return String.format("%s-%s.war", this.getSessionAttributeMarshaller(), this.getSessionAttributePersistenceStrategy());
+	}
+
 	SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy();
 	ByteBufferMarshaller getSessionAttributeMarshaller();
 }

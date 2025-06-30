@@ -11,8 +11,18 @@ package org.wildfly.clustering.function;
  * @param <T> the operator type
  */
 public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>, BiFunction<T, T, T> {
-	BinaryOperator<?> FORMER_IDENTITY = new FormerIdentityOperator<>();
-	BinaryOperator<?> LATTER_IDENTITY = new LatterIdentityOperator<>();
+	BinaryOperator<?> FORMER_IDENTITY = new BinaryOperator<>() {
+		@Override
+		public Object apply(Object value1, Object value2) {
+			return value1;
+		}
+	};
+	BinaryOperator<?> LATTER_IDENTITY = new BinaryOperator<>() {
+		@Override
+		public Object apply(Object value1, Object value2) {
+			return value2;
+		}
+	};
 	BinaryOperator<?> NULL = new BinaryOperator<>() {
 		@Override
 		public Object apply(Object value1, Object value2) {
@@ -110,14 +120,24 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	}
 
 	/**
+	 * Returns a function that always returns null, ignoring its parameter.
+	 * @param <T> the operating type
+	 * @param result the function result
+	 * @return a function that always returns null, ignoring its parameter.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T> BinaryOperator<T> empty() {
+		return (BinaryOperator<T>) NULL;
+	}
+
+	/**
 	 * Returns a function that always returns the specified value, ignoring its parameter.
 	 * @param <T> the operating type
 	 * @param result the function result
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> BinaryOperator<T> of(T result) {
-		return (result != null) ? of(Supplier.of(result)) : (BinaryOperator<T>) NULL;
+		return (result != null) ? get(Supplier.of(result)) : empty();
 	}
 
 	/**
@@ -126,21 +146,27 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param supplier the function result supplier
 	 * @return a function that returns the value returned by the specified supplier, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
-	static <T> BinaryOperator<T> of(java.util.function.Supplier<T> supplier) {
+	static <T> BinaryOperator<T> get(java.util.function.Supplier<T> supplier) {
 		return (supplier != null) && (supplier != Supplier.NULL) ? new BinaryOperator<>() {
 			@Override
 			public T apply(T ignore1, T ignore2) {
 				return supplier.get();
 			}
-		} : (BinaryOperator<T>) BinaryOperator.NULL;
+		} : empty();
 	}
 
-	class FormerIdentityOperator<T> extends BiFunction.FormerIdentityFunction<T, T, T> implements BinaryOperator<T> {
-		private static final long serialVersionUID = 1776702302523048465L;
-	}
-
-	class LatterIdentityOperator<T> extends BiFunction.LatterIdentityFunction<T, T, T> implements BinaryOperator<T> {
-		private static final long serialVersionUID = -8741076230246655393L;
+	/**
+	 * Returns an operator view of the specified binary function.
+	 * @param <T> the operating type
+	 * @param function the delegating function
+	 * @return an operator view of the specified function.
+	 */
+	static <T> BinaryOperator<T> apply(java.util.function.BiFunction<? super T, ? super T, T> function) {
+		return (function != null) && (function != Function.NULL) ? new BinaryOperator<>() {
+			@Override
+			public T apply(T value1, T value2) {
+				return function.apply(value1, value2);
+			}
+		} : empty();
 	}
 }

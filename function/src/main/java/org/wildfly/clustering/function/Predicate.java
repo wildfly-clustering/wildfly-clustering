@@ -21,12 +21,30 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	Predicate<?> NEVER = new SimplePredicate<>(false);
 
 	/**
+	 * Returns a new predicate that delegates to this predicate using the specified exception handler.
+	 * @param handler an exception handler
+	 * @return a new predicate that delegates to this predicate using the specified exception handler.
+	 */
+	default Predicate<T> handle(java.util.function.BiPredicate<T, RuntimeException> handler) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				try {
+					return Predicate.this.test(value);
+				} catch (RuntimeException e) {
+					return handler.test(value, e);
+				}
+			}
+		};
+	}
+
+	/**
 	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
 	 * @param <V> the mapped type
 	 * @param mapper
 	 * @return a mapped predicate
 	 */
-	default <V> Predicate<V> map(Function<V, T> mapper) {
+	default <V> Predicate<V> compose(Function<V, T> mapper) {
 		return new Predicate<>() {
 			@Override
 			public boolean test(V test) {
@@ -40,7 +58,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param mapper
 	 * @return a mapped predicate
 	 */
-	default DoublePredicate map(DoubleFunction<T> mapper) {
+	default DoublePredicate compose(DoubleFunction<T> mapper) {
 		return new DoublePredicate() {
 			@Override
 			public boolean test(double value) {
@@ -54,7 +72,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param mapper
 	 * @return a mapped predicate
 	 */
-	default IntPredicate map(IntFunction<T> mapper) {
+	default IntPredicate compose(IntFunction<T> mapper) {
 		return new IntPredicate() {
 			@Override
 			public boolean test(int value) {
@@ -68,7 +86,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param mapper
 	 * @return a mapped predicate
 	 */
-	default LongPredicate map(LongFunction<T> mapper) {
+	default LongPredicate compose(LongFunction<T> mapper) {
 		return new LongPredicate() {
 			@Override
 			public boolean test(long value) {
@@ -105,6 +123,16 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 				return Predicate.this.test(test) || other.test(test);
 			}
 		};
+	}
+
+	/**
+	 * Returns a predicate that always evaluates to the specified result.
+	 * @param <T> the argument type
+	 * @param result the fixed result
+	 * @return a predicate that always evaluates to the specified value.
+	 */
+	static <T> Predicate<T> of(boolean result) {
+		return result ? Predicate.always() : Predicate.never();
 	}
 
 	/**

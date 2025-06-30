@@ -7,7 +7,6 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.Map;
 
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
 
@@ -19,10 +18,6 @@ import org.wildfly.clustering.session.SessionMetaData;
 public class DecoratedSession<C> implements Session<C>, java.util.function.Supplier<Session<C>> {
 
 	private final java.util.function.Supplier<Session<C>> reference;
-
-	public DecoratedSession(Session<C> session) {
-		this(Supplier.of(session));
-	}
 
 	public DecoratedSession(java.util.function.Supplier<Session<C>> reference) {
 		this.reference = reference;

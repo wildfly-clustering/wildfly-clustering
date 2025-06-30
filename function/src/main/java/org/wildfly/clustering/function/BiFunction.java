@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.function;
 
-import java.io.Serializable;
-
 /**
  * An enhanced binary function.
  * @author Paul Ferraro
@@ -15,8 +13,18 @@ import java.io.Serializable;
  * @param <R> the result type
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
-	BiFunction<?, ?, ?> FORMER_IDENTITY = new FormerIdentityFunction<>();
-	BiFunction<?, ?, ?> LATTER_IDENTITY = new LatterIdentityFunction<>();
+	BiFunction<?, ?, ?> FORMER_IDENTITY = new BiFunction<>() {
+		@Override
+		public Object apply(Object value1, Object value2) {
+			return value1;
+		}
+	};
+	BiFunction<?, ?, ?> LATTER_IDENTITY = new BiFunction<>() {
+		@Override
+		public Object apply(Object value1, Object value2) {
+			return value2;
+		}
+	};
 	BiFunction<?, ?, ?> NULL = new BiFunction<>() {
 		@Override
 		public Object apply(Object value1, Object value2) {
@@ -155,6 +163,19 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	}
 
 	/**
+	 * Returns a function that always returns the specified value, ignoring its parameters.
+	 * @param <T> the first parameter type
+	 * @param <U> the second parameter type
+	 * @param <R> the function return type
+	 * @param result the function result
+	 * @return a function that always returns the specified value, ignoring its parameters.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, U, R> BiFunction<T, U, R> empty() {
+		return (BiFunction<T, U, R>) NULL;
+	}
+
+	/**
 	 * Returns a function that always returns the specified value, ignoring its parameter.
 	 * @param <T> the first parameter type
 	 * @param <U> the second parameter type
@@ -162,9 +183,8 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param result the function result
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, U, R> BiFunction<T, U, R> of(R result) {
-		return (result != null) ? of(Supplier.of(result)) : (BiFunction<T, U, R>) NULL;
+		return (result != null) ? get(Supplier.of(result)) : empty();
 	}
 
 	/**
@@ -175,31 +195,12 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param supplier the function result supplier
 	 * @return a function that returns the value returned by the specified supplier, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
-	static <T, U, R> BiFunction<T, U, R> of(java.util.function.Supplier<R> supplier) {
+	static <T, U, R> BiFunction<T, U, R> get(java.util.function.Supplier<R> supplier) {
 		return (supplier != null) && (supplier != Supplier.NULL) ? new BiFunction<>() {
 			@Override
 			public R apply(T ignore1, U ignore2) {
 				return supplier.get();
 			}
-		} : (BiFunction<T, U, R>) BiFunction.NULL;
-	}
-
-	class FormerIdentityFunction<T extends R, U, R> implements BiFunction<T, U, R>, Serializable {
-		private static final long serialVersionUID = 9008279150648512886L;
-
-		@Override
-		public R apply(T value1, U value2) {
-			return value1;
-		}
-	}
-
-	class LatterIdentityFunction<T, U extends R, R> implements BiFunction<T, U, R>, Serializable {
-		private static final long serialVersionUID = 1481217198136411335L;
-
-		@Override
-		public R apply(T value1, U value2) {
-			return value2;
-		}
+		} : empty();
 	}
 }

@@ -14,7 +14,7 @@ import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(MarshallingTesterFactory.class)
+@MetaInfServices({ MarshallingTesterFactory.class, JavaSerializationTesterFactory.class })
 public class JavaSerializationTesterFactory implements MarshallingTesterFactory {
 
 	private final ByteBufferMarshaller marshaller;

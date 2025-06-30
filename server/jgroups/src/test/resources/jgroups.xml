@@ -8,7 +8,7 @@
 	<pbcast.NAKACK2/>
 	<UNICAST3/>
 	<pbcast.STABLE/>
-	<pbcast.GMS/>
+	<pbcast.GMS print_local_addr="false"/>
 	<UFC/>
 	<MFC/>
 	<FRAG2/>

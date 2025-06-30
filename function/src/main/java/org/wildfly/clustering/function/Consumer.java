@@ -21,7 +21,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 
 	@Override
 	default Consumer<T> andThen(java.util.function.Consumer<? super T> after) {
-		return of(List.of(this, after));
+		return acceptAll(List.<java.util.function.Consumer<? super T>>of(this, after));
 	}
 
 	/**
@@ -35,6 +35,24 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 			@Override
 			public void accept(V value) {
 				Consumer.this.accept(mapper.apply(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a new consumer that delegates to the specified handler in the event of an exception.
+	 * @param handler an exception handler
+	 * @return a new consumer that delegates to the specified handler in the event of an exception.
+	 */
+	default Consumer<T> handle(java.util.function.BiConsumer<T, RuntimeException> handler) {
+		return new Consumer<>() {
+			@Override
+			public void accept(T value) {
+				try {
+					Consumer.this.accept(value);
+				} catch (RuntimeException e) {
+					handler.accept(value, e);
+				}
 			}
 		};
 	}
@@ -63,9 +81,8 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param <V> the auto-closeable type
 	 * @return an closing consumer
 	 */
-	@SuppressWarnings("unchecked")
 	static <V extends AutoCloseable> Consumer<V> close() {
-		return (Consumer<V>) close(warning());
+		return close(warning());
 	}
 
 	/**
@@ -73,15 +90,16 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param level the log level
 	 * @return an exception logging consumer
 	 */
-	static Consumer<Exception> log(System.Logger.Level level) {
-		return EXCEPTION_LOGGER.apply(level);
+	@SuppressWarnings("unchecked")
+	static <E extends Exception> Consumer<E> log(System.Logger.Level level) {
+		return (Consumer<E>) (Consumer<?>) EXCEPTION_LOGGER.apply(level);
 	}
 
 	/**
 	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#ERROR} level.
 	 * @return an exception logging consumer
 	 */
-	static Consumer<Exception> error() {
+	static <E extends Exception> Consumer<E> error() {
 		return log(System.Logger.Level.ERROR);
 	}
 
@@ -89,7 +107,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#WARNING} level.
 	 * @return an exception logging consumer
 	 */
-	static Consumer<Exception> warning() {
+	static <E extends Exception> Consumer<E> warning() {
 		return log(System.Logger.Level.WARNING);
 	}
 
@@ -97,7 +115,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#INFO} level.
 	 * @return an exception logging consumer
 	 */
-	static Consumer<Exception> info() {
+	static <E extends Exception> Consumer<E> info() {
 		return log(System.Logger.Level.INFO);
 	}
 
@@ -105,7 +123,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#DEBUG} level.
 	 * @return an exception logging consumer
 	 */
-	static Consumer<Exception> debug() {
+	static <E extends Exception> Consumer<E> debug() {
 		return log(System.Logger.Level.DEBUG);
 	}
 
@@ -136,7 +154,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param task a runnable task
 	 * @return a consumer that runs the specified task, ignoring its parameter.
 	 */
-	static <V> Consumer<V> of(java.lang.Runnable task) {
+	static <V> Consumer<V> run(java.lang.Runnable task) {
 		return new Consumer<>() {
 			@Override
 			public void accept(V ignored) {
@@ -151,7 +169,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param consumers zero or more consumers
 	 * @return a composite consumer
 	 */
-	static <V> Consumer<V> of(Iterable<java.util.function.Consumer<? super V>> consumers) {
+	static <V> Consumer<V> acceptAll(Iterable<? extends java.util.function.Consumer<? super V>> consumers) {
 		return new Consumer<>() {
 			@Override
 			public void accept(V value) {
@@ -162,7 +180,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		};
 	}
 
-	class ExceptionLogger implements Consumer<Exception> {
+	class ExceptionLogger<E extends Exception> implements Consumer<E> {
 		private static final System.Logger LOGGER = System.getLogger(Consumer.class.getName());
 		private final System.Logger.Level level;
 
@@ -171,7 +189,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		}
 
 		@Override
-		public void accept(Exception exception) {
+		public void accept(E exception) {
 			if (exception != null) {
 				LOGGER.log(this.level, exception.getLocalizedMessage(), exception);
 			}

@@ -17,7 +17,7 @@ import org.infinispan.persistence.manager.PersistenceManager;
 /**
  * @author Paul Ferraro
  */
-@InfinispanModule(name = "wildfly-clustering", requiredModules = "core")
+@InfinispanModule(name = "wildfly-clustering", requiredModules = "core", optionalModules = "cachestore-remote")
 public class WildFlyClusteringModuleLifecycle implements ModuleLifecycle {
 
 	@Override

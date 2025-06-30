@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.cache.batch;
 
-import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.context.Context;
 
 /**
  * Instruments the batching of cache operations.
@@ -13,16 +13,29 @@ import org.wildfly.clustering.function.Supplier;
  * @author Paul Ferraro
  */
 public interface Batch extends AutoCloseable {
-	Batch CLOSED = new SimpleBatch(false);
+	System.Logger LOGGER = System.getLogger(Batch.class.getName());
 
-	interface Factory extends Supplier<Batch> {
-		Factory SIMPLE = new Factory() {
-			@Override
-			public Batch get() {
-				return new SimpleBatch(true);
-			}
-		};
+	interface Status {
+		/**
+		 * Indicates whether or not this batch is active.
+		 * @return true, if this batch is active, false otherwise.
+		 */
+		boolean isActive();
+
+		/**
+		 * Indicates whether or not this batch will be discarded.
+		 * @return true, if this batch will be discarded, false otherwise.
+		 */
+		boolean isDiscarding();
+
+		/**
+		 * Indicates whether or not this batch was closed.
+		 * @return true, if this batch was closed, false otherwise.
+		 */
+		boolean isClosed();
 	}
+
+	Status getStatus();
 
 	/**
 	 * Suspends this batch.
@@ -31,46 +44,18 @@ public interface Batch extends AutoCloseable {
 	SuspendedBatch suspend();
 
 	/**
-	 * Suspends this batch until {@link BatchContext#close}.
+	 * Suspends this batch until {@link Context#close}.
 	 * @return a suspended batch context
 	 */
-	default BatchContext<SuspendedBatch> suspendWithContext() {
+	default Context<SuspendedBatch> suspendWithContext() {
 		SuspendedBatch suspended = this.suspend();
-		return new BatchContext<>() {
-			@Override
-			public SuspendedBatch get() {
-				return suspended;
-			}
-
-			@Override
-			public void close() {
-				suspended.resume();
-			}
-		};
+		return Context.of(suspended, SuspendedBatch::resume);
 	}
 
 	/**
 	 * Discards this batch.  A discarded batch must still be closed.
 	 */
 	void discard();
-
-	/**
-	 * Indicates whether or not this batch is active.
-	 * @return true, if this batch is active, false otherwise.
-	 */
-	boolean isActive();
-
-	/**
-	 * Indicates whether or not this batch will be discarded.
-	 * @return true, if this batch was discarded, false otherwise.
-	 */
-	boolean isDiscarding();
-
-	/**
-	 * Indicates whether or not this batch was closed.
-	 * @return true, if this batch was closed, false otherwise.
-	 */
-	boolean isClosed();
 
 	@Override
 	void close();

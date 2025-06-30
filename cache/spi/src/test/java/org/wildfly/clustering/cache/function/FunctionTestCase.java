@@ -15,8 +15,6 @@ import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.wildfly.clustering.function.BiFunction;
-import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
@@ -75,10 +73,6 @@ public class FunctionTestCase {
 	@ParameterizedTest
 	@TesterFactorySource
 	public void marshalling(TesterFactory factory) {
-		factory.createIdentityTester().accept(BiFunction.former());
-		factory.createIdentityTester().accept(BiFunction.latter());
-		factory.createIdentityTester().accept(Function.identity());
-
 		factory.createTester().accept(new SetAddFunction<>(List.of("foo", "bar")));
 		factory.createTester().accept(new SetRemoveFunction<>(List.of("foo", "bar")));
 		factory.createTester().accept(new MapPutFunction<>("foo", "bar"));

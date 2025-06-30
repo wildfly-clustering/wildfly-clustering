@@ -38,7 +38,7 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 	 * @return a new marshaller
 	 */
 	default <V> ProtoStreamMarshaller<V> toMarshaller(Class<V> targetClass, Function<V, T> unwrapper, Function<T, V> wrapper) {
-		return this.toMarshaller(targetClass, Predicate.never(), unwrapper, Supplier.of(null), wrapper);
+		return this.toMarshaller(targetClass, Predicate.never(), unwrapper, Supplier.empty(), wrapper);
 	}
 
 	/**

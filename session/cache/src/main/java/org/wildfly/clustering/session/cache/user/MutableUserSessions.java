@@ -7,22 +7,30 @@ package org.wildfly.clustering.session.cache.user;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.util.BlockingReferenceMap;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
  * A mutable user sessions implementation.
+ * @param <K> the cache key
  * @param <D> the deployment type
  * @param <S> the session type
  */
-public class MutableUserSessions<D, S> implements UserSessions<D, S> {
+public class MutableUserSessions<K, D, S> implements UserSessions<D, S> {
 
+	private final K key;
 	private final Map<D, S> sessions;
-	private final Runnable mutator;
+	private final CacheEntryMutatorFactory<K, Map<D, S>> mutatorFactory;
+	private final BlockingReferenceMap<D, S> updates = BlockingReferenceMap.of(new TreeMap<>());
 
-	public MutableUserSessions(Map<D, S> sessions, Runnable mutator) {
+	public MutableUserSessions(K key, Map<D, S> sessions, CacheEntryMutatorFactory<K, Map<D, S>> mutatorFactory) {
+		this.key = key;
 		this.sessions = sessions;
-		this.mutator = mutator;
+		this.mutatorFactory = mutatorFactory;
 	}
 
 	@Override
@@ -39,7 +47,7 @@ public class MutableUserSessions<D, S> implements UserSessions<D, S> {
 	public S removeSession(D deployment) {
 		S removed = this.sessions.remove(deployment);
 		if (removed != null) {
-			this.mutator.run();
+			this.updates.reference(deployment).writer(Supplier.empty()).get();
 		}
 		return removed;
 	}
@@ -48,8 +56,17 @@ public class MutableUserSessions<D, S> implements UserSessions<D, S> {
 	public boolean addSession(D deployment, S session) {
 		boolean added = this.sessions.put(deployment, session) == null;
 		if (added) {
-			this.mutator.run();
+			this.updates.reference(deployment).writer(session).get();
 		}
 		return added;
+	}
+
+	@Override
+	public void close() {
+		this.updates.reader().consume(map -> {
+			if (!map.isEmpty()) {
+				this.mutatorFactory.createMutator(this.key, map).run();
+			}
+		});
 	}
 }

@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.function;
 
-import java.io.Serializable;
-
 /**
  * An enhanced function.
  * @author Paul Ferraro
@@ -14,7 +12,12 @@ import java.io.Serializable;
  * @param <R> the function return type
  */
 public interface Function<T, R> extends java.util.function.Function<T, R> {
-	Function<?, ?> IDENTITY = new IdentityFunction<>();
+	Function<?, ?> IDENTITY = new Function<>() {
+		@Override
+		public Object apply(Object value) {
+			return value;
+		}
+	};
 	Function<?, ?> NULL = new Function<>() {
 		@Override
 		public Object apply(Object value) {
@@ -73,6 +76,24 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	}
 
 	/**
+	 * Returns a new function that delegates to this function using the specified exception handler.
+	 * @param handler an exception handler
+	 * @return a new function that delegates to this function using the specified exception handler.
+	 */
+	default Function<T, R> handle(java.util.function.BiFunction<T, RuntimeException, R> handler) {
+		return new Function<>() {
+			@Override
+			public R apply(T value) {
+				try {
+					return Function.this.apply(value);
+				} catch (RuntimeException e) {
+					return handler.apply(value, e);
+				}
+			}
+		};
+	}
+
+	/**
 	 * Returns a function that returns its parameter.
 	 * @param <T> the function parameter type
 	 * @param <R> the function return type
@@ -84,20 +105,30 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	}
 
 	/**
+	 * Returns a function that returns its parameter.
+	 * @param <T> the function parameter type
+	 * @param <R> the function return type
+	 * @return an identity function
+	 */
+	@SuppressWarnings("unchecked")
+	static <T, R> Function<T, R> empty() {
+		return (Function<T, R>) NULL;
+	}
+
+	/**
 	 * Returns a function that always returns the specified value, ignoring its parameter.
 	 * @param <T> the function parameter type
 	 * @param <R> the function return type
 	 * @param result the function result
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, R> Function<T, R> of(R result) {
 		return (result != null) ? new Function<>() {
 			@Override
 			public R apply(T ignore) {
 				return result;
 			}
-		} : (Function<T, R>) NULL;
+		} : empty();
 	}
 
 	/**
@@ -107,22 +138,12 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	 * @param supplier the function result supplier
 	 * @return a function that returns the value returned by the specified supplier, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
-	static <T, R> Function<T, R> of(java.util.function.Supplier<R> supplier) {
+	static <T, R> Function<T, R> get(java.util.function.Supplier<R> supplier) {
 		return (supplier != null) && (supplier != Supplier.NULL) ? new Function<>() {
 			@Override
 			public R apply(T ignore) {
 				return supplier.get();
 			}
-		} : (Function<T, R>) Function.NULL;
-	}
-
-	class IdentityFunction<T extends R, R> implements Function<T, R>, Serializable {
-		private static final long serialVersionUID = 8125088982681052323L;
-
-		@Override
-		public R apply(T value) {
-			return value;
-		}
+		} : empty();
 	}
 }

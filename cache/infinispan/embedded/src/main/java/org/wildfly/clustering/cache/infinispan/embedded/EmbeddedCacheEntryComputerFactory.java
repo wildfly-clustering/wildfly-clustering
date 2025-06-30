@@ -24,7 +24,7 @@ public class EmbeddedCacheEntryComputerFactory<K, V, O> implements CacheEntryMut
 	private final Cache<K, V> cache;
 	private final Function<O, BiFunction<Object, V, V>> functionFactory;
 
-	public EmbeddedCacheEntryComputerFactory(Cache<K, V> cache, Function<O, BiFunction<Object, V, V>> functionFactory) {
+	EmbeddedCacheEntryComputerFactory(Cache<K, V> cache, Function<O, BiFunction<Object, V, V>> functionFactory) {
 		this.cache = cache;
 		this.functionFactory = functionFactory;
 	}

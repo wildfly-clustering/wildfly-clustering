@@ -5,6 +5,7 @@
 package org.wildfly.clustering.session.cache.user;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.session.user.User;
@@ -22,6 +23,7 @@ public class CompositeUser<C, T, D, S> implements User<C, T, D, S> {
 	private final Map.Entry<C, T> contextEntry;
 	private final UserSessions<D, S> sessions;
 	private final CacheEntryRemover<String> remover;
+	private final AtomicBoolean valid = new AtomicBoolean(true);
 
 	public CompositeUser(String id, Map.Entry<C, T> contextEntry, UserSessions<D, S> sessions, CacheEntryRemover<String> remover) {
 		this.id = id;
@@ -46,8 +48,15 @@ public class CompositeUser<C, T, D, S> implements User<C, T, D, S> {
 	}
 
 	@Override
+	public boolean isValid() {
+		return this.valid.get();
+	}
+
+	@Override
 	public void invalidate() {
-		this.remover.remove(this.id);
+		if (this.valid.compareAndSet(true, false)) {
+			this.remover.remove(this.id);
+		}
 	}
 
 	@Override

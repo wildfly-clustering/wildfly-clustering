@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
@@ -21,7 +22,7 @@ public class AttachedSession<C> extends DecoratedSession<C> {
 	private final Consumer<ImmutableSession> closeTask;
 
 	public AttachedSession(Session<C> session, Consumer<ImmutableSession> closeTask) {
-		super(session);
+		super(Supplier.of(session));
 		this.closeTask = closeTask;
 	}
 

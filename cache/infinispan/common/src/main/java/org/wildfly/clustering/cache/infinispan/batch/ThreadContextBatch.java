@@ -1,0 +1,104 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.wildfly.clustering.cache.infinispan.batch;
+
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.ContextReference;
+
+/**
+ * A batch referenced via {@link ThreadLocal}.
+ * @author Paul Ferraro
+ */
+enum ThreadContextBatch implements Batch, ContextReference<ContextualBatch> {
+	INSTANCE;
+
+	private static final ThreadLocal<ContextualBatch> THREAD_CONTEXT = new ThreadLocal<>();
+	private static final Status CLOSED_STATUS = new Status() {
+		@Override
+		public boolean isActive() {
+			return false;
+		}
+
+		@Override
+		public boolean isDiscarding() {
+			return false;
+		}
+
+		@Override
+		public boolean isClosed() {
+			return true;
+		}
+	};
+
+	@Override
+	public void accept(ContextualBatch batch) {
+		if (batch != null) {
+			THREAD_CONTEXT.set(batch);
+		} else {
+			THREAD_CONTEXT.remove();
+		}
+	}
+
+	@Override
+	public ContextualBatch get() {
+		return THREAD_CONTEXT.get();
+	}
+
+	@Override
+	public Status getStatus() {
+		Batch batch = this.get();
+		return (batch != null) ? batch.getStatus() : CLOSED_STATUS;
+	}
+
+	@Override
+	public SuspendedBatch suspend() {
+		ContextualBatch batch = this.get();
+		ContextualSuspendedBatch suspended = (batch != null) ? batch.suspend() : null;
+		if (batch != null) {
+			this.accept(null);
+		}
+		return new SuspendedBatch() {
+			@Override
+			public Batch resume() {
+				ContextualBatch current = ThreadContextBatch.this.get();
+				if (current != null) {
+					// As with TransactionManager.resume(...), it is illegal to resume a batch if the current thread is already associated with a batch
+					throw new IllegalStateException(this.toString(), new ContextualException(current));
+				}
+				ContextualBatch resumed = (suspended != null) ? suspended.resume() : null;
+				ThreadContextBatch.this.accept(resumed);
+				return INSTANCE;
+			}
+		};
+	}
+
+	@Override
+	public void discard() {
+		Batch batch = this.get();
+		if (batch != null) {
+			batch.discard();
+		}
+	}
+
+	@Override
+	public void close() {
+		Batch batch = this.get();
+		if (batch != null) {
+			batch.close();
+			if (batch.getStatus().isClosed()) {
+				// Disassociate from thread if actually closed
+				this.accept(null);
+			}
+		}
+	}
+
+	@Override
+	public String toString() {
+		Batch batch = this.get();
+		return (batch != null) ? batch.toString() : "none";
+	}
+}

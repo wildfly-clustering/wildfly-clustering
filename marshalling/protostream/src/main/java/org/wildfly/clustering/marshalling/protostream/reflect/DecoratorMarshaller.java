@@ -12,7 +12,7 @@ import java.util.function.UnaryOperator;
  * @param <T> the target type of this marshaller
  * @author Paul Ferraro
  */
-public class DecoratorMarshaller<T>  extends UnaryFieldMarshaller<T, T> {
+public class DecoratorMarshaller<T> extends UnaryFieldMarshaller<T, T> {
 
 	public DecoratorMarshaller(Class<T> decoratedClass, UnaryOperator<T> decorator, T sample) {
 		this(decorator.apply(sample).getClass().asSubclass(decoratedClass), decoratedClass, decorator);

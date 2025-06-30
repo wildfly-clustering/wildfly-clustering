@@ -11,7 +11,12 @@ package org.wildfly.clustering.function;
  * @param <T> the operating type
  */
 public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, Function<T, T> {
-	UnaryOperator<?> IDENTITY = new IdentityOperator<>();
+	UnaryOperator<?> IDENTITY = new UnaryOperator<>() {
+		@Override
+		public Object apply(Object value) {
+			return value;
+		}
+	};
 	UnaryOperator<?> NULL = new UnaryOperator<>() {
 		@Override
 		public Object apply(Object value) {
@@ -80,6 +85,24 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	}
 
 	/**
+	 * Returns a new operator that delegates to this operator using the specified exception handler.
+	 * @param handler an exception handler
+	 * @return a new operator that delegates to this operator using the specified exception handler.
+	 */
+	default UnaryOperator<T> handle(java.util.function.BiFunction<T, RuntimeException, T> handler) {
+		return new UnaryOperator<>() {
+			@Override
+			public T apply(T value) {
+				try {
+					return UnaryOperator.this.apply(value);
+				} catch (RuntimeException e) {
+					return handler.apply(value, e);
+				}
+			}
+		};
+	}
+
+	/**
 	 * Returns an operator that returns its value.
 	 * @param <T> the operating type
 	 * @return an operator that returns its value.
@@ -91,19 +114,29 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	}
 
 	/**
+	 * Returns an operator that always returns null, ignoring its parameter.
+	 * @param <T> the operating type
+	 * @param value the value returned by the operator
+	 * @return an operator that always returns null, ignoring its parameter.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T> UnaryOperator<T> empty() {
+		return (UnaryOperator<T>) NULL;
+	}
+
+	/**
 	 * Returns an operator that always returns the specified value, ignoring its parameter.
 	 * @param <T> the operating type
 	 * @param value the value returned by the operator
 	 * @return an operator that always returns the specified value, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> UnaryOperator<T> of(T value) {
 		return (value != null) ? new UnaryOperator<>() {
 			@Override
 			public T apply(T ignore) {
 				return value;
 			}
-		} : (UnaryOperator<T>) NULL;
+		} : empty();
 	}
 
 	/**
@@ -112,14 +145,13 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param supplier the supplier of the operator result
 	 * @return an operator that returns the result of the specified supplier, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
-	static <T> UnaryOperator<T> of(java.util.function.Supplier<T> supplier) {
+	static <T> UnaryOperator<T> get(java.util.function.Supplier<T> supplier) {
 		return (supplier != null) && (supplier != Supplier.NULL) ? new UnaryOperator<>() {
 			@Override
 			public T apply(T ignore) {
 				return supplier.get();
 			}
-		} : (UnaryOperator<T>) NULL;
+		} : empty();
 	}
 
 	/**
@@ -128,17 +160,12 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param function the delegating function
 	 * @return an operator view of the specified function.
 	 */
-	@SuppressWarnings("unchecked")
-	static <T> UnaryOperator<T> of(java.util.function.Function<? super T, T> function) {
+	static <T> UnaryOperator<T> apply(java.util.function.Function<? super T, T> function) {
 		return (function != null) && (function != Function.NULL) ? new UnaryOperator<>() {
 			@Override
 			public T apply(T value) {
 				return function.apply(value);
 			}
-		} : (UnaryOperator<T>) NULL;
-	}
-
-	class IdentityOperator<T> extends Function.IdentityFunction<T, T> implements UnaryOperator<T> {
-		private static final long serialVersionUID = -8748688112674469563L;
+		} : empty();
 	}
 }

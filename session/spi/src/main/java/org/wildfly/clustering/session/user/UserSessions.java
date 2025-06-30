@@ -12,7 +12,7 @@ import java.util.Set;
  * @param <D> deployment identifier type
  * @param <S> session identifier type
  */
-public interface UserSessions<D, S> {
+public interface UserSessions<D, S> extends AutoCloseable {
 	/**
 	 * Returns the set of deployments for which the associated user is authenticated.
 	 * @return a set of deployment identifiers.
@@ -40,4 +40,7 @@ public interface UserSessions<D, S> {
 	 * @return true, if the session was added, false it already exists
 	 */
 	boolean addSession(D deployment, S session);
+
+	@Override
+	void close();
 }

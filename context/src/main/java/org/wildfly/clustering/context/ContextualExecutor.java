@@ -91,46 +91,46 @@ public interface ContextualExecutor extends Executor {
 	 */
 	<V1, V2, R> R execute(BiFunction<V1, V2, R> function, V1 value1, V2 value2);
 
-	static ContextualExecutor withContextProvider(Supplier<Context> provider) {
+	static <C> ContextualExecutor withContextProvider(Supplier<Context<C>> provider) {
 		return new ContextualExecutor() {
 			@Override
 			public void execute(Runnable runner) {
-				try (Context context = provider.get()) {
+				try (Context<C> context = provider.get()) {
 					runner.run();
 				}
 			}
 
 			@Override
 			public <V> void execute(Consumer<V> consumer, V value) {
-				try (Context context = provider.get()) {
+				try (Context<C> context = provider.get()) {
 					consumer.accept(value);
 				}
 			}
 
 			@Override
 			public <V1, V2> void execute(BiConsumer<V1, V2> consumer, V1 value1, V2 value2) {
-				try (Context context = provider.get()) {
+				try (Context<C> context = provider.get()) {
 					consumer.accept(value1, value2);
 				}
 			}
 
 			@Override
 			public <T> T execute(Supplier<T> supplier) {
-				try (Context context = provider.get()) {
+				try (Context<C> context = provider.get()) {
 					return supplier.get();
 				}
 			}
 
 			@Override
 			public <V, R> R execute(Function<V, R> function, V value) {
-				try (Context context = provider.get()) {
+				try (Context<C> context = provider.get()) {
 					return function.apply(value);
 				}
 			}
 
 			@Override
 			public <V1, V2, R> R execute(BiFunction<V1, V2, R> function, V1 value1, V2 value2) {
-				try (Context context = provider.get()) {
+				try (Context<C> context = provider.get()) {
 					return function.apply(value1, value2);
 				}
 			}
