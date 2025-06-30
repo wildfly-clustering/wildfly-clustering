@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 
 /**
@@ -17,7 +18,7 @@ public class CachedSession<C> extends DecoratedSession<C> implements CacheableSe
 	private final Runnable closeTask;
 
 	public CachedSession(Session<C> session, Runnable closeTask) {
-		super(session);
+		super(Supplier.of(session));
 		this.closeTask = closeTask;
 	}
 
