@@ -9,5 +9,7 @@ package org.wildfly.clustering.cache.infinispan.batch;
  * A nestable transactional suspended batch.
  * @author Paul Ferraro
  */
-public interface TransactionalSuspendedBatch extends SuspendedParentBatch, Transactional {
+public interface TransactionalSuspendedBatch extends ContextualSuspendedBatch, Transactional {
+	@Override
+	TransactionalBatch resume();
 }

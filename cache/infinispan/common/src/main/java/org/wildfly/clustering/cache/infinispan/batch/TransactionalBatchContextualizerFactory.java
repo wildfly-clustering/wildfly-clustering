@@ -15,7 +15,7 @@ import org.wildfly.clustering.context.ContextualizerFactory;
  * @author Paul Ferraro
  */
 @MetaInfServices({ ContextualizerFactory.class, BatchContextualizerFactory.class })
-public class TransactionBatchContextualizerFactory implements BatchContextualizerFactory {
+public class TransactionalBatchContextualizerFactory implements BatchContextualizerFactory {
 
 	@Override
 	public Contextualizer createContextualizer(ClassLoader loader) {

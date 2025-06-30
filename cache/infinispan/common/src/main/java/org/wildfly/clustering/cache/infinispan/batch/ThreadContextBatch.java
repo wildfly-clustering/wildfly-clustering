@@ -13,13 +13,29 @@ import org.wildfly.clustering.context.ContextReference;
  * A batch referenced via {@link ThreadLocal}.
  * @author Paul Ferraro
  */
-enum ThreadContextBatch implements Batch, ContextReference<Batch> {
+enum ThreadContextBatch implements Batch, ContextReference<ContextualBatch> {
 	INSTANCE;
 
-	private static final ThreadLocal<Batch> THREAD_CONTEXT = new ThreadLocal<>();
+	private static final ThreadLocal<ContextualBatch> THREAD_CONTEXT = new ThreadLocal<>();
+	private static final Status CLOSED_STATUS = new Status() {
+		@Override
+		public boolean isActive() {
+			return false;
+		}
+
+		@Override
+		public boolean isDiscarding() {
+			return false;
+		}
+
+		@Override
+		public boolean isClosed() {
+			return true;
+		}
+	};
 
 	@Override
-	public void accept(Batch batch) {
+	public void accept(ContextualBatch batch) {
 		if (batch != null) {
 			THREAD_CONTEXT.set(batch);
 		} else {
@@ -28,26 +44,32 @@ enum ThreadContextBatch implements Batch, ContextReference<Batch> {
 	}
 
 	@Override
-	public Batch get() {
+	public ContextualBatch get() {
 		return THREAD_CONTEXT.get();
 	}
 
 	@Override
-	public SuspendedBatch suspend() {
+	public Status getStatus() {
 		Batch batch = this.get();
-		SuspendedBatch suspended = (batch != null) ? batch.suspend() : null;
+		return (batch != null) ? batch.getStatus() : CLOSED_STATUS;
+	}
+
+	@Override
+	public SuspendedBatch suspend() {
+		ContextualBatch batch = this.get();
+		ContextualSuspendedBatch suspended = (batch != null) ? batch.suspend() : null;
 		if (batch != null) {
 			this.accept(null);
 		}
 		return new SuspendedBatch() {
 			@Override
 			public Batch resume() {
-				Batch current = ThreadContextBatch.this.get();
+				ContextualBatch current = ThreadContextBatch.this.get();
 				if (current != null) {
 					// As with TransactionManager.resume(...), it is illegal to resume a batch if the current thread is already associated with a batch
-					throw new IllegalStateException(current.toString());
+					throw new IllegalStateException(this.toString(), new ContextualException(current));
 				}
-				Batch resumed = (suspended != null) ? suspended.resume() : null;
+				ContextualBatch resumed = (suspended != null) ? suspended.resume() : null;
 				ThreadContextBatch.this.accept(resumed);
 				return INSTANCE;
 			}
@@ -63,29 +85,11 @@ enum ThreadContextBatch implements Batch, ContextReference<Batch> {
 	}
 
 	@Override
-	public boolean isActive() {
-		Batch batch = this.get();
-		return (batch != null) ? batch.isActive() : false;
-	}
-
-	@Override
-	public boolean isDiscarding() {
-		Batch batch = this.get();
-		return (batch != null) ? batch.isDiscarding() : false;
-	}
-
-	@Override
-	public boolean isClosed() {
-		Batch batch = this.get();
-		return (batch != null) ? batch.isClosed() : true;
-	}
-
-	@Override
 	public void close() {
 		Batch batch = this.get();
 		if (batch != null) {
 			batch.close();
-			if (batch.isClosed()) {
+			if (batch.getStatus().isClosed()) {
 				// Disassociate from thread if actually closed
 				this.accept(null);
 			}

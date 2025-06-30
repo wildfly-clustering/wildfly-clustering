@@ -8,8 +8,6 @@ package org.wildfly.clustering.cache.infinispan.batch;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.function.Predicate;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,27 +30,9 @@ public class ThreadContextBatchTestCase {
 	}
 
 	@Test
-	public void isActive() {
-		validate(Batch::isActive);
-	}
-
-	@Test
-	public void isDiscarding() {
-		validate(Batch::isDiscarding);
-	}
-
-	@Test
-	public void isClosed() {
-		validate(Batch::isDiscarding);
-	}
-
-	private void validate(Predicate<Batch> predicate) {
-		validate(predicate, false);
-		validate(predicate, true);
-	}
-
-	private void validate(Predicate<Batch> predicate, boolean expected) {
-		Batch batch = mock(Batch.class);
+	public void getStatus() {
+		ContextualBatch batch = mock(ContextualBatch.class);
+		Batch.Status status = mock(Batch.Status.class);
 
 		ThreadContextBatch.INSTANCE.accept(batch);
 
@@ -60,26 +40,29 @@ public class ThreadContextBatchTestCase {
 
 		assertThat(ThreadContextBatch.INSTANCE.get()).isSameAs(batch);
 
-		predicate.test(doReturn(expected).when(batch));
+		doReturn(status).when(batch).getStatus();
 
-		boolean result = predicate.test(ThreadContextBatch.INSTANCE);
-
-		predicate.test(verify(batch, only()));
-
-		assertThat(result).isEqualTo(expected);
+		assertThat(ThreadContextBatch.INSTANCE.getStatus()).isSameAs(status);
 	}
 
 	@Test
 	public void resumeWhileAssociatedBatch() {
-		Batch batch1 = mock(Batch.class);
+		ContextualBatch contextualBatch = mock(ContextualBatch.class);
+		ContextualSuspendedBatch suspendedContextualBatch = mock(ContextualSuspendedBatch.class);
 
-		ThreadContextBatch.INSTANCE.accept(batch1);
+		doReturn(suspendedContextualBatch).when(contextualBatch).suspend();
+
+		ThreadContextBatch.INSTANCE.accept(contextualBatch);
 
 		SuspendedBatch suspended = ThreadContextBatch.INSTANCE.suspend();
 
-		ThreadContextBatch.INSTANCE.accept(mock(Batch.class));
+		ContextualBatch currentBatch = mock(ContextualBatch.class);
+
+		ThreadContextBatch.INSTANCE.accept(currentBatch);
 
 		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(suspended::resume);
+
+		verify(currentBatch).attach(any());
 	}
 
 	@Test
@@ -102,17 +85,19 @@ public class ThreadContextBatchTestCase {
 
 		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 
-		assertThat(ThreadContextBatch.INSTANCE.isActive()).isFalse();
-		assertThat(ThreadContextBatch.INSTANCE.isDiscarding()).isFalse();
-		assertThat(ThreadContextBatch.INSTANCE.isClosed()).isTrue();
+		Batch.Status status = ThreadContextBatch.INSTANCE.getStatus();
+		assertThat(status).isNotNull();
+		assertThat(status.isActive()).isFalse();
+		assertThat(status.isDiscarding()).isFalse();
+		assertThat(status.isClosed()).isTrue();
 
 		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 
 	@Test
 	public void suspendResume() {
-		Batch batch = mock(Batch.class);
-		SuspendedBatch suspendedBatch = mock(SuspendedBatch.class);
+		ContextualBatch batch = mock(ContextualBatch.class);
+		ContextualSuspendedBatch suspendedBatch = mock(ContextualSuspendedBatch.class);
 
 		ThreadContextBatch.INSTANCE.accept(batch);
 
@@ -141,7 +126,9 @@ public class ThreadContextBatchTestCase {
 
 	@Test
 	public void close() {
-		Batch batch = mock(Batch.class);
+		ContextualBatch batch = mock(ContextualBatch.class);
+		Batch.Status openStatus = mock(Batch.Status.class);
+		Batch.Status closedStatus = mock(Batch.Status.class);
 
 		ThreadContextBatch.INSTANCE.accept(batch);
 
@@ -149,21 +136,27 @@ public class ThreadContextBatchTestCase {
 
 		assertThat(ThreadContextBatch.INSTANCE.get()).isSameAs(batch);
 
-		doReturn(false, true).when(batch).isClosed();
+		doReturn(openStatus, closedStatus).when(batch).getStatus();
+		doReturn(false).when(openStatus).isClosed();
+		doReturn(true).when(closedStatus).isClosed();
 
 		ThreadContextBatch.INSTANCE.close();
 
 		verify(batch).close();
-		verify(batch).isClosed();
+		verify(batch).getStatus();
 		verifyNoMoreInteractions(batch);
+		verify(openStatus).isClosed();
+		verifyNoInteractions(closedStatus);
 
 		// Verify that batch is still associated with thread if not closed
 		assertThat(ThreadContextBatch.INSTANCE.get()).isSameAs(batch);
 
 		ThreadContextBatch.INSTANCE.close();
 
-		verify(batch, times(2)).isClosed();
 		verify(batch, times(2)).close();
+		verify(batch, times(2)).getStatus();
+		verify(closedStatus).isClosed();
+		verifyNoMoreInteractions(openStatus);
 
 		// Verify that batch is no longer associated with thread if actually closed
 		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
@@ -171,7 +164,7 @@ public class ThreadContextBatchTestCase {
 
 	@Test
 	public void discard() {
-		Batch batch = mock(Batch.class);
+		ContextualBatch batch = mock(ContextualBatch.class);
 
 		ThreadContextBatch.INSTANCE.accept(batch);
 

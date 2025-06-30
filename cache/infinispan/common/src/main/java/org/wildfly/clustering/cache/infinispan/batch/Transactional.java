@@ -11,7 +11,7 @@ import jakarta.transaction.TransactionManager;
 /**
  * @author Paul Ferraro
  */
-public interface Transactional {
+public interface Transactional extends Contextual {
 	/**
 	 * Returns the associated transaction manager.
 	 * @return the associated transaction manager.
@@ -23,10 +23,4 @@ public interface Transactional {
 	 * @return the associated transaction
 	 */
 	Transaction getTransaction();
-
-	/**
-	 * Returns the context of the associated transaction.
-	 * @return the context of the associated transaction.
-	 */
-	String getContext();
 }

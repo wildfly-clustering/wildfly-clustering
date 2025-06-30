@@ -14,7 +14,28 @@ import org.wildfly.clustering.context.Context;
  */
 public interface Batch extends AutoCloseable {
 	System.Logger LOGGER = System.getLogger(Batch.class.getName());
-	Batch CLOSED = new SimpleBatch(0L, false);
+
+	interface Status {
+		/**
+		 * Indicates whether or not this batch is active.
+		 * @return true, if this batch is active, false otherwise.
+		 */
+		boolean isActive();
+
+		/**
+		 * Indicates whether or not this batch will be discarded.
+		 * @return true, if this batch will be discarded, false otherwise.
+		 */
+		boolean isDiscarding();
+
+		/**
+		 * Indicates whether or not this batch was closed.
+		 * @return true, if this batch was closed, false otherwise.
+		 */
+		boolean isClosed();
+	}
+
+	Status getStatus();
 
 	/**
 	 * Suspends this batch.
@@ -35,24 +56,6 @@ public interface Batch extends AutoCloseable {
 	 * Discards this batch.  A discarded batch must still be closed.
 	 */
 	void discard();
-
-	/**
-	 * Indicates whether or not this batch is active.
-	 * @return true, if this batch is active, false otherwise.
-	 */
-	boolean isActive();
-
-	/**
-	 * Indicates whether or not this batch will be discarded.
-	 * @return true, if this batch will be discarded, false otherwise.
-	 */
-	boolean isDiscarding();
-
-	/**
-	 * Indicates whether or not this batch was closed.
-	 * @return true, if this batch was closed, false otherwise.
-	 */
-	boolean isClosed();
 
 	@Override
 	void close();

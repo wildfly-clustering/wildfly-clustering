@@ -8,11 +8,10 @@ package org.wildfly.clustering.cache.infinispan.batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 
 /**
- * A suspended batch that resumes a {@link ParentBatch}.
  * @author Paul Ferraro
  */
-public interface SuspendedParentBatch extends SuspendedBatch {
+public interface ContextualSuspendedBatch extends SuspendedBatch, Contextual {
 
 	@Override
-	ParentBatch resume();
+	ContextualBatch resume();
 }

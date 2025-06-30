@@ -5,51 +5,113 @@
 
 package org.wildfly.clustering.cache.infinispan.batch;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.InvalidTransactionException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
-import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
-public class DefaultTransactionalBatch extends AbstractTransactional implements TransactionalBatch, Synchronization {
-	private final String context;
+import org.wildfly.clustering.cache.batch.Batch;
+
+public class DefaultTransactionalBatch extends AbstractContextualBatch implements TransactionalBatch, TransactionalSuspendedBatch, Synchronization {
 	private final TransactionManager tm;
 	private final Transaction tx;
+	private final Status status;
 	private final Function<Exception, RuntimeException> exceptionTransformer;
-	private final AtomicInteger count = new AtomicInteger(0);
+	private final AtomicBoolean active;
 
-	private volatile boolean active = true;
+	DefaultTransactionalBatch(String name, TransactionManager tm, Function<Exception, RuntimeException> exceptionTransformer) {
+		this(name, tm, begin(tm, exceptionTransformer), exceptionTransformer, new AtomicBoolean(true));
+	}
 
-	DefaultTransactionalBatch(String context, TransactionManager tm, Function<Exception, RuntimeException> exceptionTransformer) {
-		this.context = context;
-		this.tm = tm;
-		this.exceptionTransformer = exceptionTransformer;
-		try {
-			// Ensure there is no transaction associated with the current thread
-			Transaction currentTx = this.tm.getTransaction();
-			if (currentTx != null) {
-				throw new IllegalStateException(currentTx.toString());
+	DefaultTransactionalBatch(String name, TransactionManager tm, Transaction tx, Function<Exception, RuntimeException> exceptionTransformer, AtomicBoolean active) {
+		super(name, status -> {
+			try {
+				switch (tx.getStatus()) {
+					case jakarta.transaction.Status.STATUS_ACTIVE:
+						if (status.isActive()) {
+							try {
+								LOGGER.log(System.Logger.Level.DEBUG, "Committing batch {0}", tx);
+								tx.commit();
+								LOGGER.log(System.Logger.Level.DEBUG, "Committed batch {0}", tx);
+								break;
+							} catch (RollbackException e) {
+								throw new IllegalStateException(e);
+							} catch (HeuristicMixedException | HeuristicRollbackException e) {
+								throw exceptionTransformer.apply(e);
+							}
+						}
+						// Otherwise fall through
+					case jakarta.transaction.Status.STATUS_MARKED_ROLLBACK:
+						LOGGER.log(System.Logger.Level.DEBUG, "Rolling back batch {0}", tx);
+						tx.rollback();
+						LOGGER.log(System.Logger.Level.DEBUG, "Rolled back batch {0}", tx);
+						break;
+					default:
+						LOGGER.log(System.Logger.Level.DEBUG, "Closed batch {0} with status = {2}", tx, tx.getStatus());
+				}
+			} catch (SystemException e) {
+				throw exceptionTransformer.apply(e);
 			}
-			this.tm.begin();
-			this.tx = this.tm.getTransaction();
-			// Register tx synchronization that clears thread context on tx completion
-			this.tx.registerSynchronization(this);
-			LOGGER.log(System.Logger.Level.DEBUG, "Created batch {0}", this.tx);
-		} catch (RollbackException | SystemException | NotSupportedException e) {
-			throw this.exceptionTransformer.apply(e);
+		});
+		this.tm = tm;
+		this.tx = tx;
+		this.exceptionTransformer = exceptionTransformer;
+		this.active = active;
+		this.status = new Status() {
+			@Override
+			public boolean isActive() {
+				int status = this.getStatus();
+				return (status == jakarta.transaction.Status.STATUS_ACTIVE) && active.get();
+			}
+
+			@Override
+			public boolean isDiscarding() {
+				int status = this.getStatus();
+				return ((status == jakarta.transaction.Status.STATUS_ACTIVE) && !active.get()) || (status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK);
+			}
+
+			@Override
+			public boolean isClosed() {
+				int status = this.getStatus();
+				return (status != jakarta.transaction.Status.STATUS_ACTIVE) && (status != jakarta.transaction.Status.STATUS_MARKED_ROLLBACK);
+			}
+
+			private int getStatus() {
+				try {
+					return tx.getStatus();
+				} catch (SystemException e) {
+					throw exceptionTransformer.apply(e);
+				}
+			}
+		};
+		try {
+			tx.registerSynchronization(this);
+		} catch (RollbackException | SystemException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
-	@Override
-	public String getContext() {
-		return this.context;
+	private static Transaction begin(TransactionManager tm, Function<Exception, RuntimeException> exceptionTransformer) {
+		try {
+			// Ensure there is no transaction associated with the current thread
+			Transaction currentTx = tm.getTransaction();
+			if (currentTx != null) {
+				throw new IllegalStateException(currentTx.toString());
+			}
+			tm.begin();
+			return tm.getTransaction();
+		} catch (SystemException | NotSupportedException e) {
+			throw exceptionTransformer.apply(e);
+		}
 	}
 
 	@Override
@@ -63,48 +125,31 @@ public class DefaultTransactionalBatch extends AbstractTransactional implements 
 	}
 
 	@Override
-	public TransactionalBatch get() {
-		int count = this.count.incrementAndGet();
-		LOGGER.log(System.Logger.Level.DEBUG, "Created extended batch {0}[{1}]", this.tx, count);
-		return this;
+	public Status getStatus() {
+		return this.status;
 	}
 
-	private int getStatus() {
+	@Override
+	public TransactionalSuspendedBatch suspend() {
+		LOGGER.log(System.Logger.Level.DEBUG, "Suspending batch {0}", this);
 		try {
-			return this.tx.getStatus();
+			Transaction suspendedTx = this.tm.suspend();
+			if (suspendedTx != this.tx) {
+				throw new IllegalStateException(this.tx.toString());
+			}
+			return this;
 		} catch (SystemException e) {
 			throw this.exceptionTransformer.apply(e);
 		}
 	}
 
 	@Override
-	public boolean isActive() {
-		int status = this.getStatus();
-		return (status == Status.STATUS_ACTIVE) && this.active;
-	}
-
-	@Override
-	public boolean isDiscarding() {
-		int status = this.getStatus();
-		return ((status == Status.STATUS_ACTIVE) && !this.active) || (status == Status.STATUS_MARKED_ROLLBACK);
-	}
-
-	@Override
-	public boolean isClosed() {
-		int status = this.getStatus();
-		return (status != Status.STATUS_ACTIVE) && (status != Status.STATUS_MARKED_ROLLBACK);
-	}
-
-	@Override
-	public SuspendedParentBatch suspend() {
-		LOGGER.log(System.Logger.Level.DEBUG, "Suspending batch {0}", this);
+	public TransactionalBatch resume() {
 		try {
-			Transaction suspendedTx = this.tm.suspend();
-			if (suspendedTx != this.tx) {
-				throw new IllegalStateException();
-			}
-			return new DefaultSuspendedTransactionBatch(this, this.exceptionTransformer);
-		} catch (SystemException e) {
+			Batch.LOGGER.log(System.Logger.Level.DEBUG, "Resuming batch {0}", this);
+			this.tm.resume(this.tx);
+			return this;
+		} catch (SystemException | InvalidTransactionException e) {
 			throw this.exceptionTransformer.apply(e);
 		}
 	}
@@ -112,43 +157,7 @@ public class DefaultTransactionalBatch extends AbstractTransactional implements 
 	@Override
 	public void discard() {
 		// Allow additional cache operations prior to close, rather than call tx.setRollbackOnly()
-		this.active = false;
-	}
-
-	@Override
-	public void close() {
-		int count = this.count.getAndDecrement();
-		if (count == 0) {
-			try {
-				switch (this.tx.getStatus()) {
-					case Status.STATUS_ACTIVE:
-						if (this.active) {
-							try {
-								LOGGER.log(System.Logger.Level.DEBUG, "Committing batch {0}", this.tx);
-								this.tx.commit();
-								LOGGER.log(System.Logger.Level.DEBUG, "Committed batch {0}", this.tx);
-								break;
-							} catch (RollbackException e) {
-								throw new IllegalStateException(e);
-							} catch (HeuristicMixedException | HeuristicRollbackException e) {
-								throw this.exceptionTransformer.apply(e);
-							}
-						}
-						// Otherwise fall through
-					case Status.STATUS_MARKED_ROLLBACK:
-						LOGGER.log(System.Logger.Level.DEBUG, "Rolling back batch {0}", this.tx);
-						this.tx.rollback();
-						LOGGER.log(System.Logger.Level.DEBUG, "Rolled back batch {0}", this.tx);
-						break;
-					default:
-						LOGGER.log(System.Logger.Level.DEBUG, "Closed batch {0} with status = {2}", this.tx, this.tx.getStatus());
-				}
-			} catch (SystemException e) {
-				throw this.exceptionTransformer.apply(e);
-			}
-		} else {
-			LOGGER.log(System.Logger.Level.DEBUG, "Closed extended batch {0}[{1}]", this.tx, count);
-		}
+		this.active.set(false);
 	}
 
 	@Override
@@ -159,5 +168,22 @@ public class DefaultTransactionalBatch extends AbstractTransactional implements 
 	public void afterCompletion(int status) {
 		// Disassociate batch with thread on tx completion
 		ThreadContextBatch.INSTANCE.accept(null);
+	}
+
+	@Override
+	public int hashCode() {
+		return this.getTransaction().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (!(object instanceof Transactional)) return false;
+		Transactional batch = (Transactional) object;
+		return this.getTransaction().equals(batch.getTransaction());
+	}
+
+	@Override
+	public String toString() {
+		return Map.of("context", this.getName(), "tx", this.getTransaction()).toString();
 	}
 }
