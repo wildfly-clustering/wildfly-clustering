@@ -144,16 +144,16 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isEqualTo(0);
 
-			if (tm1 != null) {
-				tm1.begin();
+			if (tm2 != null) {
+				tm2.begin();
 			}
 			// Write requires previous value, already available locally
 			assertThat(cache2.put(key, 1)).isEqualTo(0);
-			if (tm1 != null) {
+			if (tm2 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm1.commit();
+				tm2.commit();
 			}
 			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
 			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
@@ -220,16 +220,16 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isNull();
 			assertThat(skipLoadCache2.get(key)).isEqualTo(4);
 
-			if (tm2 != null) {
-				tm2.begin();
+			if (tm1 != null) {
+				tm1.begin();
 			}
 			// Requires loading current value, to be removed
 			assertThat(cache1.remove(key)).isEqualTo(4);
-			if (tm2 != null) {
+			if (tm1 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm2.commit();
+				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
@@ -237,8 +237,30 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(events2.poll()).isNull();
 
 			// Verify entry was invalidated remotely
-			assertThat(cache1.containsKey(key)).isFalse();
-			assertThat(cache2.containsKey(key)).isFalse();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			assertThat(skipLoadCache1.get(key)).isNull();
+
+			if (tm2 != null) {
+				tm2.begin();
+			}
+			// Requires store lookup, nothing written
+			assertThat(cache2.replace(key, 0)).isNull();
+			if (tm2 != null) {
+				// No invalidation events expected before commit
+				assertThat(events1.poll()).isNull();
+				assertThat(events2.poll()).isNull();
+				tm2.commit();
+			}
+			// Nothing to invalidate
+			assertThat(events1.poll()).isNull();
+			assertThat(events2.poll()).isNull();
+
+			// Verify no entry in memory
+			assertThat(skipLoadCache1.get(key)).isNull();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			// Verify no entry in store
+			assertThat(cache1.get(key)).isNull();
+			assertThat(cache2.get(key)).isNull();
 		} finally {
 			cache1.removeListener(listener1);
 			cache2.removeListener(listener2);
@@ -295,16 +317,16 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isEqualTo(0);
 
-			if (tm1 != null) {
-				tm1.begin();
+			if (tm2 != null) {
+				tm2.begin();
 			}
 			// Write does not require current value
 			assertThat(cache2.put(key, 1)).satisfiesAnyOf(result -> assertThat(result).isNull(), result -> assertThat(result).isEqualTo(0));
-			if (tm1 != null) {
+			if (tm2 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm1.commit();
+				tm2.commit();
 			}
 			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
 			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
@@ -371,24 +393,49 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isNull();
 			assertThat(skipLoadCache2.get(key)).isEqualTo(4);
 
-			if (tm2 != null) {
-				tm2.begin();
+			if (tm1 != null) {
+				tm1.begin();
 			}
 			// Write does not require loading current value
 			assertThat(cache1.remove(key)).satisfiesAnyOf(result -> assertThat(result).isNull(), result -> assertThat(result).isEqualTo(4));
-			if (tm2 != null) {
+			if (tm1 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm2.commit();
+				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
 			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			// Verify entry was invalidated remotely
-			assertThat(cache1.containsKey(key)).isFalse();
-			assertThat(cache2.containsKey(key)).isFalse();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			// Verify store removal
+			assertThat(cache1.get(key)).isNull();
+			assertThat(cache2.get(key)).isNull();
+
+			if (tm2 != null) {
+				tm2.begin();
+			}
+			// Requires store lookup, nothing written
+			assertThat(cache2.replace(key, 0)).isNull();
+			if (tm2 != null) {
+				// No invalidation events expected before commit
+				assertThat(events1.poll()).isNull();
+				assertThat(events2.poll()).isNull();
+				tm2.commit();
+			}
+			// Nothing to invalidate
+			assertThat(events1.poll()).isNull();
+			assertThat(events2.poll()).isNull();
+
+			// Verify no entry in memory
+			assertThat(skipLoadCache1.get(key)).isNull();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			// Verify no entry in store
+			assertThat(cache1.get(key)).isNull();
+			assertThat(cache2.get(key)).isNull();
 		} finally {
 			cache1.removeListener(listener1);
 			cache2.removeListener(listener2);
@@ -429,16 +476,16 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isNull();
 
-			if (tm1 != null) {
-				tm1.begin();
+			if (tm2 != null) {
+				tm2.begin();
 			}
 			// Requires loading current value, but nothing written
 			assertThat(cache2.computeIfAbsent(key, k -> -1)).isEqualTo(0);
-			if (tm1 != null) {
+			if (tm2 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm1.commit();
+				tm2.commit();
 			}
 			// Nothing was updated, there should be no invalidation events
 			assertThat(events1.poll()).isNull();
@@ -447,16 +494,16 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isEqualTo(0);
 
-			if (tm1 != null) {
-				tm1.begin();
+			if (tm2 != null) {
+				tm2.begin();
 			}
 			// Write requires current value already available locally
 			assertThat(cache2.compute(key, increment)).isEqualTo(1);
-			if (tm1 != null) {
+			if (tm2 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm1.commit();
+				tm2.commit();
 			}
 			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
 			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
@@ -523,24 +570,49 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isNull();
 			assertThat(skipLoadCache2.get(key)).isEqualTo(4);
 
-			if (tm2 != null) {
-				tm2.begin();
+			if (tm1 != null) {
+				tm1.begin();
 			}
 			// Write requires loading current value
 			assertThat(cache1.computeIfPresent(key, (k, v) -> null)).isNull();
-			if (tm2 != null) {
+			if (tm1 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm2.commit();
+				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
 			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			// Verify entry was invalidated remotely
-			assertThat(cache1.containsKey(key)).isFalse();
-			assertThat(cache2.containsKey(key)).isFalse();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			// Verify store removal
+			assertThat(cache1.get(key)).isNull();
+			assertThat(cache2.get(key)).isNull();
+
+			if (tm2 != null) {
+				tm2.begin();
+			}
+			// Requires store lookup, nothing written
+			assertThat(cache2.computeIfPresent(key, (k, v) -> 0)).isNull();
+			if (tm2 != null) {
+				// No invalidation events expected before commit
+				assertThat(events1.poll()).isNull();
+				assertThat(events2.poll()).isNull();
+				tm2.commit();
+			}
+			// Nothing to invalidate
+			assertThat(events1.poll()).isNull();
+			assertThat(events2.poll()).isNull();
+
+			// Verify no entry in memory
+			assertThat(skipLoadCache1.get(key)).isNull();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			// Verify no entry in store
+			assertThat(cache1.get(key)).isNull();
+			assertThat(cache2.get(key)).isNull();
 		} finally {
 			cache1.removeListener(listener1);
 			cache2.removeListener(listener2);
@@ -581,16 +653,16 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isNull();
 
-			if (tm1 != null) {
-				tm1.begin();
+			if (tm2 != null) {
+				tm2.begin();
 			}
 			// Write requires loading current value, but nothing should be written
 			assertThat(cache2.computeIfAbsent(key, k -> -1)).satisfiesAnyOf(result -> assertThat(result).isNull(), result -> assertThat(result).isEqualTo(0));
-			if (tm1 != null) {
+			if (tm2 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm1.commit();
+				tm2.commit();
 			}
 			// Nothing was updated, there should be no invalidation events
 			assertThat(events1.poll()).isNull();
@@ -599,16 +671,16 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isEqualTo(0);
 
-			if (tm1 != null) {
-				tm1.begin();
+			if (tm2 != null) {
+				tm2.begin();
 			}
 			// Write requires current value already available locally
 			assertThat(cache2.compute(key, increment)).satisfiesAnyOf(result -> assertThat(result).isNull(), result -> assertThat(result).isEqualTo(1));
-			if (tm1 != null) {
+			if (tm2 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm1.commit();
+				tm2.commit();
 			}
 			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
 			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
@@ -675,24 +747,49 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			assertThat(skipLoadCache1.get(key)).isNull();
 			assertThat(skipLoadCache2.get(key)).isEqualTo(4);
 
-			if (tm2 != null) {
-				tm2.begin();
+			if (tm1 != null) {
+				tm1.begin();
 			}
 			// Write requires loading current value
 			assertThat(cache1.computeIfPresent(key, (k, v) -> null)).isNull();
-			if (tm2 != null) {
+			if (tm1 != null) {
 				// No invalidation events expected before commit
 				assertThat(events1.poll()).isNull();
 				assertThat(events2.poll()).isNull();
-				tm2.commit();
+				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
 			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			// Verify entry was invalidated remotely
-			assertThat(cache1.containsKey(key)).isFalse();
-			assertThat(cache2.containsKey(key)).isFalse();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			// Verify store removal
+			assertThat(cache1.get(key)).isNull();
+			assertThat(cache2.get(key)).isNull();
+
+			if (tm2 != null) {
+				tm2.begin();
+			}
+			// Requires store lookup, nothing written
+			assertThat(cache2.computeIfPresent(key, (k, v) -> 0)).isNull();
+			if (tm2 != null) {
+				// No invalidation events expected before commit
+				assertThat(events1.poll()).isNull();
+				assertThat(events2.poll()).isNull();
+				tm2.commit();
+			}
+			// Nothing to invalidate
+			assertThat(events1.poll()).isNull();
+			assertThat(events2.poll()).isNull();
+
+			// Verify no entry in memory
+			assertThat(skipLoadCache1.get(key)).isNull();
+			assertThat(skipLoadCache1.get(key)).isNull();
+			// Verify no entry in store
+			assertThat(cache1.get(key)).isNull();
+			assertThat(cache2.get(key)).isNull();
 		} finally {
 			cache1.removeListener(listener1);
 			cache2.removeListener(listener2);
