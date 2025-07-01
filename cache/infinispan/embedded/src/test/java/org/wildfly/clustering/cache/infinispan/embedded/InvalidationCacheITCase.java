@@ -31,7 +31,7 @@ import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.UnaryOperator;
 
 /**
- * Validates InvalidationCache wrapper.
+ * Validates behavior of cache write operations on an invalidation-cache.
  * @author Paul Ferraro
  */
 public class InvalidationCacheITCase extends SoftAssertions {
@@ -42,27 +42,21 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			.transactionManagerLookup(org.infinispan.transaction.tm.EmbeddedTransactionManager::getInstance)
 			.lockingMode(org.infinispan.transaction.LockingMode.PESSIMISTIC);
 
-	@org.junit.jupiter.api.Disabled
+	@org.junit.jupiter.api.Disabled("Currently fails due to missing cache load")
 	@Test
 	public void nonTxInvalidation() throws Exception {
 		this.test("non-tx", NON_TRANSACTIONAL, UnaryOperator.identity());
 	}
 
 	@Test
-	public void nonTxInvalidationFixed() throws Exception {
+	public void nonTxInvalidationWithWorkaround() throws Exception {
 		this.test("non-tx-fixed", NON_TRANSACTIONAL, InvalidationCache::new);
 	}
 
-	@org.junit.jupiter.api.Disabled
+	@org.junit.jupiter.api.Disabled("Currently fails due to missing invalidations")
 	@Test
 	public void txInvalidation() throws Exception {
 		this.test("tx", TRANSACTIONAL, UnaryOperator.identity());
-	}
-
-	@org.junit.jupiter.api.Disabled
-	@Test
-	public void txInvalidationFixed() throws Exception {
-		this.test("tx-fixed", TRANSACTIONAL, InvalidationCache::new);
 	}
 
 	private void test(String cacheName, UnaryOperator<TransactionConfigurationBuilder> configurator, UnaryOperator<Cache<String, Integer>> transformer) throws Exception {
@@ -83,12 +77,18 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				Cache<String, Integer> cache2 = transformer.apply(manager2.getCache(cacheName));
 				cache2.start();
 
-				this.testPut(cache1, cache2);
-				this.testPutIgnoreReturnValue(cache1.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES), cache2.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES));
-				this.testCompute(cache1, cache2);
-				this.testComputeIgnoreReturnValue(cache1.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES), cache2.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES));
+				try {
+					this.testPut(cache1, cache2);
+					this.testPutIgnoreReturnValue(cache1.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES), cache2.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES));
+					this.testCompute(cache1, cache2);
+					this.testComputeIgnoreReturnValue(cache1.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES), cache2.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES));
 
-				assertAll();
+					assertAll();
+				} finally {
+					cache2.stop();
+				}
+			} finally {
+				cache1.stop();
 			}
 		}
 	}
@@ -98,8 +98,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 		TransactionManager tm2 = cache2.getAdvancedCache().getTransactionManager();
 		Cache<String, Integer> skipLoadCache1 = cache1.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
 		Cache<String, Integer> skipLoadCache2 = cache2.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
-		Queue<Map.Entry<String, Boolean>> events1 = new LinkedBlockingQueue<>();
-		Queue<Map.Entry<String, Boolean>> events2 = new LinkedBlockingQueue<>();
+		Queue<Map.Entry<String, Listener.Observation>> events1 = new LinkedBlockingQueue<>();
+		Queue<Map.Entry<String, Listener.Observation>> events2 = new LinkedBlockingQueue<>();
 		Object listener1 = new InvalidationEventCollector(events1);
 		Object listener2 = new InvalidationEventCollector(events2);
 		String key = "put";
@@ -116,8 +116,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -147,8 +147,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(1);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -163,8 +163,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(2);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -178,8 +178,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				assertThat(events2.poll()).isNull();
 				tm2.commit();
 			}
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isNull();
@@ -194,8 +194,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				assertThat(events2.poll()).isNull();
 				tm2.commit();
 			}
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isNull();
@@ -211,8 +211,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm2.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 
 			assertThat(cache1.containsKey(key)).isFalse();
@@ -228,8 +228,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 		TransactionManager tm2 = cache2.getAdvancedCache().getTransactionManager();
 		Cache<String, Integer> skipLoadCache1 = cache1.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
 		Cache<String, Integer> skipLoadCache2 = cache2.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
-		Queue<Map.Entry<String, Boolean>> events1 = new LinkedBlockingQueue<>();
-		Queue<Map.Entry<String, Boolean>> events2 = new LinkedBlockingQueue<>();
+		Queue<Map.Entry<String, Listener.Observation>> events1 = new LinkedBlockingQueue<>();
+		Queue<Map.Entry<String, Listener.Observation>> events2 = new LinkedBlockingQueue<>();
 		Object listener1 = new InvalidationEventCollector(events1);
 		Object listener2 = new InvalidationEventCollector(events2);
 		String key = "put-ignore";
@@ -246,8 +246,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -277,8 +277,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(1);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -293,8 +293,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(2);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -308,8 +308,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				assertThat(events2.poll()).isNull();
 				tm2.commit();
 			}
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isNull();
@@ -324,8 +324,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				assertThat(events2.poll()).isNull();
 				tm2.commit();
 			}
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isNull();
@@ -341,8 +341,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm2.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 
 			assertThat(cache1.containsKey(key)).isFalse();
@@ -358,8 +358,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 		TransactionManager tm2 = cache2.getAdvancedCache().getTransactionManager();
 		Cache<String, Integer> skipLoadCache1 = cache1.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
 		Cache<String, Integer> skipLoadCache2 = cache2.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
-		Queue<Map.Entry<String, Boolean>> events1 = new LinkedBlockingQueue<>();
-		Queue<Map.Entry<String, Boolean>> events2 = new LinkedBlockingQueue<>();
+		Queue<Map.Entry<String, Listener.Observation>> events1 = new LinkedBlockingQueue<>();
+		Queue<Map.Entry<String, Listener.Observation>> events2 = new LinkedBlockingQueue<>();
 		Object listener1 = new InvalidationEventCollector(events1);
 		Object listener2 = new InvalidationEventCollector(events2);
 		String key = "compute";
@@ -378,8 +378,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -409,8 +409,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(1);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -425,8 +425,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(2);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -440,8 +440,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				assertThat(events2.poll()).isNull();
 				tm2.commit();
 			}
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isNull();
@@ -457,8 +457,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm2.commit();
 			}
 			if (tm1 == null) {
-				assertThat(events1.poll()).isEqualTo(Map.entry(key, true));
-				assertThat(events1.poll()).isEqualTo(Map.entry(key, false));
+				assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+				assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			}
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isNull();
@@ -475,8 +475,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm2.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 
 			assertThat(cache1.containsKey(key)).isFalse();
@@ -492,8 +492,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 		TransactionManager tm2 = cache2.getAdvancedCache().getTransactionManager();
 		Cache<String, Integer> skipLoadCache1 = cache1.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
 		Cache<String, Integer> skipLoadCache2 = cache2.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);
-		Queue<Map.Entry<String, Boolean>> events1 = new LinkedBlockingQueue<>();
-		Queue<Map.Entry<String, Boolean>> events2 = new LinkedBlockingQueue<>();
+		Queue<Map.Entry<String, Listener.Observation>> events1 = new LinkedBlockingQueue<>();
+		Queue<Map.Entry<String, Listener.Observation>> events2 = new LinkedBlockingQueue<>();
 		Object listener1 = new InvalidationEventCollector(events1);
 		Object listener2 = new InvalidationEventCollector(events2);
 		String key = "compute-ignore";
@@ -512,8 +512,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(0);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -543,8 +543,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(1);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -559,8 +559,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm1.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isEqualTo(2);
 			assertThat(skipLoadCache2.get(key)).isNull();
@@ -574,8 +574,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				assertThat(events2.poll()).isNull();
 				tm2.commit();
 			}
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events1.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isNull();
 			assertThat(skipLoadCache1.get(key)).isNull();
@@ -591,8 +591,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm2.commit();
 			}
 			if (tm1 == null) {
-				assertThat(events1.poll()).isEqualTo(Map.entry(key, true));
-				assertThat(events1.poll()).isEqualTo(Map.entry(key, false));
+				assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+				assertThat(events1.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			}
 			assertThat(events1.poll()).isNull();
 			assertThat(events2.poll()).isNull();
@@ -609,8 +609,8 @@ public class InvalidationCacheITCase extends SoftAssertions {
 				tm2.commit();
 			}
 			assertThat(events1.poll()).isNull();
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, true));
-			assertThat(events2.poll()).isEqualTo(Map.entry(key, false));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.PRE));
+			assertThat(events2.poll()).isEqualTo(Map.entry(key, Listener.Observation.POST));
 			assertThat(events2.poll()).isNull();
 
 			assertThat(cache1.containsKey(key)).isFalse();
@@ -623,15 +623,15 @@ public class InvalidationCacheITCase extends SoftAssertions {
 
 	@Listener
 	public class InvalidationEventCollector {
-		private final Collection<Map.Entry<String, Boolean>> events;
+		private final Collection<Map.Entry<String, Listener.Observation>> events;
 
-		InvalidationEventCollector(Collection<Map.Entry<String, Boolean>> events) {
+		InvalidationEventCollector(Collection<Map.Entry<String, Listener.Observation>> events) {
 			this.events = events;
 		}
 
 		@CacheEntryInvalidated
 		public void invalidated(CacheEntryInvalidatedEvent<String, Integer> event) {
-			this.events.add(Map.entry(event.getKey(), event.isPre()));
+			this.events.add(Map.entry(event.getKey(), event.isPre() ? Listener.Observation.PRE : Listener.Observation.POST));
 		}
 	}
 }
