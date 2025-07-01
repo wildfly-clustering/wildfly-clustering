@@ -109,6 +109,7 @@ public class InvalidationCache<K, V> extends AbstractAdvancedCache<K, V> impleme
 
 	@Override
 	public V remove(Object key) {
+		// Even if we ignore return values, Infinispan neglects to delete from the store if entry does not exist locally
 		if (this.flags.contains(Flag.SKIP_CACHE_LOAD)) return super.remove(key);
 		@SuppressWarnings("unchecked")
 		K typedKey = (K) key;
@@ -118,7 +119,7 @@ public class InvalidationCache<K, V> extends AbstractAdvancedCache<K, V> impleme
 
 	@Override
 	public V replace(K key, V newValue, Metadata metadata) {
-		if (this.flags.contains(Flag.IGNORE_RETURN_VALUES) || this.flags.contains(Flag.SKIP_CACHE_LOAD)) return super.put(key, newValue, metadata);
+		if (this.flags.contains(Flag.SKIP_CACHE_LOAD)) return super.put(key, newValue, metadata);
 		V oldValue = this.lockOnReadCache().get(key);
 		return (oldValue != null) ? (this.update(key, oldValue, newValue, metadata) ? oldValue : this.replace(key, newValue, metadata)) : oldValue;
 	}
@@ -179,6 +180,7 @@ public class InvalidationCache<K, V> extends AbstractAdvancedCache<K, V> impleme
 
 	@Override
 	public CompletableFuture<V> removeAsync(Object key) {
+		// Even if we ignore return values, Infinispan neglects to delete from the store if entry does not exist locally
 		if (this.flags.contains(Flag.SKIP_CACHE_LOAD)) return super.removeAsync(key);
 		@SuppressWarnings("unchecked")
 		K typedKey = (K) key;
