@@ -48,8 +48,21 @@ public class PredicateTestCase {
 		doReturn(true).when(predicate).test(mapped);
 
 		assertThat(predicate.compose(composer).test(value)).isTrue();
+	}
 
-		verify(predicate, never()).test(value);
+	@Test
+	public void composeBinary() {
+		Predicate<Object> predicate = mock(Predicate.class);
+		BiFunction<Object, Object, Object> composer = mock(BiFunction.class);
+		Object value1 = new Object();
+		Object value2 = new Object();
+		Object mapped = new Object();
+
+		doCallRealMethod().when(predicate).compose(ArgumentMatchers.<BiFunction<Object, Object, Object>>any());
+		doReturn(mapped).when(composer).apply(value1, value2);
+		doReturn(true).when(predicate).test(mapped);
+
+		assertThat(predicate.compose(composer).test(value1, value2)).isTrue();
 	}
 
 	@Test

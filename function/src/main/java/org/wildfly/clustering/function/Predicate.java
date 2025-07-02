@@ -54,6 +54,22 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	}
 
 	/**
+	 * Composes a predicate that applies the specified mapping to its argument before evaluating.
+	 * @param <V1> the former parameter type
+	 * @param <V2> the latter parameter type
+	 * @param mapper the mapping function to apply to the parameter to this function
+	 * @return a composed predicate that applies the specified mapping to its argument before evaluating.
+	 */
+	default <V1, V2> BiPredicate<V1, V2> compose(BiFunction<V1, V2, T> mapper) {
+		return new BiPredicate<>() {
+			@Override
+			public boolean test(V1 test1, V2 test2) {
+				return Predicate.this.test(mapper.apply(test1, test2));
+			}
+		};
+	}
+
+	/**
 	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
 	 * @param mapper
 	 * @return a mapped predicate

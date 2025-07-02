@@ -35,7 +35,7 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	 * @param mapper2 a mapping function for the latter parameter
 	 * @return a mapped consumer
 	 */
-	default <V1, V2> BiConsumer<V1, V2> compose(Function<V1, T> mapper1, Function<V2, U> mapper2) {
+	default <V1, V2> BiConsumer<V1, V2> compose(java.util.function.Function<? super V1, T> mapper1, java.util.function.Function<? super V2, U> mapper2) {
 		return new BiConsumer<>() {
 			@Override
 			public void accept(V1 value1, V2 value2) {

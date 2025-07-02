@@ -35,6 +35,22 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 		};
 	}
 
+	/**
+	 * Composes a binary function that invokes this function using result of the specified binary function.
+	 * @param <V1> the former parameter type
+	 * @param <V2> the latter parameter type
+	 * @param mapper a mapping function
+	 * @return a binary function that invokes this function using result of the specified binary function.
+	 */
+	default <V1, V2> BiFunction<V1, V2, R> compose(BiFunction<V1, V2, T> mapper) {
+		return new BiFunction<>() {
+			@Override
+			public R apply(V1 value1, V2 value2) {
+				return Function.this.apply(mapper.apply(value1, value2));
+			}
+		};
+	}
+
 	@Override
 	default <V> Function<T, V> andThen(java.util.function.Function<? super R, ? extends V> after) {
 		return new Function<>() {
