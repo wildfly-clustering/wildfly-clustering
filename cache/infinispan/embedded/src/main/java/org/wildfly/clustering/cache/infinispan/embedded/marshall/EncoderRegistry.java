@@ -5,12 +5,17 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.marshall;
 
+import static org.infinispan.util.logging.Log.CONTAINER;
+
+import java.util.Set;
+
 import org.infinispan.commons.dataconversion.ByteArrayWrapper;
 import org.infinispan.commons.dataconversion.Encoder;
 import org.infinispan.commons.dataconversion.EncoderIds;
 import org.infinispan.commons.dataconversion.IdentityEncoder;
 import org.infinispan.commons.dataconversion.IdentityWrapper;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.dataconversion.Transcoder;
 import org.infinispan.commons.dataconversion.UTF8Encoder;
 import org.infinispan.commons.dataconversion.Wrapper;
 import org.infinispan.commons.dataconversion.WrapperIds;
@@ -22,18 +27,27 @@ import org.infinispan.encoding.DataConversion;
  */
 public interface EncoderRegistry extends org.infinispan.marshall.core.EncoderRegistry {
 
+	void unregisterTranscoder(MediaType type);
+
+	@Override
+	default Object convert(Object object, MediaType fromType, MediaType toType) {
+		if (object == null) return null;
+		Transcoder transcoder = this.getTranscoder(fromType, toType);
+		if (transcoder == null) {
+			throw CONTAINER.cannotFindTranscoder(fromType, toType);
+		}
+		return transcoder.transcode(object, fromType, toType);
+	}
+
 	@Deprecated(forRemoval = true, since = "11.0")
 	@Override
 	default Encoder getEncoder(Class<? extends Encoder> encoderClass, short encoderId) {
-		switch (encoderId) {
-			case EncoderIds.NO_ENCODER:
-			case EncoderIds.IDENTITY:
-				return IdentityEncoder.INSTANCE;
-			case EncoderIds.UTF8:
-				return UTF8Encoder.INSTANCE;
-			default:
-				throw new IllegalArgumentException(Short.toString(encoderId));
-		}
+		return switch (encoderId) {
+			case EncoderIds.IDENTITY -> IdentityEncoder.INSTANCE;
+			case EncoderIds.UTF8 -> UTF8Encoder.INSTANCE;
+			case EncoderIds.NO_ENCODER -> (encoderClass != null) ? Set.of(IdentityEncoder.INSTANCE, UTF8Encoder.INSTANCE).stream().filter(encoder -> encoder.getClass().equals(encoderClass)).findFirst().orElseThrow(() -> new IllegalArgumentException(encoderClass.getName())) : null;
+			default -> throw new IllegalArgumentException(Short.toString(encoderId));
+		};
 	}
 
 	@Deprecated(forRemoval = true, since = "11.0")
@@ -45,15 +59,12 @@ public interface EncoderRegistry extends org.infinispan.marshall.core.EncoderReg
 	@Deprecated(forRemoval = true, since = "11.0")
 	@Override
 	default Wrapper getWrapper(Class<? extends Wrapper> wrapperClass, byte wrapperId) {
-		switch (wrapperId) {
-			case WrapperIds.NO_WRAPPER:
-			case WrapperIds.IDENTITY_WRAPPER:
-				return IdentityWrapper.INSTANCE;
-			case WrapperIds.BYTE_ARRAY_WRAPPER:
-				return ByteArrayWrapper.INSTANCE;
-			default:
-				throw new IllegalArgumentException(Short.toString(wrapperId));
-		}
+		return switch (wrapperId) {
+			case WrapperIds.IDENTITY_WRAPPER -> IdentityWrapper.INSTANCE;
+			case WrapperIds.BYTE_ARRAY_WRAPPER -> ByteArrayWrapper.INSTANCE;
+			case WrapperIds.NO_WRAPPER -> (wrapperClass != null) ? Set.of(IdentityWrapper.INSTANCE, ByteArrayWrapper.INSTANCE).stream().filter(wrapper -> wrapper.getClass().equals(wrapperClass)).findFirst().orElseThrow(() -> new IllegalArgumentException(wrapperClass.getName())) : null;
+			default -> throw new IllegalArgumentException(Byte.toString(wrapperId));
+		};
 	}
 
 	/**
@@ -73,6 +84,4 @@ public interface EncoderRegistry extends org.infinispan.marshall.core.EncoderReg
 	default void registerWrapper(Wrapper wrapper) {
 		throw new UnsupportedOperationException();
 	}
-
-	void unregisterTranscoder(MediaType type);
 }
