@@ -35,17 +35,16 @@ public class PeriodMarshaller implements ProtoStreamMarshaller<Period> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case YEARS_INDEX:
+				case YEARS_INDEX -> {
 					period = period.withYears(reader.readSInt32());
-					break;
-				case MONTHS_INDEX:
+				}
+				case MONTHS_INDEX -> {
 					period = period.withMonths(reader.readSInt32());
-					break;
-				case DAYS_INDEX:
+				}
+				case DAYS_INDEX -> {
 					period = period.withDays(reader.readSInt32());
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return period;

@@ -34,14 +34,13 @@ public class SessionAttributeMapEntryMarshaller implements ProtoStreamMarshaller
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case NAME_INDEX:
+				case NAME_INDEX -> {
 					name = reader.readString();
-					break;
-				case VALUE_INDEX:
+				}
+				case VALUE_INDEX -> {
 					value = reader.readObject(ByteBufferMarshalledValue.class);
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new SessionAttributeMapEntry<>(name, value);

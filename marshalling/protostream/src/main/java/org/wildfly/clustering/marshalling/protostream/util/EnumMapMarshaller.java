@@ -40,14 +40,13 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case CLASS_INDEX:
+				case CLASS_INDEX -> {
 					enumClass = reader.readObject(Class.class);
-					break;
-				case ELEMENT_INDEX:
+				}
+				case ELEMENT_INDEX -> {
 					elements.add(reader.readAny());
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		EnumMap<E, Object> map = new EnumMap<>(enumClass);

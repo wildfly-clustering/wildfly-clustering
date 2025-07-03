@@ -32,12 +32,11 @@ public class SessionAttributeMapComputeFunctionMarshaller implements ProtoStream
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ENTRY_INDEX:
+				case ENTRY_INDEX -> {
 					Map.Entry<String, Object> entry = reader.readObject(SessionAttributeMapEntry.class);
 					map.put(entry.getKey(), entry.getValue());
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new SessionAttributeMapComputeFunction<>(map);

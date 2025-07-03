@@ -27,11 +27,10 @@ public enum ByteBufferMarshalledValueMarshaller implements ProtoStreamMarshaller
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case BUFFER_INDEX:
+				case BUFFER_INDEX -> {
 					buffer = reader.readByteBuffer();
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new ByteBufferMarshalledValue<>(buffer);

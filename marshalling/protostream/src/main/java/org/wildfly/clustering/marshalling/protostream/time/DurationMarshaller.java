@@ -12,6 +12,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -50,38 +52,44 @@ public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
 
 	@Override
 	public Duration readFrom(ProtoStreamReader reader, int index, WireType type, Duration duration) throws IOException {
-		switch (index) {
-			case POSITIVE_SECONDS_INDEX:
-				long seconds = reader.readUInt64();
-				if (duration.isZero()) {
-					for (ChronoUnit unit : SUPER_SECOND_UNITS) {
-						Duration unitDuration = unit.getDuration();
-						if (unitDuration.getSeconds() == seconds) {
-							return unitDuration;
-						}
-					}
+		return switch (index) {
+			case POSITIVE_SECONDS_INDEX -> this.withSeconds(duration, reader.readUInt64());
+			case NEGATIVE_SECONDS_INDEX -> duration.withSeconds(0 - reader.readUInt64());
+			case MILLIS_INDEX -> this.withMillis(duration, reader.readUInt32());
+			case NANOS_INDEX -> this.withNanos(duration, reader.readUInt32());
+			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(duration)).get();
+		};
+	}
+
+	private Duration withSeconds(Duration duration, long seconds) {
+		if (duration.isZero()) {
+			// Use standard Duration, if possible
+			for (ChronoUnit unit : SUPER_SECOND_UNITS) {
+				Duration unitDuration = unit.getDuration();
+				if (unitDuration.getSeconds() == seconds) {
+					return unitDuration;
 				}
-				return duration.withSeconds(seconds);
-			case NEGATIVE_SECONDS_INDEX:
-				return duration.withSeconds(0 - reader.readUInt64());
-			case MILLIS_INDEX:
-				int millis = reader.readUInt32();
-				return (duration.isZero() && (millis == 1)) ? ChronoUnit.MILLIS.getDuration() : duration.withNanos(millis * NANOS_PER_MILLI);
-			case NANOS_INDEX:
-				int nanos = reader.readUInt32();
-				if (duration.isZero()) {
-					for (ChronoUnit unit : SUB_MILLSECOND_UNITS) {
-						Duration unitDuration = unit.getDuration();
-						if (unitDuration.getNano() == nanos) {
-							return unitDuration;
-						}
-					}
-				}
-				return duration.withNanos(nanos);
-			default:
-				reader.skipField(type);
-				return duration;
+			}
 		}
+		return duration.withSeconds(seconds);
+	}
+
+	private Duration withMillis(Duration duration, int millis) {
+		// Use standard Duration, if possible
+		return (duration.isZero() && (millis == 1)) ? ChronoUnit.MILLIS.getDuration() : duration.withNanos(millis * NANOS_PER_MILLI);
+	}
+
+	private Duration withNanos(Duration duration, int nanos) {
+		if (duration.isZero()) {
+			// Use standard Duration, if possible
+			for (ChronoUnit unit : SUB_MILLSECOND_UNITS) {
+				Duration unitDuration = unit.getDuration();
+				if (unitDuration.getNano() == nanos) {
+					return unitDuration;
+				}
+			}
+		}
+		return duration.withNanos(nanos);
 	}
 
 	@Override

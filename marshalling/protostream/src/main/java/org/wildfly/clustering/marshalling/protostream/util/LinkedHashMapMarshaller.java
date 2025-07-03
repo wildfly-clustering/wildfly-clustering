@@ -68,14 +68,13 @@ public class LinkedHashMapMarshaller<K, V> extends AbstractMapMarshaller<K, V, L
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case ENTRY_INDEX:
+				case ENTRY_INDEX -> {
 					entries.add(reader.readObject(AbstractMap.SimpleEntry.class));
-					break;
-				case ACCESS_ORDER_INDEX:
+				}
+				case ACCESS_ORDER_INDEX -> {
 					accessOrder = reader.readBool();
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		LinkedHashMap<K, V> map = new LinkedHashMap<>(16, 0.75f, accessOrder);

@@ -39,14 +39,13 @@ public class SimpleExpirationMetaDataMarshaller implements ProtoStreamMarshaller
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case TIMEOUT_INDEX:
+				case TIMEOUT_INDEX -> {
 					timeout = reader.readObject(Duration.class);
-					break;
-				case LAST_ACCESS_TIME_INDEX:
+				}
+				case LAST_ACCESS_TIME_INDEX -> {
 					lastAccessTime = reader.readObject(Instant.class);
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new SimpleExpirationMetaData(timeout, lastAccessTime);

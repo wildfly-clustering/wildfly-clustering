@@ -33,14 +33,13 @@ public class DefaultSessionAccessMetaDataEntryMarshaller implements ProtoStreamM
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case SINCE_CREATION_INDEX:
+				case SINCE_CREATION_INDEX -> {
 					sinceCreation = reader.readObject(Duration.class);
-					break;
-				case LAST_ACCESS_INDEX:
+				}
+				case LAST_ACCESS_INDEX -> {
 					lastAccess = reader.readObject(Duration.class);
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		DefaultSessionAccessMetaDataEntry metaData = new DefaultSessionAccessMetaDataEntry();

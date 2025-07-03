@@ -31,18 +31,10 @@ public class PersonMarshaller implements ProtoStreamMarshaller<Person> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case NAME_INDEX:
-					person.setName(reader.readString());
-					break;
-				case PARENT_INDEX:
-					Person parent = reader.readAny(Person.class);
-					parent.addChild(person);
-					break;
-				case CHILD_INDEX:
-					person.addChild(reader.readAny(Person.class));
-					break;
-				default:
-					reader.skipField(tag);
+				case NAME_INDEX -> person.setName(reader.readString());
+				case PARENT_INDEX -> reader.readAny(Person.class).addChild(person);
+				case CHILD_INDEX -> person.addChild(reader.readAny(Person.class));
+				default -> reader.skipField(tag);
 			}
 		}
 		return person;

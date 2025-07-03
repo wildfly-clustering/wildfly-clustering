@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.time.Year;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -39,15 +41,11 @@ public enum YearMarshaller implements FieldSetMarshaller.Simple<Year> {
 
 	@Override
 	public Year readFrom(ProtoStreamReader reader, int index, WireType type, Year year) throws IOException {
-		switch (index) {
-			case POST_EPOCH_YEAR:
-				return Year.of(EPOCH.getValue() + reader.readUInt32());
-			case PRE_EPOCH_YEAR:
-				return Year.of(EPOCH.getValue() - reader.readUInt32());
-			default:
-				reader.skipField(type);
-				return year;
-		}
+		return switch (index) {
+			case POST_EPOCH_YEAR -> Year.of(EPOCH.getValue() + reader.readUInt32());
+			case PRE_EPOCH_YEAR -> Year.of(EPOCH.getValue() - reader.readUInt32());
+			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(year)).get();
+		};
 	}
 
 	@Override

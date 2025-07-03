@@ -52,12 +52,11 @@ public class StringKeyMapMarshaller<V, T extends Map<String, V>> implements Prot
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case ENTRY_INDEX:
+				case ENTRY_INDEX -> {
 					Map.Entry<String, V> entry = reader.readObject(StringKeyMapEntry.class);
 					this.accumulator.accept(map, entry);
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return map;

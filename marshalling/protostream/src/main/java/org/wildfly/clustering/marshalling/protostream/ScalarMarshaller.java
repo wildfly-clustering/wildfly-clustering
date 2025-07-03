@@ -116,11 +116,10 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 				while (!reader.isAtEnd()) {
 					int tag = reader.readTag();
 					switch (WireType.getTagFieldNumber(tag)) {
-						case 1:
+						case 1 -> {
 							value = wrapper.apply(marshaller.readFrom(reader));
-							break;
-						default:
-							reader.skipField(tag);
+						}
+						default -> reader.skipField(tag);
 					}
 				}
 				return value;

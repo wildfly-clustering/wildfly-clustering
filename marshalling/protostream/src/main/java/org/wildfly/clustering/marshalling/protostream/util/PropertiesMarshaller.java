@@ -32,12 +32,11 @@ public class PropertiesMarshaller implements ProtoStreamMarshaller<Properties> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case PROPERTY_INDEX:
+				case PROPERTY_INDEX -> {
 					Map.Entry<String, String> entry = reader.readObject(Property.class);
 					properties.setProperty(entry.getKey(), entry.getValue());
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return properties;

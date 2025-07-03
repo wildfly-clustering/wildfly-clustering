@@ -49,11 +49,10 @@ public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protost
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ORDINAL_INDEX:
+				case ORDINAL_INDEX -> {
 					result = reader.readEnum(this.enumClass);
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return result;

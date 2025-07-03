@@ -34,12 +34,11 @@ public class MapComputeFunctionMarshaller implements ProtoStreamMarshaller<MapCo
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ENTRY_INDEX:
+				case ENTRY_INDEX -> {
 					Map.Entry<Object, Object> entry = reader.readObject(SimpleEntry.class);
 					map.put(entry.getKey(), entry.getValue());
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new MapComputeFunction<>(map);

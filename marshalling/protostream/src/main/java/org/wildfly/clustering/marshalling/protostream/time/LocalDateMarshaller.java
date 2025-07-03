@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -38,15 +40,11 @@ public enum LocalDateMarshaller implements FieldSetMarshaller.Simple<LocalDate> 
 
 	@Override
 	public LocalDate readFrom(ProtoStreamReader reader, int index, WireType type, LocalDate date) throws IOException {
-		switch (index) {
-			case POST_EPOCH_DAY:
-				return LocalDate.ofEpochDay(reader.readUInt64());
-			case PRE_EPOCH_DAY:
-				return LocalDate.ofEpochDay(0L - reader.readUInt64());
-			default:
-				reader.skipField(type);
-				return date;
-		}
+		return switch (index) {
+			case POST_EPOCH_DAY -> LocalDate.ofEpochDay(reader.readUInt64());
+			case PRE_EPOCH_DAY -> LocalDate.ofEpochDay(0L - reader.readUInt64());
+			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(date)).get();
+		};
 	}
 
 	@Override

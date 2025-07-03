@@ -33,14 +33,13 @@ public class MathContextMarshaller implements ProtoStreamMarshaller<MathContext>
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case PRECISION_INDEX:
+				case PRECISION_INDEX -> {
 					precision = reader.readUInt32();
-					break;
-				case ROUNDING_MODE_INDEX:
+				}
+				case ROUNDING_MODE_INDEX -> {
 					mode = reader.readEnum(RoundingMode.class);
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new MathContext(precision, mode);

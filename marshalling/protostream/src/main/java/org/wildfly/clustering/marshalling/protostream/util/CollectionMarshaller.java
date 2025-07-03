@@ -35,12 +35,11 @@ public class CollectionMarshaller<E, T extends Collection<E>> extends AbstractCo
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case ELEMENT_INDEX:
+				case ELEMENT_INDEX -> {
 					@SuppressWarnings("unchecked") E element = (E) reader.readAny();
 					collection.add(element);
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return collection;

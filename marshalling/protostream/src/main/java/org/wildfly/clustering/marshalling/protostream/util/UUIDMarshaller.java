@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -38,15 +40,11 @@ public enum UUIDMarshaller implements FieldSetMarshaller.Supplied<UUID, UUIDBuil
 
 	@Override
 	public UUIDBuilder readFrom(ProtoStreamReader reader, int index, WireType type, UUIDBuilder builder) throws IOException {
-		switch (index) {
-			case MOST_SIGNIFICANT_BITS_INDEX:
-				return builder.setMostSignificantBits(reader.readSFixed64());
-			case LEAST_SIGNIFICANT_BITS_INDEX:
-				return builder.setLeastSignificantBits(reader.readSFixed64());
-			default:
-				reader.skipField(type);
-				return builder;
-		}
+		return switch (index) {
+			case MOST_SIGNIFICANT_BITS_INDEX -> builder.setMostSignificantBits(reader.readSFixed64());
+			case LEAST_SIGNIFICANT_BITS_INDEX -> builder.setLeastSignificantBits(reader.readSFixed64());
+			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(builder)).get();
+		};
 	}
 
 	@Override

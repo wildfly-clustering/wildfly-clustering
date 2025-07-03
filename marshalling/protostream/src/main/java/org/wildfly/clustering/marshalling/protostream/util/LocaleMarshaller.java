@@ -39,24 +39,23 @@ public class LocaleMarshaller implements ProtoStreamMarshaller<Locale> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case LANGUAGE_INDEX:
+				case LANGUAGE_INDEX -> {
 					language = reader.readString();
-					break;
-				case REGION_INDEX:
+				}
+				case REGION_INDEX -> {
 					region = reader.readString();
-					break;
-				case VARIANT_INDEX:
+				}
+				case VARIANT_INDEX -> {
 					variant = reader.readString();
-					break;
-				case SCRIPT_INDEX:
+				}
+				case SCRIPT_INDEX -> {
 					builder.setScript(reader.readString());
-					break;
-				case EXTENSION_INDEX:
+				}
+				case EXTENSION_INDEX -> {
 					String value = reader.readString();
 					builder.setExtension(value.charAt(0), value.substring(1));
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		try {
