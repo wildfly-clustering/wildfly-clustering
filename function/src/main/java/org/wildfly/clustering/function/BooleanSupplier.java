@@ -14,6 +14,30 @@ public interface BooleanSupplier extends java.util.function.BooleanSupplier {
 	BooleanSupplier FALSE = Boolean.FALSE::booleanValue;
 
 	/**
+	 * Returns an if/else supplier that delegates to the first specified supplier when this supplier evaluates to true, or the second specified supplier when this supplier evaluates to false.
+	 * @param <V> the mapped value type
+	 * @param whenTrue the mapped supplier when evaluating to true
+	 * @param whenFalse the mapped supplier when evaluating to false
+	 * @return an if/else supplier that delegates to the first specified supplier when this supplier evaluates to true, or the second specified supplier when this supplier evaluates to false.
+	 */
+	default <V> Supplier<V> map(java.util.function.Supplier<V> whenTrue, java.util.function.Supplier<V> whenFalse) {
+		return new Supplier<>() {
+			@Override
+			public V get() {
+				return (BooleanSupplier.this.getAsBoolean() ? whenTrue : whenFalse).get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a boxed version of this supplier.
+	 * @return a boxed version of this supplier.
+	 */
+	default Supplier<Boolean> boxed() {
+		return map(Supplier.of(Boolean.TRUE), Supplier.of(Boolean.FALSE));
+	}
+
+	/**
 	 * Returns a new supplier that delegates to this supplier using the specified exception handler.
 	 * @param handler an exception handler
 	 * @return a new supplier that delegates to this supplier using the specified exception handler.
@@ -38,36 +62,5 @@ public interface BooleanSupplier extends java.util.function.BooleanSupplier {
 	 */
 	static BooleanSupplier of(boolean value) {
 		return value ? TRUE : FALSE;
-	}
-
-	/**
-	 * Returns a boolean supplier that evaluates a predicate against a supplied value.
-	 * @param predicate a predicate use to evaluate the supplied value
-	 * @param supplier a supplier of the value to test
-	 * @return a boolean supplier that evaluates a predicate against a supplied value.
-	 */
-	static <T> BooleanSupplier of(Predicate<T> predicate, Supplier<T> supplier) {
-		return new BooleanSupplier() {
-			@Override
-			public boolean getAsBoolean() {
-				return predicate.test(supplier.get());
-			}
-		};
-	}
-
-	/**
-	 * Returns a boolean supplier that evaluates a predicate against a supplied value.
-	 * @param predicate a predicate used to evaluate the supplied values
-	 * @param formerSupplier a supplier of the former value to test
-	 * @param latterSupplier a supplier of the latter value to test
-	 * @return a boolean supplier that evaluates a predicate against a supplied value.
-	 */
-	static <T, U> BooleanSupplier of(BiPredicate<T, U> predicate, Supplier<T> formerSupplier, Supplier<U> latterSupplier) {
-		return new BooleanSupplier() {
-			@Override
-			public boolean getAsBoolean() {
-				return predicate.test(formerSupplier.get(), latterSupplier.get());
-			}
-		};
 	}
 }

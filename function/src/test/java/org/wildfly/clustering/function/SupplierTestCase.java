@@ -8,27 +8,52 @@ package org.wildfly.clustering.function;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Random;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
+
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 /**
  * Unit test for {@link Supplier}.
  * @author Paul Ferraro
  */
 public class SupplierTestCase {
+	private final Random random = new Random();
 
 	@Test
 	public void map() {
-		Object interrim = new Object();
+		Object value = new Object();
 		Object expected = new Object();
+		boolean expectedBoolean = this.random.nextBoolean();
+		double expectedDouble = this.random.nextDouble();
+		int expectedInt = this.random.nextInt();
+		long expectedLong = this.random.nextLong();
 		Supplier<Object> supplier = mock(Supplier.class);
-		doCallRealMethod().when(supplier).map(any());
-		doReturn(interrim).when(supplier).get();
+		doCallRealMethod().when(supplier).map(ArgumentMatchers.<Function<Object, Object>>any());
+		doCallRealMethod().when(supplier).map(ArgumentMatchers.<Predicate<Object>>any());
+		doCallRealMethod().when(supplier).map(ArgumentMatchers.<ToDoubleFunction<Object>>any());
+		doCallRealMethod().when(supplier).map(ArgumentMatchers.<ToIntFunction<Object>>any());
+		doCallRealMethod().when(supplier).map(ArgumentMatchers.<ToLongFunction<Object>>any());
+		doReturn(value).when(supplier).get();
 		Function<Object, Object> mapper = mock(Function.class);
-		doReturn(expected).when(mapper).apply(interrim);
+		Predicate<Object> predicate = mock(Predicate.class);
+		ToDoubleFunction<Object> doubleMapper = mock(ToDoubleFunction.class);
+		ToIntFunction<Object> intMapper = mock(ToIntFunction.class);
+		ToLongFunction<Object> longMapper = mock(ToLongFunction.class);
+		doReturn(expected).when(mapper).apply(value);
+		doReturn(expectedBoolean).when(predicate).test(value);
+		doReturn(expectedDouble).when(doubleMapper).applyAsDouble(value);
+		doReturn(expectedInt).when(intMapper).applyAsInt(value);
+		doReturn(expectedLong).when(longMapper).applyAsLong(value);
 
-		Object result = supplier.map(mapper).get();
-
-		assertThat(result).isSameAs(expected);
+		assertThat(supplier.map(mapper).get()).isSameAs(expected);
+		assertThat(supplier.map(predicate).getAsBoolean()).isEqualTo(expectedBoolean);
+		assertThat(supplier.map(doubleMapper).getAsDouble()).isEqualTo(expectedDouble);
+		assertThat(supplier.map(intMapper).getAsInt()).isEqualTo(expectedInt);
+		assertThat(supplier.map(longMapper).getAsLong()).isEqualTo(expectedLong);
 	}
 
 	@Test

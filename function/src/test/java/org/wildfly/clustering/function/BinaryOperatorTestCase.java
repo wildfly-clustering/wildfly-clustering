@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -19,54 +18,27 @@ import org.junit.jupiter.api.Test;
  * Unit test for {@link BiFunction}.
  * @author Paul Ferraro
  */
-public class BiFunctionTestCase {
+public class BinaryOperatorTestCase {
 	private Object value1 = new Object();
 	private Object value2 = new Object();
 	private Object result = new Object();
 
 	@Test
 	public void test() {
-		assertThat(BiFunction.empty().apply(this.value1, this.value2)).isNull();
-		assertThat(BiFunction.of(this.result).apply(this.value1, this.value2)).isSameAs(this.result);
-		assertThat(BiFunction.of(null).apply(this.value1, this.value2)).isNull();
-		assertThat(BiFunction.former().apply(this.value1, this.value2)).isSameAs(this.value1);
-		assertThat(BiFunction.latter().apply(this.value1, this.value2)).isSameAs(this.value2);
-	}
-
-	@Test
-	public void of() {
-		BiFunction<Object, Object, Object> function = BiFunction.of(this.result);
-		Object result = function.apply(this.value1, this.value2);
-
-		assertThat(result).isSameAs(this.result);
-
-		function = BiFunction.of(null);
-		result = function.apply(this.value1, this.value2);
-
-		assertThat(result).isNull();
-	}
-
-	@Test
-	public void get() {
-		Supplier<Object> supplier = mock(Supplier.class);
-		doReturn(this.result).when(supplier).get();
-
-		BiFunction<Object, Object, Object> function = BiFunction.get(supplier);
-		Object result = function.apply(this.value1, this.value2);
-
-		assertThat(result).isSameAs(this.result);
-
-		function = BiFunction.get(null);
-		result = function.apply(this.value1, this.value2);
-
-		assertThat(result).isNull();
+		assertThat(BinaryOperator.empty().apply(this.value1, this.value2)).isNull();
+		assertThat(BinaryOperator.of(this.result).apply(this.value1, this.value2)).isSameAs(this.result);
+		assertThat(BinaryOperator.of(null).apply(this.value1, this.value2)).isNull();
+		assertThat(BinaryOperator.former().apply(this.value1, this.value2)).isSameAs(this.value1);
+		assertThat(BinaryOperator.latter().apply(this.value1, this.value2)).isSameAs(this.value2);
+		assertThat(BinaryOperator.get(() -> this.result).apply(this.value1, this.value2)).isSameAs(this.result);
+		assertThat(BinaryOperator.get(() -> null).apply(this.value1, this.value2)).isNull();
 	}
 
 	@Test
 	public void andThen() {
 		Object interrimResult = new Object();
-		BiFunction<Object, Object, Object> before = mock(BiFunction.class);
-		Function<Object, Object> after = mock(Function.class);
+		BinaryOperator<Object> before = mock(BinaryOperator.class);
+		UnaryOperator<Object> after = mock(UnaryOperator.class);
 		doCallRealMethod().when(before).andThen(any());
 		doReturn(interrimResult).when(before).apply(this.value1, this.value2);
 		doReturn(this.result).when(after).apply(interrimResult);
@@ -80,9 +52,9 @@ public class BiFunctionTestCase {
 	public void compose() {
 		Object interrimResult1 = new Object();
 		Object interrimResult2 = new Object();
-		BiFunction<Object, Object, Object> after = mock(BiFunction.class);
-		Function<Object, Object> before1 = mock(Function.class);
-		Function<Object, Object> before2 = mock(Function.class);
+		BinaryOperator<Object> after = mock(BinaryOperator.class);
+		UnaryOperator<Object> before1 = mock(UnaryOperator.class);
+		UnaryOperator<Object> before2 = mock(UnaryOperator.class);
 		doCallRealMethod().when(after).compose(any(), any());
 		doReturn(interrimResult1).when(before1).apply(this.value1);
 		doReturn(interrimResult2).when(before2).apply(this.value2);

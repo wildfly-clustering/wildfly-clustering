@@ -112,16 +112,6 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	}
 
 	@Override
-	default Predicate<T> and(java.util.function.Predicate<? super T> other) {
-		return new Predicate<>() {
-			@Override
-			public boolean test(T test) {
-				return Predicate.this.test(test) && other.test(test);
-			}
-		};
-	}
-
-	@Override
 	default Predicate<T> negate() {
 		return new Predicate<>() {
 			@Override
@@ -132,11 +122,30 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	}
 
 	@Override
+	default Predicate<T> and(java.util.function.Predicate<? super T> other) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T test) {
+				return Predicate.this.test(test) && other.test(test);
+			}
+		};
+	}
+
+	@Override
 	default Predicate<T> or(java.util.function.Predicate<? super T> other) {
 		return new Predicate<>() {
 			@Override
 			public boolean test(T test) {
 				return Predicate.this.test(test) || other.test(test);
+			}
+		};
+	}
+
+	default Predicate<T> xor(java.util.function.Predicate<? super T> other) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T test) {
+				return Predicate.this.test(test) ^ other.test(test);
 			}
 		};
 	}
