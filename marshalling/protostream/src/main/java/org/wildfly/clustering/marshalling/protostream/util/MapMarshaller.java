@@ -37,12 +37,11 @@ public class MapMarshaller<K, V, T extends Map<K, V>> extends AbstractMapMarshal
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case ENTRY_INDEX:
+				case ENTRY_INDEX -> {
 					Map.Entry<K, V> entry = reader.readObject(AbstractMap.SimpleEntry.class);
 					map.put(entry.getKey(), entry.getValue());
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return map;

@@ -40,17 +40,10 @@ public class SessionMetaDataEntryFunctionMarshaller implements ProtoStreamMarsha
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case TIMEOUT_OFFSET_INDEX:
-					timeoutOffset.setPlain(reader.readObject(timeoutOffset.getPlain().getClass()));
-					break;
-				case LAST_ACCESS_START_TIME_OFFSET_INDEX:
-					lastAccessStartTimeOffset.setPlain(reader.readObject(lastAccessStartTimeOffset.getPlain().getClass()));
-					break;
-				case LAST_ACCESS_END_TIME_OFFSET_INDEX:
-					lastAccessEndTimeOffset.setPlain(reader.readObject(lastAccessEndTimeOffset.getPlain().getClass()));
-					break;
-				default:
-					reader.skipField(tag);
+				case TIMEOUT_OFFSET_INDEX -> timeoutOffset.setPlain(reader.readObject(timeoutOffset.getPlain().getClass()));
+				case LAST_ACCESS_START_TIME_OFFSET_INDEX -> lastAccessStartTimeOffset.setPlain(reader.readObject(lastAccessStartTimeOffset.getPlain().getClass()));
+				case LAST_ACCESS_END_TIME_OFFSET_INDEX -> lastAccessEndTimeOffset.setPlain(reader.readObject(lastAccessEndTimeOffset.getPlain().getClass()));
+				default -> reader.skipField(tag);
 			}
 		}
 		return new SessionMetaDataEntryFunction<>(new SessionMetaDataEntryOffsets() {

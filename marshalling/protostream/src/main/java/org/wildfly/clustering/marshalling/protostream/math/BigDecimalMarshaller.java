@@ -32,14 +32,13 @@ public class BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case UNSCALED_VALUE_INDEX:
+				case UNSCALED_VALUE_INDEX -> {
 					unscaledValue = new BigInteger(reader.readByteArray());
-					break;
-				case SCALE_INDEX:
+				}
+				case SCALE_INDEX -> {
 					scale = reader.readSInt32();
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new BigDecimal(unscaledValue, scale);

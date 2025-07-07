@@ -9,9 +9,9 @@ import static org.infinispan.commons.logging.Log.CONTAINER;
 
 import java.io.IOException;
 
-import org.infinispan.commons.CacheException;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.dataconversion.OneToManyTranscoder;
+import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.Util;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueFactory;
@@ -24,30 +24,44 @@ import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 public class MarshalledValueTranscoder<C> extends OneToManyTranscoder {
 
 	private final MarshalledValueFactory<C> factory;
-	private final MediaType type;
+	private final Marshaller marshaller;
 
-	public MarshalledValueTranscoder(MediaType type, MarshalledValueFactory<C> factory) {
-		super(type, MediaType.APPLICATION_OBJECT);
-		this.type = type;
+	public MarshalledValueTranscoder(MediaType type, MarshalledValueFactory<C> factory, Marshaller marshaller) {
+		super(type, MediaType.APPLICATION_OBJECT, MediaType.APPLICATION_OCTET_STREAM);
 		this.factory = factory;
+		this.marshaller = marshaller;
 	}
 
 	@Override
 	protected Object doTranscode(Object content, MediaType contentType, MediaType destinationType) {
-		if (this.type.match(destinationType)) {
-			if (this.type.match(contentType)) {
-				return content;
+		if (contentType.match(destinationType)) {
+			return content;
+		}
+		if (contentType.match(this.mainType)) {
+			MarshalledValue<Object, C> value = this.factory.createMarshalledValue(content);
+			if (destinationType.match(MediaType.APPLICATION_OBJECT)) {
+				return value;
 			}
-			@SuppressWarnings("unchecked")
-			MarshalledValue<Object, C> value = (MarshalledValue<Object, C>) content;
-			try {
-				return value.get(this.factory.getMarshallingContext());
-			} catch (IOException e) {
-				throw new CacheException(e);
+			if (destinationType.match(MediaType.APPLICATION_OCTET_STREAM)) {
+				try {
+					return this.marshaller.objectToByteBuffer(value);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					throw CONTAINER.errorTranscoding(Util.toStr(content), contentType, destinationType, e);
+				} catch (IOException e) {
+					throw CONTAINER.errorTranscoding(Util.toStr(content), contentType, destinationType, e);
+				}
 			}
 		}
-		if (destinationType.match(MediaType.APPLICATION_OBJECT)) {
-			return this.factory.createMarshalledValue(content);
+		if (destinationType.match(this.mainType) && (contentType.match(MediaType.APPLICATION_OCTET_STREAM) || contentType.match(MediaType.APPLICATION_OCTET_STREAM))) {
+			try {
+				Object object = contentType.match(MediaType.APPLICATION_OCTET_STREAM) ? this.marshaller.objectFromByteBuffer((byte[]) content) : content;
+				@SuppressWarnings("unchecked")
+				MarshalledValue<Object, C> value = (MarshalledValue<Object, C>) object;
+				return value.get(this.factory.getMarshallingContext());
+			} catch (IOException | ClassNotFoundException e) {
+				throw CONTAINER.errorTranscoding(Util.toStr(content), contentType, destinationType, e);
+			}
 		}
 		throw CONTAINER.unsupportedConversion(Util.toStr(content), contentType, destinationType);
 	}

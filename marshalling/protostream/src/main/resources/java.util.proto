@@ -46,22 +46,22 @@ message EmptySet {
  * @TypeId(15)
  */
 message SingletonList {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
 }
 
 /**
  * @TypeId(16)
  */
 message SingletonMap {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
+	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	= 2;
 }
 
 /**
  * @TypeId(17)
  */
 message SingletonSet {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	= 1;
 }
 
 // Synchronized collections
@@ -70,51 +70,51 @@ message SingletonSet {
  * @TypeId(20)
  */
 message SynchronizedCollection {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 /**
  * @TypeId(21)
  */
 message SynchronizedList {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 /**
  * @TypeId(22)
  */
 message SynchronizedMap {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 message SynchronizedNavigableMap {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 message SynchronizedNavigableSet {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 /**
  * @TypeId(23)
  */
 message SynchronizedRandomAccessList {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 /**
  * @TypeId(24)
  */
 message SynchronizedSet {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 message SynchronizedSortedMap {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 message SynchronizedSortedSet {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	value	 = 1;
 }
 
 // Unmodifiable collections
@@ -123,51 +123,51 @@ message SynchronizedSortedSet {
  * @TypeId(25)
  */
 message UnmodifiableCollection {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 /**
  * @TypeId(26)
  */
 message UnmodifiableList {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 /**
  * @TypeId(27)
  */
 message UnmodifiableMap {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 message UnmodifiableNavigableMap {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 message UnmodifiableNavigableSet {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 /**
  * @TypeId(28)
  */
 message UnmodifiableRandomAccessList {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 /**
  * @TypeId(29)
  */
 message UnmodifiableSet {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 message UnmodifiableSortedMap {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 message UnmodifiableSortedSet {
-	optional	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	collection	 = 1;
 }
 
 // Collections
@@ -190,36 +190,36 @@ message ArrayList {
  * @TypeId(32)
  */
 message BitSet {
-	optional	bytes	value	= 1;
+	bytes	value	= 1;
 }
 
 /**
  * @TypeId(33)
  */
 message Calendar {
-	optional	string	type	= 1;
-	optional	Date	time	= 2;
-	optional	bool	lenient	= 3;
-	optional	string	zone	= 4;
-	optional	uint32	firstDayOfWeek	= 5;
-	optional	uint32	minDaysInFirstWeek	= 6;
+	string	type	= 1;
+	Date	time	= 2;
+	bool	lenient	= 3;
+	string	zone	= 4;
+	uint32	firstDayOfWeek	= 5;
+	uint32	minDaysInFirstWeek	= 6;
 }
 
 /**
  * @TypeId(34)
  */
 message Currency {
-	optional	string	value	= 1;
+	string	value	= 1;
 }
 
 /**
  * @TypeId(35)
  */
 message Date {
-	optional	uint64	postEpochSeconds	= 1;
-	optional	uint64	preEpochSeconds	= 2;
-	optional	uint32	millisOfSecond	= 3;
-	optional	uint32	nanosOfSecond	= 4;
+	uint64	postEpochSeconds	= 1;
+	uint64	preEpochSeconds	= 2;
+	uint32	millisOfSecond	= 3;
+	uint32	nanosOfSecond	= 4;
 }
 
 /**
@@ -324,8 +324,8 @@ message TimeZone {
  */
 message TreeMap {
 	repeated	SimpleEntry	entry	= 1;
-	optional	bool	reverse	= 2;
-	optional	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 3;
+	bool	reverse	= 2;
+	org.wildfly.clustering.marshalling.protostream.Any	comparator	= 3;
 }
 
 /**

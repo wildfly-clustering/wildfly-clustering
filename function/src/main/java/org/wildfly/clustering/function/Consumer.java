@@ -25,7 +25,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	}
 
 	/**
-	 * Returns a mapped consumer, that invokes this consumer using result of the specified function.
+	 * Composes a consumer that invokes this consumer using result of the specified function.
 	 * @param <V> the mapped type
 	 * @param mapper a mapping function
 	 * @return a mapped consumer
@@ -35,6 +35,22 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 			@Override
 			public void accept(V value) {
 				Consumer.this.accept(mapper.apply(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a binary consumer that invokes this consumer using result of the specified binary function.
+	 * @param <V1> the former parameter type
+	 * @param <V2> the latter parameter type
+	 * @param mapper a mapping function
+	 * @return a binary consumer that invokes this consumer using result of the specified binary function.
+	 */
+	default <V1, V2> BiConsumer<V1, V2> compose(BiFunction<V1, V2, T> mapper) {
+		return new BiConsumer<>() {
+			@Override
+			public void accept(V1 value1, V2 value2) {
+				Consumer.this.accept(mapper.apply(value1, value2));
 			}
 		};
 	}

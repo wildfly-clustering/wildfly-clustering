@@ -11,6 +11,8 @@ import org.infinispan.protostream.descriptors.WireType;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -37,13 +39,10 @@ public enum AddressMarshaller implements FieldSetMarshaller.Simple<Address> {
 
 	@Override
 	public Address readFrom(ProtoStreamReader reader, int index, WireType type, Address address) throws IOException {
-		switch (index) {
-			case JGROUPS_ADDRESS_INDEX:
-				return reader.readObject(JGroupsAddress.class);
-			default:
-				reader.skipField(type);
-				return address;
-		}
+		return switch (index) {
+			case JGROUPS_ADDRESS_INDEX -> reader.readObject(JGroupsAddress.class);
+			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(address)).get();
+		};
 	}
 
 	@Override

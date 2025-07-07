@@ -35,33 +35,32 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case CLASS_NAME_INDEX:
+				case CLASS_NAME_INDEX -> {
 					className = reader.readString();
-					break;
-				case METHOD_NAME_INDEX:
+				}
+				case METHOD_NAME_INDEX -> {
 					methodName = reader.readString();
-					break;
-				case FILE_NAME_INDEX:
+				}
+				case FILE_NAME_INDEX -> {
 					fileName = reader.readString();
-					break;
-				case LINE_NUMBER_INDEX:
+				}
+				case LINE_NUMBER_INDEX -> {
 					line = reader.readUInt32();
 					if (line == 0) {
 						// Native method
 						line = -2;
 					}
-					break;
-				case CLASS_LOADER_NAME_INDEX:
+				}
+				case CLASS_LOADER_NAME_INDEX -> {
 					classLoaderName = reader.readString();
-					break;
-				case MODULE_NAME_INDEX:
+				}
+				case MODULE_NAME_INDEX -> {
 					moduleName = reader.readString();
-					break;
-				case MODULE_VERSION_INDEX:
+				}
+				case MODULE_VERSION_INDEX -> {
 					moduleVersion = reader.readString();
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new StackTraceElement(classLoaderName, moduleName, moduleVersion, className, methodName, fileName, line);

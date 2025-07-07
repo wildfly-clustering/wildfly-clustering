@@ -49,11 +49,8 @@ public class AddressSetFunctionMarshaller<F extends CollectionFunction<Address, 
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ELEMENT_INDEX:
-					operand.add(reader.readObject(JGroupsAddress.class));
-					break;
-				default:
-					reader.skipField(tag);
+				case ELEMENT_INDEX -> operand.add(reader.readObject(JGroupsAddress.class));
+				default -> reader.skipField(tag);
 			}
 		}
 		// If no element were read, use singleton LocalModeAddress collection.

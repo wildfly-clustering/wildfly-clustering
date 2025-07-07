@@ -117,23 +117,6 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	}
 
 	/**
-	 * Returns a function that returns the result of applying the specified function to its first parameter.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
-	 * @param <R> the function return type
-	 * @param function the function applied to the first parameter of this function
-	 * @return a function that returns the result of applying the specified function to its first parameter.
-	 */
-	static <T, U, R> BiFunction<T, U, R> former(java.util.function.Function<T, R> function) {
-		return new BiFunction<>() {
-			@Override
-			public R apply(T value1, U value2) {
-				return function.apply(value1);
-			}
-		};
-	}
-
-	/**
 	 * Returns a function that returns its second parameter.
 	 * @param <T> the first parameter type
 	 * @param <U> the second parameter type
@@ -143,23 +126,6 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	@SuppressWarnings("unchecked")
 	static <T, U extends R, R> BiFunction<T, U, R> latter() {
 		return (BiFunction<T, U, R>) LATTER_IDENTITY;
-	}
-
-	/**
-	 * Returns a function that returns the result of applying the specified function to its second parameter.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
-	 * @param <R> the function return type
-	 * @param function the function applied to the second parameter of this function
-	 * @return a function that returns the result of applying the specified function to its second parameter.
-	 */
-	static <T, U, R> BiFunction<T, U, R> latter(java.util.function.Function<U, R> function) {
-		return new BiFunction<>() {
-			@Override
-			public R apply(T value1, U value2) {
-				return function.apply(value2);
-			}
-		};
 	}
 
 	/**

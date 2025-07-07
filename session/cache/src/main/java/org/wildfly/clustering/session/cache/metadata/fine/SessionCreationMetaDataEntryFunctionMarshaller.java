@@ -35,14 +35,9 @@ public class SessionCreationMetaDataEntryFunctionMarshaller implements ProtoStre
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case SINCE_CREATION_OFFSET_INDEX:
-					sinceCreationOffset.setPlain(reader.readObject(sinceCreationOffset.getPlain().getClass()));
-					break;
-				case LAST_ACCESS_OFFSET_INDEX:
-					lastAccessOffset.setPlain(reader.readObject(lastAccessOffset.getPlain().getClass()));
-					break;
-				default:
-					reader.skipField(tag);
+				case SINCE_CREATION_OFFSET_INDEX -> sinceCreationOffset.setPlain(reader.readObject(sinceCreationOffset.getPlain().getClass()));
+				case LAST_ACCESS_OFFSET_INDEX -> lastAccessOffset.setPlain(reader.readObject(lastAccessOffset.getPlain().getClass()));
+				default -> reader.skipField(tag);
 			}
 		}
 		return new SessionAccessMetaDataEntryFunction(new SessionAccessMetaDataEntryOffsets() {

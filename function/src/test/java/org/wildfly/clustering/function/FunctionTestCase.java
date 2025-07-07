@@ -9,12 +9,46 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 /**
  * Unit test for {@link Function}.
  * @author Paul Ferraro
  */
 public class FunctionTestCase {
+
+	@Test
+	public void compose() {
+		Function<Object, Object> function = mock(Function.class);
+		doCallRealMethod().when(function).compose(ArgumentMatchers.<Function<Object, Object>>any());
+		Function<Object, Object> mapper = mock(Function.class);
+		Object value = new Object();
+		Object mapped = new Object();
+		Object expected = new Object();
+		doReturn(mapped).when(mapper).apply(value);
+		doReturn(expected).when(function).apply(mapped);
+
+		assertThat(function.compose(mapper).apply(value)).isSameAs(expected);
+
+		verify(function).apply(mapped);
+	}
+
+	@Test
+	public void composeBinary() {
+		Function<Object, Object> function = mock(Function.class);
+		doCallRealMethod().when(function).compose(ArgumentMatchers.<BiFunction<Object, Object, Object>>any());
+		BiFunction<Object, Object, Object> mapper = mock(BiFunction.class);
+		Object value1 = new Object();
+		Object value2 = new Object();
+		Object mapped = new Object();
+		Object expected = new Object();
+		doReturn(mapped).when(mapper).apply(value1, value2);
+		doReturn(expected).when(function).apply(mapped);
+
+		assertThat(function.compose(mapper).apply(value1, value2)).isSameAs(expected);
+
+		verify(function).apply(mapped);
+	}
 
 	@Test
 	public void empty() {

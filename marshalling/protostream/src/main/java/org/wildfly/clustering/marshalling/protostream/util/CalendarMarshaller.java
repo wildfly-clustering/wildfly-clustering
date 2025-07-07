@@ -38,26 +38,17 @@ public class CalendarMarshaller implements ProtoStreamMarshaller<Calendar> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case TYPE_INDEX:
-					builder.setCalendarType(reader.readString());
-					break;
-				case TIME_INDEX:
-					builder.setInstant(reader.readObject(Date.class));
-					break;
-				case LENIENT_INDEX:
-					builder.setLenient(reader.readBool());
-					break;
-				case TIME_ZONE_INDEX:
-					builder.setTimeZone(TimeZone.getTimeZone(reader.readString()));
-					break;
-				case FIRST_DAY_OF_WEEK_INDEX:
+				case TYPE_INDEX -> builder.setCalendarType(reader.readString());
+				case TIME_INDEX -> builder.setInstant(reader.readObject(Date.class));
+				case LENIENT_INDEX -> builder.setLenient(reader.readBool());
+				case TIME_ZONE_INDEX -> builder.setTimeZone(TimeZone.getTimeZone(reader.readString()));
+				case FIRST_DAY_OF_WEEK_INDEX -> {
 					firstDayOfWeek = reader.readUInt32();
-					break;
-				case MIN_DAYS_IN_FIRST_WEEK_INDEX:
+				}
+				case MIN_DAYS_IN_FIRST_WEEK_INDEX -> {
 					minDaysInFirstWeek = reader.readUInt32();
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return builder.setWeekDefinition(firstDayOfWeek, minDaysInFirstWeek).build();

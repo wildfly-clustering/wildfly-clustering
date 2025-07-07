@@ -30,9 +30,6 @@ public abstract class AbstractContextualBatch implements ContextualBatch {
 
 	@Override
 	public ContextualBatch get() {
-		if (this.getStatus().isClosed()) {
-			throw new IllegalStateException(this.toString(), new ContextualException(this));
-		}
 		int count = this.count.incrementAndGet();
 		LOGGER.log(System.Logger.Level.DEBUG, "Created child context {0}[{1}]", this, count);
 		return this;

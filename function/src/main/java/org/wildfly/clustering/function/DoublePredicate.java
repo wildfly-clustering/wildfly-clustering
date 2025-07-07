@@ -18,21 +18,36 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
 	DoublePredicate ZERO = new DoublePredicate() {
 		@Override
 		public boolean test(double value) {
-			return value == 0d;
+			return Double.compare(value, 0d) == 0;
 		}
 	};
 	DoublePredicate POSITIVE = new DoublePredicate() {
 		@Override
 		public boolean test(double value) {
-			return value > 0d;
+			return Double.compare(value, 0d) > 0;
 		}
 	};
 	DoublePredicate NEGATIVE = new DoublePredicate() {
 		@Override
 		public boolean test(double value) {
-			return value < 0d;
+			return Double.compare(value, 0d) < 0;
 		}
 	};
+
+	/**
+	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
+	 * @param <V> the mapped type
+	 * @param mapper
+	 * @return a mapped predicate
+	 */
+	default <V> Predicate<V> compose(java.util.function.ToDoubleFunction<V> mapper) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(V value) {
+				return DoublePredicate.this.test(mapper.applyAsDouble(value));
+			}
+		};
+	}
 
 	@Override
 	default DoublePredicate and(java.util.function.DoublePredicate other) {

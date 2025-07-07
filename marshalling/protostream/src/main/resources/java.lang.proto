@@ -14,8 +14,8 @@ message Class {
 		string	name	= 3;
 		uint32	field	= 4;
 	}
-	optional	string	className	= 5;
-	optional	string	module	= 6;
+	string	className	= 5;
+	string	module	= 6;
 }
 
 /**

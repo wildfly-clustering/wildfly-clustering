@@ -47,23 +47,18 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case CLASS_INDEX:
+				case CLASS_INDEX -> {
 					exceptionClass = reader.readObject(Class.class);
-					break;
-				case MESSAGE_INDEX:
+				}
+				case MESSAGE_INDEX -> {
 					message = reader.readString();
-					break;
-				case CAUSE_INDEX:
+				}
+				case CAUSE_INDEX -> {
 					cause = reader.readAny(Throwable.class);
-					break;
-				case STACK_TRACE_ELEMENT_INDEX:
-					stackTrace.add(reader.readObject(StackTraceElement.class));
-					break;
-				case SUPPRESSED_INDEX:
-					suppressed.add(reader.readAny(Throwable.class));
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				case STACK_TRACE_ELEMENT_INDEX -> stackTrace.add(reader.readObject(StackTraceElement.class));
+				case SUPPRESSED_INDEX -> suppressed.add(reader.readAny(Throwable.class));
+				default -> reader.skipField(tag);
 			}
 		}
 		E exception = this.createException(exceptionClass, message, cause);

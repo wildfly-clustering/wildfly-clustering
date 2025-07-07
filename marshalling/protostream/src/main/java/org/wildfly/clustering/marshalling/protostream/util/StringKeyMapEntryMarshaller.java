@@ -41,14 +41,13 @@ public class StringKeyMapEntryMarshaller<T extends Map.Entry<String, Object>> im
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case KEY_INDEX:
+				case KEY_INDEX -> {
 					key = reader.readString();
-					break;
-				case VALUE_INDEX:
+				}
+				case VALUE_INDEX -> {
 					value = reader.readAny();
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return this.factory.apply(key, value);

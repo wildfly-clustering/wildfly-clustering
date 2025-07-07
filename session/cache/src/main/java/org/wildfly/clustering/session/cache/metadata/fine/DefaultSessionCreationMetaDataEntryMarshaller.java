@@ -34,14 +34,13 @@ public class DefaultSessionCreationMetaDataEntryMarshaller implements ProtoStrea
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case CREATION_TIME_INDEX:
+				case CREATION_TIME_INDEX -> {
 					creationTime = reader.readObject(Instant.class);
-					break;
-				case TIMEOUT_INDEX:
+				}
+				case TIMEOUT_INDEX -> {
 					timeout = reader.readObject(Duration.class);
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		DefaultSessionCreationMetaDataEntry<Object> result = new DefaultSessionCreationMetaDataEntry<>(creationTime);

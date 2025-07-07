@@ -78,18 +78,15 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 
 	private <S, L> SessionAttributesFactory<C, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, RemoteCacheConfiguration hotrod) {
 		switch (configuration.getAttributePersistenceStrategy()) {
-			case FINE: {
+			case FINE -> {
 				BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionAttributeActivationNotifier<>(sessionProvider, listenerProvider, session, context);
 				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), passivationNotifierFactory, hotrod);
 			}
-			case COARSE: {
+			case COARSE -> {
 				BiFunction<ImmutableSession, C, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionActivationNotifier<>(sessionProvider, listenerProvider, session, context);
 				return new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), passivationNotifierFactory, hotrod);
 			}
-			default: {
-				// Impossible
-				throw new IllegalStateException();
-			}
+			default -> throw new IllegalStateException();
 		}
 	}
 }

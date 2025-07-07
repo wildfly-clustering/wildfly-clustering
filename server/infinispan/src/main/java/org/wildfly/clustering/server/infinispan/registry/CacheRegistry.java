@@ -252,21 +252,10 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 				executor.execute(() -> {
 					try {
 						switch (type) {
-							case CACHE_ENTRY_CREATED: {
-								listener.added(entries);
-								break;
-							}
-							case CACHE_ENTRY_MODIFIED: {
-								listener.updated(entries);
-								break;
-							}
-							case CACHE_ENTRY_REMOVED: {
-								listener.removed(entries);
-								break;
-							}
-							default: {
-								throw new IllegalStateException(type.name());
-							}
+							case CACHE_ENTRY_CREATED -> listener.added(entries);
+							case CACHE_ENTRY_MODIFIED -> listener.updated(entries);
+							case CACHE_ENTRY_REMOVED -> listener.removed(entries);
+							default -> throw new IllegalStateException(type.name());
 						}
 					} catch (Throwable e) {
 						LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);

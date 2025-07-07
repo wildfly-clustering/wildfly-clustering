@@ -5,14 +5,12 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.marshall;
 
-import static org.infinispan.util.logging.Log.CONTAINER;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
 
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.dataconversion.Transcoder;
@@ -25,9 +23,13 @@ import org.wildfly.clustering.function.Predicate;
  * @author Paul Ferraro
  */
 @Scope(Scopes.GLOBAL)
-public class DefaultEncoderRegistry implements EncoderRegistry {
-	private final List<Transcoder> transcoders = Collections.synchronizedList(new ArrayList<>());
-	private final Map<MediaType, Map<MediaType, Transcoder>> transcoderCache = new ConcurrentHashMap<>();
+public class DefaultEncoderRegistry implements EncoderRegistry, Function<Map.Entry<MediaType, MediaType>, Transcoder> {
+	private final List<Transcoder> transcoders;
+	private final Map<Map.Entry<MediaType, MediaType>, Transcoder> types = new ConcurrentHashMap<>();
+
+	DefaultEncoderRegistry(Collection<Transcoder> transcoders) {
+		this.transcoders = new CopyOnWriteArrayList<>(transcoders);
+	}
 
 	@Override
 	public void registerTranscoder(Transcoder transcoder) {
@@ -36,46 +38,38 @@ public class DefaultEncoderRegistry implements EncoderRegistry {
 
 	@Override
 	public Transcoder getTranscoder(MediaType fromType, MediaType toType) {
-		Transcoder transcoder = this.findTranscoder(fromType, toType);
-		if (transcoder == null) {
-			throw CONTAINER.cannotFindTranscoder(fromType, toType);
-		}
-		return transcoder;
+		return this.findTranscoder(fromType, toType);
 	}
 
 	@Override
 	public <T extends Transcoder> T getTranscoder(Class<T> targetClass) {
-		return targetClass.cast(this.transcoders.stream().filter(Predicate.<Class<?>>same(targetClass).compose(Object::getClass)).findAny().orElse(null));
+		return targetClass.cast(this.transcoders.stream().filter(Predicate.<Class<?>>same(targetClass).compose(Object::getClass)).findFirst().orElse(null));
 	}
 
 	@Override
 	public boolean isConversionSupported(MediaType fromType, MediaType toType) {
-		return fromType.match(toType) || this.findTranscoder(fromType, toType) != null;
-	}
-
-	@Override
-	public Object convert(Object object, MediaType fromType, MediaType toType) {
-		if (object == null) return null;
-		return this.getTranscoder(fromType, toType).transcode(object, fromType, toType);
+		return this.types.containsKey(Map.entry(fromType, toType)) || this.transcoders.stream().anyMatch(transcoder -> transcoder.supportsConversion(fromType, toType));
 	}
 
 	@Override
 	public void unregisterTranscoder(MediaType type) {
-		synchronized (this.transcoders) {
-			Iterator<Transcoder> transcoders = this.transcoders.iterator();
-			while (transcoders.hasNext()) {
-				if (transcoders.next().getSupportedMediaTypes().contains(type)) {
-					transcoders.remove();
-				}
-			}
+		List<Transcoder> supporting = this.transcoders.stream().filter(transcoder -> transcoder.supports(type)).toList();
+		if (!supporting.isEmpty()) {
+			this.transcoders.removeAll(supporting);
 		}
-		this.transcoderCache.remove(type);
-		for (Map<MediaType, Transcoder> map : this.transcoderCache.values()) {
-			map.remove(type);
+		for (Map.Entry<MediaType, MediaType> entry : this.types.keySet()) {
+			if (entry.getKey().equals(type) || entry.getValue().equals(type)) {
+				this.types.remove(entry);
+			}
 		}
 	}
 
+	@Override
+	public Transcoder apply(Map.Entry<MediaType, MediaType> entry) {
+		return this.transcoders.stream().filter(transcoder -> transcoder.supportsConversion(entry.getKey(), entry.getValue())).findFirst().orElse(null);
+	}
+
 	private Transcoder findTranscoder(MediaType fromType, MediaType toType) {
-		return this.transcoderCache.computeIfAbsent(fromType, mt -> new ConcurrentHashMap<>(4)).computeIfAbsent(toType, mt -> this.transcoders.stream().filter(t -> t.supportsConversion(fromType, toType)).findFirst().orElse(null));
+		return this.types.computeIfAbsent(Map.entry(fromType, toType), this);
 	}
 }

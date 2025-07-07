@@ -25,7 +25,7 @@ import org.wildfly.clustering.function.Supplier;
  * Unit test for a {@link TransactionalBatch}.
  * @author Paul Ferraro
  */
-public class TransactionBatchTestCase {
+public class TransactionalBatchTestCase {
 	private final TransactionManager tm = mock(TransactionManager.class);
 	private final Supplier<Batch> factory = new TransactionalBatchFactory("test", this.tm, RuntimeException::new);
 
@@ -151,7 +151,6 @@ public class TransactionBatchTestCase {
 			try (Batch innerBatch = this.factory.get()) {
 				// No new interactions
 				verifyNoMoreInteractions(this.tm);
-				verify(tx).getStatus();
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
@@ -159,7 +158,7 @@ public class TransactionBatchTestCase {
 			}
 
 			verifyNoMoreInteractions(this.tm);
-			verify(tx, times(2)).getStatus();
+			verify(tx).getStatus();
 			verifyNoMoreInteractions(tx);
 
 			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_COMMITTED).when(tx).getStatus();
@@ -169,7 +168,7 @@ public class TransactionBatchTestCase {
 			}
 		}
 
-		verify(tx, times(5)).getStatus();
+		verify(tx, times(4)).getStatus();
 		verify(tx).commit();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
@@ -198,7 +197,6 @@ public class TransactionBatchTestCase {
 			try (Batch innerBatch = this.factory.get()) {
 				// No new interactions
 				verifyNoMoreInteractions(this.tm);
-				verify(tx).getStatus();
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
@@ -211,7 +209,7 @@ public class TransactionBatchTestCase {
 			}
 
 			verifyNoMoreInteractions(this.tm);
-			verify(tx, times(2)).getStatus();
+			verify(tx).getStatus();
 			verifyNoMoreInteractions(tx);
 
 			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_ROLLEDBACK).when(tx).getStatus();
@@ -221,7 +219,7 @@ public class TransactionBatchTestCase {
 			}
 		}
 
-		verify(tx, times(5)).getStatus();
+		verify(tx, times(4)).getStatus();
 		verify(tx).rollback();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
@@ -255,7 +253,6 @@ public class TransactionBatchTestCase {
 			try (Batch innerBatch = this.factory.get()) {
 				// No new interactions
 				verifyNoMoreInteractions(this.tm);
-				verify(tx).getStatus();
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(innerBatch);
@@ -263,7 +260,7 @@ public class TransactionBatchTestCase {
 			}
 
 			verifyNoMoreInteractions(this.tm);
-			verify(tx, times(2)).getStatus();
+			verify(tx).getStatus();
 			verifyNoMoreInteractions(tx);
 
 			doReturn(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_ROLLEDBACK).when(tx).getStatus();
@@ -273,7 +270,7 @@ public class TransactionBatchTestCase {
 			}
 		}
 
-		verify(tx, times(5)).getStatus();
+		verify(tx, times(4)).getStatus();
 		verify(tx).rollback();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
@@ -305,7 +302,6 @@ public class TransactionBatchTestCase {
 			try (Batch batch2 = this.factory.get()) {
 				// No new interactions
 				verifyNoMoreInteractions(this.tm);
-				verify(tx).getStatus();
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch2);
@@ -313,7 +309,7 @@ public class TransactionBatchTestCase {
 
 				batch1.close();
 
-				verify(tx, times(2)).getStatus();
+				verify(tx).getStatus();
 				verifyNoMoreInteractions(tx);
 				verifyNoMoreInteractions(this.tm);
 			}
@@ -325,7 +321,7 @@ public class TransactionBatchTestCase {
 			}
 		}
 
-		verify(tx, times(5)).getStatus();
+		verify(tx, times(4)).getStatus();
 		verify(tx).commit();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
@@ -356,7 +352,6 @@ public class TransactionBatchTestCase {
 			try (Batch batch2 = this.factory.get()) {
 				// No new interactions
 				verifyNoMoreInteractions(this.tm);
-				verify(tx).getStatus();
 				verifyNoMoreInteractions(tx);
 
 				assertThat(ThreadContextBatch.INSTANCE).isSameAs(batch2);
@@ -369,7 +364,7 @@ public class TransactionBatchTestCase {
 
 				batch1.close();
 
-				verify(tx, times(2)).getStatus();
+				verify(tx).getStatus();
 				verifyNoMoreInteractions(tx);
 				verifyNoMoreInteractions(this.tm);
 			}
@@ -381,7 +376,7 @@ public class TransactionBatchTestCase {
 			}
 		}
 
-		verify(tx, times(5)).getStatus();
+		verify(tx, times(4)).getStatus();
 		verify(tx).rollback();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);

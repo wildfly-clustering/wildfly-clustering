@@ -38,21 +38,21 @@ public class MarshallerFactory extends AbstractComponentFactory implements AutoI
 			return ComponentAlias.of(KnownComponentNames.INTERNAL_MARSHALLER);
 		}
 
-		switch (componentName) {
-			case KnownComponentNames.PERSISTENCE_MARSHALLER:
-				return new PersistenceMarshallerImpl();
-			case KnownComponentNames.INTERNAL_MARSHALLER:
-				return new GlobalMarshaller();
-			case KnownComponentNames.USER_MARSHALLER:
-				Marshaller marshaller = this.globalConfiguration.serialization().marshaller();
-				if (marshaller != null) {
-					marshaller.initialize(this.globalComponentRegistry.getCacheManager().getClassAllowList());
-				} else {
-					marshaller = new ImmutableProtoStreamMarshaller(this.contextRegistry.wired().getUserCtx());
-				}
-				return new DelegatingUserMarshaller(marshaller);
-			default:
-				throw new IllegalArgumentException(componentName);
+		return switch (componentName) {
+			case KnownComponentNames.PERSISTENCE_MARSHALLER -> new PersistenceMarshallerImpl();
+			case KnownComponentNames.INTERNAL_MARSHALLER -> new GlobalMarshaller();
+			case KnownComponentNames.USER_MARSHALLER -> this.createUserMarshaller();
+			default -> throw new IllegalArgumentException(componentName);
+		};
+	}
+
+	private Marshaller createUserMarshaller() {
+		Marshaller marshaller = this.globalConfiguration.serialization().marshaller();
+		if (marshaller != null) {
+			marshaller.initialize(this.globalComponentRegistry.getCacheManager().getClassAllowList());
+		} else {
+			marshaller = new ImmutableProtoStreamMarshaller(this.contextRegistry.wired().getUserCtx());
 		}
+		return new DelegatingUserMarshaller(marshaller);
 	}
 }

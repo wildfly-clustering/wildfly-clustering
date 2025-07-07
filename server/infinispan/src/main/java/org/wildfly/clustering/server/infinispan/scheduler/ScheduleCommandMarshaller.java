@@ -37,14 +37,13 @@ public class ScheduleCommandMarshaller<I, M> implements ProtoStreamMarshaller<Sc
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ID_INDEX:
+				case ID_INDEX -> {
 					id = (I) reader.readAny();
-					break;
-				case META_DATA_INDEX:
+				}
+				case META_DATA_INDEX -> {
 					metaData = (M) reader.readAny();
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		return new ScheduleCommand<>(id, metaData);

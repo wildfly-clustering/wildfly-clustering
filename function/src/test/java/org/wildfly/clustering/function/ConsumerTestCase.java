@@ -11,6 +11,7 @@ import static org.mockito.Mockito.*;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 
 /**
@@ -22,13 +23,28 @@ public class ConsumerTestCase {
 	@Test
 	public void compose() {
 		Consumer<Object> consumer = mock(Consumer.class);
-		doCallRealMethod().when(consumer).compose(any());
+		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<Function<Object, Object>>any());
 		Function<Object, Object> mapper = mock(Function.class);
 		Object value = new Object();
 		Object result = new Object();
 		doReturn(result).when(mapper).apply(value);
 
 		consumer.compose(mapper).accept(value);
+
+		verify(consumer).accept(result);
+	}
+
+	@Test
+	public void composeBinary() {
+		Consumer<Object> consumer = mock(Consumer.class);
+		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<BiFunction<Object, Object, Object>>any());
+		BiFunction<Object, Object, Object> mapper = mock(BiFunction.class);
+		Object key = new Object();
+		Object value = new Object();
+		Object result = new Object();
+		doReturn(result).when(mapper).apply(key, value);
+
+		consumer.compose(mapper).accept(key, value);
 
 		verify(consumer).accept(result);
 	}

@@ -34,6 +34,21 @@ public interface IntPredicate extends java.util.function.IntPredicate {
 		}
 	};
 
+	/**
+	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
+	 * @param <V> the mapped type
+	 * @param mapper
+	 * @return a mapped predicate
+	 */
+	default <V> Predicate<V> compose(java.util.function.ToIntFunction<V> mapper) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(V value) {
+				return IntPredicate.this.test(mapper.applyAsInt(value));
+			}
+		};
+	}
+
 	@Override
 	default IntPredicate and(java.util.function.IntPredicate other) {
 		return new IntPredicate() {

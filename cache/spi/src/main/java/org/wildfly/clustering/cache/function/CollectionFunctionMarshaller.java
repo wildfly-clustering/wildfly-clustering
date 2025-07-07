@@ -45,11 +45,8 @@ public class CollectionFunctionMarshaller<V, C extends Collection<V>, F extends 
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ELEMENT_INDEX:
-					operand.add((V) reader.readAny());
-					break;
-				default:
-					reader.skipField(tag);
+				case ELEMENT_INDEX -> operand.add((V) reader.readAny());
+				default -> reader.skipField(tag);
 			}
 		}
 		return this.factory.apply(operand);
