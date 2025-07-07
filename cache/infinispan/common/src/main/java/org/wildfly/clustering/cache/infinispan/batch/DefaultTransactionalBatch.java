@@ -19,8 +19,6 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
-import org.wildfly.clustering.cache.batch.Batch;
-
 public class DefaultTransactionalBatch extends AbstractContextualBatch implements TransactionalBatch, TransactionalSuspendedBatch, Synchronization {
 	private final TransactionManager tm;
 	private final Transaction tx;
@@ -146,7 +144,7 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 	@Override
 	public TransactionalBatch resume() {
 		try {
-			Batch.LOGGER.log(System.Logger.Level.DEBUG, "Resuming batch {0}", this);
+			LOGGER.log(System.Logger.Level.DEBUG, "Resuming batch {0}", this);
 			this.tm.resume(this.tx);
 			return this;
 		} catch (SystemException | InvalidTransactionException e) {

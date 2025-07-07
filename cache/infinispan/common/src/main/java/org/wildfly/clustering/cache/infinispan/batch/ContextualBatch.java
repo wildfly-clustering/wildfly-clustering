@@ -12,6 +12,8 @@ import org.wildfly.clustering.function.Supplier;
  * @author Paul Ferraro
  */
 public interface ContextualBatch extends Batch, Contextual, Supplier<ContextualBatch> {
+	System.Logger LOGGER = System.getLogger(Batch.class.getName());
+
 	@Override
 	ContextualSuspendedBatch suspend();
 }

@@ -13,7 +13,6 @@ import org.wildfly.clustering.context.Context;
  * @author Paul Ferraro
  */
 public interface Batch extends AutoCloseable {
-	System.Logger LOGGER = System.getLogger(Batch.class.getName());
 
 	interface Status {
 		/**
