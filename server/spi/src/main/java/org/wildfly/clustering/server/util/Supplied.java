@@ -40,7 +40,8 @@ public interface Supplied<T> {
 		return new Supplied<>() {
 			@Override
 			public T get(Supplier<T> factory) {
-				return reference.updateAndGet(UnaryOperator.<T>identity().orDefault(Objects::nonNull, factory));
+				T value = reference.get();
+				return (value != null) ? value : reference.updateAndGet(UnaryOperator.<T>identity().orDefault(Objects::nonNull, factory));
 			}
 		};
 	}
