@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-marshalling</artifactId>
-		<version>7.0.9.CR1</version>
+		<version>7.0.9.Final-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
