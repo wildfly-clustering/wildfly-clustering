@@ -369,6 +369,7 @@
 					<serverId>${nexus.serverId}</serverId>
 					<nexusUrl>${nexus.repo.url}</nexusUrl>
 					<repository>${nexus.repo.name}</repository>
+					<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -397,17 +398,6 @@
 			<id>jboss-release</id>
 			<build>
 				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-deploy-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>default-deploy</id>
-								<!-- Disable deploy plugin - we will deploy via nexus plugin -->
-								<phase>none</phase>
-							</execution>
-						</executions>
-					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
@@ -444,7 +434,7 @@
 						<extensions>true</extensions>
 						<executions>
 							<execution>
-								<id>nexus-deploy</id>
+								<id>default-deploy</id>
 								<phase>deploy</phase>
 								<goals>
 									<goal>deploy</goal>
