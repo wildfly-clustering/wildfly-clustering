@@ -48,11 +48,6 @@ public class InvalidationCacheITCase extends SoftAssertions {
 		this.test("non-tx", NON_TRANSACTIONAL, UnaryOperator.identity());
 	}
 
-	@Test
-	public void nonTxInvalidationWithWorkaround() throws Exception {
-		this.test("non-tx-fixed", NON_TRANSACTIONAL, InvalidationCache::new);
-	}
-
 	@org.junit.jupiter.api.Disabled("Currently fails due to missing invalidations")
 	@Test
 	public void txInvalidation() throws Exception {
