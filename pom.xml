@@ -299,9 +299,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -441,7 +444,7 @@
 						<extensions>true</extensions>
 						<executions>
 							<execution>
-								<id>default-deploy</id>
+								<id>nexus-deploy</id>
 								<phase>deploy</phase>
 								<goals>
 									<goal>deploy</goal>
