@@ -41,7 +41,7 @@ import org.wildfly.clustering.server.jgroups.JChannelContext;
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheManager> {
-	private static final String CONTAINER_NAME = "container";
+	private static final String CONTAINER_NAME = "ISPN";
 
 	private final EmbeddedCacheManager manager;
 
@@ -92,8 +92,8 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 			try {
 				builder.globalState()
 						.configurationStorage(ConfigurationStorage.VOLATILE)
-						.persistentLocation(Files.createTempDirectory(CONTAINER_NAME).toString(), CONTAINER_NAME)
-						.temporaryLocation(Files.createTempDirectory(CONTAINER_NAME).toString(), CONTAINER_NAME)
+						.persistentLocation(Files.createTempDirectory(CONTAINER_NAME).resolve(channel.get().getName()).toString())
+						.temporaryLocation(Files.createTempDirectory(CONTAINER_NAME).resolve(channel.get().getName()).toString())
 						;
 			} catch (IOException e) {
 				throw new IllegalStateException(e);

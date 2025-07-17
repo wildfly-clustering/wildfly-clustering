@@ -43,15 +43,9 @@ public class InvalidationCacheITCase extends SoftAssertions {
 			.lockingMode(org.infinispan.transaction.LockingMode.PESSIMISTIC)
 			;
 
-	@org.junit.jupiter.api.Disabled("Currently fails due to missing cache load")
 	@Test
 	public void nonTxInvalidation() throws Exception {
 		this.test("non-tx", NON_TRANSACTIONAL, UnaryOperator.identity());
-	}
-
-	@Test
-	public void nonTxInvalidationWithWorkaround() throws Exception {
-		this.test("non-tx-fixed", NON_TRANSACTIONAL, InvalidationCache::new);
 	}
 
 	@org.junit.jupiter.api.Disabled("Currently fails due to missing invalidations")

@@ -23,13 +23,17 @@
 		<jacoco.skip>true</jacoco.skip>
 		<maven.compiler.release>17</maven.compiler.release>
 
+		<nexus.serverId>jboss</nexus.serverId>
+		<nexus.repo.name>releases</nexus.repo.name>
+		<nexus.repo.url>https://repository.jboss.org/nexus</nexus.repo.url>
+
 		<!-- Provided dependency versions -->
 		<version.jakarta.transaction>2.0.1</version.jakarta.transaction>
 		<version.net.jcip>1.0</version.net.jcip>
 
 		<!-- Compile dependency versions -->
 		<version.io.github.resilience4j>2.3.0</version.io.github.resilience4j>
-		<version.org.infinispan>15.2.4.Final</version.org.infinispan>
+		<version.org.infinispan>15.2.5.Final</version.org.infinispan>
 		<version.org.jboss.marshalling>2.2.3.Final</version.org.jboss.marshalling>
 		<version.org.jgroups>5.4.8.Final</version.org.jgroups>
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
@@ -357,6 +361,16 @@
 					<argLine>${jdk.runtime.args} -javaagent:${project.build.directory}/agent/mockito-core.jar</argLine>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nxrm3-maven-plugin</artifactId>
+				<version>1.0.7</version>
+				<configuration>
+					<serverId>${nexus.serverId}</serverId>
+					<nexusUrl>${nexus.repo.url}</nexusUrl>
+					<repository>${nexus.repo.name}</repository>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -385,6 +399,17 @@
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>default-deploy</id>
+								<!-- Disable deploy plugin - we will deploy via nexus plugin -->
+								<phase>none</phase>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<configuration>
 							<sourceFileExcludes>org/wildfly/clustering/cache/infinispan/embedded/*/WildFlyClustering*Impl.java</sourceFileExcludes>
@@ -410,6 +435,20 @@
 									<!-- Servlet spec modules are mutually exclusive -->
 									<excludePackageNames>org.wildfly.clustering.session.spec.servlet:org.wildfly.clustering.session.spec.container:org.wildfly.clustering.session.spec.container.*</excludePackageNames>
 								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nxrm3-maven-plugin</artifactId>
+						<extensions>true</extensions>
+						<executions>
+							<execution>
+								<id>nexus-deploy</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>deploy</goal>
+								</goals>
 							</execution>
 						</executions>
 					</plugin>

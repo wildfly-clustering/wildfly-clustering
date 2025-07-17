@@ -70,8 +70,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 * @return a cache with write semantics.
 	 */
 	default <K, V> Cache<K, V> getWriteCache() {
-		Cache<K, V> cache = this.getCache();
-		return cache.getCacheConfiguration().clustering().cacheMode().isInvalidation() ? new InvalidationCache<>(cache) : cache;
+		return this.getCache();
 	}
 
 	/**
