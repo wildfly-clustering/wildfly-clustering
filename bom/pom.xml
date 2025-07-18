@@ -23,8 +23,46 @@
 	<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
 
 	<properties>
-		<maven.repository.url>https://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
+		<nexus.serverId>jboss</nexus.serverId>
+		<nexus.repo.name>releases</nexus.repo.name>
+		<nexus.repo.url>https://repository.jboss.org/nexus</nexus.repo.url>
+		<maven.repository.url>https://repository.jboss.org/nexus/repository/releases</maven.repository.url>
 	</properties>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nxrm3-maven-plugin</artifactId>
+					<version>1.0.7</version>
+					<configuration>
+						<serverId>${nexus.serverId}</serverId>
+						<nexusUrl>${nexus.repo.url}</nexusUrl>
+						<repository>${nexus.repo.name}</repository>
+						<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nxrm3-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<!-- Override default-deploy execution from maven-deploy-plugin -->
+						<id>default-deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 	<licenses>
 		<license>
