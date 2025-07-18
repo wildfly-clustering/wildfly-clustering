@@ -67,7 +67,6 @@
 							<serverId>${nexus.serverId}</serverId>
 							<nexusUrl>${nexus.repo.url}</nexusUrl>
 							<repository>${nexus.repo.name}</repository>
-							<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
 						</configuration>
 					</execution>
 				</executions>
