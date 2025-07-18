@@ -25,10 +25,11 @@
 	<properties>
 		<nexus.serverId>jboss</nexus.serverId>
 		<nexus.repo.name>releases</nexus.repo.name>
-		<nexus.repo.url>https://repository.jboss.org/nexus</nexus.repo.url>
+		<nexus.repo.url>https://repository.jboss.org/nexus/</nexus.repo.url>
 		<maven.repository.url>https://repository.jboss.org/nexus/repository/releases</maven.repository.url>
 	</properties>
 
+	<!-- Define release plugins, not yet available in jboss-parent -->
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -36,28 +37,38 @@
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nxrm3-maven-plugin</artifactId>
 					<version>1.0.7</version>
-					<configuration>
-						<serverId>${nexus.serverId}</serverId>
-						<nexusUrl>${nexus.repo.url}</nexusUrl>
-						<repository>${nexus.repo.name}</repository>
-						<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
-					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- Disable default-deploy execution from maven-deploy-plugin -->
+						<id>default-deploy</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nxrm3-maven-plugin</artifactId>
 				<extensions>true</extensions>
 				<executions>
 					<execution>
-						<!-- Override default-deploy execution from maven-deploy-plugin -->
-						<id>default-deploy</id>
+						<id>nexus-deploy</id>
 						<phase>deploy</phase>
 						<goals>
 							<goal>deploy</goal>
 						</goals>
+						<configuration>
+							<serverId>${nexus.serverId}</serverId>
+							<nexusUrl>${nexus.repo.url}</nexusUrl>
+							<repository>${nexus.repo.name}</repository>
+							<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
