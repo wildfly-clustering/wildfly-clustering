@@ -372,7 +372,6 @@
 					<!-- jboss-parent defines an arguments property which otherwise applies jboss-release profile on prepare -->
 					<arguments combine.self="override" />
 					<releaseProfiles>gpg-sign,release</releaseProfiles>
-					<goals>install nxrm3:staging-deploy</goals>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -386,7 +385,7 @@
 				<executions>
 					<execution>
 						<id>nexus-deploy</id>
-						<!-- Disable non-staged releases -->
+						<!-- Disable default deploy to release repository -->
 						<phase>none</phase>
 						<goals>
 							<goal>deploy</goal>
@@ -397,6 +396,7 @@
 					</execution>
 					<execution>
 						<id>nexus-stage</id>
+						<phase>deploy</phase>
 						<goals>
 							<goal>staging-deploy</goal>
 						</goals>
@@ -437,7 +437,7 @@
 				<checkstyle.skip>true</checkstyle.skip>
 				<skipTests>true</skipTests>
 				<skipITs>true</skipITs>
-				<arguments>-DskipITs -DskipTests -Dcheckstyle.skip=true -Dtag=${nexus.staging.tag} -Drepository=${nexus.repository.staging}</arguments>
+				<arguments>-DskipITs -DskipTests -Dcheckstyle.skip=true -Dnexus.staging.tag=${nexus.staging.tag} -Dnexus.repository.staging=${nexus.repository.staging}</arguments>
 			</properties>
 		</profile>
 	</profiles>
