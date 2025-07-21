@@ -405,8 +405,6 @@
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<configuration>
 							<sourceFileExcludes>org/wildfly/clustering/cache/infinispan/embedded/*/WildFlyClustering*Impl.java</sourceFileExcludes>
-							<!-- Default classifier not consistent with default classifier of jar:test-jar -->
-							<testClassifier>tests-javadoc</testClassifier>
 						</configuration>
 						<executions>
 							<execution>
@@ -414,7 +412,6 @@
 								<inherited>false</inherited>
 								<goals>
 									<goal>aggregate-jar</goal>
-									<goal>test-aggregate-jar</goal>
 								</goals>
 								<configuration>
 									<!-- Servlet spec modules are mutually exclusive -->
