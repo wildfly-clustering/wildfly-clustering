@@ -343,6 +343,102 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nxrm3-maven-plugin</artifactId>
+					<version>1.0.7</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- Disable default-deploy execution from maven-deploy-plugin -->
+						<id>default-deploy</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<arguments combine.self="override" />
+					<releaseProfiles>gpg-sign,jboss-release</releaseProfiles>
+				</configuration>
+				<executions>
+					<execution>
+						<id>release-perform</id>
+						<goals>
+							<goal>perform</goal>
+						</goals>
+						<configuration>
+							<goals>install nxrm3:staging-deploy nxrm3:staging-move</goals>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nxrm3-maven-plugin</artifactId>
+				<configuration>
+					<serverId>${nexus.serverId}</serverId>
+					<nexusUrl>${nexus.repository.url}</nexusUrl>
+				</configuration>
+				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<id>nexus-deploy</id>
+						<!-- Disable non-staged releases -->
+						<phase>none</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+						<configuration>
+							<repository>${nexus.repository.release}</repository>
+						</configuration>
+					</execution>
+					<execution>
+						<id>nexus-stage</id>
+						<goals>
+							<goal>staging-deploy</goal>
+						</goals>
+						<configuration>
+							<repository>${nexus.repository.staging}</repository>
+							<tag>${nexus.staging.tag}</tag>
+						</configuration>
+					</execution>
+					<execution>
+						<id>nexus-release</id>
+						<goals>
+							<goal>staging-move</goal>
+						</goals>
+						<configuration>
+							<destinationRepository>${nexus.repository.release}</destinationRepository>
+							<sourceRepository>${nexus.repository.staging}</sourceRepository>
+							<tag>${nexus.staging.tag}</tag>
+						</configuration>
+					</execution>
+					<execution>
+						<id>nexus-drop</id>
+						<goals>
+							<goal>staging-delete</goal>
+						</goals>
+						<configuration>
+							<tag>${nexus.staging.tag}</tag>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
 	<profiles>
 		<profile>
 			<id>jboss-release</id>
@@ -353,31 +449,7 @@
 				<arguments>-DskipITs -DskipTests -Dcheckstyle.skip=true</arguments>
 			</properties>
 			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.sonatype.plugins</groupId>
-							<artifactId>nxrm3-maven-plugin</artifactId>
-							<version>1.0.7</version>
-							<configuration>
-								<serverId>${nexus.serverId}</serverId>
-								<nexusUrl>${nexus.repository.url}</nexusUrl>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
 				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-deploy-plugin</artifactId>
-						<executions>
-							<execution>
-								<!-- Disable default-deploy execution from maven-deploy-plugin -->
-								<id>default-deploy</id>
-								<phase>none</phase>
-							</execution>
-						</executions>
-					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
@@ -397,54 +469,6 @@
 								<configuration>
 									<!-- Servlet spec modules are mutually exclusive -->
 									<excludePackageNames>org.wildfly.clustering.session.spec.servlet:org.wildfly.clustering.session.spec.container:org.wildfly.clustering.session.spec.container.*</excludePackageNames>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nxrm3-maven-plugin</artifactId>
-						<extensions>true</extensions>
-						<executions>
-							<execution>
-								<id>nexus-deploy</id>
-								<!-- Disable non-staged releases -->
-								<phase>none</phase>
-								<goals>
-									<goal>deploy</goal>
-								</goals>
-								<configuration>
-									<repository>${nexus.repository.release}</repository>
-								</configuration>
-							</execution>
-							<execution>
-								<id>nexus-stage</id>
-								<goals>
-									<goal>staging-deploy</goal>
-								</goals>
-								<configuration>
-									<repository>${nexus.repository.staging}</repository>
-									<tag>${nexus.staging.tag}</tag>
-								</configuration>
-							</execution>
-							<execution>
-								<id>nexus-release</id>
-								<goals>
-									<goal>staging-move</goal>
-								</goals>
-								<configuration>
-									<destinationRepository>${nexus.repository.release}</destinationRepository>
-									<sourceRepository>${nexus.repository.staging}</sourceRepository>
-									<tag>${nexus.staging.tag}</tag>
-								</configuration>
-							</execution>
-							<execution>
-								<id>nexus-drop</id>
-								<goals>
-									<goal>staging-delete</goal>
-								</goals>
-								<configuration>
-									<tag>${nexus.staging.tag}</tag>
 								</configuration>
 							</execution>
 						</executions>
