@@ -67,7 +67,6 @@
 					<arguments combine.self="override" />
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>@{project.version}</tagNameFormat>
-					<preparationProfiles>jboss-release</preparationProfiles>
 					<releaseProfiles>gpg-sign,jboss-release</releaseProfiles>
 				</configuration>
 				<executions>
@@ -78,7 +77,7 @@
 							<goal>perform</goal>
 						</goals>
 						<configuration>
-							<goals>install,nxrm3:staging-deploy,nxrm3:staging-move</goals>
+							<goals>install nxrm3:staging-deploy nxrm3:staging-move</goals>
 						</configuration>
 					</execution>
 				</executions>
