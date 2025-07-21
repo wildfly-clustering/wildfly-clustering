@@ -349,20 +349,7 @@
 					<arguments combine.self="override" />
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>@{project.version}</tagNameFormat>
-					<releaseProfiles>gpg-sign,jboss-release</releaseProfiles>
 				</configuration>
-				<executions>
-					<execution>
-						<id>release-perform</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>perform</goal>
-						</goals>
-						<configuration>
-							<goals>install nxrm3:staging-deploy nxrm3:staging-move</goals>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
