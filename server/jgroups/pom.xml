@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-server</artifactId>
-		<version>7.0.9.Final-SNAPSHOT</version>
+		<version>7.0.9.CR9</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-server-jgroups</artifactId>
