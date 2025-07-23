@@ -11,7 +11,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
- * {@link SerializationContextInitializer} for the {@link org.jgroups.util} package.
+ * {@link SerializationContextInitializer} for the {@code org.jgroups.util} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)

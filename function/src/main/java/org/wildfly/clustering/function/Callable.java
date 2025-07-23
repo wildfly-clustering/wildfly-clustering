@@ -35,7 +35,6 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 
 	/**
 	 * Returns a callable that returns null.
-	 * @param value the result value
 	 * @return a callable that returns null.
 	 */
 	@SuppressWarnings("unchecked")

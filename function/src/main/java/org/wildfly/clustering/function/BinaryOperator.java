@@ -122,7 +122,6 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	/**
 	 * Returns a function that always returns null, ignoring its parameter.
 	 * @param <T> the operating type
-	 * @param result the function result
 	 * @return a function that always returns null, ignoring its parameter.
 	 */
 	@SuppressWarnings("unchecked")

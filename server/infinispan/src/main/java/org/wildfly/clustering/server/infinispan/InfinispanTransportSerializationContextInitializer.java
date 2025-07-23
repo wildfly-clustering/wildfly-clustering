@@ -13,7 +13,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
- * {@link org.infinispan.protostream.SerializationContextInitializer} for the {@link org.infinispan.remoting.transport} package.
+ * {@link org.infinispan.protostream.SerializationContextInitializer} for the {@code org.infinispan.remoting.transport} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
