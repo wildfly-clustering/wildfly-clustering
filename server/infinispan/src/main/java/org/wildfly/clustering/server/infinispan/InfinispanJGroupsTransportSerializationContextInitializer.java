@@ -14,7 +14,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 import org.wildfly.clustering.server.jgroups.AddressMarshaller;
 
 /**
- * {@link org.infinispan.protostream.SerializationContextInitializer} for the {@link org.infinispan.remoting.transport.jgroups} package.
+ * {@link org.infinispan.protostream.SerializationContextInitializer} for the {@code org.infinispan.remoting.transport.jgroups} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)

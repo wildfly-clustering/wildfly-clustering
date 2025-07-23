@@ -133,7 +133,6 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param <T> the first parameter type
 	 * @param <U> the second parameter type
 	 * @param <R> the function return type
-	 * @param result the function result
 	 * @return a function that always returns the specified value, ignoring its parameters.
 	 */
 	@SuppressWarnings("unchecked")

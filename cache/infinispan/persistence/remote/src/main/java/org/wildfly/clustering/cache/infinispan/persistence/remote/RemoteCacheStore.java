@@ -36,6 +36,7 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
+import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.infinispan.client.hotrod.transaction.manager.RemoteTransactionManager;
 import org.infinispan.commons.CacheException;
@@ -305,6 +306,22 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 			result = result.thenCombineAsync(cache.sizeAsync(), Long::sum, this.executor);
 		}
 		return result;
+	}
+
+	@Override
+	public CompletionStage<Long> approximateSize(IntSet segments) {
+		CompletableFuture<Long> result = CompletableFuture.completedFuture(0L);
+		PrimitiveIterator.OfInt iterator = this.segmentIterator(segments);
+		while (iterator.hasNext()) {
+			int segment = iterator.nextInt();
+			RemoteCache<K, MarshalledValue> cache = this.caches.get(segment);
+			result = result.thenCombineAsync(cache.serverStatisticsAsync().thenApply(RemoteCacheStore::approximateEntries), Long::sum, this.executor);
+		}
+		return result;
+	}
+
+	static Long approximateEntries(ServerStatistics stats) {
+		return Long.valueOf(stats.getIntStatistic(ServerStatistics.APPROXIMATE_ENTRIES_UNIQUE));
 	}
 
 	@Override

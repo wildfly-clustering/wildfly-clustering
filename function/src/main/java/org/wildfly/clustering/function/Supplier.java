@@ -110,7 +110,6 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	/**
 	 * Returns a supplier that always returns the specified value.
 	 * @param <T> the supplied type
-	 * @param value the supplied value
 	 * @return a supplier that always returns the specified value.
 	 */
 	@SuppressWarnings("unchecked")

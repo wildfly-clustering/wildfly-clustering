@@ -27,7 +27,7 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	/**
 	 * Returns an operator that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
 	 * @param predicate a predicate used to determine the parameter of this function
-	 * @param defaultValue a provider of the default parameter value
+	 * @param defaultResult a provider of the default operation result
 	 * @return an operator that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
 	 */
 	default UnaryOperator<T> orDefault(java.util.function.Predicate<T> predicate, java.util.function.Supplier<T> defaultResult) {
@@ -42,7 +42,7 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	/**
 	 * Returns an operator that applies this function if its parameter matches the specified predicate, or returns the value provided by the specified supplier otherwise.
 	 * @param predicate a predicate used to determine the parameter of this function
-	 * @param defaultResult a provider of the default parameter value
+	 * @param defaultValue a provider of the default parameter value
 	 * @return an operator that applies this function if its parameter matches the specified predicate, or returns the value provided by the specified supplier otherwise.
 	 */
 	default UnaryOperator<T> withDefault(java.util.function.Predicate<T> predicate, java.util.function.Supplier<T> defaultValue) {
@@ -116,7 +116,6 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	/**
 	 * Returns an operator that always returns null, ignoring its parameter.
 	 * @param <T> the operating type
-	 * @param value the value returned by the operator
 	 * @return an operator that always returns null, ignoring its parameter.
 	 */
 	@SuppressWarnings("unchecked")
