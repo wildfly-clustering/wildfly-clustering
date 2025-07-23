@@ -29,7 +29,7 @@
 		<nexus.repository.release>releases</nexus.repository.release>
 		<nexus.repository.staging>wildfly-staging</nexus.repository.staging>
 		<nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url>
-		<nexus.serverId>jboss</nexus.serverId>
+		<nexus.server.id>jboss</nexus.server.id>
 		<nexus.staging.tag>${project.groupId}-${project.version}</nexus.staging.tag>
 	</properties>
 
@@ -378,46 +378,33 @@
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nxrm3-maven-plugin</artifactId>
 				<configuration>
-					<serverId>${nexus.serverId}</serverId>
+					<serverId>${nexus.server.id}</serverId>
 					<nexusUrl>${nexus.repository.url}</nexusUrl>
+					<repository>${nexus.repository.staging}</repository>
 				</configuration>
-				<extensions>true</extensions>
 				<executions>
 					<execution>
-						<id>nexus-deploy</id>
-						<!-- Disable default deploy to release repository -->
-						<phase>none</phase>
-						<goals>
-							<goal>deploy</goal>
-						</goals>
-						<configuration>
-							<repository>${nexus.repository.release}</repository>
-						</configuration>
-					</execution>
-					<execution>
-						<id>nexus-stage</id>
+						<id>default-deploy</id>
 						<phase>deploy</phase>
 						<goals>
 							<goal>staging-deploy</goal>
 						</goals>
 						<configuration>
-							<repository>${nexus.repository.staging}</repository>
 							<tag>${nexus.staging.tag}</tag>
 						</configuration>
 					</execution>
 					<execution>
-						<id>nexus-release</id>
+						<id>default-staging-move</id>
 						<goals>
 							<goal>staging-move</goal>
 						</goals>
 						<configuration>
 							<destinationRepository>${nexus.repository.release}</destinationRepository>
-							<sourceRepository>${nexus.repository.staging}</sourceRepository>
 							<tag>${nexus.staging.tag}</tag>
 						</configuration>
 					</execution>
 					<execution>
-						<id>nexus-drop</id>
+						<id>default-staging-delete</id>
 						<goals>
 							<goal>staging-delete</goal>
 						</goals>
@@ -437,7 +424,8 @@
 				<checkstyle.skip>true</checkstyle.skip>
 				<skipTests>true</skipTests>
 				<skipITs>true</skipITs>
-				<arguments>-DskipITs -DskipTests -Dcheckstyle.skip=true -Dnexus.staging.tag=${nexus.staging.tag} -Dnexus.repository.staging=${nexus.repository.staging}</arguments>
+				<!-- Propagate these properties to forked process -->
+				<arguments>-DskipITs -DskipTests -Dcheckstyle.skip=true -Dnexus.staging.tag=${nexus.staging.tag}</arguments>
 			</properties>
 		</profile>
 	</profiles>

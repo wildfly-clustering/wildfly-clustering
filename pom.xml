@@ -298,7 +298,7 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>integration-test</id>
+						<id>default-integration-test</id>
 						<phase>integration-test</phase>
 						<goals>
 							<goal>integration-test</goal>
@@ -316,6 +316,8 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>default-test-jar</id>
+						<phase>package</phase>
 						<goals>
 							<goal>test-jar</goal>
 						</goals>
@@ -330,7 +332,8 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>javadoc-jar</id>
+						<id>package-javadoc</id>
+						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 							<goal>test-jar</goal>
@@ -360,9 +363,10 @@
 				<artifactId>maven-source-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>package-source</id>
+						<phase>package</phase>
 						<goals>
-							<goal>jar</goal>
-							<goal>test-jar</goal>
+							<goal>test-jar-no-fork</goal>
 						</goals>
 					</execution>
 				</executions>
