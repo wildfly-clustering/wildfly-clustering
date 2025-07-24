@@ -23,14 +23,14 @@
 	<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
 
 	<properties>
-		<maven.repository.url>https://repository.jboss.org/nexus/repository/releases</maven.repository.url>
-
 		<!-- Nexus deployment settings -->
 		<nexus.repository.release>releases</nexus.repository.release>
 		<nexus.repository.staging>wildfly-staging</nexus.repository.staging>
 		<nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url>
 		<nexus.server.id>jboss</nexus.server.id>
 		<nexus.staging.tag>${project.groupId}-${project.version}</nexus.staging.tag>
+
+		<maven.repository.url>${nexus.repository.url}/content/groups/public/</maven.repository.url>
 	</properties>
 
 	<licenses>
@@ -359,7 +359,7 @@
 				<artifactId>maven-deploy-plugin</artifactId>
 				<executions>
 					<execution>
-						<!-- Disable default-deploy execution from maven-deploy-plugin -->
+						<!-- Disable default deploy execution from maven-deploy-plugin -->
 						<id>default-deploy</id>
 						<phase>none</phase>
 					</execution>
@@ -384,6 +384,7 @@
 				</configuration>
 				<executions>
 					<execution>
+						<!-- Override default deploy goal to deploy to nexus staging -->
 						<id>default-deploy</id>
 						<phase>deploy</phase>
 						<goals>
