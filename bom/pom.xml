@@ -350,6 +350,10 @@
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nxrm3-maven-plugin</artifactId>
 					<version>1.0.7</version>
+					<configuration>
+						<serverId>${nexus.server.id}</serverId>
+						<nexusUrl>${nexus.repository.url}</nexusUrl>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -377,35 +381,32 @@
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nxrm3-maven-plugin</artifactId>
-				<configuration>
-					<serverId>${nexus.server.id}</serverId>
-					<nexusUrl>${nexus.repository.url}</nexusUrl>
-					<repository>${nexus.repository.staging}</repository>
-				</configuration>
 				<executions>
 					<execution>
-						<!-- Override default deploy goal to deploy to nexus staging -->
-						<id>default-deploy</id>
+						<!-- Execute during deploy phase to deploy to nexus staging -->
+						<id>nexus-deploy</id>
 						<phase>deploy</phase>
 						<goals>
 							<goal>staging-deploy</goal>
 						</goals>
 						<configuration>
+							<repository>${nexus.repository.staging}</repository>
 							<tag>${nexus.staging.tag}</tag>
 						</configuration>
 					</execution>
 					<execution>
-						<id>default-staging-move</id>
+						<id>nexus-move</id>
 						<goals>
 							<goal>staging-move</goal>
 						</goals>
 						<configuration>
+							<repository>${nexus.repository.staging}</repository>
 							<destinationRepository>${nexus.repository.release}</destinationRepository>
 							<tag>${nexus.staging.tag}</tag>
 						</configuration>
 					</execution>
 					<execution>
-						<id>default-staging-delete</id>
+						<id>nexus-delete</id>
 						<goals>
 							<goal>staging-delete</goal>
 						</goals>
@@ -425,8 +426,8 @@
 				<checkstyle.skip>true</checkstyle.skip>
 				<skipTests>true</skipTests>
 				<skipITs>true</skipITs>
-				<!-- Propagate these properties to forked process -->
-				<arguments>-DskipITs -DskipTests -Dcheckstyle.skip=true -Dnexus.staging.tag=${nexus.staging.tag}</arguments>
+				<!-- Use this profile for forked release process -->
+				<arguments>-P release</arguments>
 			</properties>
 		</profile>
 	</profiles>
