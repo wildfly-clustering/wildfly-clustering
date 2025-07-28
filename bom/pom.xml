@@ -374,9 +374,34 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
 					<!-- jboss-parent defines an arguments property which otherwise applies jboss-release profile on prepare -->
-					<arguments combine.self="override" />
+					<arguments combine.self="override"/>
+					<pushChanges>${nexusStagingDisabled}</pushChanges>
 					<releaseProfiles>gpg-sign,release</releaseProfiles>
+					<signTag>true</signTag>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>nexus.staging.enabled</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>bsh-property</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<property>nexusStagingDisabled</property>
+								<property>nexusStagingEnabled</property>
+							</properties>
+							<source>
+								nexusStagingDisabled = java.util.Objects.equals("${nexus.repository.release}", "${nexus.repository.staging}");
+								nexusStagingEnabled = !nexusStagingDisabled;
+							</source>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
