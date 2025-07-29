@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.server.local.scheduler;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
@@ -100,9 +102,18 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 		return this.entries.contains(id);
 	}
 
+	@SuppressWarnings("removal")
 	@Override
 	public void close() {
 		LOGGER.log(System.Logger.Level.DEBUG, "Shutting down local {0} scheduler", this.name);
+		PrivilegedAction<Void> action = new PrivilegedAction<>() {
+			@Override
+			public Void run() {
+				LocalScheduler.this.executor.shutdown();
+				return null;
+			}
+		};
+		AccessController.doPrivileged(action);
 		this.executor.shutdown();
 		if (!this.closeTimeout.isNegative() && !this.closeTimeout.isZero()) {
 			try {

@@ -343,23 +343,6 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<!-- 
-					Tag and release to staging:
-						mvn release:prepare release:perform
-						cd target/checkout
-					Release staged artifacts:
-						mvn nxrm3:staging-move
-					Drop staged artifacts:
-						mvn nxrm3:staging-delete
-				-->
-				<configuration>
-					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<tagNameFormat>@{project.version}</tagNameFormat>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<executions>
 					<execution>

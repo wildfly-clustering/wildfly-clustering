@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.server.infinispan.provider;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -78,8 +80,16 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		}
 	}
 
+	@SuppressWarnings("removal")
 	private void shutdown(ExecutorService executor) {
-		executor.shutdown();
+		PrivilegedAction<Void> action = new PrivilegedAction<>() {
+			@Override
+			public Void run() {
+				executor.shutdown();
+				return null;
+			}
+		};
+		AccessController.doPrivileged(action);
 		try {
 			executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
