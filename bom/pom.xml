@@ -429,8 +429,6 @@
 				<checkstyle.skip>true</checkstyle.skip>
 				<skipTests>true</skipTests>
 				<skipITs>true</skipITs>
-				<!-- Enable this profile for forked executions of release:perform -->
-				<arguments>-P release</arguments>
 			</properties>
 		</profile>
 	</profiles>
