@@ -44,7 +44,7 @@
 		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering.git</connection>
 		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering.git</developerConnection>
 		<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
-		<tag>7.0.9.Alpha1</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencyManagement>
@@ -350,14 +350,6 @@
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nxrm3-maven-plugin</artifactId>
 					<version>1.0.7</version>
-					<configuration>
-						<serverId>${nexus.server.id}</serverId>
-						<nexusUrl>${nexus.repository.url}</nexusUrl>
-						<repository>${nexus.repository.staging}</repository>
-						<tag>${nexus.staging.tag}</tag>
-						<!-- Used by staging-move goal -->
-						<destinationRepository>${nexus.repository.release}</destinationRepository>
-					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -388,6 +380,14 @@
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nxrm3-maven-plugin</artifactId>
+				<configuration>
+					<serverId>${nexus.server.id}</serverId>
+					<nexusUrl>${nexus.repository.url}</nexusUrl>
+					<repository>${nexus.repository.staging}</repository>
+					<tag>${nexus.staging.tag}</tag>
+					<!-- Used by staging-move goal -->
+					<destinationRepository>${nexus.repository.release}</destinationRepository>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -407,10 +407,6 @@
 								<goals>
 									<goal>staging-deploy</goal>
 								</goals>
-								<configuration>
-									<!-- Remove properties not recognised by staging-deploy goal -->
-									<destinationRepository combine.self="override" />
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>
