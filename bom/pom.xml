@@ -353,6 +353,10 @@
 					<configuration>
 						<serverId>${nexus.server.id}</serverId>
 						<nexusUrl>${nexus.repository.url}</nexusUrl>
+						<repository>${nexus.repository.staging}</repository>
+						<tag>${nexus.staging.tag}</tag>
+						<!-- Used by staging-move goal -->
+						<destinationRepository>${nexus.repository.release}</destinationRepository>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -384,40 +388,6 @@
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nxrm3-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<!-- Execute during deploy phase to deploy to nexus staging -->
-						<id>nexus-deploy</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>staging-deploy</goal>
-						</goals>
-						<configuration>
-							<repository>${nexus.repository.staging}</repository>
-							<tag>${nexus.staging.tag}</tag>
-						</configuration>
-					</execution>
-					<execution>
-						<id>nexus-move</id>
-						<goals>
-							<goal>staging-move</goal>
-						</goals>
-						<configuration>
-							<repository>${nexus.repository.staging}</repository>
-							<destinationRepository>${nexus.repository.release}</destinationRepository>
-							<tag>${nexus.staging.tag}</tag>
-						</configuration>
-					</execution>
-					<execution>
-						<id>nexus-delete</id>
-						<goals>
-							<goal>staging-delete</goal>
-						</goals>
-						<configuration>
-							<tag>${nexus.staging.tag}</tag>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -425,13 +395,27 @@
 	<profiles>
 		<profile>
 			<id>release</id>
-			<properties>
-				<checkstyle.skip>true</checkstyle.skip>
-				<skipTests>true</skipTests>
-				<skipITs>true</skipITs>
-				<!-- Enable this profile for forked executions of release:perform -->
-				<arguments>-P release</arguments>
-			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nxrm3-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>nexus-deploy</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>staging-deploy</goal>
+								</goals>
+								<configuration>
+									<!-- Remove properties not recognised by staging-deploy goal -->
+									<destinationRepository combine.self="override"/>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>
