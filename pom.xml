@@ -394,6 +394,11 @@
 		</profile>
 		<profile>
 			<id>release</id>
+			<properties>
+				<checkstyle.skip>true</checkstyle.skip>
+				<skipTests>true</skipTests>
+				<skipITs>true</skipITs>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
