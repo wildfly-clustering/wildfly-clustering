@@ -55,6 +55,7 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 			this.accept(managerContext::close);
 			ConfigurationBuilder builder = new ConfigurationBuilder();
 			builder.clustering().cacheType(parameters.getCacheType());
+			builder.clustering().hash().numSegments(16);
 			TransactionMode transactionMode = parameters.getTransactionMode();
 			builder.transaction().transactionMode(transactionMode);
 			if (transactionMode.isTransactional()) {
