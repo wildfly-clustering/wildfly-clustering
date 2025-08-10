@@ -25,7 +25,7 @@
 	<properties>
 		<!-- Nexus deployment settings -->
 		<nexus.repository.release>releases</nexus.repository.release>
-		<nexus.repository.staging>wildfly-staging</nexus.repository.staging>
+		<nexus.repository.staging>${nexus.repository.release}</nexus.repository.staging>
 		<nexus.repository.url>https://repository.jboss.org/nexus/</nexus.repository.url>
 		<nexus.server.id>jboss</nexus.server.id>
 		<nexus.staging.tag>${project.groupId}-${project.version}</nexus.staging.tag>
