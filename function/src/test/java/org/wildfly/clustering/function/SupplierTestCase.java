@@ -33,10 +33,10 @@ public class SupplierTestCase {
 		long expectedLong = this.random.nextLong();
 		Supplier<Object> supplier = mock(Supplier.class);
 		doCallRealMethod().when(supplier).map(ArgumentMatchers.<Function<Object, Object>>any());
-		doCallRealMethod().when(supplier).map(ArgumentMatchers.<Predicate<Object>>any());
-		doCallRealMethod().when(supplier).map(ArgumentMatchers.<ToDoubleFunction<Object>>any());
-		doCallRealMethod().when(supplier).map(ArgumentMatchers.<ToIntFunction<Object>>any());
-		doCallRealMethod().when(supplier).map(ArgumentMatchers.<ToLongFunction<Object>>any());
+		doCallRealMethod().when(supplier).mapAsBoolean(ArgumentMatchers.<Predicate<Object>>any());
+		doCallRealMethod().when(supplier).mapAsDouble(ArgumentMatchers.<ToDoubleFunction<Object>>any());
+		doCallRealMethod().when(supplier).mapAsInt(ArgumentMatchers.<ToIntFunction<Object>>any());
+		doCallRealMethod().when(supplier).mapAsLong(ArgumentMatchers.<ToLongFunction<Object>>any());
 		doReturn(value).when(supplier).get();
 		Function<Object, Object> mapper = mock(Function.class);
 		Predicate<Object> predicate = mock(Predicate.class);
@@ -50,10 +50,10 @@ public class SupplierTestCase {
 		doReturn(expectedLong).when(longMapper).applyAsLong(value);
 
 		assertThat(supplier.map(mapper).get()).isSameAs(expected);
-		assertThat(supplier.map(predicate).getAsBoolean()).isEqualTo(expectedBoolean);
-		assertThat(supplier.map(doubleMapper).getAsDouble()).isEqualTo(expectedDouble);
-		assertThat(supplier.map(intMapper).getAsInt()).isEqualTo(expectedInt);
-		assertThat(supplier.map(longMapper).getAsLong()).isEqualTo(expectedLong);
+		assertThat(supplier.mapAsBoolean(predicate).getAsBoolean()).isEqualTo(expectedBoolean);
+		assertThat(supplier.mapAsDouble(doubleMapper).getAsDouble()).isEqualTo(expectedDouble);
+		assertThat(supplier.mapAsInt(intMapper).getAsInt()).isEqualTo(expectedInt);
+		assertThat(supplier.mapAsLong(longMapper).getAsLong()).isEqualTo(expectedLong);
 	}
 
 	@Test
