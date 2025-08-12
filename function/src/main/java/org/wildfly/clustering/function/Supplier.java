@@ -38,7 +38,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param mapper a mapping predicate
 	 * @return a supplier that returns the value this supplier mapped via the specified predicate.
 	 */
-	default BooleanSupplier map(java.util.function.Predicate<T> mapper) {
+	default BooleanSupplier mapAsBoolean(java.util.function.Predicate<T> mapper) {
 		return new BooleanSupplier() {
 			@Override
 			public boolean getAsBoolean() {
@@ -52,7 +52,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param mapper a mapping function
 	 * @return a supplier that returns the value this supplier mapped via the specified function.
 	 */
-	default IntSupplier map(java.util.function.ToIntFunction<T> mapper) {
+	default IntSupplier mapAsInt(java.util.function.ToIntFunction<T> mapper) {
 		return new IntSupplier() {
 			@Override
 			public int getAsInt() {
@@ -66,7 +66,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param mapper a mapping function
 	 * @return a supplier that returns the value this supplier mapped via the specified function.
 	 */
-	default LongSupplier map(java.util.function.ToLongFunction<T> mapper) {
+	default LongSupplier mapAsLong(java.util.function.ToLongFunction<T> mapper) {
 		return new LongSupplier() {
 			@Override
 			public long getAsLong() {
@@ -80,7 +80,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param mapper a mapping function
 	 * @return a supplier that returns the value this supplier mapped via the specified function.
 	 */
-	default DoubleSupplier map(java.util.function.ToDoubleFunction<T> mapper) {
+	default DoubleSupplier mapAsDouble(java.util.function.ToDoubleFunction<T> mapper) {
 		return new DoubleSupplier() {
 			@Override
 			public double getAsDouble() {
