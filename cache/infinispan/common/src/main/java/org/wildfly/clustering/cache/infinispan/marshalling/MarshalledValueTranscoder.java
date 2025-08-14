@@ -52,15 +52,16 @@ public class MarshalledValueTranscoder<C> extends OneToManyTranscoder {
 					throw CONTAINER.errorTranscoding(Util.toStr(content), contentType, destinationType, e);
 				}
 			}
-		}
-		if (destinationType.match(this.mainType) && (contentType.match(MediaType.APPLICATION_OCTET_STREAM) || contentType.match(MediaType.APPLICATION_OCTET_STREAM))) {
-			try {
-				Object object = contentType.match(MediaType.APPLICATION_OCTET_STREAM) ? this.marshaller.objectFromByteBuffer((byte[]) content) : content;
-				@SuppressWarnings("unchecked")
-				MarshalledValue<Object, C> value = (MarshalledValue<Object, C>) object;
-				return value.get(this.factory.getMarshallingContext());
-			} catch (IOException | ClassNotFoundException e) {
-				throw CONTAINER.errorTranscoding(Util.toStr(content), contentType, destinationType, e);
+		} else if (destinationType.match(this.mainType)) {
+			if (contentType.match(MediaType.APPLICATION_OBJECT) || contentType.match(MediaType.APPLICATION_OCTET_STREAM)) {
+				try {
+					Object object = contentType.match(MediaType.APPLICATION_OCTET_STREAM) ? this.marshaller.objectFromByteBuffer((byte[]) content) : content;
+					@SuppressWarnings("unchecked")
+					MarshalledValue<Object, C> value = (MarshalledValue<Object, C>) object;
+					return value.get(this.factory.getMarshallingContext());
+				} catch (IOException | ClassNotFoundException e) {
+					throw CONTAINER.errorTranscoding(Util.toStr(content), contentType, destinationType, e);
+				}
 			}
 		}
 		throw CONTAINER.unsupportedConversion(Util.toStr(content), contentType, destinationType);
