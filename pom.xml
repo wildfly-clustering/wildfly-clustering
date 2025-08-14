@@ -23,6 +23,8 @@
 		<jdk.runtime.args>-Djava.util.logging.manager=org.jboss.logmanager.LogManager --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
 		<jacoco.skip>true</jacoco.skip>
 		<maven.compiler.release>17</maven.compiler.release>
+		<!-- Skip redundant source packaging -->
+		<skipReleaseAssembly>true</skipReleaseAssembly>
 
 		<!-- Provided dependency versions -->
 		<version.jakarta.transaction>2.0.1</version.jakarta.transaction>
@@ -398,7 +400,7 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>release</id>
+			<id>jboss-release</id>
 			<properties>
 				<checkstyle.skip>true</checkstyle.skip>
 				<skipTests>true</skipTests>
