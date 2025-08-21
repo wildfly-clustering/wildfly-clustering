@@ -13,16 +13,86 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier {
 	DoubleSupplier ZERO = of(0d);
 
 	/**
-	 * Returns a supplier that returns the value this function mapped via the specified function.
-	 * @param <V> the mapped value type
-	 * @param mapper a mapping function
-	 * @return a supplier that returns the value this function mapped via the specified function.
+	 * Returns a runner that accepts the value returned by this supplier via the specified consumer.
+	 * @param consumer a integer consumer
+	 * @return a runner that accepts the value returned by this supplier via the specified consumer.
 	 */
-	default <V> Supplier<V> map(java.util.function.DoubleFunction<V> mapper) {
+	default Runnable thenAccept(java.util.function.DoubleConsumer consumer) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				consumer.accept(DoubleSupplier.this.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified function to the value returned by this supplier.
+	 * @param <V> the mapped value type
+	 * @param function a mapping function
+	 * @return a supplier that applies the specified function to the value returned by this supplier.
+	 */
+	default <V> Supplier<V> thenApply(java.util.function.DoubleFunction<V> function) {
 		return new Supplier<>() {
 			@Override
 			public V get() {
-				return mapper.apply(DoubleSupplier.this.getAsDouble());
+				return function.apply(DoubleSupplier.this.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified operator to the value returned by this supplier.
+	 * @param operator a mapping operator
+	 * @return a supplier that applies the specified operator to the value returned by this supplier.
+	 */
+	default DoubleSupplier thenApplyAsDouble(java.util.function.DoubleUnaryOperator operator) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				return operator.applyAsDouble(DoubleSupplier.this.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified function to the value returned by this supplier.
+	 * @param function a mapping function
+	 * @return a supplier that applies the specified function to the value returned by this supplier.
+	 */
+	default IntSupplier thenApplyAsInt(java.util.function.DoubleToIntFunction function) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				return function.applyAsInt(DoubleSupplier.this.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified function to the value returned by this supplier.
+	 * @param function a mapping function
+	 * @return a supplier that applies the specified function to the value returned by this supplier.
+	 */
+	default LongSupplier thenApplyAsLong(java.util.function.DoubleToLongFunction function) {
+		return new LongSupplier() {
+			@Override
+			public long getAsLong() {
+				return function.applyAsLong(DoubleSupplier.this.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified predicate to the value returned by this supplier.
+	 * @param predicate a predicate
+	 * @return a supplier that applies the specified predicate to the value returned by this supplier.
+	 */
+	default BooleanSupplier thenTest(java.util.function.DoublePredicate predicate) {
+		return new BooleanSupplier() {
+			@Override
+			public boolean getAsBoolean() {
+				return predicate.test(DoubleSupplier.this.getAsDouble());
 			}
 		};
 	}
@@ -32,7 +102,7 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier {
 	 * @return a boxed version of this supplier.
 	 */
 	default Supplier<Double> boxed() {
-		return map(Double::valueOf);
+		return thenApply(Double::valueOf);
 	}
 
 	/**

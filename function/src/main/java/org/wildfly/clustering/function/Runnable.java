@@ -13,12 +13,7 @@ import java.util.function.Supplier;
  * @author Paul Ferraro
  */
 public interface Runnable extends java.lang.Runnable {
-	Runnable EMPTY = new Runnable() {
-		@Override
-		public void run() {
-			// Do nothing
-		}
-	};
+	Runnable EMPTY = () -> {};
 
 	/**
 	 * Returns a task that runs the specified task after running this task.

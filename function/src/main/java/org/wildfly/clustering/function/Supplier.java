@@ -11,38 +11,45 @@ package org.wildfly.clustering.function;
  * @param <T> the supplied type
  */
 public interface Supplier<T> extends java.util.function.Supplier<T> {
-	Supplier<?> NULL = new Supplier<>() {
-		@Override
-		public Object get() {
-			return null;
-		}
-	};
+	Supplier<?> NULL = () -> null;
 
 	/**
 	 * Returns a supplier that returns the value this supplier mapped via the specified function.
 	 * @param <V> the mapped value type
 	 * @param mapper a mapping function
 	 * @return a supplier that returns the value this supplier mapped via the specified function.
+	 * @deprecated Superseded by {@link #thenApply(java.util.function.Function)}
 	 */
+	@Deprecated(forRemoval = true)
 	default <V> Supplier<V> map(java.util.function.Function<T, V> mapper) {
-		return new Supplier<>() {
+		return this.thenApply(mapper);
+	}
+
+	/**
+	 * Returns a {@link Runnable} that consumes the supplied value.
+	 * @param consumer a consumer of the supplied value
+	 * @return a {@link Runnable} that consumes the supplied value.
+	 */
+	default Runnable thenAccept(Consumer<T> consumer) {
+		return new Runnable() {
 			@Override
-			public V get() {
-				return mapper.apply(Supplier.this.get());
+			public void run() {
+				consumer.accept(Supplier.this.get());
 			}
 		};
 	}
 
 	/**
-	 * Returns a supplier that returns the value this supplier mapped via the specified predicate.
-	 * @param mapper a mapping predicate
-	 * @return a supplier that returns the value this supplier mapped via the specified predicate.
+	 * Returns a supplier that returns the value this supplier mapped via the specified function.
+	 * @param <R> the mapped value type
+	 * @param function a mapping function
+	 * @return a supplier that returns the value this supplier mapped via the specified function.
 	 */
-	default BooleanSupplier mapAsBoolean(java.util.function.Predicate<T> mapper) {
-		return new BooleanSupplier() {
+	default <R> Supplier<R> thenApply(java.util.function.Function<T, R> function) {
+		return new Supplier<>() {
 			@Override
-			public boolean getAsBoolean() {
-				return mapper.test(Supplier.this.get());
+			public R get() {
+				return function.apply(Supplier.this.get());
 			}
 		};
 	}
@@ -52,7 +59,21 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param mapper a mapping function
 	 * @return a supplier that returns the value this supplier mapped via the specified function.
 	 */
-	default IntSupplier mapAsInt(java.util.function.ToIntFunction<T> mapper) {
+	default DoubleSupplier thenApplyAsDouble(java.util.function.ToDoubleFunction<T> mapper) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				return mapper.applyAsDouble(Supplier.this.get());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that returns the value this supplier mapped via the specified function.
+	 * @param mapper a mapping function
+	 * @return a supplier that returns the value this supplier mapped via the specified function.
+	 */
+	default IntSupplier thenApplyAsInt(java.util.function.ToIntFunction<T> mapper) {
 		return new IntSupplier() {
 			@Override
 			public int getAsInt() {
@@ -66,7 +87,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param mapper a mapping function
 	 * @return a supplier that returns the value this supplier mapped via the specified function.
 	 */
-	default LongSupplier mapAsLong(java.util.function.ToLongFunction<T> mapper) {
+	default LongSupplier thenApplyAsLong(java.util.function.ToLongFunction<T> mapper) {
 		return new LongSupplier() {
 			@Override
 			public long getAsLong() {
@@ -76,15 +97,15 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	}
 
 	/**
-	 * Returns a supplier that returns the value this supplier mapped via the specified function.
-	 * @param mapper a mapping function
-	 * @return a supplier that returns the value this supplier mapped via the specified function.
+	 * Returns a supplier that returns the value this supplier mapped via the specified predicate.
+	 * @param predicate a mapping predicate
+	 * @return a supplier that returns the value this supplier mapped via the specified predicate.
 	 */
-	default DoubleSupplier mapAsDouble(java.util.function.ToDoubleFunction<T> mapper) {
-		return new DoubleSupplier() {
+	default BooleanSupplier thenTest(java.util.function.Predicate<T> predicate) {
+		return new BooleanSupplier() {
 			@Override
-			public double getAsDouble() {
-				return mapper.applyAsDouble(Supplier.this.get());
+			public boolean getAsBoolean() {
+				return predicate.test(Supplier.this.get());
 			}
 		};
 	}

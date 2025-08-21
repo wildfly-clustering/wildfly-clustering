@@ -17,8 +17,8 @@ import java.util.function.LongFunction;
  * @param <T> the argument type
  */
 public interface Predicate<T> extends java.util.function.Predicate<T> {
-	Predicate<?> ALWAYS = new SimplePredicate<>(true);
-	Predicate<?> NEVER = new SimplePredicate<>(false);
+	Predicate<?> ALWAYS = value -> true;
+	Predicate<?> NEVER = value -> false;
 
 	/**
 	 * Returns a new predicate that delegates to this predicate using the specified exception handler.
@@ -39,74 +39,73 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	}
 
 	/**
-	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
-	 * @param <V> the mapped type
-	 * @param mapper
-	 * @return a mapped predicate
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
+	 * @param function a mapping function
+	 * @return a composed predicate
 	 */
-	default <V> Predicate<V> compose(Function<V, T> mapper) {
+	default <V> Predicate<V> compose(Function<V, T> function) {
 		return new Predicate<>() {
 			@Override
 			public boolean test(V test) {
-				return Predicate.this.test(mapper.apply(test));
+				return Predicate.this.test(function.apply(test));
 			}
 		};
 	}
 
 	/**
-	 * Composes a predicate that applies the specified mapping to its argument before evaluating.
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
 	 * @param <V1> the former parameter type
 	 * @param <V2> the latter parameter type
-	 * @param mapper the mapping function to apply to the parameter to this function
-	 * @return a composed predicate that applies the specified mapping to its argument before evaluating.
+	 * @param function a mapping function
+	 * @return a composed predicate
 	 */
-	default <V1, V2> BiPredicate<V1, V2> compose(BiFunction<V1, V2, T> mapper) {
+	default <V1, V2> BiPredicate<V1, V2> composeBinary(BiFunction<V1, V2, T> function) {
 		return new BiPredicate<>() {
 			@Override
 			public boolean test(V1 test1, V2 test2) {
-				return Predicate.this.test(mapper.apply(test1, test2));
+				return Predicate.this.test(function.apply(test1, test2));
 			}
 		};
 	}
 
 	/**
-	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
-	 * @param mapper
-	 * @return a mapped predicate
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
+	 * @param function a mapping function
+	 * @return a composed predicate
 	 */
-	default DoublePredicate compose(DoubleFunction<T> mapper) {
+	default DoublePredicate composeDouble(DoubleFunction<T> function) {
 		return new DoublePredicate() {
 			@Override
 			public boolean test(double value) {
-				return Predicate.this.test(mapper.apply(value));
+				return Predicate.this.test(function.apply(value));
 			}
 		};
 	}
 
 	/**
-	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
-	 * @param mapper
-	 * @return a mapped predicate
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
+	 * @param function a mapping function
+	 * @return a composed predicate
 	 */
-	default IntPredicate compose(IntFunction<T> mapper) {
+	default IntPredicate composeInt(IntFunction<T> function) {
 		return new IntPredicate() {
 			@Override
 			public boolean test(int value) {
-				return Predicate.this.test(mapper.apply(value));
+				return Predicate.this.test(function.apply(value));
 			}
 		};
 	}
 
 	/**
-	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
-	 * @param mapper
-	 * @return a mapped predicate
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
+	 * @param function a mapping function
+	 * @return a composed predicate
 	 */
-	default LongPredicate compose(LongFunction<T> mapper) {
+	default LongPredicate composeLong(LongFunction<T> function) {
 		return new LongPredicate() {
 			@Override
 			public boolean test(long value) {
-				return Predicate.this.test(mapper.apply(value));
+				return Predicate.this.test(function.apply(value));
 			}
 		};
 	}
@@ -186,21 +185,56 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param <T> the argument type
 	 * @return a predicate that evaluates to true if and only if the argument is equals to the specified object.
 	 */
-	static <T> Predicate<T> equal(T object) {
-		return (object == null) ? Objects::isNull : object::equals;
+	static <T> Predicate<T> equalTo(T object) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return Objects.equals(value, object);
+			}
+		};
 	}
 
 	/**
-	 * Returns a predicate that evaluates to true if and only if the argument references the specified object.
+	 * Returns a predicate that evaluates to true if and only if the argument is identical to the specified object.
 	 * @param object the object whose reference must match the predicate argument
 	 * @param <T> the argument type
-	 * @return a predicate that evaluates to true if and only if the argument references the specified object.
+	 * @return a predicate that evaluates to true if and only if the argument is identical to the specified object.
 	 */
-	static <T> Predicate<T> same(T object) {
+	static <T> Predicate<T> identicalTo(T object) {
 		return new Predicate<>() {
 			@Override
 			public boolean test(T value) {
 				return object == value;
+			}
+		};
+	}
+
+	/**
+	 * Returns a predicate that evaluates to true if and only if the argument is comparatively less than the specified object.
+	 * @param object the object whose reference must match the predicate argument
+	 * @param <T> the argument type
+	 * @return a predicate that evaluates to true if and only if the argument is comparatively less than the specified object.
+	 */
+	static <T extends Comparable<T>> Predicate<T> lessThan(T object) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return value.compareTo(object) < 0;
+			}
+		};
+	}
+
+	/**
+	 * Returns a predicate that evaluates to true if and only if the argument is comparatively greater than the specified object.
+	 * @param object the object whose reference must match the predicate argument
+	 * @param <T> the argument type
+	 * @return a predicate that evaluates to true if and only if the argument is comparatively greater than the specified object.
+	 */
+	static <T extends Comparable<T>> Predicate<T> greaterThan(T object) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return value.compareTo(object) > 0;
 			}
 		};
 	}
@@ -214,18 +248,5 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	@SuppressWarnings("unchecked")
 	static <T> Predicate<T> not(Predicate<? super T> predicate) {
 		return (Predicate<T>) predicate.negate();
-	}
-
-	class SimplePredicate<T> implements Predicate<T> {
-		private final boolean value;
-
-		SimplePredicate(boolean value) {
-			this.value = value;
-		}
-
-		@Override
-		public boolean test(T value) {
-			return this.value;
-		}
 	}
 }

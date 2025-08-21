@@ -21,6 +21,30 @@ import org.mockito.InOrder;
 public class ConsumerTestCase {
 
 	@Test
+	public void thenReturn() {
+		Object value = new Object();
+		Object expected = new Object();
+		Consumer<Object> consumer = mock(Consumer.class);
+		Supplier<Object> supplier = mock(Supplier.class);
+		doReturn(expected).when(supplier).get();
+
+		doCallRealMethod().when(consumer).thenReturn(any());
+
+		Object result = consumer.thenReturn(supplier).apply(value);
+
+		assertThat(result).isSameAs(expected);
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void throwing() {
+		java.io.IOException cause = new java.io.IOException();
+		Consumer<java.io.IOException> consumer = Consumer.throwing(java.io.UncheckedIOException::new);
+
+		assertThatThrownBy(() -> consumer.accept(cause)).isExactlyInstanceOf(java.io.UncheckedIOException.class).cause().isSameAs(cause);
+	}
+
+	@Test
 	public void compose() {
 		Consumer<Object> consumer = mock(Consumer.class);
 		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<Function<Object, Object>>any());

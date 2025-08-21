@@ -11,18 +11,90 @@ package org.wildfly.clustering.function;
  */
 public interface IntSupplier extends java.util.function.IntSupplier {
 	IntSupplier ZERO = of(0);
+	IntSupplier MINIMUM = of(Integer.MIN_VALUE);
+	IntSupplier MAXIMUM = of(Integer.MAX_VALUE);
 
 	/**
-	 * Returns a supplier that returns the value this function mapped via the specified function.
-	 * @param <V> the mapped value type
-	 * @param mapper a mapping function
-	 * @return a supplier that returns the value this function mapped via the specified function.
+	 * Returns a runner that accepts the value returned by this supplier via the specified consumer.
+	 * @param consumer a integer consumer
+	 * @return a runner that accepts the value returned by this supplier via the specified consumer.
 	 */
-	default <V> Supplier<V> map(java.util.function.IntFunction<V> mapper) {
+	default Runnable thenAccept(java.util.function.IntConsumer consumer) {
+		return new Runnable() {
+			@Override
+			public void run() {
+				consumer.accept(IntSupplier.this.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified function to the value returned by this supplier.
+	 * @param <V> the mapped value type
+	 * @param function a mapping function
+	 * @return a supplier that applies the specified function to the value returned by this supplier.
+	 */
+	default <V> Supplier<V> thenApply(java.util.function.IntFunction<V> function) {
 		return new Supplier<>() {
 			@Override
 			public V get() {
-				return mapper.apply(IntSupplier.this.getAsInt());
+				return function.apply(IntSupplier.this.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified function to the value returned by this supplier.
+	 * @param function a mapping function
+	 * @return a supplier that applies the specified function to the value returned by this supplier.
+	 */
+	default DoubleSupplier thenApplyAsDouble(java.util.function.IntToDoubleFunction function) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				return function.applyAsDouble(IntSupplier.this.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified operator to the value returned by this supplier.
+	 * @param operator a mapping operator
+	 * @return a supplier that applies the specified operator to the value returned by this supplier.
+	 */
+	default IntSupplier thenApplyAsInt(java.util.function.IntUnaryOperator operator) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				return operator.applyAsInt(IntSupplier.this.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified function to the value returned by this supplier.
+	 * @param function a mapping function
+	 * @return a supplier that applies the specified function to the value returned by this supplier.
+	 */
+	default LongSupplier thenApplyAsLong(java.util.function.IntToLongFunction function) {
+		return new LongSupplier() {
+			@Override
+			public long getAsLong() {
+				return function.applyAsLong(IntSupplier.this.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that applies the specified predicate to the value returned by this supplier.
+	 * @param predicate a integer predicate
+	 * @return a supplier that applies the specified predicate to the value returned by this supplier.
+	 */
+	default BooleanSupplier thenTest(java.util.function.IntPredicate predicate) {
+		return new BooleanSupplier() {
+			@Override
+			public boolean getAsBoolean() {
+				return predicate.test(IntSupplier.this.getAsInt());
 			}
 		};
 	}
@@ -32,7 +104,7 @@ public interface IntSupplier extends java.util.function.IntSupplier {
 	 * @return a boxed version of this supplier.
 	 */
 	default Supplier<Integer> boxed() {
-		return map(Integer::valueOf);
+		return thenApply(Integer::valueOf);
 	}
 
 	/**
