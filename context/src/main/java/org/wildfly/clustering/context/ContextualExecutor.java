@@ -46,16 +46,7 @@ public interface ContextualExecutor extends Executor {
 	 */
 	default <T> T execute(Callable<T> caller) throws Exception {
 		try {
-			return this.execute(new Supplier<>() {
-				@Override
-				public T get() {
-					try {
-						return caller.call();
-					} catch (Exception e) {
-						throw new CompletionException(e);
-					}
-				}
-			});
+			return this.execute(org.wildfly.clustering.function.Supplier.call(caller, org.wildfly.clustering.function.Consumer.<Exception>throwing(CompletionException::new).thenReturn(org.wildfly.clustering.function.Supplier.<T>empty())));
 		} catch (CompletionException e) {
 			throw (Exception) e.getCause();
 		}
