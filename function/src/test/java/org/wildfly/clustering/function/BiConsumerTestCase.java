@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.function;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -30,6 +31,32 @@ public class BiConsumerTestCase {
 		consumer.accept(this.value1, null);
 		consumer.accept(null, this.value2);
 		consumer.accept(null, null);
+	}
+
+	@Test
+	public void thenReturn() {
+		Object value1 = new Object();
+		Object value2 = new Object();
+		Object expected = new Object();
+		BiConsumer<Object, Object> consumer = mock(BiConsumer.class);
+		Supplier<Object> supplier = mock(Supplier.class);
+		doReturn(expected).when(supplier).get();
+
+		doCallRealMethod().when(consumer).thenReturn(any());
+
+		Object result = consumer.thenReturn(supplier).apply(value1, value2);
+
+		assertThat(result).isSameAs(expected);
+		verify(consumer).accept(value1, value2);
+	}
+
+	@Test
+	public void throwing() {
+		String message = "test";
+		java.io.IOException cause = new java.io.IOException();
+		BiConsumer<String, java.io.IOException> consumer = BiConsumer.throwing(java.io.UncheckedIOException::new);
+
+		assertThatThrownBy(() -> consumer.accept(message, cause)).isExactlyInstanceOf(java.io.UncheckedIOException.class).hasMessage(message).cause().isSameAs(cause);
 	}
 
 	@Test

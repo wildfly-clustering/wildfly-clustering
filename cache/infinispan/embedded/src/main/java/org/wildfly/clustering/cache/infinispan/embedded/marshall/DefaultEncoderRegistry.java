@@ -43,7 +43,7 @@ public class DefaultEncoderRegistry implements EncoderRegistry, Function<Map.Ent
 
 	@Override
 	public <T extends Transcoder> T getTranscoder(Class<T> targetClass) {
-		return targetClass.cast(this.transcoders.stream().filter(Predicate.<Class<?>>same(targetClass).compose(Object::getClass)).findFirst().orElse(null));
+		return targetClass.cast(this.transcoders.stream().filter(Predicate.<Class<?>>identicalTo(targetClass).compose(Object::getClass)).findFirst().orElse(null));
 	}
 
 	@Override

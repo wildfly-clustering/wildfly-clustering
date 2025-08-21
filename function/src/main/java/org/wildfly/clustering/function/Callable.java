@@ -11,12 +11,7 @@ package org.wildfly.clustering.function;
  * @param <T> the result type
  */
 public interface Callable<T> extends java.util.concurrent.Callable<T> {
-	Callable<?> NULL = new Callable<>() {
-		@Override
-		public Object call() {
-			return null;
-		}
-	};
+	Callable<?> NULL = () -> null;
 
 	/**
 	 * Returns a callable whose result is mapped by the specified function.
@@ -24,7 +19,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @param mapper a mapping function
 	 * @return a callable whose result is mapped by the specified function.
 	 */
-	default <R> Callable<R> map(Function<T, R> mapper) {
+	default <R> Callable<R> andThen(java.util.function.Function<T, R> mapper) {
 		return new Callable<>() {
 			@Override
 			public R call() throws Exception {
@@ -47,7 +42,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @param runner a runner
 	 * @return a callable that runs the specified runner and returns <code>null</code>.
 	 */
-	static <T> Callable<T> run(Runnable runner) {
+	static <T> Callable<T> run(java.lang.Runnable runner) {
 		return (runner != null) && (runner != Runnable.EMPTY) ? new Callable<>() {
 			@Override
 			public T call() {
@@ -62,7 +57,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @param supplier a supplier
 	 * @return the result of the specified supplier.
 	 */
-	static <T> Callable<T> get(Supplier<T> supplier) {
+	static <T> Callable<T> get(java.util.function.Supplier<T> supplier) {
 		return (supplier != null) && (supplier != Supplier.NULL) ? new Callable<>() {
 			@Override
 			public T call() {
@@ -90,7 +85,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @param exceptionProvider a provider of an exception
 	 * @return a callable that throws the provided exception.
 	 */
-	static <T> Callable<T> exceptional(Supplier<? extends Exception> exceptionProvider) {
+	static <T> Callable<T> exceptional(java.util.function.Supplier<? extends Exception> exceptionProvider) {
 		return new Callable<>() {
 			@Override
 			public T call() throws Exception {
