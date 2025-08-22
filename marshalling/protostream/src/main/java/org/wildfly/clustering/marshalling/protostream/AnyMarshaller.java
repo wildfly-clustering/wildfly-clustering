@@ -57,8 +57,8 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 		AnyField field = AnyField.fromJavaType(valueClass);
 		if (field != null) return field;
 
-		if (value instanceof Enum) {
-			Enum<?> enumValue = (Enum<?>) value;
+		if (value instanceof Enum enumValue) {
+			@SuppressWarnings("unchecked")
 			BaseMarshaller<?> marshaller = context.getMarshaller(enumValue.getDeclaringClass());
 			return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_ENUM : AnyField.NAMED_ENUM;
 		}

@@ -34,11 +34,10 @@ public class MapComputeFunction<K, V> extends MapFunction<K, V, Map<K, V>> {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof MapComputeFunction)) return false;
-		@SuppressWarnings("unchecked")
-		MapComputeFunction<K, V> function = (MapComputeFunction<K, V>) object;
+		if (!(object instanceof MapComputeFunction function)) return false;
 		Map<K, V> ourOperand = this.getOperand();
-		Map<K, V> otherOperand = function.getOperand();
+		@SuppressWarnings("unchecked")
+		Map<K, V> otherOperand = (Map<K, V>) function.getOperand();
 		return ourOperand.size() == otherOperand.size() && ourOperand.keySet().containsAll(otherOperand.keySet()) && ourOperand.equals(otherOperand);
 	}
 }

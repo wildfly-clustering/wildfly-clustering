@@ -73,8 +73,8 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 		try {
 			View previousView = this.view.getAndSet(view);
 			if (previousView != null) {
-				if (view instanceof MergeView) {
-					GroupMembershipMergeEvent<ChannelGroupMember> event = new DefaultGroupMembershipMergeEvent(previousView, (MergeView) view);
+				if (view instanceof MergeView mergeView) {
+					GroupMembershipMergeEvent<ChannelGroupMember> event = new DefaultGroupMembershipMergeEvent(previousView, mergeView);
 					this.listeners.accept(listener -> listener.merged(event));
 				} else {
 					List<Address> leavers = View.leftMembers(previousView, view);

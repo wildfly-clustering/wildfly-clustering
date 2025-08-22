@@ -33,9 +33,9 @@ public class KeyPartitionerFactory extends AbstractNamedCacheComponentFactory im
 
 		return new KeyPartitioner() {
 			@Override
-			public int getSegment(Object key) {
+			public int getSegment(Object object) {
 				// Co-locate keys with the same ID
-				return partitioner.getSegment((key instanceof Key) ? ((Key<?>) key).getId() : key);
+				return partitioner.getSegment((object instanceof Key key) ? key.getId() : object);
 			}
 		};
 	}

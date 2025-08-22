@@ -40,8 +40,7 @@ public class JChannelGroupMember implements ChannelGroupMember {
 	@Override
 	public boolean equals(Object object) {
 		if (this == object) return true;
-		if (!(object instanceof ChannelGroupMember)) return false;
-		ChannelGroupMember member = (ChannelGroupMember) object;
+		if (!(object instanceof ChannelGroupMember member)) return false;
 		return this.address.equals(member.getAddress());
 	}
 

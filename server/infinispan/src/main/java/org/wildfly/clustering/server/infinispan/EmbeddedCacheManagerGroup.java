@@ -123,9 +123,7 @@ public class EmbeddedCacheManagerGroup<A extends Comparable<A>, M extends GroupM
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof CacheGroupMembership)) return false;
-			@SuppressWarnings("unchecked")
-			CacheGroupMembership<A, M> membership = (CacheGroupMembership<A, M>) object;
+			if (!(object instanceof CacheGroupMembership membership)) return false;
 			return this.membership.equals(membership.membership);
 		}
 
