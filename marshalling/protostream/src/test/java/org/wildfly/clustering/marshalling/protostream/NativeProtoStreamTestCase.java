@@ -98,8 +98,7 @@ public class NativeProtoStreamTestCase {
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof Employee)) return false;
-			Employee employee = (Employee) object;
+			if (!(object instanceof Employee employee)) return false;
 			return Objects.equals(this.id, employee.id);
 		}
 	}

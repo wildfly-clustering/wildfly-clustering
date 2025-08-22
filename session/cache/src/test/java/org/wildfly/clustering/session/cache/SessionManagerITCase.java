@@ -394,8 +394,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 		@Override
 		public Supplier<String> getIdentifierFactory() {
-			Supplier<UUID> factory = UUID::randomUUID;
-			return factory.map(UUID::toString);
+			return () -> UUID.randomUUID().toString();
 		}
 
 		@Override

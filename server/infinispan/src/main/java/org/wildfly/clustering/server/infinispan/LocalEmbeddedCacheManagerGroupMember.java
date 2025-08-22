@@ -10,7 +10,6 @@ import java.io.Serializable;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.wildfly.clustering.server.group.GroupMember;
-import org.wildfly.clustering.server.local.LocalGroupMember;
 
 /**
  * @author Paul Ferraro
@@ -36,11 +35,7 @@ public class LocalEmbeddedCacheManagerGroupMember implements CacheContainerGroup
 
 	@Override
 	public int compareTo(GroupMember<Address> member) {
-		if (member instanceof LocalEmbeddedCacheManagerGroupMember) {
-			LocalEmbeddedCacheManagerGroupMember localMember = (LocalEmbeddedCacheManagerGroupMember) member;
-			return this.name.compareTo(localMember.name);
-		}
-		return this.getAddress().compareTo(member.getAddress());
+		return this.name.compareTo(member.getName());
 	}
 
 	@Override
@@ -50,8 +45,8 @@ public class LocalEmbeddedCacheManagerGroupMember implements CacheContainerGroup
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof LocalEmbeddedCacheManagerGroupMember) && !(object instanceof LocalGroupMember)) return false;
-		org.wildfly.clustering.server.GroupMember member = (org.wildfly.clustering.server.GroupMember) object;
+		if (this == object) return true;
+		if (!(object instanceof GroupMember member)) return false;
 		return this.name.equals(member.getName());
 	}
 

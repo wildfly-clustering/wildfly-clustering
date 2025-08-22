@@ -118,8 +118,7 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
 	@Override
 	public Object readAny() throws IOException {
 		Object result = this.readObject(Any.class).get();
-		if (result instanceof Reference) {
-			Reference reference = (Reference) result;
+		if (result instanceof Reference reference) {
 			result = this.context.resolve(reference);
 		} else {
 			this.context.record(result);

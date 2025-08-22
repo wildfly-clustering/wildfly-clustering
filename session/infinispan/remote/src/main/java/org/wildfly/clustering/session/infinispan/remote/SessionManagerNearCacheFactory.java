@@ -59,8 +59,8 @@ public class SessionManagerNearCacheFactory implements NearCacheFactory {
 		@Override
 		public void accept(Cache<Object, MetadataValue<Object>> cache, Map.Entry<Object, Object> entry) {
 			Object key = entry.getKey();
-			if (key instanceof SessionCreationMetaDataKey) {
-				String id = ((SessionCreationMetaDataKey) key).getId();
+			if (key instanceof SessionCreationMetaDataKey creationMetaDataKey) {
+				String id = creationMetaDataKey.getId();
 				List<Object> keys = new LinkedList<>();
 				keys.add(new SessionAccessMetaDataKey(id));
 				keys.add(new SessionAttributesKey(id));

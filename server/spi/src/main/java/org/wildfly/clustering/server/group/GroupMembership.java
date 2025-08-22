@@ -43,9 +43,7 @@ public interface GroupMembership<M extends GroupMember> extends org.wildfly.clus
 
 			@Override
 			public boolean equals(Object object) {
-				if (!(object instanceof GroupMembership)) return false;
-				@SuppressWarnings("unchecked")
-				GroupMembership<M> membership = (GroupMembership<M>) object;
+				if (!(object instanceof GroupMembership membership)) return false;
 				return members.equals(membership.getMembers());
 			}
 

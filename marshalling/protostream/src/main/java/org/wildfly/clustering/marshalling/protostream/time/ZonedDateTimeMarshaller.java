@@ -64,8 +64,8 @@ public class ZonedDateTimeMarshaller implements ProtoStreamMarshaller<ZonedDateT
 		writer.createFieldSetWriter(LocalDateMarshaller.INSTANCE, DATE_INDEX).writeFields(value.toLocalDate());
 		writer.createFieldSetWriter(LocalTimeMarshaller.INSTANCE, TIME_INDEX).writeFields(value.toLocalTime());
 		ZoneId zone = value.getZone();
-		if (zone instanceof ZoneOffset) {
-			writer.createFieldSetWriter(ZoneOffsetMarshaller.INSTANCE, OFFSET_INDEX).writeFields((ZoneOffset) zone);
+		if (zone instanceof ZoneOffset offset) {
+			writer.createFieldSetWriter(ZoneOffsetMarshaller.INSTANCE, OFFSET_INDEX).writeFields(offset);
 		} else {
 			writer.writeString(ZONE_INDEX, zone.getId());
 		}
