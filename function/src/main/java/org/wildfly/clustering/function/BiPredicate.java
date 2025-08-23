@@ -12,8 +12,8 @@ package org.wildfly.clustering.function;
  * @param <U> the second parameter type
  */
 public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
-	BiPredicate<?, ?> ALWAYS = new SimpleBiPredicate<>(true);
-	BiPredicate<?, ?> NEVER = new SimpleBiPredicate<>(false);
+	BiPredicate<?, ?> ALWAYS = (value1, value2) -> true;
+	BiPredicate<?, ?> NEVER = (value1, value2) -> false;
 
 	@Override
 	default BiPredicate<T, U> and(java.util.function.BiPredicate<? super T, ? super U> other) {
@@ -160,18 +160,5 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 				return predicate1.test(value1) ^ predicate2.test(value2);
 			}
 		};
-	}
-
-	class SimpleBiPredicate<T, U> implements BiPredicate<T, U> {
-		private final boolean value;
-
-		SimpleBiPredicate(boolean value) {
-			this.value = value;
-		}
-
-		@Override
-		public boolean test(T value1, U value2) {
-			return this.value;
-		}
 	}
 }

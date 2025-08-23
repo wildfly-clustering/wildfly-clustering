@@ -9,7 +9,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -30,7 +29,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param mapper a mapping function
 	 * @return a mapped consumer
 	 */
-	default <V> Consumer<V> compose(Function<V, T> mapper) {
+	default <V> Consumer<V> compose(java.util.function.Function<V, T> mapper) {
 		return new Consumer<>() {
 			@Override
 			public void accept(V value) {
@@ -46,7 +45,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param mapper a mapping function
 	 * @return a binary consumer that invokes this consumer using result of the specified binary function.
 	 */
-	default <V1, V2> BiConsumer<V1, V2> compose(BiFunction<V1, V2, T> mapper) {
+	default <V1, V2> BiConsumer<V1, V2> compose(java.util.function.BiFunction<V1, V2, T> mapper) {
 		return new BiConsumer<>() {
 			@Override
 			public void accept(V1 value1, V2 value2) {
@@ -73,11 +72,22 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		};
 	}
 
-	Consumer<?> EMPTY = new Consumer<>() {
-		@Override
-		public void accept(Object value) {
-		}
-	};
+	/**
+	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
+	 * @param factory a factory of the function return value
+	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
+	 */
+	default <R> Function<T, R> thenReturn(java.util.function.Supplier<R> factory) {
+		return new Function<>() {
+			@Override
+			public R apply(T value) {
+				Consumer.this.accept(value);
+				return factory.get();
+			}
+		};
+	}
+
+	Consumer<?> EMPTY = value -> {};
 	Map<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), ExceptionLogger::new, BinaryOperator.former(), () -> new EnumMap<>(System.Logger.Level.class)));
 	Function<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGER = EXCEPTION_LOGGERS::get;
 	Map<System.Logger.Level, Consumer<AutoCloseable>> SILENT_CLOSERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), EXCEPTION_LOGGER.andThen(Consumer::close), BinaryOperator.former(), () -> new EnumMap<>(System.Logger.Level.class)));
@@ -149,7 +159,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param handler an exception handler
 	 * @return a silent closing consumer
 	 */
-	static <V extends AutoCloseable> Consumer<V> close(Consumer<Exception> handler) {
+	static <V extends AutoCloseable> Consumer<V> close(java.util.function.Consumer<Exception> handler) {
 		return new Consumer<>() {
 			@Override
 			public void accept(AutoCloseable object) {
@@ -192,6 +202,21 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 				for (java.util.function.Consumer<? super V> consumer : consumers) {
 					consumer.accept(value);
 				}
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer that wraps an exception as a runtime exception via the specified factory.
+	 * @param <E> the exception type
+	 * @param exceptionFactory a runtime exception wrapper
+	 * @return a consumer that wraps an exception as a runtime exception via the specified factory.
+	 */
+	static <E extends Throwable> Consumer<E> throwing(java.util.function.Function<E, ? extends RuntimeException> exceptionFactory) {
+		return new Consumer<>() {
+			@Override
+			public void accept(E exception) {
+				throw exceptionFactory.apply(exception);
 			}
 		};
 	}

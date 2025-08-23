@@ -175,8 +175,7 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof Transactional)) return false;
-		Transactional batch = (Transactional) object;
+		if (!(object instanceof Transactional batch)) return false;
 		return this.getTransaction().equals(batch.getTransaction());
 	}
 

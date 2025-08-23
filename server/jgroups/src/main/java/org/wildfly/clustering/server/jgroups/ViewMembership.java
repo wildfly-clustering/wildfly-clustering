@@ -46,8 +46,7 @@ public class ViewMembership implements GroupMembership<ChannelGroupMember> {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof ViewMembership)) return false;
-		ViewMembership membership = (ViewMembership) object;
+		if (!(object instanceof ViewMembership membership)) return false;
 		return this.id == membership.id;
 	}
 

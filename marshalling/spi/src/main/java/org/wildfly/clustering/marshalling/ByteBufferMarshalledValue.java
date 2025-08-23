@@ -95,9 +95,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 
 	@Override
 	public boolean equals(Object object) {
-		if ((object == null) || !(object instanceof ByteBufferMarshalledValue)) return false;
-		@SuppressWarnings("unchecked")
-		ByteBufferMarshalledValue<V> value = (ByteBufferMarshalledValue<V>) object;
+		if ((object == null) || !(object instanceof ByteBufferMarshalledValue value)) return false;
 		Object ourObject = this.object;
 		Object theirObject = value.object;
 		if ((ourObject != null) && (theirObject != null)) {

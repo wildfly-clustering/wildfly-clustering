@@ -11,18 +11,8 @@ package org.wildfly.clustering.function;
  * @param <T> the operating type
  */
 public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, Function<T, T> {
-	UnaryOperator<?> IDENTITY = new UnaryOperator<>() {
-		@Override
-		public Object apply(Object value) {
-			return value;
-		}
-	};
-	UnaryOperator<?> NULL = new UnaryOperator<>() {
-		@Override
-		public Object apply(Object value) {
-			return null;
-		}
-	};
+	UnaryOperator<?> IDENTITY = value -> value;
+	UnaryOperator<?> NULL = value -> null;
 
 	/**
 	 * Returns an operator that applies this function to the value returned by the specified provider if its value does not match the specified predicate.

@@ -12,29 +12,29 @@ import java.util.function.IntSupplier;
  * @author Paul Ferraro
  */
 public class Reference implements IntSupplier {
-	private final int reference;
+	private final int id;
 
 	public Reference(int reference) {
-		this.reference = reference;
+		this.id = reference;
 	}
 
 	@Override
 	public int getAsInt() {
-		return this.reference;
+		return this.id;
 	}
 
 	@Override
 	public int hashCode() {
-		return this.reference;
+		return this.id;
 	}
 
 	@Override
 	public boolean equals(Object object) {
-		return (object instanceof Reference) ? this.reference == ((Reference) object).reference : false;
+		return (object instanceof Reference reference) ? this.id == reference.id : false;
 	}
 
 	@Override
 	public String toString() {
-		return Integer.toString(this.reference);
+		return Integer.toString(this.id);
 	}
 }

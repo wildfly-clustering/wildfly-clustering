@@ -54,8 +54,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 
 	@Override
 	public Object get(Object key) {
-		if (!(key instanceof String)) return null;
-		String name = (String) key;
+		if (!(key instanceof String name)) return null;
 		Object value = this.attributes.get(name);
 
 		if (value != null) {
@@ -69,8 +68,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 
 	@Override
 	public Object remove(Object key) {
-		if (!(key instanceof String)) return null;
-		String name = (String) key;
+		if (!(key instanceof String name)) return null;
 		Object result = this.attributes.remove(name);
 
 		if (result != null) {

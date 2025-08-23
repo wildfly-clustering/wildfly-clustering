@@ -52,9 +52,8 @@ public class Person implements Comparable<Person>, java.io.Serializable {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof Person))
-			return false;
-		return this.name.equals(((Person) object).name);
+		if (!(object instanceof Person person)) return false;
+		return this.name.equals(person.name);
 	}
 
 	@Override

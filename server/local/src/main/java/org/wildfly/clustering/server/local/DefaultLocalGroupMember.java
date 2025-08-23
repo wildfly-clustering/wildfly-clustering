@@ -23,9 +23,8 @@ class DefaultLocalGroupMember implements LocalGroupMember {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof DefaultLocalGroupMember)) return false;
-		DefaultLocalGroupMember member = (DefaultLocalGroupMember) object;
-		return this.name.equals(member.name);
+		if (!(object instanceof LocalGroupMember member)) return false;
+		return this.name.equals(member.getName());
 	}
 
 	@Override

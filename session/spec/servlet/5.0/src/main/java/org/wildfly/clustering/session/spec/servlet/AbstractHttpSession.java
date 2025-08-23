@@ -114,8 +114,7 @@ public abstract class AbstractHttpSession implements HttpSession {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof AbstractHttpSession)) return false;
-		AbstractHttpSession session = (AbstractHttpSession) object;
+		if (!(object instanceof AbstractHttpSession session)) return false;
 		return Objects.equals(this.session, session.session);
 	}
 

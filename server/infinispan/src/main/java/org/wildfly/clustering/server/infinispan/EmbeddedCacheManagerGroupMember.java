@@ -48,12 +48,11 @@ public class EmbeddedCacheManagerGroupMember implements CacheContainerGroupMembe
 
 	@Override
 	public boolean equals(Object object) {
-		if (object instanceof CacheContainerGroupMember) {
-			CacheContainerGroupMember member = (CacheContainerGroupMember) object;
+		if (this == object) return true;
+		if (object instanceof CacheContainerGroupMember member) {
 			return this.address.equals(member.getAddress());
 		}
-		if (object instanceof ChannelGroupMember) {
-			ChannelGroupMember member = (ChannelGroupMember) object;
+		if (object instanceof ChannelGroupMember member) {
 			return this.address.getJGroupsAddress().equals(member.getAddress());
 		}
 		return false;

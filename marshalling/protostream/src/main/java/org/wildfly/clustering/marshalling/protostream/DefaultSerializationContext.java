@@ -51,11 +51,10 @@ public class DefaultSerializationContext extends NativeSerializationContext impl
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void registerMarshaller(BaseMarshaller<?> marshaller) {
-		if (marshaller instanceof ProtoStreamMarshaller) {
-			this.registerMarshaller((ProtoStreamMarshaller<?>) marshaller);
-		} else if (marshaller instanceof ProtobufTagMarshaller) {
+		if (marshaller instanceof ProtoStreamMarshaller protostreamMarshaller) {
+			this.registerMarshaller(protostreamMarshaller);
+		} else if (marshaller instanceof ProtobufTagMarshaller nativeMarshaller) {
 			// Adapt native ProtobufTagMarshaller to ProtoStreamMarshaller interface
-			ProtobufTagMarshaller<Object> nativeMarshaller = (ProtobufTagMarshaller<Object>) marshaller;
 			this.registerMarshaller(new ProtoStreamMarshaller<>() {
 				@Override
 				public Class<? extends Object> getJavaClass() {
