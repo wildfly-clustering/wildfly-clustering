@@ -5,46 +5,70 @@
 
 package org.wildfly.clustering.function;
 
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.ToDoubleFunction;
-
 /**
  * An enhanced double predicate.
  * @author Paul Ferraro
  */
 public interface DoublePredicate extends java.util.function.DoublePredicate {
-	DoublePredicate ALWAYS = new SimpleDoublePredicate(true);
-	DoublePredicate NEVER = new SimpleDoublePredicate(true);
-	DoublePredicate ZERO = new DoublePredicate() {
-		@Override
-		public boolean test(double value) {
-			return Double.compare(value, 0d) == 0;
-		}
-	};
-	DoublePredicate POSITIVE = new DoublePredicate() {
-		@Override
-		public boolean test(double value) {
-			return Double.compare(value, 0d) > 0;
-		}
-	};
-	DoublePredicate NEGATIVE = new DoublePredicate() {
-		@Override
-		public boolean test(double value) {
-			return Double.compare(value, 0d) < 0;
-		}
-	};
+	DoublePredicate ALWAYS = value -> true;
+	DoublePredicate NEVER = value -> false;
+	DoublePredicate POSITIVE = greaterThan(0d);
+	DoublePredicate ZERO = equalTo(0d);
+	DoublePredicate NEGATIVE = lessThan(0d);
 
 	/**
-	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
 	 * @param <V> the mapped type
-	 * @param mapper
+	 * @param function a mapping function
 	 * @return a mapped predicate
 	 */
-	default <V> Predicate<V> compose(java.util.function.ToDoubleFunction<V> mapper) {
+	default <V> Predicate<V> compose(java.util.function.ToDoubleFunction<V> function) {
 		return new Predicate<>() {
 			@Override
 			public boolean test(V value) {
-				return DoublePredicate.this.test(mapper.applyAsDouble(value));
+				return DoublePredicate.this.test(function.applyAsDouble(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
+	 * @param function a mapping operator
+	 * @return a mapped predicate
+	 */
+	default DoublePredicate composeDouble(java.util.function.DoubleUnaryOperator function) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				return DoublePredicate.this.test(function.applyAsDouble(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
+	 * @param function a mapping function
+	 * @return a mapped predicate
+	 */
+	default IntPredicate composeInt(java.util.function.IntToDoubleFunction function) {
+		return new IntPredicate() {
+			@Override
+			public boolean test(int value) {
+				return DoublePredicate.this.test(function.applyAsDouble(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a predicate that applies the specified function to its argument before evaluating.
+	 * @param function a mapping function
+	 * @return a mapped predicate
+	 */
+	default LongPredicate composeLong(java.util.function.LongToDoubleFunction function) {
+		return new LongPredicate() {
+			@Override
+			public boolean test(long value) {
+				return DoublePredicate.this.test(function.applyAsDouble(value));
 			}
 		};
 	}
@@ -79,45 +103,63 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
 		};
 	}
 
-	/**
-	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
-	 * @param mapper
-	 * @return a mapped predicate
-	 */
-	default DoublePredicate map(DoubleUnaryOperator mapper) {
+	default DoublePredicate xor(java.util.function.DoublePredicate other) {
 		return new DoublePredicate() {
 			@Override
 			public boolean test(double value) {
-				return DoublePredicate.this.test(mapper.applyAsDouble(value));
+				return DoublePredicate.this.test(value) ^ other.test(value);
 			}
 		};
 	}
 
 	/**
-	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
-	 * @param <V> the mapped type
-	 * @param mapper
-	 * @return a mapped predicate
+	 * Returns a predicate that always evaluates to the specified result.
+	 * @param result the fixed result
+	 * @return a predicate that always evaluates to the specified value.
 	 */
-	default <V> Predicate<V> map(ToDoubleFunction<V> mapper) {
-		return new Predicate<>() {
+	static DoublePredicate of(boolean result) {
+		return result ? DoublePredicate.ALWAYS : DoublePredicate.NEVER;
+	}
+
+	/**
+	 * Returns a predicate that evaluates to true if and only if the argument is equals to the specified object.
+	 * @param base the comparison value
+	 * @return a predicate that evaluates to true if and only if the argument is equals to the specified object.
+	 */
+	static DoublePredicate lessThan(double base) {
+		return new DoublePredicate() {
 			@Override
-			public boolean test(V value) {
-				return DoublePredicate.this.test(mapper.applyAsDouble(value));
+			public boolean test(double value) {
+				return Double.compare(value, base) < 0;
 			}
 		};
 	}
 
-	class SimpleDoublePredicate implements DoublePredicate {
-		private final boolean value;
+	/**
+	 * Returns a predicate that evaluates to true if and only if the argument is equals to the specified object.
+	 * @param base the comparison value
+	 * @return a predicate that evaluates to true if and only if the argument is equals to the specified object.
+	 */
+	static DoublePredicate equalTo(double base) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				return Double.compare(base, value) == 0;
+			}
+		};
+	}
 
-		SimpleDoublePredicate(boolean value) {
-			this.value = value;
-		}
-
-		@Override
-		public boolean test(double value) {
-			return this.value;
-		}
+	/**
+	 * Returns a predicate that evaluates to true if and only if the argument is equals to the specified object.
+	 * @param base the comparison value
+	 * @return a predicate that evaluates to true if and only if the argument is equals to the specified object.
+	 */
+	static DoublePredicate greaterThan(double base) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				return Double.compare(value, base) > 0;
+			}
+		};
 	}
 }

@@ -14,13 +14,7 @@ import java.util.List;
  * @param <U> the second parameter type
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
-
-	BiConsumer<?, ?> EMPTY = new BiConsumer<>() {
-		@Override
-		public void accept(Object ignore1, Object ignore2) {
-			// Do nothing
-		}
-	};
+	BiConsumer<?, ?> EMPTY = (value1, value2) -> {};
 
 	@Override
 	default BiConsumer<T, U> andThen(java.util.function.BiConsumer<? super T, ? super U> after) {
@@ -71,6 +65,21 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 				} catch (RuntimeException e) {
 					handler.accept(e);
 				}
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that returns the value from the specified supplier after accepting its parameters via this consumer.
+	 * @param factory a factory of the function return value
+	 * @return a function that returns the value from the specified supplier after accepting its parameters via this consumer.
+	 */
+	default <R> BiFunction<T, U, R> thenReturn(java.util.function.Supplier<R> factory) {
+		return new BiFunction<>() {
+			@Override
+			public R apply(T value1, U value2) {
+				BiConsumer.this.accept(value1, value2);
+				return factory.get();
 			}
 		};
 	}
@@ -140,6 +149,21 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 				for (java.util.function.BiConsumer<? super T, ? super U> consumer : consumers) {
 					consumer.accept(value1, value2);
 				}
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer that wraps an exception as a runtime exception via the specified factory.
+	 * @param <E> the exception type
+	 * @param exceptionFactory a runtime exception wrapper
+	 * @return a consumer that wraps an exception as a runtime exception via the specified factory.
+	 */
+	static <E extends Throwable> BiConsumer<String, E> throwing(java.util.function.BiFunction<String, E, ? extends RuntimeException> exceptionFactory) {
+		return new BiConsumer<>() {
+			@Override
+			public void accept(String message, E cause) {
+				throw exceptionFactory.apply(message, cause);
 			}
 		};
 	}

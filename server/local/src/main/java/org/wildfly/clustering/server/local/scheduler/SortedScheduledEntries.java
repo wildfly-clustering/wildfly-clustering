@@ -155,8 +155,7 @@ class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof Map.Entry)) return false;
-			Map.Entry<?, ?> entry = (Map.Entry<?, ?>) object;
+			if (!(object instanceof Map.Entry entry)) return false;
 			return this.getKey().equals(entry.getKey());
 		}
 

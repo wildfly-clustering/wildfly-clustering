@@ -90,9 +90,7 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof SessionActivationListenerKey)) return false;
-			@SuppressWarnings("unchecked")
-			SessionActivationListenerKey<L> reference = (SessionActivationListenerKey<L>) object;
+			if (!(object instanceof SessionActivationListenerKey reference)) return false;
 			return this.listener == reference.listener;
 		}
 	}

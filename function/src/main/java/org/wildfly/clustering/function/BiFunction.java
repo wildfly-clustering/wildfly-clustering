@@ -13,24 +13,9 @@ package org.wildfly.clustering.function;
  * @param <R> the result type
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
-	BiFunction<?, ?, ?> FORMER_IDENTITY = new BiFunction<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return value1;
-		}
-	};
-	BiFunction<?, ?, ?> LATTER_IDENTITY = new BiFunction<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return value2;
-		}
-	};
-	BiFunction<?, ?, ?> NULL = new BiFunction<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return null;
-		}
-	};
+	BiFunction<?, ?, ?> FORMER_IDENTITY = (value1, value2) -> value1;
+	BiFunction<?, ?, ?> LATTER_IDENTITY = (value1, value2) -> value2;
+	BiFunction<?, ?, ?> NULL = (value1, value2) -> null;
 
 	/**
 	 * Returns a composed function that applies the specified functions to each parameter as inputs to this function.

@@ -31,8 +31,7 @@ public abstract class AbstractImmutableSession implements ImmutableSession {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof ImmutableSession)) return false;
-		ImmutableSession session = (ImmutableSession) object;
+		if (!(object instanceof ImmutableSession session)) return false;
 		return this.id.equals(session.getId());
 	}
 

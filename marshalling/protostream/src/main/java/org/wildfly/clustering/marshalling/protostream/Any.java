@@ -33,8 +33,8 @@ public class Any implements Supplier<Object> {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof Any)) return false;
-		return Objects.equals(this.value, ((Any) object).value);
+		if (!(object instanceof Any any)) return false;
+		return Objects.equals(this.value, any.value);
 	}
 
 	@Override

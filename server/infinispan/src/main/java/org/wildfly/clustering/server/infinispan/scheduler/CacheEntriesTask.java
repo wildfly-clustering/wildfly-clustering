@@ -7,14 +7,14 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 
 /**
  * Invokes a task against cache entries matching a filter.

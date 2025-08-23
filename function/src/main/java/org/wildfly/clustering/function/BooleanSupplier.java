@@ -14,17 +14,16 @@ public interface BooleanSupplier extends java.util.function.BooleanSupplier {
 	BooleanSupplier FALSE = Boolean.FALSE::booleanValue;
 
 	/**
-	 * Returns an if/else supplier that delegates to the first specified supplier when this supplier evaluates to true, or the second specified supplier when this supplier evaluates to false.
-	 * @param <V> the mapped value type
-	 * @param whenTrue the mapped supplier when evaluating to true
-	 * @param whenFalse the mapped supplier when evaluating to false
-	 * @return an if/else supplier that delegates to the first specified supplier when this supplier evaluates to true, or the second specified supplier when this supplier evaluates to false.
+	 * Returns a supplier that return this negation of this supplier.
+	 * @return a supplier that return this negation of this supplier.
 	 */
-	default <V> Supplier<V> map(java.util.function.Supplier<V> whenTrue, java.util.function.Supplier<V> whenFalse) {
-		return new Supplier<>() {
+	default BooleanSupplier negate() {
+		if (this == TRUE) return FALSE;
+		if (this == FALSE) return TRUE;
+		return new BooleanSupplier() {
 			@Override
-			public V get() {
-				return (BooleanSupplier.this.getAsBoolean() ? whenTrue : whenFalse).get();
+			public boolean getAsBoolean() {
+				return !BooleanSupplier.this.getAsBoolean();
 			}
 		};
 	}
@@ -34,7 +33,12 @@ public interface BooleanSupplier extends java.util.function.BooleanSupplier {
 	 * @return a boxed version of this supplier.
 	 */
 	default Supplier<Boolean> boxed() {
-		return map(Supplier.of(Boolean.TRUE), Supplier.of(Boolean.FALSE));
+		return new Supplier<>() {
+			@Override
+			public Boolean get() {
+				return BooleanSupplier.this.getAsBoolean() ? Boolean.TRUE : Boolean.FALSE;
+			}
+		};
 	}
 
 	/**

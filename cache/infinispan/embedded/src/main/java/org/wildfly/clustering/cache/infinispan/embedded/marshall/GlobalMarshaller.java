@@ -34,11 +34,11 @@ public class GlobalMarshaller extends org.infinispan.marshall.core.GlobalMarshal
 			return AccessController.doPrivileged(action);
 		} catch (PrivilegedActionException e) {
 			Exception exception = e.getException();
-			if (exception instanceof IOException) {
-				throw (IOException) exception;
+			if (exception instanceof IOException ioe) {
+				throw ioe;
 			}
-			if (exception instanceof ClassNotFoundException) {
-				throw (ClassNotFoundException) exception;
+			if (exception instanceof ClassNotFoundException cnfe) {
+				throw cnfe;
 			}
 			throw new IllegalStateException(exception);
 		}
@@ -54,11 +54,11 @@ public class GlobalMarshaller extends org.infinispan.marshall.core.GlobalMarshal
 			return AccessController.doPrivileged(action);
 		} catch (PrivilegedActionException e) {
 			Exception exception = e.getException();
-			if (exception instanceof IOException) {
-				throw (IOException) exception;
+			if (exception instanceof IOException ioe) {
+				throw ioe;
 			}
-			if (exception instanceof ClassNotFoundException) {
-				throw (ClassNotFoundException) exception;
+			if (exception instanceof ClassNotFoundException cnfe) {
+				throw cnfe;
 			}
 			throw new IllegalStateException(exception);
 		}
@@ -74,11 +74,11 @@ public class GlobalMarshaller extends org.infinispan.marshall.core.GlobalMarshal
 			return AccessController.doPrivileged(action);
 		} catch (PrivilegedActionException e) {
 			Exception exception = e.getException();
-			if (exception instanceof IOException) {
-				throw (IOException) exception;
+			if (exception instanceof IOException ioe) {
+				throw ioe;
 			}
-			if (exception instanceof ClassNotFoundException) {
-				throw (ClassNotFoundException) exception;
+			if (exception instanceof ClassNotFoundException cnfe) {
+				throw cnfe;
 			}
 			throw new IllegalStateException(exception);
 		}

@@ -11,24 +11,9 @@ package org.wildfly.clustering.function;
  * @param <T> the operator type
  */
 public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>, BiFunction<T, T, T> {
-	BinaryOperator<?> FORMER_IDENTITY = new BinaryOperator<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return value1;
-		}
-	};
-	BinaryOperator<?> LATTER_IDENTITY = new BinaryOperator<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return value2;
-		}
-	};
-	BinaryOperator<?> NULL = new BinaryOperator<>() {
-		@Override
-		public Object apply(Object value1, Object value2) {
-			return null;
-		}
-	};
+	BinaryOperator<?> FORMER_IDENTITY = (value1, value2) -> value1;
+	BinaryOperator<?> LATTER_IDENTITY = (value1, value2) -> value2;
+	BinaryOperator<?> NULL = (value1, value2) -> null;
 
 	/**
 	 * Returns a composed operator that applies the specified operators to each parameter as inputs to this operator.

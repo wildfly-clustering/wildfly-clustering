@@ -40,8 +40,7 @@ public class SessionAffinityRegistryEntry implements Map.Entry<String, Void> {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof SessionAffinityRegistryEntry)) return false;
-		SessionAffinityRegistryEntry entry = (SessionAffinityRegistryEntry) object;
+		if (!(object instanceof SessionAffinityRegistryEntry entry)) return false;
 		return this.key.equals(entry.key);
 	}
 

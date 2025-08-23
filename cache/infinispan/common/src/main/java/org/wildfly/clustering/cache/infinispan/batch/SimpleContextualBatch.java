@@ -71,8 +71,7 @@ public class SimpleContextualBatch extends AbstractContextualBatch implements Co
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof SimpleContextualBatch)) return false;
-		SimpleContextualBatch batch = (SimpleContextualBatch) object;
+		if (!(object instanceof SimpleContextualBatch batch)) return false;
 		return this.id == batch.id;
 	}
 

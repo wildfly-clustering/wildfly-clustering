@@ -67,8 +67,8 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 			});
 		} catch (PrivilegedActionException e) {
 			Exception exception = e.getException();
-			if (exception instanceof IOException) {
-				throw new UncheckedIOException((IOException) exception);
+			if (exception instanceof IOException ioe) {
+				throw new UncheckedIOException(ioe);
 			}
 			throw new RuntimeException(exception);
 		}

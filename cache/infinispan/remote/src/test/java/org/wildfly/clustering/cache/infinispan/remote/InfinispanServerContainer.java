@@ -29,7 +29,7 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 	static final String HOTROD_USERNAME_PROPERTY = "infinispan.server.username";
 	static final String HOTROD_PASSWORD_PROPERTY = "infinispan.server.password";
 
-	private static final String DEFAULT_DOCKER_IMAGE = "quay.io/infinispan/server:" + Version.getMajorMinor();
+	private static final String DEFAULT_DOCKER_IMAGE = "quay.io/infinispan/server:" + Version.getVersion();
 	private static final int DEFAULT_HOTROD_PORT = 11222;
 	private static final String HOST_NETWORK_MODE = "host";
 	private static final String DEFAULT_NETWORK_MODE = "bridge";

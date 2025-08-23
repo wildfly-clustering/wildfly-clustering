@@ -12,18 +12,8 @@ package org.wildfly.clustering.function;
  * @param <R> the function return type
  */
 public interface Function<T, R> extends java.util.function.Function<T, R> {
-	Function<?, ?> IDENTITY = new Function<>() {
-		@Override
-		public Object apply(Object value) {
-			return value;
-		}
-	};
-	Function<?, ?> NULL = new Function<>() {
-		@Override
-		public Object apply(Object value) {
-			return null;
-		}
-	};
+	Function<?, ?> IDENTITY = value -> value;
+	Function<?, ?> NULL = value -> null;
 
 	@Override
 	default <V> Function<V, R> compose(java.util.function.Function<? super V, ? extends T> before) {

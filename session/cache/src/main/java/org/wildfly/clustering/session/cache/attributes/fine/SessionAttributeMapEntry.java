@@ -47,8 +47,7 @@ public class SessionAttributeMapEntry<V> implements Map.Entry<String, V> {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof Map.Entry)) return false;
-		Map.Entry<?, ?> entry = (Map.Entry<?, ?>) object;
+		if (!(object instanceof Map.Entry entry)) return false;
 		return this.name.equals(entry.getKey()) && this.value.equals(entry.getValue());
 	}
 

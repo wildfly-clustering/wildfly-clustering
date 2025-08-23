@@ -14,7 +14,6 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 
 /**
  * Unit test for {@link Supplier}.
@@ -24,7 +23,7 @@ public class SupplierTestCase {
 	private final Random random = new Random();
 
 	@Test
-	public void map() {
+	public void apply() {
 		Object value = new Object();
 		Object expected = new Object();
 		boolean expectedBoolean = this.random.nextBoolean();
@@ -32,28 +31,36 @@ public class SupplierTestCase {
 		int expectedInt = this.random.nextInt();
 		long expectedLong = this.random.nextLong();
 		Supplier<Object> supplier = mock(Supplier.class);
-		doCallRealMethod().when(supplier).map(ArgumentMatchers.<Function<Object, Object>>any());
-		doCallRealMethod().when(supplier).mapAsBoolean(ArgumentMatchers.<Predicate<Object>>any());
-		doCallRealMethod().when(supplier).mapAsDouble(ArgumentMatchers.<ToDoubleFunction<Object>>any());
-		doCallRealMethod().when(supplier).mapAsInt(ArgumentMatchers.<ToIntFunction<Object>>any());
-		doCallRealMethod().when(supplier).mapAsLong(ArgumentMatchers.<ToLongFunction<Object>>any());
+		doCallRealMethod().when(supplier).thenApply(any());
+		doCallRealMethod().when(supplier).thenAccept(any());
+		doCallRealMethod().when(supplier).thenTest(any());
+		doCallRealMethod().when(supplier).thenApplyAsDouble(any());
+		doCallRealMethod().when(supplier).thenApplyAsInt(any());
+		doCallRealMethod().when(supplier).thenApplyAsLong(any());
 		doReturn(value).when(supplier).get();
-		Function<Object, Object> mapper = mock(Function.class);
+
+		Function<Object, Object> function = mock(Function.class);
 		Predicate<Object> predicate = mock(Predicate.class);
 		ToDoubleFunction<Object> doubleMapper = mock(ToDoubleFunction.class);
 		ToIntFunction<Object> intMapper = mock(ToIntFunction.class);
 		ToLongFunction<Object> longMapper = mock(ToLongFunction.class);
-		doReturn(expected).when(mapper).apply(value);
+		Consumer<Object> unaryConsumer = mock(Consumer.class);
+
+		doReturn(expected).when(function).apply(value);
 		doReturn(expectedBoolean).when(predicate).test(value);
 		doReturn(expectedDouble).when(doubleMapper).applyAsDouble(value);
 		doReturn(expectedInt).when(intMapper).applyAsInt(value);
 		doReturn(expectedLong).when(longMapper).applyAsLong(value);
 
-		assertThat(supplier.map(mapper).get()).isSameAs(expected);
-		assertThat(supplier.mapAsBoolean(predicate).getAsBoolean()).isEqualTo(expectedBoolean);
-		assertThat(supplier.mapAsDouble(doubleMapper).getAsDouble()).isEqualTo(expectedDouble);
-		assertThat(supplier.mapAsInt(intMapper).getAsInt()).isEqualTo(expectedInt);
-		assertThat(supplier.mapAsLong(longMapper).getAsLong()).isEqualTo(expectedLong);
+		assertThat(supplier.thenApply(function).get()).isSameAs(expected);
+		assertThat(supplier.thenTest(predicate).getAsBoolean()).isEqualTo(expectedBoolean);
+		assertThat(supplier.thenApplyAsDouble(doubleMapper).getAsDouble()).isEqualTo(expectedDouble);
+		assertThat(supplier.thenApplyAsInt(intMapper).getAsInt()).isEqualTo(expectedInt);
+		assertThat(supplier.thenApplyAsLong(longMapper).getAsLong()).isEqualTo(expectedLong);
+
+		supplier.thenAccept(unaryConsumer).run();
+
+		verify(unaryConsumer).accept(value);
 	}
 
 	@Test

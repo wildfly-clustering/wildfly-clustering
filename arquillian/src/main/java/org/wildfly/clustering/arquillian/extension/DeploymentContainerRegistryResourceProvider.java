@@ -124,8 +124,7 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof DeploymentContainer)) return false;
-			DeploymentContainer container = (DeploymentContainer) object;
+			if (!(object instanceof DeploymentContainer container)) return false;
 			return this.getName().equals(container.getName());
 		}
 
@@ -204,8 +203,7 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 
 				@Override
 				public boolean equals(Object object) {
-					if (!(object instanceof Deployment)) return false;
-					Deployment deployment = (Deployment) object;
+					if (!(object instanceof Deployment deployment)) return false;
 					return this.getContainer().equals(deployment.getContainer()) && this.getName().equals(deployment.getName());
 				}
 			};
