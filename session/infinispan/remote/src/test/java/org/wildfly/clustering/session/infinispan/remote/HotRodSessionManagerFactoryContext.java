@@ -9,12 +9,14 @@ import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
 import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
@@ -52,6 +54,14 @@ public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<S
 		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration("""
 {
 	"local-cache" : {
+		"encoding" : {
+			"key" : {
+				"media-type" : "application/octet-stream"
+			},
+			"value" : {
+				"media-type" : "application/octet-stream"
+			}
+		},
 		"expiration" : {
 			"interval" : 1000
 		},
@@ -112,6 +122,10 @@ public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<S
 				return this.getClass().getClassLoader();
 			}
 		};
+		DataFormat format = DataFormat.builder()
+				.keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(marshaller)
+				.valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(marshaller)
+				.build();
 		RemoteCache<?, ?> cache = container.getCache(parameters.getDeploymentName());
 		cache.start();
 		this.accept(cache::stop);
@@ -119,7 +133,7 @@ public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<S
 			@SuppressWarnings("unchecked")
 			@Override
 			public <CK, CV> RemoteCache<CK, CV> getCache() {
-				return (RemoteCache<CK, CV>) cache;
+				return (RemoteCache<CK, CV>) cache.withDataFormat(format);
 			}
 		};
 		MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
