@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -34,6 +35,60 @@ public class ConsumerTestCase {
 
 		assertThat(result).isSameAs(expected);
 		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void when() {
+		UUID allowed = UUID.randomUUID();
+		UUID disallowed = UUID.randomUUID();
+		Predicate<UUID> predicate = mock(Predicate.class);
+
+		doReturn(true).when(predicate).test(allowed);
+		doReturn(false).when(predicate).test(disallowed);
+
+		Consumer<UUID> consumer = mock(Consumer.class);
+
+		doCallRealMethod().when(consumer).when(any());
+
+		Consumer<UUID> conditional = consumer.when(predicate);
+
+		conditional.accept(disallowed);
+
+		verify(consumer, never()).accept(disallowed);
+
+		conditional.accept(allowed);
+
+		verify(consumer).accept(allowed);
+	}
+
+	@Test
+	public void withDefault() {
+		UUID allowed = UUID.randomUUID();
+		UUID disallowed = UUID.randomUUID();
+		UUID defaultValue = UUID.randomUUID();
+
+		Predicate<UUID> predicate = mock(Predicate.class);
+
+		doReturn(true).when(predicate).test(allowed);
+		doReturn(false).when(predicate).test(disallowed);
+
+		Consumer<UUID> consumer = mock(Consumer.class);
+		Supplier<UUID> defaultProvider = mock(Supplier.class);
+
+		doCallRealMethod().when(consumer).withDefault(any(), any());
+		doReturn(defaultValue).when(defaultProvider).get();
+
+		Consumer<UUID> conditional = consumer.withDefault(predicate, defaultProvider);
+
+		conditional.accept(allowed);
+
+		verify(consumer).accept(allowed);
+		verifyNoInteractions(defaultProvider);
+
+		conditional.accept(disallowed);
+
+		verify(consumer, never()).accept(disallowed);
+		verify(consumer).accept(defaultValue);
 	}
 
 	@Test
