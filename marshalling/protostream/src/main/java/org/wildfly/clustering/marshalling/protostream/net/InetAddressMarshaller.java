@@ -45,7 +45,7 @@ public enum InetAddressMarshaller implements FieldSetMarshaller.Simple<InetAddre
 		return switch (index) {
 			case HOST_NAME_INDEX -> InetAddress.getByName(reader.readString());
 			case ADDRESS_INDEX -> InetAddress.getByAddress(reader.readByteArray());
-			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(address)).get();
+			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(address)).get();
 		};
 	}
 

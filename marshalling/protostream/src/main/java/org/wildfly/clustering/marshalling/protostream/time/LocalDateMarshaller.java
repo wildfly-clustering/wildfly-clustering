@@ -43,7 +43,7 @@ public enum LocalDateMarshaller implements FieldSetMarshaller.Simple<LocalDate> 
 		return switch (index) {
 			case POST_EPOCH_DAY -> LocalDate.ofEpochDay(reader.readUInt64());
 			case PRE_EPOCH_DAY -> LocalDate.ofEpochDay(0L - reader.readUInt64());
-			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(date)).get();
+			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(date)).get();
 		};
 	}
 
