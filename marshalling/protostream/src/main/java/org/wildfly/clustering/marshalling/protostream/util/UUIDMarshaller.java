@@ -43,7 +43,7 @@ public enum UUIDMarshaller implements FieldSetMarshaller.Supplied<UUID, UUIDBuil
 		return switch (index) {
 			case MOST_SIGNIFICANT_BITS_INDEX -> builder.setMostSignificantBits(reader.readSFixed64());
 			case LEAST_SIGNIFICANT_BITS_INDEX -> builder.setLeastSignificantBits(reader.readSFixed64());
-			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(builder)).get();
+			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(builder)).get();
 		};
 	}
 

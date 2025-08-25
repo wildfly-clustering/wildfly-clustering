@@ -41,7 +41,7 @@ public enum ComparatorMarshaller implements FieldSetMarshaller.Simple<Comparator
 		return switch (index) {
 			case REVERSE_INDEX -> reader.readBool() ? Comparator.reverseOrder() : Comparator.naturalOrder();
 			case COMPARATOR_INDEX -> reader.readAny(Comparator.class);
-			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(comparator)).get();
+			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(comparator)).get();
 		};
 	}
 
