@@ -49,7 +49,7 @@ public enum ZoneOffsetMarshaller implements FieldSetMarshaller.Simple<ZoneOffset
 			case HOURS_INDEX -> ZoneOffset.ofHours(reader.readSInt32());
 			case MINUTES_INDEX -> ZoneOffset.ofTotalSeconds(reader.readSInt32() * 60);
 			case SECONDS_INDEX -> ZoneOffset.ofTotalSeconds(reader.readSInt32());
-			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(offset)).get();
+			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(offset)).get();
 		};
 	}
 
