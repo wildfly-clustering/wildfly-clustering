@@ -53,7 +53,7 @@ public enum LocalTimeMarshaller implements FieldSetMarshaller.Simple<LocalTime> 
 			case SECONDS_OF_DAY_INDEX -> time.with(ChronoField.SECOND_OF_DAY, reader.readUInt32());
 			case MILLIS_INDEX -> time.with(ChronoField.MILLI_OF_SECOND, reader.readUInt32());
 			case NANOS_INDEX -> time.withNano(reader.readUInt32());
-			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(time)).get();
+			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(time)).get();
 		};
 	}
 

@@ -57,7 +57,7 @@ public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
 			case NEGATIVE_SECONDS_INDEX -> duration.withSeconds(0 - reader.readUInt64());
 			case MILLIS_INDEX -> this.withMillis(duration, reader.readUInt32());
 			case NANOS_INDEX -> this.withNanos(duration, reader.readUInt32());
-			default -> Supplier.call(() -> reader.skipField(type), null).map(Function.of(duration)).get();
+			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(duration)).get();
 		};
 	}
 
