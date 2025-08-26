@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.function;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
@@ -248,5 +249,22 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	@SuppressWarnings("unchecked")
 	static <T> Predicate<T> not(Predicate<? super T> predicate) {
 		return (Predicate<T>) predicate.negate();
+	}
+
+	/**
+	 * Returns a predicate of a {@link java.util.Map.Entry} from the specified key and value predicates.
+	 * @param <K> the entry key type
+	 * @param <V> the entry value type
+	 * @param key an entry key supplier
+	 * @param value an entry value supplier
+	 * @return a supplier of a {@link java.util.Map.Entry} from the specified key and value suppliers.
+	 */
+	static <K, V> Predicate<Map.Entry<K, V>> entry(Predicate<K> key, Predicate<V> value) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(Map.Entry<K, V> entry) {
+				return key.test(entry.getKey()) && value.test(entry.getValue());
+			}
+		};
 	}
 }
