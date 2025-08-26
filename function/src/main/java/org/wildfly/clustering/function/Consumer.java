@@ -24,6 +24,37 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	}
 
 	/**
+	 * Returns a consumer that conditionally invokes this consumer when allowed by the specified predicate.
+	 * @param predicate a predicate that determines whether or not to invoke this consumer
+	 * @return a consumer that conditionally invokes this consumer when allowed by the specified predicate.
+	 */
+	default Consumer<T> when(java.util.function.Predicate<T> predicate) {
+		return new Consumer<>() {
+			@Override
+			public void accept(T value) {
+				if (predicate.test(value)) {
+					Consumer.this.accept(value);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
+	 * @param predicate a predicate used to determine the parameter of this consumer
+	 * @param defaultValue a provider of the default parameter value
+	 * @return a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
+	 */
+	default Consumer<T> withDefault(java.util.function.Predicate<T> predicate, java.util.function.Supplier<T> defaultValue) {
+		return new Consumer<>() {
+			@Override
+			public void accept(T value) {
+				Consumer.this.accept(predicate.test(value) ? value : defaultValue.get());
+			}
+		};
+	}
+
+	/**
 	 * Composes a consumer that invokes this consumer using result of the specified function.
 	 * @param <V> the mapped type
 	 * @param mapper a mapping function
