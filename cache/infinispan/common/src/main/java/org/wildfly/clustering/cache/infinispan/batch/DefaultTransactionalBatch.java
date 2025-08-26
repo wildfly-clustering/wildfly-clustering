@@ -106,7 +106,9 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 				throw new IllegalStateException(currentTx.toString());
 			}
 			tm.begin();
-			return tm.getTransaction();
+			Transaction tx = tm.getTransaction();
+			LOGGER.log(System.Logger.Level.DEBUG, "Created batch {0}", tx);
+			return tx;
 		} catch (SystemException | NotSupportedException e) {
 			throw exceptionTransformer.apply(e);
 		}
