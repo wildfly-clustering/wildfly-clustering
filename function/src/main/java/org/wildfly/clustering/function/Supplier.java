@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.function;
 
+import java.util.AbstractMap;
+import java.util.Map;
+
 /**
  * An enhanced supplier.
  * @author Paul Ferraro
@@ -187,5 +190,22 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 				}
 			}
 		} : empty();
+	}
+
+	/**
+	 * Returns a supplier of a {@link java.util.Map.Entry} from the specified key and value suppliers.
+	 * @param <K> the entry key type
+	 * @param <V> the entry value type
+	 * @param key an entry key supplier
+	 * @param value an entry value supplier
+	 * @return a supplier of a {@link java.util.Map.Entry} from the specified key and value suppliers.
+	 */
+	static <K, V> Supplier<Map.Entry<K, V>> entry(Supplier<K> key, Supplier<V> value) {
+		return new Supplier<>() {
+			@Override
+			public Map.Entry<K, V> get() {
+				return new AbstractMap.SimpleImmutableEntry<>(key.get(), value.get());
+			}
+		};
 	}
 }

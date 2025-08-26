@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.function;
 
+import java.util.AbstractMap;
+import java.util.Map;
+
 /**
  * An enhanced function.
  * @author Paul Ferraro
@@ -151,5 +154,24 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 				return supplier.get();
 			}
 		} : empty();
+	}
+
+	/**
+	 * Returns a {@link java.util.Map.Entry} function from the specified key and value functions.
+	 * @param <K> the entry key type
+	 * @param <V> the entry value type
+	 * @param <KR> the mapped entry key type
+	 * @param <VR> the mapped entry value type
+	 * @param keyFunction an entry key function
+	 * @param valueFunction an entry value function
+	 * @return a {@link java.util.Map.Entry} function from the specified key and value functions.
+	 */
+	static <K, V, KR, VR> Function<Map.Entry<K, V>, Map.Entry<KR, VR>> entry(Function<K, KR> keyFunction, Function<V, VR> valueFunction) {
+		return new Function<>() {
+			@Override
+			public Map.Entry<KR, VR> apply(Map.Entry<K, V> entry) {
+				return new AbstractMap.SimpleImmutableEntry<>(keyFunction.apply(entry.getKey()), valueFunction.apply(entry.getValue()));
+			}
+		};
 	}
 }

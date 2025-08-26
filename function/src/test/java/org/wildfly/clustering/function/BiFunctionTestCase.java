@@ -8,6 +8,7 @@ package org.wildfly.clustering.function;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.UUID;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -20,9 +21,9 @@ import org.junit.jupiter.api.Test;
  * @author Paul Ferraro
  */
 public class BiFunctionTestCase {
-	private Object value1 = new Object();
-	private Object value2 = new Object();
-	private Object result = new Object();
+	private final UUID value1 = UUID.randomUUID();
+	private final UUID value2 = UUID.randomUUID();
+	private final UUID result = UUID.randomUUID();
 
 	@Test
 	public void test() {
@@ -34,25 +35,12 @@ public class BiFunctionTestCase {
 	}
 
 	@Test
-	public void of() {
-		BiFunction<Object, Object, Object> function = BiFunction.of(this.result);
-		Object result = function.apply(this.value1, this.value2);
-
-		assertThat(result).isSameAs(this.result);
-
-		function = BiFunction.of(null);
-		result = function.apply(this.value1, this.value2);
-
-		assertThat(result).isNull();
-	}
-
-	@Test
 	public void get() {
-		Supplier<Object> supplier = mock(Supplier.class);
+		Supplier<UUID> supplier = mock(Supplier.class);
 		doReturn(this.result).when(supplier).get();
 
-		BiFunction<Object, Object, Object> function = BiFunction.get(supplier);
-		Object result = function.apply(this.value1, this.value2);
+		BiFunction<UUID, UUID, UUID> function = BiFunction.get(supplier);
+		UUID result = function.apply(this.value1, this.value2);
 
 		assertThat(result).isSameAs(this.result);
 
@@ -64,9 +52,9 @@ public class BiFunctionTestCase {
 
 	@Test
 	public void andThen() {
-		Object interrimResult = new Object();
-		BiFunction<Object, Object, Object> before = mock(BiFunction.class);
-		Function<Object, Object> after = mock(Function.class);
+		UUID interrimResult = UUID.randomUUID();
+		BiFunction<UUID, UUID, UUID> before = mock(BiFunction.class);
+		Function<UUID, UUID> after = mock(Function.class);
 		doCallRealMethod().when(before).andThen(any());
 		doReturn(interrimResult).when(before).apply(this.value1, this.value2);
 		doReturn(this.result).when(after).apply(interrimResult);
@@ -78,45 +66,45 @@ public class BiFunctionTestCase {
 
 	@Test
 	public void compose() {
-		Object interrimResult1 = new Object();
-		Object interrimResult2 = new Object();
-		BiFunction<Object, Object, Object> after = mock(BiFunction.class);
-		Function<Object, Object> before1 = mock(Function.class);
-		Function<Object, Object> before2 = mock(Function.class);
+		UUID interrimResult1 = UUID.randomUUID();
+		UUID interrimResult2 = UUID.randomUUID();
+		BiFunction<UUID, UUID, UUID> after = mock(BiFunction.class);
+		Function<UUID, UUID> before1 = mock(Function.class);
+		Function<UUID, UUID> before2 = mock(Function.class);
 		doCallRealMethod().when(after).compose(any(), any());
 		doReturn(interrimResult1).when(before1).apply(this.value1);
 		doReturn(interrimResult2).when(before2).apply(this.value2);
 		doReturn(this.result).when(after).apply(interrimResult1, interrimResult2);
 
-		Object result = after.compose(before1, before2).apply(this.value1, this.value2);
+		UUID result = after.compose(before1, before2).apply(this.value1, this.value2);
 
 		assertThat(result).isSameAs(this.result);
 	}
 
 	@Test
 	public void reverse() {
-		BiFunction<Object, Object, Object> function = mock(BiFunction.class);
+		BiFunction<UUID, UUID, UUID> function = mock(BiFunction.class);
 		doReturn(this.result).when(function).apply(this.value1, this.value2);
 		doCallRealMethod().when(function).reverse();
 
-		Object result = function.reverse().apply(this.value2, this.value1);
+		UUID result = function.reverse().apply(this.value2, this.value1);
 
 		assertThat(result).isSameAs(this.result);
 	}
 
 	@Test
 	public void withDefault() {
-		BiFunction<Object, Object, Object> function = mock(BiFunction.class);
+		BiFunction<UUID, UUID, UUID> function = mock(BiFunction.class);
 		doCallRealMethod().when(function).withDefault(any(), any(), any(), any());
-		Predicate<Object> predicate1 = mock(Predicate.class);
-		Predicate<Object> predicate2 = mock(Predicate.class);
-		Supplier<Object> supplier1 = mock(Supplier.class);
-		Supplier<Object> supplier2 = mock(Supplier.class);
-		Object expectedWhenDefaultValue1 = new Object();
-		Object expectedWhenDefaultValue2 = new Object();
-		Object expectedWhenDefaultValues = new Object();
-		Object defaultValue1 = new Object();
-		Object defaultValue2 = new Object();
+		Predicate<UUID> predicate1 = mock(Predicate.class);
+		Predicate<UUID> predicate2 = mock(Predicate.class);
+		Supplier<UUID> supplier1 = mock(Supplier.class);
+		Supplier<UUID> supplier2 = mock(Supplier.class);
+		UUID expectedWhenDefaultValue1 = UUID.randomUUID();
+		UUID expectedWhenDefaultValue2 = UUID.randomUUID();
+		UUID expectedWhenDefaultValues = UUID.randomUUID();
+		UUID defaultValue1 = UUID.randomUUID();
+		UUID defaultValue2 = UUID.randomUUID();
 
 		doReturn(false, false, true, true).when(predicate1).test(this.value1);
 		doReturn(false, true, false, true).when(predicate2).test(this.value2);
@@ -135,11 +123,11 @@ public class BiFunctionTestCase {
 
 	@Test
 	public void orDefault() {
-		BiFunction<Object, Object, Object> function = mock(BiFunction.class);
+		BiFunction<UUID, UUID, UUID> function = mock(BiFunction.class);
 		doCallRealMethod().when(function).orDefault(any(), any());
-		BiPredicate<Object, Object> predicate = mock(BiPredicate.class);
-		Supplier<Object> supplier = mock(Supplier.class);
-		Object defaultValue = new Object();
+		BiPredicate<UUID, UUID> predicate = mock(BiPredicate.class);
+		Supplier<UUID> supplier = mock(Supplier.class);
+		UUID defaultValue = UUID.randomUUID();
 
 		doReturn(false, true).when(predicate).test(this.value1, this.value2);
 		doReturn(defaultValue).when(supplier).get();
