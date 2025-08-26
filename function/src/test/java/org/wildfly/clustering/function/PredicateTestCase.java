@@ -8,6 +8,7 @@ package org.wildfly.clustering.function;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.DoubleFunction;
@@ -224,5 +225,28 @@ public class PredicateTestCase {
 		assertThat(predicate.test(value)).isTrue();
 		assertThat(predicate.test(value)).isTrue();
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	public void entry() {
+		Predicate<UUID> keyPredicate = mock(Predicate.class);
+		Predicate<UUID> valuePredicate = mock(Predicate.class);
+
+		Predicate<Map.Entry<UUID, UUID>> predicate = Predicate.entry(keyPredicate, valuePredicate);
+
+		UUID allowedKey = UUID.randomUUID();
+		UUID disallowedKey = UUID.randomUUID();
+		UUID allowedValue = UUID.randomUUID();
+		UUID disallowedValue = UUID.randomUUID();
+
+		doReturn(false).when(keyPredicate).test(disallowedKey);
+		doReturn(false).when(valuePredicate).test(disallowedValue);
+		doReturn(true).when(keyPredicate).test(allowedKey);
+		doReturn(true).when(valuePredicate).test(allowedValue);
+
+		assertThat(predicate.test(Map.entry(allowedKey, allowedValue))).isTrue();
+		assertThat(predicate.test(Map.entry(allowedKey, disallowedValue))).isFalse();
+		assertThat(predicate.test(Map.entry(disallowedKey, allowedValue))).isFalse();
+		assertThat(predicate.test(Map.entry(disallowedKey, disallowedValue))).isFalse();
 	}
 }

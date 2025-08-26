@@ -6,6 +6,7 @@
 package org.wildfly.clustering.function;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -18,13 +19,13 @@ import org.mockito.ArgumentMatchers;
  * Unit test for {@link Function}.
  * @author Paul Ferraro
  */
-public class FunctionTestCase {
+public class UnaryOperatorTestCase {
 
 	@Test
 	public void compose() {
-		Function<UUID, UUID> function = mock(Function.class);
-		doCallRealMethod().when(function).compose(ArgumentMatchers.<Function<UUID, UUID>>any());
-		Function<UUID, UUID> mapper = mock(Function.class);
+		UnaryOperator<UUID> function = mock(UnaryOperator.class);
+		doCallRealMethod().when(function).compose(ArgumentMatchers.<UnaryOperator<UUID>>any());
+		UnaryOperator<UUID> mapper = mock(UnaryOperator.class);
 		UUID value = UUID.randomUUID();
 		UUID mapped = UUID.randomUUID();
 		UUID expected = UUID.randomUUID();
@@ -38,9 +39,9 @@ public class FunctionTestCase {
 
 	@Test
 	public void composeBinary() {
-		Function<UUID, UUID> function = mock(Function.class);
-		doCallRealMethod().when(function).compose(ArgumentMatchers.<BiFunction<UUID, UUID, UUID>>any());
-		BiFunction<UUID, UUID, UUID> mapper = mock(BiFunction.class);
+		UnaryOperator<UUID> function = mock(UnaryOperator.class);
+		doCallRealMethod().when(function).compose(ArgumentMatchers.<BinaryOperator<UUID>>any());
+		BinaryOperator<UUID> mapper = mock(BinaryOperator.class);
 		UUID value1 = UUID.randomUUID();
 		UUID value2 = UUID.randomUUID();
 		UUID mapped = UUID.randomUUID();
@@ -80,7 +81,7 @@ public class FunctionTestCase {
 		UUID value = UUID.randomUUID();
 		UUID defaultValue = UUID.randomUUID();
 		UUID defaultResult = UUID.randomUUID();
-		Function<UUID, UUID> function = mock(Function.class);
+		UnaryOperator<UUID> function = mock(UnaryOperator.class);
 		doCallRealMethod().when(function).withDefault(any(), any());
 		Predicate<UUID> predicate = mock(Predicate.class);
 		Supplier<UUID> supplier = mock(Supplier.class);
@@ -99,7 +100,7 @@ public class FunctionTestCase {
 		UUID result = UUID.randomUUID();
 		UUID value = UUID.randomUUID();
 		UUID defaultResult = UUID.randomUUID();
-		Function<UUID, UUID> function = mock(Function.class);
+		UnaryOperator<UUID> function = mock(UnaryOperator.class);
 		doCallRealMethod().when(function).orDefault(any(), any());
 		Predicate<UUID> predicate = mock(Predicate.class);
 		Supplier<UUID> supplier = mock(Supplier.class);
@@ -110,30 +111,6 @@ public class FunctionTestCase {
 
 		assertThat(function.orDefault(predicate, supplier).apply(value)).isSameAs(defaultResult);
 		assertThat(function.orDefault(predicate, supplier).apply(value)).isSameAs(result);
-	}
-
-	@Test
-	public void handle() {
-		Function<UUID, UUID> function = mock(Function.class);
-		BiFunction<UUID, RuntimeException, UUID> handler = mock(BiFunction.class);
-		doCallRealMethod().when(function).handle(any());
-
-		UUID goodValue = UUID.randomUUID();
-		UUID badValue = UUID.randomUUID();
-		UUID result = UUID.randomUUID();
-		UUID handled = UUID.randomUUID();
-		RuntimeException exception = new RuntimeException();
-
-		doReturn(result).when(function).apply(goodValue);
-		doThrow(exception).when(function).apply(badValue);
-		doReturn(handled).when(handler).apply(badValue, exception);
-
-		assertThat(function.handle(handler).apply(goodValue)).isSameAs(result);
-		assertThat(function.handle(handler).apply(badValue)).isSameAs(handled);
-
-		verify(function).apply(goodValue);
-		verify(function).apply(badValue);
-		verify(handler).apply(badValue, exception);
 	}
 
 	@Test
@@ -149,7 +126,7 @@ public class FunctionTestCase {
 		doReturn(resultKey).when(keyFunction).apply(sourceKey);
 		doReturn(resultValue).when(valueFunction).apply(sourceValue);
 
-		Function<Map.Entry<UUID, UUID>, Map.Entry<UUID, UUID>> function = Function.entry(keyFunction, valueFunction);
+		UnaryOperator<Map.Entry<UUID, UUID>> function = UnaryOperator.entry(keyFunction, valueFunction);
 
 		Map.Entry<UUID, UUID> result = function.apply(Map.entry(sourceKey, sourceValue));
 

@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.function;
 
+import java.util.AbstractMap;
+import java.util.Map;
+
 /**
  * An enhanced unary operator.
  * @author Paul Ferraro
@@ -156,5 +159,22 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 				return function.apply(value);
 			}
 		} : empty();
+	}
+
+	/**
+	 * Returns a {@link java.util.Map.Entry} function from the specified key and value functions.
+	 * @param <K> the entry key type
+	 * @param <V> the entry value type
+	 * @param keyFunction an entry key function
+	 * @param valueFunction an entry value function
+	 * @return a {@link java.util.Map.Entry} function from the specified key and value functions.
+	 */
+	static <K, V> UnaryOperator<Map.Entry<K, V>> entry(UnaryOperator<K> keyFunction, UnaryOperator<V> valueFunction) {
+		return new UnaryOperator<>() {
+			@Override
+			public Map.Entry<K, V> apply(Map.Entry<K, V> entry) {
+				return new AbstractMap.SimpleImmutableEntry<>(keyFunction.apply(entry.getKey()), valueFunction.apply(entry.getValue()));
+			}
+		};
 	}
 }
