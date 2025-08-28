@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 
 /**
  * @author Paul Ferraro
@@ -48,9 +49,9 @@ public class ThreadContextBatchTestCase {
 	@Test
 	public void resumeWhileAssociatedBatch() {
 		ContextualBatch contextualBatch = mock(ContextualBatch.class);
-		ContextualSuspendedBatch suspendedContextualBatch = mock(ContextualSuspendedBatch.class);
+		ContextualSuspendedBatch contextualSuspendedBatch = mock(ContextualSuspendedBatch.class);
 
-		doReturn(suspendedContextualBatch).when(contextualBatch).suspend();
+		doReturn(contextualSuspendedBatch).when(contextualBatch).suspend();
 
 		ThreadContextBatch.INSTANCE.accept(contextualBatch);
 
@@ -63,6 +64,41 @@ public class ThreadContextBatchTestCase {
 		assertThatExceptionOfType(IllegalStateException.class).isThrownBy(suspended::resume);
 
 		verify(currentBatch).attach(any());
+	}
+
+	@Test
+	public void resumeWithContextWhileAssociatedBatch() {
+		ContextualBatch contextualBatch = mock(ContextualBatch.class);
+		ContextualSuspendedBatch contextualSuspendedBatch = mock(ContextualSuspendedBatch.class);
+
+		doReturn(contextualSuspendedBatch).when(contextualBatch).suspend();
+		doReturn(contextualBatch).when(contextualSuspendedBatch).resume();
+
+		ThreadContextBatch.INSTANCE.accept(contextualBatch);
+
+		SuspendedBatch suspended = ThreadContextBatch.INSTANCE.suspend();
+
+		verify(contextualBatch).suspend();
+
+		ContextualBatch currentBatch = mock(ContextualBatch.class);
+		ContextualSuspendedBatch currentSuspendedBatch = mock(ContextualSuspendedBatch.class);
+
+		ThreadContextBatch.INSTANCE.accept(currentBatch);
+
+		doReturn(currentSuspendedBatch).when(currentBatch).suspend();
+		doReturn(currentBatch).when(currentSuspendedBatch).resume();
+
+		try (Context<Batch> context = suspended.resumeWithContext()) {
+			verify(currentBatch).suspend();
+			verifyNoInteractions(currentSuspendedBatch);
+			verify(contextualSuspendedBatch).resume();
+			verifyNoMoreInteractions(contextualBatch);
+		}
+
+		verify(contextualBatch, times(2)).suspend();
+		verifyNoMoreInteractions(contextualSuspendedBatch);
+		verify(currentSuspendedBatch).resume();
+		verifyNoMoreInteractions(currentBatch);
 	}
 
 	@Test
