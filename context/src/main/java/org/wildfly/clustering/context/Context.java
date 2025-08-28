@@ -5,9 +5,9 @@
 
 package org.wildfly.clustering.context;
 
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.Runnable;
 
 /**
  * Encapsulates some context that is applicable until {@link #close()}.
@@ -15,16 +15,7 @@ import org.wildfly.clustering.function.Supplier;
  * @param <T> the context value type
  */
 public interface Context<T> extends Supplier<T>, AutoCloseable {
-	Context<?> EMPTY = new Context<>() {
-		@Override
-		public Object get() {
-			return null;
-		}
-
-		@Override
-		public void close() {
-		}
-	};
+	Context<?> EMPTY = of(null, Runnable.empty());
 
 	@Override
 	void close();
@@ -40,13 +31,12 @@ public interface Context<T> extends Supplier<T>, AutoCloseable {
 	}
 
 	/**
-	 * Returns a context that provides the specified value and invokes the specified action on close.
-	 * @param <T> the context value type
+	 * Returns a context that provides the specified value and invokes the specified task on close.
 	 * @param value the context value
-	 * @param closeAction the action to perform on {@link #close()}.
-	 * @return a context that provides the specified value and invokes the specified action on close.
+	 * @param closeTask the action to perform on {@link #close()}.
+	 * @return a context that provides the specified value and invokes the specified task on close.
 	 */
-	static <T> Context<T> of(T value, Consumer<T> closeAction) {
+	static <T> Context<T> of(T value, java.lang.Runnable closeTask) {
 		return new Context<>() {
 			@Override
 			public T get() {
@@ -55,7 +45,7 @@ public interface Context<T> extends Supplier<T>, AutoCloseable {
 
 			@Override
 			public void close() {
-				closeAction.accept(value);
+				closeTask.run();
 			}
 		};
 	}
