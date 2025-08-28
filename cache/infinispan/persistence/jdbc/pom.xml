@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-cache-infinispan-persistence</artifactId>
-		<version>7.0.12.Final-SNAPSHOT</version>
+		<version>7.0.12.Final</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-cache-infinispan-persistence-jdbc</artifactId>
