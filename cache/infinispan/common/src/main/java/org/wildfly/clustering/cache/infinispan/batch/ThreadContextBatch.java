@@ -5,9 +5,13 @@
 
 package org.wildfly.clustering.cache.infinispan.batch;
 
+import java.util.List;
+
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.context.ContextReference;
+import org.wildfly.clustering.function.Runnable;
 
 /**
  * A batch referenced via {@link ThreadLocal}.
@@ -62,6 +66,14 @@ enum ThreadContextBatch implements Batch, ContextReference<ContextualBatch> {
 			this.accept(null);
 		}
 		return new SuspendedBatch() {
+			@Override
+			public Context<Batch> resumeWithContext() {
+				// Auto-suspend any active tx, and auto-resume on context close
+				SuspendedBatch suspended = ThreadContextBatch.this.suspend();
+				Batch resumed = this.resume();
+				return Context.of(resumed, Runnable.runAll(List.of(resumed::suspend, suspended::resume)));
+			}
+
 			@Override
 			public Batch resume() {
 				ContextualBatch current = ThreadContextBatch.this.get();

@@ -8,7 +8,7 @@ package org.wildfly.clustering.server.jgroups;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.context.Context;
-import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Runnable;
 
 /**
  * @author Paul Ferraro
@@ -22,7 +22,7 @@ public class ChannelGroupContext extends AbstractContext<ChannelGroup> {
 	}
 
 	public ChannelGroupContext(JChannel channel) {
-		this(Context.of(channel, Consumer.empty()));
+		this(Context.of(channel, Runnable.empty()));
 	}
 
 	private ChannelGroupContext(Context<JChannel> channel) {

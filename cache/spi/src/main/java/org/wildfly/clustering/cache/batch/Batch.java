@@ -48,7 +48,7 @@ public interface Batch extends AutoCloseable {
 	 */
 	default Context<SuspendedBatch> suspendWithContext() {
 		SuspendedBatch suspended = this.suspend();
-		return Context.of(suspended, SuspendedBatch::resume);
+		return Context.of(suspended, suspended::resume);
 	}
 
 	/**
