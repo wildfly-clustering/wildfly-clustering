@@ -20,6 +20,7 @@ import java.util.function.BiConsumer;
 public interface MarshallingTesterFactory extends TesterFactory {
 	System.Logger LOGGER = System.getLogger(MarshallingTesterFactory.class.getName());
 
+	@Override
 	default <T> Tester<T> createTester(BiConsumer<T, T> assertion) {
 		ByteBufferMarshaller marshaller = this.getMarshaller();
 		return new Tester<>() {

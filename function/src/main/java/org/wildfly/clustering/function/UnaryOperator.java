@@ -23,6 +23,7 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param defaultResult a provider of the default operation result
 	 * @return an operator that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
 	 */
+	@Override
 	default UnaryOperator<T> orDefault(java.util.function.Predicate<T> predicate, java.util.function.Supplier<T> defaultResult) {
 		return new UnaryOperator<>() {
 			@Override
@@ -38,6 +39,7 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param defaultValue a provider of the default parameter value
 	 * @return an operator that applies this function if its parameter matches the specified predicate, or returns the value provided by the specified supplier otherwise.
 	 */
+	@Override
 	default UnaryOperator<T> withDefault(java.util.function.Predicate<T> predicate, java.util.function.Supplier<T> defaultValue) {
 		return new UnaryOperator<>() {
 			@Override
@@ -82,6 +84,7 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param handler an exception handler
 	 * @return a new operator that delegates to this operator using the specified exception handler.
 	 */
+	@Override
 	default UnaryOperator<T> handle(java.util.function.BiFunction<T, RuntimeException, T> handler) {
 		return new UnaryOperator<>() {
 			@Override
