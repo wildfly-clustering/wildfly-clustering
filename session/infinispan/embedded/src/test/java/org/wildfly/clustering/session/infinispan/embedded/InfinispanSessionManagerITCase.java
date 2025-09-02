@@ -131,18 +131,21 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 		super(InfinispanSessionManagerFactoryContext::new);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void basic(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ConcurrentInfinispanSessionManagerArgumentsProvider.class)
 	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ExpirationInfinispanSessionManagerArgumentsProvider.class)
 	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {

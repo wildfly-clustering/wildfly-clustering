@@ -81,18 +81,21 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 		super(HotRodSessionManagerFactoryContext::new);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void basic(HotRodSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void concurrent(HotRodSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
 	public void expiration(HotRodSessionManagerParameters parameters) throws Exception {

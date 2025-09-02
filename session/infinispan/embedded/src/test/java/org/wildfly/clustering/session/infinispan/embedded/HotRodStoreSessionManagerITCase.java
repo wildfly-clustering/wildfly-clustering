@@ -116,18 +116,21 @@ public class HotRodStoreSessionManagerITCase extends SessionManagerITCase<Infini
 		super(InfinispanSessionManagerFactoryContext::new);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanInvalidationSessionManagerArgumentsProvider.class)
 	public void basic(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanInvalidationSessionManagerArgumentsProvider.class)
 	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanInvalidationSessionManagerArgumentsProvider.class)
 	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {
