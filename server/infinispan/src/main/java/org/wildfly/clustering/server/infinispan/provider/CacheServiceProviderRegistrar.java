@@ -21,6 +21,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,6 +61,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	private final Supplier<Batch> batchFactory;
 	private final ConcurrentMap<T, Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
 	private final Cache<T, Set<Address>> cache;
+	private final BooleanSupplier active;
 	private final CacheContainerGroup group;
 	private final Executor executor;
 
@@ -68,6 +70,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		this.cache = config.getWriteOnlyCache();
 		this.batchFactory = config.getBatchFactory();
 		this.executor = config.getExecutor();
+		this.active = config::isActive;
 		this.cache.addListener(this);
 	}
 
@@ -104,7 +107,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 
 	@Override
 	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service) {
-		return this.register(service, (ServiceProviderListener<CacheContainerGroupMember>) null);
+		return this.register(service, null);
 	}
 
 	@Override
@@ -120,18 +123,20 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		if (entry != newEntry) {
 			throw new IllegalArgumentException(service.toString());
 		}
-		this.registerLocal(service);
+		if (this.active.getAsBoolean()) {
+			this.registerLocalMember(service);
+		}
 		return new DefaultServiceProviderRegistration<>(this, service, () -> this.unregisterLocal(service));
 	}
 
-	void registerLocal(T service) {
+	void registerLocalMember(T service) {
 		Address localAddress = this.cache.getCacheManager().getAddress();
 		try (Batch batch = this.batchFactory.get()) {
-			this.register(service, localAddress);
+			this.registerMember(service, localAddress);
 		}
 	}
 
-	void register(T service, Address address) {
+	void registerMember(T service, Address address) {
 		this.cache.compute(service, new AddressSetAddFunction(address));
 	}
 
@@ -157,7 +162,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	}
 
 	@Override
-	public Set<CacheContainerGroupMember> getProviders(final T service) {
+	public Set<CacheContainerGroupMember> getProviders(T service) {
 		Set<Address> addresses = this.cache.get(service);
 		return (addresses != null) ? this.map(addresses) : Set.of();
 	}
@@ -207,9 +212,9 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 								}
 							}
 						}
-						if (!localServices.isEmpty()) {
+						if (!localServices.isEmpty() && this.active.getAsBoolean()) {
 							for (T localService : localServices) {
-								this.registerLocal(localService);
+								this.registerLocalMember(localService);
 							}
 						}
 					});
