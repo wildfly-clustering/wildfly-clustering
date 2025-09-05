@@ -39,6 +39,11 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	}
 
 	@Override
+	default boolean isActive() {
+		return this.getCache().getStatus().allowInvocations() && (this.getCache().getCacheConfiguration().clustering().hash().capacityFactor() > Float.MIN_VALUE);
+	}
+
+	@Override
 	default <K, V> CacheEntryMutatorFactory<K, V> getCacheEntryMutatorFactory() {
 		return new EmbeddedCacheEntryMutatorFactory<>(this.getWriteCache());
 	}

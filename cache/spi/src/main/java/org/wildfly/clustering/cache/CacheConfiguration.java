@@ -17,4 +17,8 @@ public interface CacheConfiguration {
 	CacheProperties getCacheProperties();
 
 	Supplier<Batch> getBatchFactory();
+
+	default boolean isActive() {
+		return true;
+	}
 }
