@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -69,6 +70,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 	private final Runnable closeTask;
 	private final Map.Entry<K, V> entry;
 	private final Executor executor;
+	private final BooleanSupplier active;
 	private final Function<RegistryListener<K, V>, ExecutorService> executorServiceFactory = new Function<>() {
 		@Override
 		public ExecutorService apply(RegistryListener<K, V> listener) {
@@ -83,9 +85,12 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		this.closeTask = closeTask;
 		this.executor = config.getExecutor();
 		this.entry = MapEntry.of(entry.getKey(), entry.getValue());
-		Address localAddress = this.cache.getCacheManager().getAddress();
-		try (Batch batch = this.batchFactory.get()) {
-			this.cache.put(localAddress, this.entry);
+		this.active = config::isActive;
+		if (this.active.getAsBoolean()) {
+			Address localAddress = this.cache.getCacheManager().getAddress();
+			try (Batch batch = this.batchFactory.get()) {
+				this.cache.put(localAddress, this.entry);
+			}
 		}
 		if (!this.group.isSingleton()) {
 			this.cache.addListener(this, new KeyFilter<>(Address.class), null);
@@ -97,12 +102,16 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		if (!this.group.isSingleton()) {
 			this.cache.removeListener(this);
 		}
-		Address localAddress = this.cache.getCacheManager().getAddress();
-		try (Batch batch = this.batchFactory.get()) {
-			// If this remove fails, the entry will be auto-removed on topology change by the new primary owner
-			this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(localAddress);
-		} catch (CacheException e) {
-			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+		try {
+			if (this.active.getAsBoolean()) {
+				Address localAddress = this.cache.getCacheManager().getAddress();
+				try (Batch batch = this.batchFactory.get()) {
+					// If this remove fails, the entry will be auto-removed on topology change by the new primary owner
+					this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(localAddress);
+				} catch (CacheException e) {
+					LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+				}
+			}
 		} finally {
 			// Cleanup any unregistered listeners
 			for (ExecutorService executor : this.listeners.values()) {
@@ -176,8 +185,8 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 				}
 			}
 
-			// If this is a merge after cluster split: re-populate the cache registry with lost registry entries
-			boolean restoreLocalEntry = !previousMembers.contains(localAddress);
+			// If this is a merge after cluster split, re-populate the cache registry with lost registry entries
+			boolean restoreLocalEntry = !previousMembers.contains(localAddress) && this.active.getAsBoolean();
 
 			if (!leftMembers.isEmpty() || restoreLocalEntry) {
 				try {
