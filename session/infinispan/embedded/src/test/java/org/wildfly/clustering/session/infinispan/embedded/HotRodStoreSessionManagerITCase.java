@@ -83,6 +83,17 @@ public class HotRodStoreSessionManagerITCase extends SessionManagerITCase<Infini
 										.configuration("""
 {
 	"local-cache" : {
+		"encoding" : {
+			"key" : {
+				"media-type" : "application/octet-stream"
+			},
+			"value" : {
+				"media-type" : "application/octet-stream"
+			}
+		},
+		"expiration" : {
+			"interval" : 0
+		},
 		"transaction" : {
 			"mode" : "NON_XA",
 			"locking" : "PESSIMISTIC"

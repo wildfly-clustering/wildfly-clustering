@@ -41,6 +41,7 @@ import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.infinispan.client.hotrod.transaction.manager.RemoteTransactionManager;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.configuration.ConfiguredBy;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.commons.util.IntSets;
 import org.infinispan.marshall.persistence.PersistenceMarshaller;
@@ -336,7 +337,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 			this.blockingManager.runBlocking(() -> {
 				RemoteCache<K, MarshalledValue> cache = this.container.getCache(cacheName);
 				cache.start();
-				this.caches.set(index, this.cacheTransformer.apply(cache.withDataFormat(DataFormat.builder().keyMarshaller(this.marshaller).valueMarshaller(this.marshaller).build())));
+				this.caches.set(index, this.cacheTransformer.apply(cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(this.marshaller.getUserMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(this.marshaller).build())));
 			}, "hotrod-store-add-segments").whenComplete((value, e) -> {
 				if (e != null) {
 					result.completeExceptionally(e);
