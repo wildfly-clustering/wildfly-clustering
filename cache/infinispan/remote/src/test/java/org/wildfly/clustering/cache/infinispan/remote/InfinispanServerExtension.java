@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.remote;
 
+import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.wildfly.clustering.cache.ContainerExtension;
@@ -29,6 +30,8 @@ public class InfinispanServerExtension extends ContainerExtension<InfinispanServ
 			.addServer()
 				.host(container.getHost())
 				.port(container.getPort())
+			// Bridge networking currently needs to disable client topology updates
+			.clientIntelligence(container.isPortMapping() ? ClientIntelligence.BASIC : ClientIntelligence.HASH_DISTRIBUTION_AWARE)
 			.build();
 	}
 }
