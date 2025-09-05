@@ -78,8 +78,6 @@ public interface URIBuilder extends RelativeURIBuilder {
 	@Override
 	URIBuilder setFragment(String fragment);
 
-	URI build();
-
 	static URIBuilder of() {
 		return of(new ToIntFunction<>() {
 			@Override

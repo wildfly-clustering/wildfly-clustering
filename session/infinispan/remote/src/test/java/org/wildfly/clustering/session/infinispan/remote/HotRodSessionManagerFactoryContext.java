@@ -73,7 +73,8 @@ public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<S
 }""")
 				.forceReturnValues(false)
 				.nearCacheMode(parameters.getNearCacheMode())
-// Currently fails due to https://github.com/infinispan/infinispan/issues/14926
+// Currently fails with: java.lang.UnsupportedOperationException: Decorated caches should not delegate wrapping operations
+// See https://github.com/infinispan/infinispan/issues/14926
 //				.transactionMode(TransactionMode.NON_XA)
 				.transactionMode(TransactionMode.NONE)
 				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())

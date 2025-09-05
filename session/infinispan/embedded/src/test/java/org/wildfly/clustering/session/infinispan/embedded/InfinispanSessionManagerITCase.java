@@ -46,7 +46,7 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 		InfinispanSessionManagerArgumentsProvider() {
 			this.types.put(CacheType.DISTRIBUTION, EnumSet.allOf(TransactionMode.class));
 			this.types.put(CacheType.REPLICATION, EnumSet.allOf(TransactionMode.class));
-			this.types.put(CacheType.INVALIDATION, EnumSet.of(TransactionMode.NON_TRANSACTIONAL));
+			this.types.put(CacheType.INVALIDATION, EnumSet.allOf(TransactionMode.class));
 		}
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
@@ -131,18 +131,21 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 		super(InfinispanSessionManagerFactoryContext::new);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
 	public void basic(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.basic(parameters);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ConcurrentInfinispanSessionManagerArgumentsProvider.class)
 	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
+	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ExpirationInfinispanSessionManagerArgumentsProvider.class)
 	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {

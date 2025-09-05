@@ -43,6 +43,7 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * Returns a function that processes this function with reversed parameter order.
 	 * @return a function that processes this function with reversed parameter order.
 	 */
+	@Override
 	default BinaryOperator<T> reverse() {
 		return new BinaryOperator<>() {
 			@Override
@@ -60,6 +61,7 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param defaultValue2 a provider of the default value of the second parameter
 	 * @return a function that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
 	 */
+	@Override
 	default BinaryOperator<T> withDefault(java.util.function.Predicate<T> predicate1, java.util.function.Supplier<T> defaultValue1, java.util.function.Predicate<T> predicate2, java.util.function.Supplier<T> defaultValue2) {
 		return new BinaryOperator<>() {
 			@Override
@@ -75,6 +77,7 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param defaultResult a provider of the default parameter value
 	 * @return a function that applies this function if its parameter matches the specified predicate, or returns the value provided by the specified supplier otherwise.
 	 */
+	@Override
 	default BinaryOperator<T> orDefault(java.util.function.BiPredicate<T, T> predicate, java.util.function.Supplier<T> defaultResult) {
 		return new BinaryOperator<>() {
 			@Override
