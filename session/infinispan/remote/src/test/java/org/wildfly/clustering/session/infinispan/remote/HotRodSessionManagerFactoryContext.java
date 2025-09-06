@@ -15,7 +15,6 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
-import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
@@ -73,11 +72,8 @@ public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<S
 }""")
 				.forceReturnValues(false)
 				.nearCacheMode(parameters.getNearCacheMode())
-// Currently fails with: java.lang.UnsupportedOperationException: Decorated caches should not delegate wrapping operations
-// See https://github.com/infinispan/infinispan/issues/14926
-//				.transactionMode(TransactionMode.NON_XA)
-				.transactionMode(TransactionMode.NONE)
 				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
+				.transactionMode(parameters.getTransactionMode())
 				;
 		String deploymentName = parameters.getDeploymentName();
 		configuration.addRemoteCache(deploymentName, configurator);

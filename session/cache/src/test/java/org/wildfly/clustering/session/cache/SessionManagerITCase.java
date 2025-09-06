@@ -150,6 +150,8 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 						Duration concurrentDuration = Duration.between(start, stop);
 						this.logger.log(System.Logger.Level.INFO, "{0} concurrent requests completed in {1}", threads * requests, concurrentDuration);
 
+						this.failoverGracePeriod(parameters);
+
 						// Verify integrity of value on other manager
 						this.requestSession(manager2, sessionId, session -> {
 							assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests);
@@ -189,6 +191,17 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 				manager1.stop();
 			}
 		}
+	}
+
+	private void failoverGracePeriod(P parameters) {
+		parameters.getFailoverGracePeriod().ifPresent(duration -> {
+			// Grace time between fail-over requests
+			try {
+				Thread.sleep(duration.toMillis());
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		});
 	}
 
 	protected void expiration(P parameters) throws Exception {
