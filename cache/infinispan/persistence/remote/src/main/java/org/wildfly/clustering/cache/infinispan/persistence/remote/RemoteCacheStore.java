@@ -337,7 +337,8 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 			this.blockingManager.runBlocking(() -> {
 				RemoteCache<K, MarshalledValue> cache = this.container.getCache(cacheName);
 				cache.start();
-				this.caches.set(index, this.cacheTransformer.apply(cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(this.marshaller.getUserMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(this.marshaller).build())));
+				DataFormat format = DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(this.marshaller.getUserMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(this.marshaller).build();
+				this.caches.set(index, this.cacheTransformer.apply(cache.withDataFormat(format)));
 			}, "hotrod-store-add-segments").whenComplete((value, e) -> {
 				if (e != null) {
 					result.completeExceptionally(e);
