@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.time.Duration;
+import java.util.Optional;
+
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 
@@ -24,4 +27,10 @@ public interface SessionManagerParameters {
 
 	SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy();
 	ByteBufferMarshaller getSessionAttributeMarshaller();
+
+	boolean isTransactional();
+
+	default Optional<Duration> getFailoverGracePeriod() {
+		return this.isTransactional() ? Optional.empty() : Optional.of(Duration.ofSeconds(1));
+	}
 }

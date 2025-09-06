@@ -20,6 +20,11 @@ public interface InfinispanSessionManagerParameters extends SessionManagerParame
 	TransactionMode getTransactionMode();
 
 	@Override
+	default boolean isTransactional() {
+		return this.getTransactionMode().isTransactional();
+	}
+
+	@Override
 	default String getDeploymentName() {
 		return String.format("%s-%s-%s-%s.war", this.getSessionAttributeMarshaller(), this.getSessionAttributePersistenceStrategy(), this.getCacheType(), this.getTransactionMode());
 	}
