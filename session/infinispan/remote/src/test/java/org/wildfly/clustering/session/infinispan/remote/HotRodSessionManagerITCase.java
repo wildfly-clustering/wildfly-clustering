@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,40 +37,50 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 
 	static class HotRodSessionManagerArgumentsProvider implements ArgumentsProvider {
 		Set<NearCacheMode> nearCacheModes = EnumSet.of(NearCacheMode.DISABLED);
+		// Currently fails with: java.lang.UnsupportedOperationException: Decorated caches should not delegate wrapping operations
+		// See https://github.com/infinispan/infinispan/issues/14926
+		Set<TransactionMode> transactionModes = EnumSet.of(TransactionMode.NONE);
 
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 			Stream.Builder<Arguments> builder = Stream.builder();
 			for (MarshallingTesterFactory factory : ServiceLoader.load(MarshallingTesterFactory.class, MarshallingTesterFactory.class.getClassLoader())) {
 				ByteBufferMarshaller marshaller = factory.getMarshaller();
-				for (NearCacheMode nearCacheMode : this.nearCacheModes) {
-					for (SessionAttributePersistenceStrategy strategy : EnumSet.allOf(SessionAttributePersistenceStrategy.class)) {
-						builder.add(Arguments.of(new HotRodSessionManagerParameters() {
-							@Override
-							public ByteBufferMarshaller getSessionAttributeMarshaller() {
-								return marshaller;
-							}
+				for (TransactionMode transactionMode : this.transactionModes) {
+					for (NearCacheMode nearCacheMode : this.nearCacheModes) {
+						for (SessionAttributePersistenceStrategy strategy : EnumSet.allOf(SessionAttributePersistenceStrategy.class)) {
+							builder.add(Arguments.of(new HotRodSessionManagerParameters() {
+								@Override
+								public ByteBufferMarshaller getSessionAttributeMarshaller() {
+									return marshaller;
+								}
 
-							@Override
-							public SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy() {
-								return strategy;
-							}
+								@Override
+								public SessionAttributePersistenceStrategy getSessionAttributePersistenceStrategy() {
+									return strategy;
+								}
 
-							@Override
-							public NearCacheMode getNearCacheMode() {
-								return nearCacheMode;
-							}
+								@Override
+								public NearCacheMode getNearCacheMode() {
+									return nearCacheMode;
+								}
 
-							@Override
-							public RemoteCacheContainerConfigurator getRemoteCacheContainerConfigurator() {
-								return INFINISPAN;
-							}
+								@Override
+								public TransactionMode getTransactionMode() {
+									return transactionMode;
+								}
 
-							@Override
-							public String toString() {
-								return Map.of(ByteBufferMarshaller.class.getSimpleName(), marshaller.toString(), SessionAttributePersistenceStrategy.class.getSimpleName(), strategy).toString();
-							}
-						}));
+								@Override
+								public RemoteCacheContainerConfigurator getRemoteCacheContainerConfigurator() {
+									return INFINISPAN;
+								}
+
+								@Override
+								public String toString() {
+									return Map.of(ByteBufferMarshaller.class.getSimpleName(), marshaller.toString(), SessionAttributePersistenceStrategy.class.getSimpleName(), strategy).toString();
+								}
+							}));
+						}
 					}
 				}
 			}
