@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.server.infinispan;
 
+import java.util.Optional;
+
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jgroups.util.NameCache;
@@ -33,7 +35,8 @@ public class EmbeddedCacheManagerGroupMember implements CacheContainerGroupMembe
 
 	@Override
 	public String getName() {
-		return NameCache.get(this.address.getJGroupsAddress());
+		org.jgroups.Address address = this.address.getJGroupsAddress();
+		return Optional.ofNullable(NameCache.get(address)).orElseGet(address::toString);
 	}
 
 	@Override

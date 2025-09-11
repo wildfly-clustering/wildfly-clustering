@@ -13,7 +13,9 @@ import org.wildfly.clustering.server.GroupMember;
  * A listener that is notified when the set of providers for a given service changes.
  * @param <M> the member type
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link ServiceProviderRegistrationListener}.
  */
+@Deprecated(forRemoval = true)
 public interface ServiceProviderListener<M extends GroupMember> {
 	/**
 	 * Indicates that the set of group members providing a given service has changed.

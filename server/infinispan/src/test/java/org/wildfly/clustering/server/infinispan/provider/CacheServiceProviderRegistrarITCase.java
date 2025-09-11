@@ -8,15 +8,15 @@ package org.wildfly.clustering.server.infinispan.provider;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 
 /**
  * @author Paul Ferraro
@@ -38,29 +38,34 @@ public class CacheServiceProviderRegistrarITCase {
 			assertThat(registrar1.getProviders(foo)).isEmpty();
 			assertThat(registrar1.getProviders(bar)).isEmpty();
 
-			BlockingQueue<Set<CacheContainerGroupMember>> fooEvents = new LinkedBlockingQueue<>();
-			try (ServiceProviderRegistration<String, CacheContainerGroupMember> fooRegistration1 = registrar1.register(foo, new CollectionServiceProviderListener(fooEvents))) {
+			BlockingQueue<ServiceProviderRegistrationEvent<CacheContainerGroupMember>> fooEvents = new LinkedBlockingQueue<>();
+			try (ServiceProviderRegistration<String, CacheContainerGroupMember> fooRegistration1 = registrar1.register(foo, new CollectingServiceProviderRegistrationListener(fooEvents))) {
 				assertThat(fooRegistration1.getService()).isSameAs(foo);
 				assertThat(fooRegistration1.getProviders()).containsExactly(member1);
 
 				assertThat(registrar1.getServices()).containsExactly(foo);
 				assertThat(registrar1.getProviders(foo)).containsExactly(member1);
 
-				assertThat(fooEvents.poll(5, TimeUnit.SECONDS)).containsExactly(member1);
+				ServiceProviderRegistrationEvent<CacheContainerGroupMember> event = fooEvents.poll(5, TimeUnit.SECONDS);
+				assertThat(event.getCurrentProviders()).containsExactly(member1);
+				assertThat(event.getPreviousProviders()).isEmpty();
 
-				BlockingQueue<Set<CacheContainerGroupMember>> barEvents = new LinkedBlockingQueue<>();
-				try (ServiceProviderRegistration<String, CacheContainerGroupMember> barRegistration1 = registrar1.register(bar, new CollectionServiceProviderListener(barEvents))) {
+				BlockingQueue<ServiceProviderRegistrationEvent<CacheContainerGroupMember>> barEvents = new LinkedBlockingQueue<>();
+				try (ServiceProviderRegistration<String, CacheContainerGroupMember> barRegistration1 = registrar1.register(bar, new CollectingServiceProviderRegistrationListener(barEvents))) {
 					assertThat(barRegistration1.getService()).isSameAs(bar);
 					assertThat(barRegistration1.getProviders()).containsExactly(member1);
 
 					assertThat(registrar1.getServices()).containsExactlyInAnyOrder(foo, bar);
 					assertThat(registrar1.getProviders(bar)).containsExactly(member1);
 
-					assertThat(barEvents.poll(5, TimeUnit.SECONDS)).containsExactly(member1);
+					event = barEvents.poll(5, TimeUnit.SECONDS);
+					assertThat(event.getCurrentProviders()).containsExactly(member1);
+					assertThat(event.getPreviousProviders()).isEmpty();
 
+					CacheContainerGroupMember member2 = null;
 					try (CacheContainerServiceProviderRegistrarContext<String> provider2 = new CacheContainerServiceProviderRegistrarContext<>(CLUSTER_NAME, MEMBER_2)) {
 						CacheContainerServiceProviderRegistrar<String> registrar2 = provider2.get();
-						CacheContainerGroupMember member2 = registrar2.getGroup().getLocalMember();
+						member2 = registrar2.getGroup().getLocalMember();
 
 						assertThat(registrar2.getServices()).containsExactlyInAnyOrder(foo, bar);
 						assertThat(registrar2.getProviders(foo)).containsExactly(member1);
@@ -73,10 +78,12 @@ public class CacheServiceProviderRegistrarITCase {
 							assertThat(registrar1.getProviders(foo)).containsExactlyInAnyOrder(member1, member2);
 							assertThat(registrar2.getProviders(foo)).containsExactlyInAnyOrder(member1, member2);
 
-							assertThat(fooEvents.poll(5, TimeUnit.SECONDS)).containsExactlyInAnyOrder(member1, member2);
+							event = fooEvents.poll(5, TimeUnit.SECONDS);
 						}
 
-						assertThat(fooEvents.poll(5, TimeUnit.SECONDS)).containsExactly(member1);
+						event = fooEvents.poll(5, TimeUnit.SECONDS);
+						assertThat(event.getCurrentProviders()).containsExactly(member1);
+						assertThat(event.getPreviousProviders()).containsExactlyInAnyOrder(member1, member2);
 
 						// Validate closing registry without closing registration
 						ServiceProviderRegistration<String, CacheContainerGroupMember> barRegistration2 = registrar2.register(bar);
@@ -86,7 +93,9 @@ public class CacheServiceProviderRegistrarITCase {
 						assertThat(registrar1.getProviders(bar)).containsExactlyInAnyOrder(member1, member2);
 						assertThat(registrar2.getProviders(bar)).containsExactlyInAnyOrder(member1, member2);
 
-						assertThat(barEvents.poll(5, TimeUnit.SECONDS)).containsExactlyInAnyOrder(member1, member2);
+						event = barEvents.poll(5, TimeUnit.SECONDS);
+						assertThat(event.getCurrentProviders()).containsExactlyInAnyOrder(member1, member2);
+						assertThat(event.getPreviousProviders()).containsExactly(member1);
 					}
 
 					assertThat(fooEvents.poll(100, TimeUnit.MILLISECONDS)).isNull();
@@ -95,7 +104,9 @@ public class CacheServiceProviderRegistrarITCase {
 					assertThat(registrar1.getProviders(foo)).containsExactly(member1);
 					assertThat(registrar1.getProviders(bar)).containsExactly(member1);
 
-					assertThat(barEvents.poll(5, TimeUnit.SECONDS)).containsExactly(member1);
+					event = barEvents.poll(5, TimeUnit.SECONDS);
+					assertThat(event.getCurrentProviders()).containsExactly(member1);
+					assertThat(event.getPreviousProviders()).containsExactlyInAnyOrder(member1, member2);
 				}
 
 				assertThat(registrar1.getServices()).containsExactly(foo);
@@ -113,16 +124,16 @@ public class CacheServiceProviderRegistrarITCase {
 		}
 	}
 
-	private static class CollectionServiceProviderListener implements ServiceProviderListener<CacheContainerGroupMember> {
-		private final Collection<Set<CacheContainerGroupMember>> events;
+	private static class CollectingServiceProviderRegistrationListener implements ServiceProviderRegistrationListener<CacheContainerGroupMember> {
+		private final Collection<ServiceProviderRegistrationEvent<CacheContainerGroupMember>> events;
 
-		CollectionServiceProviderListener(Collection<Set<CacheContainerGroupMember>> events) {
+		CollectingServiceProviderRegistrationListener(Collection<ServiceProviderRegistrationEvent<CacheContainerGroupMember>> events) {
 			this.events = events;
 		}
 
 		@Override
-		public void providersChanged(Set<CacheContainerGroupMember> providers) {
-			this.events.add(providers);
+		public void providersChanged(ServiceProviderRegistrationEvent<CacheContainerGroupMember> event) {
+			this.events.add(event);
 		}
 	}
 }

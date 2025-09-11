@@ -44,9 +44,10 @@ import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.local.provider.DefaultServiceProviderRegistration;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 
 /**
  * Infinispan {@link Cache} based {@link ServiceProviderRegistrar}.
@@ -59,7 +60,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	private static final System.Logger LOGGER = System.getLogger(CacheServiceProviderRegistrar.class.getName());
 
 	private final Supplier<Batch> batchFactory;
-	private final ConcurrentMap<T, Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
+	private final ConcurrentMap<T, Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
 	private final Cache<T, Set<Address>> cache;
 	private final BooleanSupplier active;
 	private final CacheContainerGroup group;
@@ -107,14 +108,15 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 
 	@Override
 	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service) {
-		return this.register(service, null);
+		ServiceProviderRegistrationListener<CacheContainerGroupMember> listener = null;
+		return this.register(service, listener);
 	}
 
 	@Override
-	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service, ServiceProviderListener<CacheContainerGroupMember> listener) {
-		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> newEntry = new AbstractMap.SimpleEntry<>(listener, null);
+	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service, ServiceProviderRegistrationListener<CacheContainerGroupMember> listener) {
+		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> newEntry = new AbstractMap.SimpleEntry<>(listener, null);
 		// Only create executor for new registrations
-		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.computeIfAbsent(service, key -> {
+		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.computeIfAbsent(service, key -> {
 			if (listener != null) {
 				newEntry.setValue(new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader()));
 			}
@@ -147,7 +149,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 				this.unregister(service, Set.of(localAddress));
 			}
 		} finally {
-			Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> oldEntry = this.listeners.remove(service);
+			Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> oldEntry = this.listeners.remove(service);
 			if (oldEntry != null) {
 				ExecutorService executor = oldEntry.getValue();
 				if (executor != null) {
@@ -228,25 +230,37 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 
 	@CacheEntryCreated
 	public CompletionStage<Void> created(CacheEntryCreatedEvent<T, Set<Address>> event) {
-		return this.updated(event.getKey(), event.getValue());
+		return this.updated(event.getKey(), Set.of(), event.getValue());
 	}
 
 	@CacheEntryModified
 	public CompletionStage<Void> modified(CacheEntryModifiedEvent<T, Set<Address>> event) {
-		return !Objects.equals(event.getOldValue(), event.getNewValue()) ? this.updated(event.getKey(), event.getNewValue()) : CompletableFuture.completedFuture(null);
+		return !Objects.equals(event.getOldValue(), event.getNewValue()) ? this.updated(event.getKey(), event.getOldValue(), event.getNewValue()) : CompletableFuture.completedFuture(null);
 	}
 
-	private CompletionStage<Void> updated(T service, Set<Address> providers) {
-		Map.Entry<ServiceProviderListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.get(service);
+	private CompletionStage<Void> updated(T service, Set<Address> previousProviders, Set<Address> currentProviders) {
+		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.get(service);
 		if (entry != null) {
-			ServiceProviderListener<CacheContainerGroupMember> listener = entry.getKey();
+			ServiceProviderRegistrationListener<CacheContainerGroupMember> listener = entry.getKey();
 			if (listener != null) {
 				Executor executor = entry.getValue();
-				Set<CacheContainerGroupMember> members = this.map(providers);
+				Set<CacheContainerGroupMember> previousMembers = this.map(previousProviders);
+				Set<CacheContainerGroupMember> currentMembers = this.map(currentProviders);
+				ServiceProviderRegistrationEvent<CacheContainerGroupMember> event = new ServiceProviderRegistrationEvent<>() {
+					@Override
+					public Set<CacheContainerGroupMember> getPreviousProviders() {
+						return previousMembers;
+					}
+
+					@Override
+					public Set<CacheContainerGroupMember> getCurrentProviders() {
+						return currentMembers;
+					}
+				};
 				try {
 					executor.execute(() -> {
 						try {
-							listener.providersChanged(members);
+							listener.providersChanged(event);
 						} catch (Throwable e) {
 							LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 						}

@@ -10,9 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 
 /**
  * Factory that provides a non-clustered {@link ServiceProviderRegistration} implementation.
@@ -39,7 +39,7 @@ public interface LocalServiceProviderRegistrar<T> extends ServiceProviderRegistr
 			}
 
 			@Override
-			public ServiceProviderRegistration<T, LocalGroupMember> register(T service, ServiceProviderListener<LocalGroupMember> listener) {
+			public ServiceProviderRegistration<T, LocalGroupMember> register(T service, ServiceProviderRegistrationListener<LocalGroupMember> listener) {
 				return this.register(service);
 			}
 

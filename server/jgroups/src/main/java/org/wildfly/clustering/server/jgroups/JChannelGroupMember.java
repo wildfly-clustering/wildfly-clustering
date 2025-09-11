@@ -24,7 +24,8 @@ public class JChannelGroupMember implements ChannelGroupMember {
 
 	@Override
 	public String getName() {
-		return NameCache.get(this.address);
+		// Logical name can be null if no longer a member of the view
+		return Optional.ofNullable(NameCache.get(this.address)).orElseGet(this.address::toString);
 	}
 
 	@Override
@@ -46,7 +47,7 @@ public class JChannelGroupMember implements ChannelGroupMember {
 
 	@Override
 	public String toString() {
-		return Optional.ofNullable(this.getName()).orElseGet(this.address::toString);
+		return this.getName();
 	}
 
 	@Override
