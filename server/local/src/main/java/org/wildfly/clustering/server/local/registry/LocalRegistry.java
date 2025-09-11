@@ -26,8 +26,6 @@ public interface LocalRegistry<K, V> extends Registry<LocalGroupMember, K, V> {
 	@Override
 	LocalGroup getGroup();
 
-	Map.Entry<K, V> getEntry(LocalGroupMember member);
-
 	static <K, V> LocalRegistry<K, V> of(LocalGroup group, Map.Entry<K, V> entry, Runnable closeTask) {
 		Map<K, V> entries = Collections.singletonMap(entry.getKey(), entry.getValue());
 		AtomicBoolean closed = new AtomicBoolean(false);
