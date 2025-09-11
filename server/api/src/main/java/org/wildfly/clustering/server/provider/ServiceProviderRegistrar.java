@@ -5,9 +5,6 @@
 
 package org.wildfly.clustering.server.provider;
 
-import java.util.Set;
-
-import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.Registrar;
 
@@ -18,20 +15,13 @@ import org.wildfly.clustering.server.Registrar;
  * @param <T> the service type
  * @param <M> the member type
  */
-public interface ServiceProviderRegistrar<T, M extends GroupMember> extends Registrar<T> {
-
-	/**
-	 * Returns the group with which to register service providers.
-	 *
-	 * @return a group
-	 */
-	Group<M> getGroup();
+public interface ServiceProviderRegistrar<T, M extends GroupMember> extends ServiceProviderRegistry<T, M>, Registrar<T> {
 
 	/**
 	 * Registers the local group member as a provider of the specified service.
 	 *
 	 * @param service a service to register
-	 * @return a new service provider registration
+	 * @return a service provider registration to be closed when the local group member no longer provides the specified service.
 	 */
 	@Override
 	ServiceProviderRegistration<T, M> register(T service);
@@ -40,22 +30,28 @@ public interface ServiceProviderRegistrar<T, M extends GroupMember> extends Regi
 	 * Registers the local group member as a provider of the specified service, using the specified listener.
 	 *
 	 * @param service a service to register
-	 * @param listener a registry listener
-	 * @return a new service provider registration
+	 * @param listener a listener to notify of service provider changes
+	 * @return a service provider registration to be closed when the local group member no longer provides the specified service.
+	 * @deprecated Use {@link #register(Object, ServiceProviderRegistrationListener)} instead.
 	 */
-	ServiceProviderRegistration<T, M> register(T service, ServiceProviderListener<M> listener);
+	@Deprecated(forRemoval = true)
+	default ServiceProviderRegistration<T, M> register(T service, ServiceProviderListener<M> listener) {
+		return this.register(service, new ServiceProviderRegistrationListener<>() {
+			@Override
+			public void providersChanged(ServiceProviderRegistrationEvent<M> event) {
+				if (listener != null) {
+					listener.providersChanged(event.getCurrentProviders());
+				}
+			}
+		});
+	}
 
 	/**
-	 * Returns the set of group members that can provide the specified service.
+	 * Registers the local group member as a provider of the specified service, using the specified listener.
 	 *
-	 * @param service a service for which to obtain providers
-	 * @return a set of group members providing the specified service
+	 * @param service a service to register
+	 * @param listener a listener to notify of service provider changes
+	 * @return a service provider registration to be closed when the local group member no longer provides the specified service.
 	 */
-	Set<M> getProviders(T service);
-
-	/**
-	 * Returns the complete list of services known to this registry.
-	 * @return a set of services
-	 */
-	Set<T> getServices();
+	ServiceProviderRegistration<T, M> register(T service, ServiceProviderRegistrationListener<M> listener);
 }
