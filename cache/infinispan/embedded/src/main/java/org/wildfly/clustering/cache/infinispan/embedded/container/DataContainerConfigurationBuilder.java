@@ -5,16 +5,24 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.container;
 
-import static org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfiguration.*;
-
+import java.time.Duration;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToIntBiFunction;
 
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.commons.configuration.Combine;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
+import org.infinispan.commons.util.EntrySizeCalculator;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 
+import com.github.benmanes.caffeine.cache.Expiry;
+import com.github.benmanes.caffeine.cache.Weigher;
+
 /**
+ * Builder of a {@link DataContainerConfiguration}.
  * @author Paul Ferraro
  */
 public class DataContainerConfigurationBuilder implements Builder<DataContainerConfiguration> {
@@ -22,11 +30,70 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
 	private final AttributeSet attributes;
 
 	public DataContainerConfigurationBuilder(ConfigurationBuilder builder) {
-		this.attributes = new AttributeSet(DataContainerConfiguration.class, EVICTABLE_PREDICATE);
+		this();
 	}
 
-	public <K> DataContainerConfigurationBuilder evictable(Predicate<K> evictable) {
-		this.attributes.attribute(EVICTABLE_PREDICATE).set((evictable != null) ? evictable : EVICTABLE_PREDICATE.getDefaultValue());
+	DataContainerConfigurationBuilder() {
+		this.attributes = new AttributeSet(DataContainerConfiguration.class, DataContainerConfiguration.WEIGHER, DataContainerConfiguration.EXPIRY);
+	}
+
+	public <K> DataContainerConfigurationBuilder evictableWhen(Predicate<K> evictable) {
+		return this.evictableWhen(org.wildfly.clustering.function.BiPredicate.former(evictable));
+	}
+
+	public <K, V> DataContainerConfigurationBuilder evictableWhen(BiPredicate<K, V> evictable) {
+		return this.withWeigher(new Weigher<K, V>() {
+			@Override
+			public int weigh(K key, V value) {
+				return evictable.test(key, value) ? 1 : 0;
+			}
+		});
+	}
+
+	public <K, V> DataContainerConfigurationBuilder withWeight(ToIntBiFunction<K, V> weight) {
+		Weigher<K, V> weigher = weight::applyAsInt;
+		return this.withWeigher(weigher);
+	}
+
+	public <K, V> DataContainerConfigurationBuilder withWeight(EntrySizeCalculator<K, V> calculator) {
+		return this.withWeigher(new Weigher<K, V>() {
+			@Override
+			public int weigh(K key, V value) {
+				return (int) Math.min(calculator.calculateSize(key, value), (long) Integer.MAX_VALUE);
+			}
+		});
+	}
+
+	private <K, V> DataContainerConfigurationBuilder withWeigher(Weigher<K, V> weigher) {
+		this.attributes.attribute(DataContainerConfiguration.WEIGHER).set(weigher);
+		return this;
+	}
+
+	public DataContainerConfigurationBuilder expireAfter(Duration maxIdle) {
+		return this.expireAfter(org.wildfly.clustering.function.Function.of(maxIdle));
+	}
+
+	public <V> DataContainerConfigurationBuilder expireAfter(Function<V, Duration> maxIdle) {
+		return this.expireAfter(org.wildfly.clustering.function.BiFunction.latter());
+	}
+
+	public <K, V> DataContainerConfigurationBuilder expireAfter(BiFunction<K, V, Duration> duration) {
+		this.attributes.attribute(DataContainerConfiguration.EXPIRY).set(new Expiry<K, V>() {
+			@Override
+			public long expireAfterCreate(K key, V value, long currentTime) {
+				return duration.apply(key, value).toNanos();
+			}
+
+			@Override
+			public long expireAfterUpdate(K key, V value, long currentTime, long currentDuration) {
+				return duration.apply(key, value).toNanos();
+			}
+
+			@Override
+			public long expireAfterRead(K key, V value, long currentTime, long currentDuration) {
+				return duration.apply(key, value).toNanos();
+			}
+		});
 		return this;
 	}
 
