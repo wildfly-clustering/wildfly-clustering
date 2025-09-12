@@ -9,8 +9,8 @@
 	<parent>
 		<groupId>org.jboss</groupId>
 		<artifactId>jboss-parent</artifactId>
-		<version>47</version>
-		<relativePath />
+		<version>50</version>
+		<relativePath/>
 	</parent>
 
 	<groupId>org.wildfly.clustering</groupId>
@@ -19,6 +19,29 @@
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering: BOM</name>
+	<description>${project.name}</description>
+	<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
+
+	<properties>
+		<!-- Nexus deployment settings -->
+		<nexus.staging.tag>${project.groupId}-${project.version}</nexus.staging.tag>
+
+		<maven.repository.url>${nexus.repository.url}/content/groups/public/</maven.repository.url>
+	</properties>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering.git</connection>
+		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering.git</developerConnection>
+		<url>https://github.com/wildfly-clustering/wildfly-clustering</url>
+		<tag>HEAD</tag>
+	</scm>
 
 	<dependencyManagement>
 		<dependencies>
@@ -272,4 +295,32 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<repositories>
+		<repository>
+			<id>default</id>
+			<url>${maven.repository.url}</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>default</id>
+			<url>${maven.repository.url}</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 </project>
