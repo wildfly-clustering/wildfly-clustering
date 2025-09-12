@@ -12,7 +12,6 @@ import jakarta.transaction.TransactionManager;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.api.BasicCache;
 import org.wildfly.clustering.cache.CacheConfiguration;
-import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 
@@ -24,8 +23,6 @@ public interface BasicCacheConfiguration extends CacheConfiguration, BasicCacheC
 	<K, V> BasicCache<K, V> getCache();
 
 	TransactionManager getTransactionManager();
-
-	CacheProperties getCacheProperties();
 
 	@Override
 	default Supplier<Batch> getBatchFactory() {

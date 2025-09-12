@@ -33,6 +33,7 @@ public class EmbeddedCacheManagerGroupProvider implements CacheContainerGroupPro
 		this.channel.connect(clusterName);
 		this.channelGroup = new JChannelGroup(this.channel);
 		this.manager = new EmbeddedCacheManagerFactory(new ForkChannelFactory(this.channel), clusterName, memberName).apply(CONTAINER_NAME, EmbeddedCacheManagerGroup.class.getClassLoader());
+		this.manager.start();
 		this.group = new EmbeddedCacheManagerGroup<>(new ChannelEmbeddedCacheManagerGroupConfiguration() {
 			@Override
 			public Group<org.jgroups.Address, ChannelGroupMember> getGroup() {
