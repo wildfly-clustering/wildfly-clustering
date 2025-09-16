@@ -8,19 +8,25 @@
 
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
-		<artifactId>wildfly-clustering</artifactId>
+		<artifactId>wildfly-clustering-cache</artifactId>
 		<version>8.0.0.Beta1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>wildfly-clustering-cache</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>wildfly-clustering-cache-caffeine</artifactId>
+	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Cache: Modules</name>
+	<name>WildFly Clustering: Cache: Caffeine</name>
 
-	<modules>
-		<module>caffeine</module>
-		<module>infinispan</module>
-		<module>spi</module>
-	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-function</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+	</dependencies>
 
 </project>
