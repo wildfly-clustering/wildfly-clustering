@@ -153,4 +153,38 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 			}
 		} : empty();
 	}
+
+	/**
+	 * Returns a function that applies the former parameter to the specified function.
+	 * @param <T> the first parameter type
+	 * @param <U> the second parameter type
+	 * @param <R> the function return type
+	 * @param function the function applied to the former parameter
+	 * @return a function that applies the former parameter to the specified function.
+	 */
+	static <T, U, R> BiFunction<T, U, R> applyFormer(java.util.function.Function<T, R> function) {
+		return new BiFunction<>() {
+			@Override
+			public R apply(T value, U ignored) {
+				return function.apply(value);
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that applies the latter parameter to the specified function.
+	 * @param <T> the first parameter type
+	 * @param <U> the second parameter type
+	 * @param <R> the function return type
+	 * @param function the function applied to the latter parameter
+	 * @return a function that applies the latter parameter to the specified function.
+	 */
+	static <T, U, R> BiFunction<T, U, R> applyLatter(java.util.function.Function<U, R> function) {
+		return new BiFunction<>() {
+			@Override
+			public R apply(T ignored, U value) {
+				return function.apply(value);
+			}
+		};
+	}
 }

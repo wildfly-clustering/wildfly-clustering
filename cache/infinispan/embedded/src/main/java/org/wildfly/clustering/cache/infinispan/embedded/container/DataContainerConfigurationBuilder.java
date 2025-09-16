@@ -38,7 +38,7 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
 	}
 
 	public <K> DataContainerConfigurationBuilder evictableWhen(Predicate<K> evictable) {
-		return this.evictableWhen(org.wildfly.clustering.function.BiPredicate.former(evictable));
+		return this.evictableWhen(org.wildfly.clustering.function.BiPredicate.testFormer(evictable));
 	}
 
 	public <K, V> DataContainerConfigurationBuilder evictableWhen(BiPredicate<K, V> evictable) {

@@ -45,6 +45,11 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 		};
 	}
 
+	/**
+	 * Returns a composed predicate that represents a logical XOR of the specified predicate.
+	 * @param other another predicate that should evaluate to the opposite of this one.
+	 * @return a composed predicate that represents a logical XOR of the specified predicate.
+	 */
 	default BiPredicate<T, U> xor(java.util.function.BiPredicate<? super T, ? super U> other) {
 		return new BiPredicate<>() {
 			@Override
@@ -96,7 +101,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 	 * @param predicate the predicate for the first parameter
 	 * @return a binary predicate from a predicate that tests the first parameter only.
 	 */
-	static <T, U> BiPredicate<T, U> former(java.util.function.Predicate<T> predicate) {
+	static <T, U> BiPredicate<T, U> testFormer(java.util.function.Predicate<T> predicate) {
 		return and(predicate, Predicate.always());
 	}
 
@@ -107,7 +112,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 	 * @param predicate the predicate for the first parameter
 	 * @return a binary predicate from a predicate that tests the first parameter only.
 	 */
-	static <T, U> BiPredicate<T, U> latter(java.util.function.Predicate<U> predicate) {
+	static <T, U> BiPredicate<T, U> testLatter(java.util.function.Predicate<U> predicate) {
 		return and(Predicate.always(), predicate);
 	}
 
