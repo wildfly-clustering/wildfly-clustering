@@ -5,25 +5,29 @@
 
 package org.wildfly.clustering.session.infinispan.remote;
 
-import java.util.LinkedList;
+import java.time.Duration;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.near.NearCache;
 import org.infinispan.client.hotrod.near.NearCacheFactory;
+import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.cache.caffeine.CacheConfiguration;
+import org.wildfly.clustering.cache.caffeine.CacheFactory;
 import org.wildfly.clustering.cache.infinispan.remote.near.CaffeineNearCache;
-import org.wildfly.clustering.cache.infinispan.remote.near.EvictionListener;
-import org.wildfly.clustering.cache.infinispan.remote.near.SimpleKeyWeigher;
+import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.attributes.SessionAttributesKey;
 import org.wildfly.clustering.session.infinispan.remote.metadata.SessionAccessMetaDataKey;
 import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreationMetaDataKey;
 
 import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.RemovalListener;
 
 /**
  * A near-cache factory based on max-active-sessions.
@@ -31,41 +35,41 @@ import com.github.benmanes.caffeine.cache.Caffeine;
  */
 public class SessionManagerNearCacheFactory implements NearCacheFactory {
 
-	private final OptionalInt maxActiveSessions;
+	private final EvictionConfiguration configuration;
 
-	public SessionManagerNearCacheFactory(OptionalInt maxActiveSessions) {
-		this.maxActiveSessions = maxActiveSessions;
+	public SessionManagerNearCacheFactory(EvictionConfiguration configuration) {
+		this.configuration = configuration;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <K, V> NearCache<K, V> createNearCache(NearCacheConfiguration config, BiConsumer<K, MetadataValue<V>> removedConsumer) {
-		EvictionListener<K, V> listener = this.maxActiveSessions.isPresent() ? new EvictionListener<>(removedConsumer, new InvalidationListener()) : null;
-		Caffeine<Object, Object> builder = Caffeine.newBuilder();
-		if (listener != null) {
-			builder.executor(Runnable::run)
-					.maximumWeight(this.maxActiveSessions.getAsInt())
-					.weigher(new SimpleKeyWeigher(SessionCreationMetaDataKey.class::isInstance))
-					.removalListener(listener);
+		CacheConfiguration.Builder<K, MetadataValue<V>> builder = CacheConfiguration.builder();
+		OptionalInt maxSize = this.configuration.getMaxSize();
+		Optional<Duration> idleTimeout = this.configuration.getIdleTimeout();
+		AtomicReference<Cache<Key<String>, MetadataValue<V>>> reference = new AtomicReference<>();
+		if (maxSize.isPresent() || idleTimeout.isPresent()) {
+			maxSize.ifPresent(builder::withMaxWeight);
+			idleTimeout.ifPresent(builder::evictAfter);
+			builder.evictableWhen(SessionCreationMetaDataKey.class::isInstance);
+			builder.whenRemoved(new RemovalListener<>() {
+				@Override
+				public void onRemoval(K key, MetadataValue<V> value, RemovalCause cause) {
+					if (cause != RemovalCause.REPLACED) {
+						removedConsumer.accept(key, value);
+
+						if ((cause == RemovalCause.EXPIRED) || (cause == RemovalCause.SIZE)) {
+							if (key instanceof SessionCreationMetaDataKey creationMetaDataKey) {
+								String id = creationMetaDataKey.getId();
+								reference.get().invalidateAll(List.of(new SessionAccessMetaDataKey(id), new SessionAttributesKey(id)));
+							}
+						}
+					}
+				}
+			});
 		}
-		Cache<K, MetadataValue<V>> cache = builder.build();
-		if (listener != null) {
-			listener.accept(cache);
-		}
+		Cache<K, MetadataValue<V>> cache = new CacheFactory<K, MetadataValue<V>>().apply(builder.build());
+		reference.set((Cache<Key<String>, MetadataValue<V>>) cache);
 		return new CaffeineNearCache<>(cache);
-	}
-
-	private static class InvalidationListener implements BiConsumer<Cache<Object, MetadataValue<Object>>, Map.Entry<Object, Object>> {
-
-		@Override
-		public void accept(Cache<Object, MetadataValue<Object>> cache, Map.Entry<Object, Object> entry) {
-			Object key = entry.getKey();
-			if (key instanceof SessionCreationMetaDataKey creationMetaDataKey) {
-				String id = creationMetaDataKey.getId();
-				List<Object> keys = new LinkedList<>();
-				keys.add(new SessionAccessMetaDataKey(id));
-				keys.add(new SessionAttributesKey(id));
-				cache.invalidateAll(keys);
-			}
-		}
 	}
 }
