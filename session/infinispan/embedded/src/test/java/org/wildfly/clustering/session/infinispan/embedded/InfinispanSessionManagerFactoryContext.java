@@ -93,7 +93,7 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 			});
 			SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 				@Override
-				public OptionalInt getMaxActiveSessions() {
+				public OptionalInt getMaxSize() {
 					return OptionalInt.of(1);
 				}
 
