@@ -16,8 +16,6 @@
 	<packaging>jar</packaging>
 
 	<name>WildFly Clustering: Java serialization support</name>
-	<description>
-	</description>
 
 	<dependencies>
 		<dependency>
