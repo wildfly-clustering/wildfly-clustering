@@ -25,7 +25,7 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
  * Unit test for {@link CachedSessionManager}.
  * @author Paul Ferraro
  */
-public class CacheableSessionManagerTestCase {
+public class CachedSessionManagerTestCase {
 
 	@SuppressWarnings("unchecked")
 	@Test

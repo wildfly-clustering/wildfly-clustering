@@ -5,8 +5,8 @@
 
 package org.wildfly.clustering.session.cache.user;
 
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.manager.DecoratedManager;
+import org.wildfly.clustering.server.manager.Service;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
@@ -17,37 +17,17 @@ import org.wildfly.clustering.session.user.UserManager;
  * @param <D> the deployment type
  * @param <S> the session type
  */
-public class DecoratedUserManager<C, T, D, S> implements UserManager<C, T, D, S> {
+public class DecoratedUserManager<C, T, D, S> extends DecoratedManager<String> implements UserManager<C, T, D, S> {
 
 	private final UserManager<C, T, D, S> manager;
 
 	public DecoratedUserManager(UserManager<C, T, D, S> manager) {
+		this(manager, manager);
+	}
+
+	public DecoratedUserManager(UserManager<C, T, D, S> manager, Service service) {
+		super(manager, service);
 		this.manager = manager;
-	}
-
-	@Override
-	public Supplier<Batch> getBatchFactory() {
-		return this.manager.getBatchFactory();
-	}
-
-	@Override
-	public Supplier<String> getIdentifierFactory() {
-		return this.manager.getIdentifierFactory();
-	}
-
-	@Override
-	public boolean isStarted() {
-		return this.manager.isStarted();
-	}
-
-	@Override
-	public void start() {
-		this.manager.start();
-	}
-
-	@Override
-	public void stop() {
-		this.manager.stop();
 	}
 
 	@Override

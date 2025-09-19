@@ -26,6 +26,10 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-cache-caffeine</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
 		</dependency>
 		<dependency>

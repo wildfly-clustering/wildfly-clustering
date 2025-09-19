@@ -72,6 +72,7 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	/**
 	 * Returns a function that returns the value from the specified supplier after accepting its parameters via this consumer.
 	 * @param factory a factory of the function return value
+	 * @param <R> the supplied type
 	 * @return a function that returns the value from the specified supplier after accepting its parameters via this consumer.
 	 */
 	default <R> BiFunction<T, U, R> thenReturn(java.util.function.Supplier<R> factory) {
@@ -102,7 +103,7 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	 * @param consumer the consumer of the first parameter
 	 * @return a consumer of the first parameter
 	 */
-	static <T, U> BiConsumer<T, U> former(java.util.function.Consumer<? super T> consumer) {
+	static <T, U> BiConsumer<T, U> acceptFormer(java.util.function.Consumer<? super T> consumer) {
 		return of(consumer, Consumer.empty());
 	}
 
@@ -113,7 +114,7 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	 * @param consumer the consumer of the second parameter
 	 * @return a consumer that delegates to a consumer of the second parameter, ignoring the first.
 	 */
-	static <T, U> BiConsumer<T, U> latter(java.util.function.Consumer<? super U> consumer) {
+	static <T, U> BiConsumer<T, U> acceptLatter(java.util.function.Consumer<? super U> consumer) {
 		return of(Consumer.empty(), consumer);
 	}
 

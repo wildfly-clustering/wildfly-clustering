@@ -25,7 +25,7 @@ public class BiPredicateTestCase {
 		Predicate<Object> predicate1 = mock(Predicate.class);
 		doReturn(false, true).when(predicate1).test(this.value1);
 
-		BiPredicate<Object, Object> predicate = BiPredicate.former(predicate1);
+		BiPredicate<Object, Object> predicate = BiPredicate.testFormer(predicate1);
 
 		assertThat(predicate.test(this.value1, this.value2)).isFalse();
 		assertThat(predicate.test(this.value1, this.value2)).isTrue();
@@ -36,7 +36,7 @@ public class BiPredicateTestCase {
 		Predicate<Object> predicate2 = mock(Predicate.class);
 		doReturn(false, true).when(predicate2).test(this.value2);
 
-		BiPredicate<Object, Object> predicate = BiPredicate.latter(predicate2);
+		BiPredicate<Object, Object> predicate = BiPredicate.testLatter(predicate2);
 
 		assertThat(predicate.test(this.value1, this.value2)).isFalse();
 		assertThat(predicate.test(this.value1, this.value2)).isTrue();

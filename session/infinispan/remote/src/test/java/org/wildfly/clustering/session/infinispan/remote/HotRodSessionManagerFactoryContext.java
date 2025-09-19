@@ -25,6 +25,7 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
+import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
@@ -48,6 +49,7 @@ public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<S
 		this.accept(container::close);
 
 		Configuration configuration = container.getConfiguration();
+		OptionalInt maxSize = parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
 		// Use local cache since our remote cluster has a single member
 		// Reduce expiration interval to speed up expiration verification
 		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration("""
@@ -72,6 +74,12 @@ public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<S
 }""")
 				.forceReturnValues(false)
 				.nearCacheMode(parameters.getNearCacheMode())
+				.nearCacheFactory(parameters.getNearCacheMode().invalidated() ? new SessionManagerNearCacheFactory(new EvictionConfiguration() {
+					@Override
+					public OptionalInt getMaxSize() {
+						return maxSize;
+					}
+				}) : null)
 				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
 				.transactionMode(parameters.getTransactionMode())
 				;
@@ -80,8 +88,8 @@ public class HotRodSessionManagerFactoryContext<C, SC> extends AbstractContext<S
 		this.accept(() -> configuration.removeRemoteCache(deploymentName));
 		SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 			@Override
-			public OptionalInt getMaxActiveSessions() {
-				return parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
+			public OptionalInt getMaxSize() {
+				return maxSize;
 			}
 
 			@Override

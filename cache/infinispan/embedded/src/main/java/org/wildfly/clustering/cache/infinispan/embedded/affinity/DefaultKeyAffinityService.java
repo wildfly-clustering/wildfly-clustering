@@ -150,7 +150,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 				return this.getCollocatedKey(currentState, otherKey);
 			}
 		}
-		LOGGER.log(System.Logger.Level.DEBUG, "Could not obtain pre-generated key with same affinity as {0} -- generating random key", otherKey);
+		LOGGER.log(System.Logger.Level.DEBUG, "Could not obtain pre-generated key for {0} with same affinity as {0} -- generating random key", this.cache.getName(), otherKey);
 		return this.generator.getKey();
 	}
 
@@ -174,7 +174,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 				return this.getKeyForAddress(currentState, address);
 			}
 		}
-		LOGGER.log(System.Logger.Level.DEBUG, "Could not obtain pre-generated key with affinity for {0} -- generating random key", address);
+		LOGGER.log(System.Logger.Level.DEBUG, "Could not obtain pre-generated key for {0} with affinity for {1} -- generating random key", this.cache.getName(), address);
 		return this.generator.getKey();
 	}
 
@@ -195,7 +195,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
 		if (!this.getSegments(event.getWriteConsistentHashAtStart()).equals(this.getSegments(event.getWriteConsistentHashAtEnd()))) {
-			LOGGER.log(System.Logger.Level.DEBUG, "Restarting key generation based on new consistent hash for topology {0}", event.getNewTopologyId());
+			LOGGER.log(System.Logger.Level.DEBUG, "Restarting key generation for {0} based on new consistent hash for topology {1}", event.getCache().getName(), event.getNewTopologyId());
 			this.accept(event.getWriteConsistentHashAtEnd());
 		}
 		return CompletableFuture.completedStage(null);

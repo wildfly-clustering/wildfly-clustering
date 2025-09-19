@@ -156,4 +156,34 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 			}
 		} : empty();
 	}
+
+	/**
+	 * Returns an operator that applies the former parameter to the specified operator.
+	 * @param <T> the operating type
+	 * @param operator the operator applied to the former parameter
+	 * @return an operator that applies the former parameter to the specified operator.
+	 */
+	static <T> BinaryOperator<T> applyFormer(java.util.function.UnaryOperator<T> operator) {
+		return new BinaryOperator<>() {
+			@Override
+			public T apply(T value, T ignored) {
+				return operator.apply(value);
+			}
+		};
+	}
+
+	/**
+	 * Returns an operator that applies the latter parameter to the specified operator.
+	 * @param <T> the operating type
+	 * @param operator the operator applied to the latter parameter
+	 * @return an operator that applies the latter parameter to the specified operator.
+	 */
+	static <T> BinaryOperator<T> applyLatter(java.util.function.UnaryOperator<T> operator) {
+		return new BinaryOperator<>() {
+			@Override
+			public T apply(T ignored, T value) {
+				return operator.apply(value);
+			}
+		};
+	}
 }

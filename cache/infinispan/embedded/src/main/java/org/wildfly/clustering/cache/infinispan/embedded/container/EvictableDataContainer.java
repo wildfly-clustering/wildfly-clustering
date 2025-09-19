@@ -12,6 +12,8 @@ import java.util.Spliterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.BiConsumer;
 import java.util.function.ObjIntConsumer;
 
 import io.reactivex.rxjava3.core.Flowable;
@@ -28,13 +30,13 @@ import org.infinispan.container.impl.PeekableTouchableMap;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.factories.impl.BasicComponentRegistry;
-import org.infinispan.util.concurrent.WithinThreadExecutor;
+import org.infinispan.factories.impl.ComponentRef;
 import org.reactivestreams.Publisher;
+import org.wildfly.clustering.cache.caffeine.CacheConfiguration;
+import org.wildfly.clustering.cache.caffeine.CacheFactory;
 import org.wildfly.clustering.function.Supplier;
 
 import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.RemovalCause;
-import com.github.benmanes.caffeine.cache.RemovalListener;
 
 /**
  * Copy of {@link org.infinispan.container.impl.DefaultDataContainer} with support for time-based eviction.
@@ -51,38 +53,30 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 
 	EvictableDataContainer(BasicComponentRegistry registry, Configuration configuration) {
 		Map<Object, CompletableFuture<Void>> futures = new ConcurrentHashMap<>();
-		RemovalListener<K, InternalCacheEntry<K, V>> evictionListener = new RemovalListener<>() {
-			@Override
-			public void onRemoval(K key, InternalCacheEntry<K, V> entry, RemovalCause cause) {
-				if ((cause == RemovalCause.SIZE) || (cause == RemovalCause.EXPIRED)) {
-					// Schedule an eviction to happen after the key lock is released
-					CompletableFuture<Void> future = new CompletableFuture<>();
-					futures.put(key, future);
-					EvictableDataContainer.this.handleEviction(entry, future);
-				}
-			}
+		BiConsumer<K, InternalCacheEntry<K, V>> evictionListener = (key, entry) -> {
+			// Schedule an eviction to happen after the key lock is released
+			CompletableFuture<Void> future = new CompletableFuture<>();
+			futures.put(key, future);
+			this.handleEviction(entry, future);
 		};
-		RemovalListener<K, InternalCacheEntry<K, V>> removalListener = new RemovalListener<>() {
+		BiConsumer<K, InternalCacheEntry<K, V>> removalListener = (key, entry) -> {
 			// It is very important that the fact that this method is invoked AFTER the entry has been evicted outside of the lock.
 			// This way we can see if the entry has been updated concurrently with an eviction properly
-			@Override
-			public void onRemoval(K key, InternalCacheEntry<K, V> value, RemovalCause cause) {
-				if ((cause == RemovalCause.SIZE) || (cause == RemovalCause.EXPIRED)) {
-					CompletableFuture<Void> future = futures.remove(key);
-					if (future != null) {
-						future.complete(null);
-					}
-				}
+			CompletableFuture<Void> future = futures.remove(key);
+			if (future != null) {
+				future.complete(null);
 			}
 		};
 		Supplier<DataContainerConfigurationBuilder> factory = DataContainerConfigurationBuilder::new;
 		DataContainerConfiguration container = Optional.ofNullable(configuration.module(DataContainerConfiguration.class)).orElseGet(factory.thenApply(Builder::create));
+		CacheConfiguration.Builder<K, InternalCacheEntry<K, V>> builder = CacheConfiguration.builder();
+		if (configuration.memory().maxCount() > 0) {
+			builder.withMaxWeight(configuration.memory().maxCount()).evictableWhen(container.evictable());
+		}
+		Optional.ofNullable(container.idleTimeout()).ifPresent(builder::evictAfter);
+		Optional.ofNullable(registry.getComponent(KnownComponentNames.EXPIRATION_SCHEDULED_EXECUTOR, ScheduledExecutorService.class)).map(ComponentRef::running).ifPresent(builder::withExecutor);
 		this.executor = registry.getComponent(KnownComponentNames.NON_BLOCKING_EXECUTOR, Executor.class).running();
-		this.evictionCache = container.builder(registry, configuration.memory())
-				.executor(new WithinThreadExecutor())
-				.evictionListener(evictionListener)
-				.removalListener(removalListener)
-				.build();
+		this.evictionCache = new CacheFactory<K, InternalCacheEntry<K, V>>().apply(builder.whenEvicted(evictionListener).whenRemoved(removalListener).build());
 
 		this.entries = new PeekableTouchableCaffeineMap<>(this.evictionCache);
 	}

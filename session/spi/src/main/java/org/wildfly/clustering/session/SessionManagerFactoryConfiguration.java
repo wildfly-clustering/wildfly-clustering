@@ -4,11 +4,11 @@
  */
 package org.wildfly.clustering.session;
 
-import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
+import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 import org.wildfly.clustering.server.immutable.Immutability;
 
 /**
@@ -16,9 +16,7 @@ import org.wildfly.clustering.server.immutable.Immutability;
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<SC> extends DeploymentConfiguration {
-
-	OptionalInt getMaxActiveSessions();
+public interface SessionManagerFactoryConfiguration<SC> extends DeploymentConfiguration, EvictionConfiguration {
 
 	ByteBufferMarshaller getMarshaller();
 

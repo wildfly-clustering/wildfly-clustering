@@ -134,19 +134,19 @@ public class BiConsumerTestCase {
 	}
 
 	@Test
-	public void former() {
+	public void acceptFormer() {
 		Consumer<Object> consumer = Mockito.mock(Consumer.class);
 
-		BiConsumer.former(consumer).accept(this.value1, this.value2);
+		BiConsumer.acceptFormer(consumer).accept(this.value1, this.value2);
 
 		Mockito.verify(consumer).accept(this.value1);
 	}
 
 	@Test
-	public void latter() {
+	public void acceptLatter() {
 		Consumer<Object> consumer = Mockito.mock(Consumer.class);
 
-		BiConsumer.latter(consumer).accept(this.value1, this.value2);
+		BiConsumer.acceptLatter(consumer).accept(this.value1, this.value2);
 
 		Mockito.verify(consumer).accept(this.value2);
 	}
