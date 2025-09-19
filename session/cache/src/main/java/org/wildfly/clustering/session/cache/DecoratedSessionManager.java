@@ -7,8 +7,8 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.concurrent.CompletionStage;
 
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.manager.DecoratedManager;
+import org.wildfly.clustering.server.manager.Service;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -19,37 +19,17 @@ import org.wildfly.clustering.session.SessionStatistics;
  * @author Paul Ferraro
  * @param <C> the session context type
  */
-public class DecoratedSessionManager<C> implements SessionManager<C> {
+public class DecoratedSessionManager<C> extends DecoratedManager<String> implements SessionManager<C> {
 
 	private final SessionManager<C> manager;
 
 	public DecoratedSessionManager(SessionManager<C> manager) {
+		this(manager, manager);
+	}
+
+	public DecoratedSessionManager(SessionManager<C> manager, Service service) {
+		super(manager, service);
 		this.manager = manager;
-	}
-
-	@Override
-	public Supplier<Batch> getBatchFactory() {
-		return this.manager.getBatchFactory();
-	}
-
-	@Override
-	public Supplier<String> getIdentifierFactory() {
-		return this.manager.getIdentifierFactory();
-	}
-
-	@Override
-	public boolean isStarted() {
-		return this.manager.isStarted();
-	}
-
-	@Override
-	public void start() {
-		this.manager.start();
-	}
-
-	@Override
-	public void stop() {
-		this.manager.stop();
 	}
 
 	@Override
