@@ -13,8 +13,8 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueMarshaller;
 import org.wildfly.clustering.marshalling.Marshaller;
-import org.wildfly.clustering.server.local.manager.SimpleIdentifierFactory;
-import org.wildfly.clustering.server.manager.IdentifierFactory;
+import org.wildfly.clustering.server.local.manager.SimpleIdentifierFactoryService;
+import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.session.cache.user.CompositeUserFactory;
 import org.wildfly.clustering.session.cache.user.DefaultUserManager;
 import org.wildfly.clustering.session.cache.user.UserContext;
@@ -46,7 +46,7 @@ public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, 
 		UserContextFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T> contextFactory = new HotRodUserContextFactory<>(this.configuration, marshaller, configuration.getTransientContextFactory());
 		UserSessionsFactory<Map<D, S>, D, S> sessionsFactory = new HotRodUserSessionsFactory<>(this.configuration);
 		UserFactory<UserContext<MarshalledValue<C, ByteBufferMarshaller>, T>, C, T, Map<D, S>, D, S> factory = new CompositeUserFactory<>(contextFactory, sessionsFactory, this.configuration.getCacheProperties());
-		IdentifierFactory<String> identifierFactory = new SimpleIdentifierFactory<>(configuration.getIdentifierFactory());
+		IdentifierFactoryService<String> identifierFactory = new SimpleIdentifierFactoryService<>(configuration.getIdentifierFactory());
 		return new DefaultUserManager<>(factory, identifierFactory, this.configuration.getBatchFactory());
 	}
 }

@@ -8,7 +8,7 @@ package org.wildfly.clustering.session.cache;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.server.manager.DecoratedManager;
-import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -27,7 +27,7 @@ public class DecoratedSessionManager<C> extends DecoratedManager<String> impleme
 		this(manager, manager);
 	}
 
-	public DecoratedSessionManager(SessionManager<C> manager, Service service) {
+	protected DecoratedSessionManager(SessionManager<C> manager, Service service) {
 		super(manager, service);
 		this.manager = manager;
 	}
