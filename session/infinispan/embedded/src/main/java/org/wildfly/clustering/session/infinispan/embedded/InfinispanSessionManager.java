@@ -23,7 +23,7 @@ import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
-import org.wildfly.clustering.server.manager.IdentifierFactory;
+import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
@@ -47,7 +47,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 	private final Supplier<Batch> batcher;
 	private final Cache<Key<String>, ?> cache;
 	private final CacheProperties properties;
-	private final IdentifierFactory<String> identifierFactory;
+	private final IdentifierFactoryService<String> identifierFactory;
 	private final Scheduler<String, ExpirationMetaData> expirationScheduler;
 	private final Runnable startTask;
 	private final Registrar<SessionManager<SC>> registrar;

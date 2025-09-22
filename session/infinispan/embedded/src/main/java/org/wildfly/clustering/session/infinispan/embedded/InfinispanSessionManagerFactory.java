@@ -27,7 +27,7 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommand;
-import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactory;
+import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactoryService;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntriesTask;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheKeysTask;
@@ -37,7 +37,7 @@ import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
-import org.wildfly.clustering.server.manager.IdentifierFactory;
+import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
@@ -142,7 +142,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 
 	@Override
 	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<C> configuration) {
-		IdentifierFactory<String> identifierFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), this.configuration.getCache());
+		IdentifierFactoryService<String> identifierFactory = new AffinityIdentifierFactoryService<>(configuration.getIdentifierFactory(), this.configuration.getCache());
 		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
 		Runnable startTask = () -> this.scheduleTask.accept(CacheStreamFilter.local(this.configuration.getCache()));
 		InfinispanSessionManagerConfiguration<SC> infinispanConfiguration = new InfinispanSessionManagerConfiguration<>() {
@@ -167,7 +167,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public IdentifierFactory<String> getIdentifierFactory() {
+			public IdentifierFactoryService<String> getIdentifierFactory() {
 				return identifierFactory;
 			}
 		};

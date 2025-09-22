@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.Supplier;
-import org.wildfly.clustering.server.manager.IdentifierFactory;
+import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
@@ -25,9 +25,9 @@ public class DefaultUserManager<CV, C, T, SV, D, S> implements UserManager<C, T,
 
 	private final UserFactory<CV, C, T, SV, D, S> factory;
 	private final Supplier<Batch> batchFactory;
-	private final IdentifierFactory<String> identifierFactory;
+	private final IdentifierFactoryService<String> identifierFactory;
 
-	public DefaultUserManager(UserFactory<CV, C, T, SV, D, S> factory, IdentifierFactory<String> identifierFactory, Supplier<Batch> batchFactory) {
+	public DefaultUserManager(UserFactory<CV, C, T, SV, D, S> factory, IdentifierFactoryService<String> identifierFactory, Supplier<Batch> batchFactory) {
 		this.factory = factory;
 		this.batchFactory = batchFactory;
 		this.identifierFactory = identifierFactory;

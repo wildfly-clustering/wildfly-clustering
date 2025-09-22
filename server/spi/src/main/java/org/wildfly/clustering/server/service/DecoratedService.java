@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.server.manager;
+package org.wildfly.clustering.server.service;
 
 /**
  * A {@link Service} decorator.

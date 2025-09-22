@@ -7,6 +7,8 @@ package org.wildfly.clustering.server.manager;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.service.DecoratedService;
+import org.wildfly.clustering.server.service.Service;
 
 /**
  * A {@link Service} decorator.
@@ -30,7 +32,7 @@ public class DecoratedManager<I> extends DecoratedService implements Manager<I> 
 	 * @param manager the decorated manager
 	 * @param service the alternate decorated service
 	 */
-	public DecoratedManager(Manager<I> manager, Service service) {
+	protected DecoratedManager(Manager<I> manager, Service service) {
 		super(service);
 		this.manager = manager;
 	}

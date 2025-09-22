@@ -6,14 +6,10 @@
 package org.wildfly.clustering.cache.infinispan.embedded;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.IsolationLevel;
-import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.transaction.LockingMode;
 import org.wildfly.clustering.cache.CacheProperties;
-import org.wildfly.clustering.function.Supplier;
 
 /**
  * Eagerly calculates the properties of a cache configuration.
@@ -21,8 +17,6 @@ import org.wildfly.clustering.function.Supplier;
  */
 public class EmbeddedCacheProperties implements CacheProperties {
 
-	private final Supplier<Configuration> configurationProvider;
-	private final Supplier<ComponentStatus> statusProvider;
 	private final boolean lockOnRead;
 	private final boolean lockOnWrite;
 	private final boolean marshalling;
@@ -30,17 +24,10 @@ public class EmbeddedCacheProperties implements CacheProperties {
 	private final boolean transactional;
 
 	public EmbeddedCacheProperties(Cache<?, ?> cache) {
-		this(cache::getCacheConfiguration, cache::getStatus);
+		this(cache.getCacheConfiguration());
 	}
 
 	public EmbeddedCacheProperties(Configuration configuration) {
-		this(Supplier.of(configuration), Supplier.of(ComponentStatus.RUNNING));
-	}
-
-	private EmbeddedCacheProperties(Supplier<Configuration> configurationProvider, Supplier<ComponentStatus> statusProvider) {
-		this.configurationProvider = configurationProvider;
-		this.statusProvider = statusProvider;
-		Configuration configuration = configurationProvider.get();
 		this.transactional = configuration.transaction().transactionMode().isTransactional();
 		this.lockOnWrite = this.transactional && (configuration.transaction().lockingMode() == LockingMode.PESSIMISTIC);
 		this.lockOnRead = this.lockOnWrite && (configuration.locking().lockIsolationLevel() == IsolationLevel.REPEATABLE_READ);
@@ -73,13 +60,5 @@ public class EmbeddedCacheProperties implements CacheProperties {
 	@Override
 	public boolean isMarshalling() {
 		return this.marshalling;
-	}
-
-	@Override
-	public boolean isActive() {
-		ClusteringConfiguration clustering = this.configurationProvider.get().clustering();
-		CacheMode mode = clustering.cacheMode();
-		float capacityFactor = clustering.hash().capacityFactor();
-		return this.statusProvider.get().allowInvocations() && (!mode.isClustered() || ((capacityFactor > 0f) && (!mode.isDistributed() || (capacityFactor > Float.MIN_VALUE))));
 	}
 }

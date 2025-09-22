@@ -71,7 +71,6 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 
 			Configuration configuration = builder.build();
 			CacheProperties properties = new EmbeddedCacheProperties(configuration);
-			Assertions.assertThat(properties.isActive()).isTrue();
 			Assertions.assertThat(properties.isLockOnRead()).isEqualTo(transactionMode.isTransactional());
 			Assertions.assertThat(properties.isLockOnWrite()).isEqualTo(transactionMode.isTransactional());
 			Assertions.assertThat(properties.isMarshalling()).isTrue();

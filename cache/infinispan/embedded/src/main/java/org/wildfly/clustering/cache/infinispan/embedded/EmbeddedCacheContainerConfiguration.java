@@ -29,7 +29,7 @@ public interface EmbeddedCacheContainerConfiguration extends BasicCacheContainer
 
 	@Override
 	default Executor getExecutor() {
-		Executor executor = this.getBlockingManager().asExecutor(this.getClass().getSimpleName());
+		Executor executor = GlobalComponentRegistry.componentOf(this.getCacheContainer(), BlockingManager.class).asExecutor(this.getClass().getSimpleName());
 		return new Executor() {
 			@Override
 			public void execute(Runnable command) {
@@ -40,9 +40,5 @@ public interface EmbeddedCacheContainerConfiguration extends BasicCacheContainer
 				}
 			}
 		};
-	}
-
-	default BlockingManager getBlockingManager() {
-		return GlobalComponentRegistry.componentOf(this.getCacheContainer(), BlockingManager.class);
 	}
 }

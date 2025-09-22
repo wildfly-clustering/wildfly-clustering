@@ -7,6 +7,7 @@ package org.wildfly.clustering.server.manager;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.service.Service;
 
 /**
  * A manager of server-side state.

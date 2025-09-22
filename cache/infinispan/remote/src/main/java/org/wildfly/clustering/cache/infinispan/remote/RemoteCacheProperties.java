@@ -52,9 +52,4 @@ public class RemoteCacheProperties implements CacheProperties {
 	public boolean isTransactional() {
 		return this.transactional;
 	}
-
-	@Override
-	public boolean isActive() {
-		return true;
-	}
 }
