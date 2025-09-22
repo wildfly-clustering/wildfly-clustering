@@ -32,6 +32,11 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 	<K, V> RemoteCache<K, V> getCache();
 
 	@Override
+	default boolean isActive() {
+		return this.getCache().getRemoteCacheContainer().isStarted();
+	}
+
+	@Override
 	default String getName() {
 		return Map.of("container", RemoteCacheContainerConfiguration.super.getName(), "cache", this.getCache().getName()).toString();
 	}
