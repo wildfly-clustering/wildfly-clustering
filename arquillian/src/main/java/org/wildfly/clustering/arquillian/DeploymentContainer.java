@@ -8,6 +8,7 @@ package org.wildfly.clustering.arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 
 /**
+ * Encapsulates an Arquillian deployment container.
  * @author Paul Ferraro
  */
 public interface DeploymentContainer extends Lifecycle, Comparable<DeploymentContainer> {

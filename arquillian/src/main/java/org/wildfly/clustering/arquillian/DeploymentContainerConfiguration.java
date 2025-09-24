@@ -14,6 +14,10 @@ import java.util.Set;
  */
 public interface DeploymentContainerConfiguration {
 
+	/**
+	 * Returns the registry of deployment containers.
+	 * @return the registry of deployment containers.
+	 */
 	DeploymentContainerRegistry getDeploymentContainerRegistry();
 
 	/**

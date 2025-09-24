@@ -78,6 +78,10 @@ public interface URIBuilder extends RelativeURIBuilder {
 	@Override
 	URIBuilder setFragment(String fragment);
 
+	/**
+	 * Returns a URI builder using default scheme ports.
+	 * @return a URI builder using default scheme ports.
+	 */
 	static URIBuilder of() {
 		return of(new ToIntFunction<>() {
 			@Override
@@ -96,6 +100,11 @@ public interface URIBuilder extends RelativeURIBuilder {
 		});
 	}
 
+	/**
+	 * Returns a URI builder using the specified default port function.
+	 * @param defaultPort a function that determines the default port for a given scheme.
+	 * @return a URI builder using the specified default port function.
+	 */
 	static URIBuilder of(ToIntFunction<String> defaultPort) {
 		AtomicReference<String> schemeRef = new AtomicReference<>("http");
 		AtomicReference<String> userInfoRef = new AtomicReference<>();

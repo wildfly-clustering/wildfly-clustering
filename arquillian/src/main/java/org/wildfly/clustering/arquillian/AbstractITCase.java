@@ -30,6 +30,11 @@ public abstract class AbstractITCase<C, A extends Archive<A>> implements Runnabl
 	private final Function<C, Tester> testerFactory;
 	private final C configuration;
 
+	/**
+	 * Constructs a new integration test using the specified tester factory and configuration.
+	 * @param testerFactory a tester factory
+	 * @param configuration a tester configuration
+	 */
 	protected AbstractITCase(Function<C, Tester> testerFactory, C configuration) {
 		this.testerFactory = testerFactory;
 		this.configuration = configuration;

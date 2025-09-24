@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
+ * Encapsulates an Arquillian tester.
  * @author Paul Ferraro
  */
 public interface Tester extends Consumer<List<Deployment>>, AutoCloseable {

@@ -15,5 +15,10 @@ import org.jboss.shrinkwrap.api.Archive;
  */
 public interface ApplicationConfiguration<C, A extends Archive<A>> {
 
+	/**
+	 * Creates a deployment archive using the specified configuration
+	 * @param configuration the test configuration
+	 * @return a deployment archive
+	 */
 	A createArchive(C configuration);
 }

@@ -8,6 +8,7 @@ package org.wildfly.clustering.arquillian;
 import java.net.URI;
 
 /**
+ * Encapsulates an Arquillian deployment.
  * @author Paul Ferraro
  */
 public interface Deployment extends Lifecycle, Comparable<Deployment> {
@@ -26,7 +27,7 @@ public interface Deployment extends Lifecycle, Comparable<Deployment> {
 	/**
 	 * Locates the base URI of the specific resource class.
 	 * For a servlet class, this would return the URI containing the context path of the associated ServletContext.
-	 * @param resourceClass
+	 * @param resourceClass the class of an arquillian resource
 	 * @return the base URI of the specific resource class.
 	 */
 	default URI locate(Class<?> resourceClass) {
