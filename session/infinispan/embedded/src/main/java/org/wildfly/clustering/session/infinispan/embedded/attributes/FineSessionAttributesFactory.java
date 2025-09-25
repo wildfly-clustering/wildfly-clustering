@@ -13,6 +13,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
@@ -25,7 +26,6 @@ import org.wildfly.clustering.cache.infinispan.embedded.listener.PrePassivateBlo
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.Marshaller;
-import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
@@ -52,7 +52,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	private final Cache<SessionAttributesKey, Map<String, V>> writeCache;
 	private final Cache<SessionAttributesKey, Map<String, V>> silentCache;
 	private final Marshaller<Object, V> marshaller;
-	private final Immutability immutability;
+	private final Predicate<Object> immutability;
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, Map<String, V>> mutatorFactory;
 	private final BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory;
