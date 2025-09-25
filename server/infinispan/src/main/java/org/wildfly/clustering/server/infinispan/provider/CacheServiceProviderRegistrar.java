@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -39,7 +40,6 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -118,7 +118,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		// Only create executor for new registrations
 		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.computeIfAbsent(service, key -> {
 			if (listener != null) {
-				newEntry.setValue(new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader()));
+				newEntry.setValue(new DefaultExecutorService(Executors::newSingleThreadExecutor, Thread.currentThread().getContextClassLoader()));
 			}
 			return newEntry;
 		});

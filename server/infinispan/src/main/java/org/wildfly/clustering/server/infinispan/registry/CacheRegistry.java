@@ -18,6 +18,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -45,7 +46,6 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.KeyFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -74,7 +74,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 	private final Function<RegistryListener<K, V>, ExecutorService> executorServiceFactory = new Function<>() {
 		@Override
 		public ExecutorService apply(RegistryListener<K, V> listener) {
-			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader());
+			return new DefaultExecutorService(Executors::newSingleThreadExecutor, Thread.currentThread().getContextClassLoader());
 		}
 	};
 

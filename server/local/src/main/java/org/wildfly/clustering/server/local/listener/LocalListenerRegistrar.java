@@ -12,13 +12,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.listener.ListenerRegistrar;
 
@@ -35,7 +35,7 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 	private final Function<T, ExecutorService> executorFactory = new Function<>() {
 		@Override
 		public ExecutorService apply(T listener) {
-			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader());
+			return new DefaultExecutorService(Executors::newSingleThreadExecutor, Thread.currentThread().getContextClassLoader());
 		}
 	};
 
