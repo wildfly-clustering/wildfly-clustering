@@ -88,7 +88,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	;
 
 	@Override
-	public boolean isMarshallable(Object object) {
+	public boolean test(Object object) {
 		return object instanceof String;
 	}
 
@@ -127,7 +127,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 		}
 
 		@Override
-		public boolean isMarshallable(Object object) {
+		public boolean test(Object object) {
 			return object instanceof String;
 		}
 	}

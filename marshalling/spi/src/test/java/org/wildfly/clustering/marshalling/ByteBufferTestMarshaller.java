@@ -41,7 +41,7 @@ public class ByteBufferTestMarshaller<T> implements TestMarshaller<T> {
 	}
 
 	@Override
-	public boolean isMarshallable(Object object) {
-		return this.marshaller.isMarshallable(object);
+	public boolean test(Object object) {
+		return this.marshaller.test(object);
 	}
 }

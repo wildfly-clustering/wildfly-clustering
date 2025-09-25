@@ -27,7 +27,7 @@ public class WrappedMessageByteBufferMarshaller implements ByteBufferMarshaller 
 	}
 
 	@Override
-	public boolean isMarshallable(Object object) {
+	public boolean test(Object object) {
 		return this.context.canMarshall(object);
 	}
 

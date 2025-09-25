@@ -168,7 +168,7 @@ public class FineSessionAttributesTestCase {
 		UUID unmarshallable = UUID.randomUUID();
 
 		try (SessionAttributes attributes = this.createSessionAttributes("id", Map.of("existing", existing))) {
-			doReturn(false).when(this.marshaller).isMarshallable(unmarshallable);
+			doReturn(false).when(this.marshaller).test(unmarshallable);
 
 			// Should be treated as a removal
 			assertThat(attributes.put("missing", null)).isNull();
@@ -193,10 +193,10 @@ public class FineSessionAttributesTestCase {
 		ArgumentCaptor<Map<String, Object>> capturedUpdates = ArgumentCaptor.captor();
 		CacheEntryMutator mutator = mock(CacheEntryMutator.class);
 		try (SessionAttributes attributes = this.createSessionAttributes("id", Map.of("existing", existing, "removing", removing))) {
-			doReturn(true).when(this.marshaller).isMarshallable(newIntermediate);
-			doReturn(true).when(this.marshaller).isMarshallable(newReplacement);
-			doReturn(true).when(this.marshaller).isMarshallable(existingIntermediate);
-			doReturn(true).when(this.marshaller).isMarshallable(existingReplacement);
+			doReturn(true).when(this.marshaller).test(newIntermediate);
+			doReturn(true).when(this.marshaller).test(newReplacement);
+			doReturn(true).when(this.marshaller).test(existingIntermediate);
+			doReturn(true).when(this.marshaller).test(existingReplacement);
 
 			// Verify new/updates attributes
 			doReturn(mutator).when(this.mutatorFactory).createMutator(eq("id"), capturedUpdates.capture());

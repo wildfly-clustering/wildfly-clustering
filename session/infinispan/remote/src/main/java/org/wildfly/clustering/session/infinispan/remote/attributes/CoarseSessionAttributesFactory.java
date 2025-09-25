@@ -18,7 +18,7 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.marshalling.Marshallability;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -103,7 +103,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		try {
 			Runnable mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
 			SessionActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : null;
-			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Marshallability.TRUE, this.immutability, notifier);
+			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Predicate.always(), this.immutability, notifier);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}

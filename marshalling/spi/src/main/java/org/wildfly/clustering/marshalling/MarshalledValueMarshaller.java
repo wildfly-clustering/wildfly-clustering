@@ -32,7 +32,7 @@ public class MarshalledValueMarshaller<V, C> implements Marshaller<V, Marshalled
 	}
 
 	@Override
-	public boolean isMarshallable(Object object) {
-		return this.factory.isMarshallable(object);
+	public boolean test(Object object) {
+		return this.factory.test(object);
 	}
 }

@@ -9,12 +9,12 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.Marshaller;
-import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.server.util.BlockingReferenceMap;
 import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
 
@@ -30,18 +30,18 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 	private final Map<String, Object> attributes;
 	private final Marshaller<Object, V> marshaller;
 	private final CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory;
-	private final Immutability immutability;
+	private final Predicate<Object> immutable;
 	private final CacheProperties properties;
 	private final SessionAttributeActivationNotifier notifier;
 	private final BlockingReferenceMap<String, Object> updates = BlockingReferenceMap.of(new TreeMap<>());
 
-	public FineSessionAttributes(K key, Map<String, Object> attributes, CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory, Marshaller<Object, V> marshaller, Immutability immutability, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
+	public FineSessionAttributes(K key, Map<String, Object> attributes, CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory, Marshaller<Object, V> marshaller, Predicate<Object> immutable, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
 		super(attributes);
 		this.key = key;
 		this.attributes = attributes;
 		this.mutatorFactory = mutatorFactory;
 		this.marshaller = marshaller;
-		this.immutability = immutability;
+		this.immutable = immutable;
 		this.properties = properties;
 		this.notifier = notifier;
 
@@ -60,7 +60,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		if (value != null) {
 			// If the object is mutable, we need to mutate this value on close
 			// Bypass immutability check if attribute already updates on close
-			this.updates.reference(name).writer(value).when(v -> (v == null) && !this.immutability.test(value)).get();
+			this.updates.reference(name).writer(value).when(v -> (v == null) && !this.immutable.test(value)).get();
 		}
 
 		return value;
@@ -84,7 +84,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 			return this.remove(name);
 		}
 
-		if (this.properties.isMarshalling() && !this.marshaller.isMarshallable(value)) {
+		if (this.properties.isMarshalling() && !this.marshaller.test(value)) {
 			throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
 		}
 

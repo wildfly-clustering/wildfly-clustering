@@ -40,7 +40,7 @@ public class UserMarshaller extends AbstractMarshaller {
 
 	@Override
 	public boolean isMarshallable(Object object) {
-		return this.marshaller.isMarshallable(object);
+		return this.marshaller.test(object);
 	}
 
 	@Override

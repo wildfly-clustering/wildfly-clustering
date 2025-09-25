@@ -35,7 +35,7 @@ public class JavaByteBufferMarshaller extends AbstractByteBufferMarshaller {
 	}
 
 	@Override
-	public boolean isMarshallable(Object object) {
+	public boolean test(Object object) {
 		return (object == null) || object instanceof Serializable;
 	}
 

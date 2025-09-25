@@ -27,7 +27,7 @@ public interface MarshallingTesterFactory extends TesterFactory {
 			@Override
 			public void accept(T subject) {
 				try {
-					assertThat(marshaller.isMarshallable(subject)).as(() -> Optional.ofNullable(subject).map(Object::toString).orElse(null)).isTrue();
+					assertThat(marshaller.test(subject)).as(() -> Optional.ofNullable(subject).map(Object::toString).orElse(null)).isTrue();
 
 					OptionalInt size = marshaller.size(subject);
 					ByteBuffer buffer = marshaller.write(subject);
@@ -55,12 +55,12 @@ public interface MarshallingTesterFactory extends TesterFactory {
 
 			@Override
 			public void reject(T subject) {
-				assertThat(marshaller.isMarshallable(subject)).as(subject::toString).isFalse();
+				assertThat(marshaller.test(subject)).as(subject::toString).isFalse();
 			}
 
 			@Override
 			public <E extends Throwable> void reject(T subject, Class<E> expected) {
-				assertThat(marshaller.isMarshallable(subject)).as(subject::toString).isTrue();
+				assertThat(marshaller.test(subject)).as(subject::toString).isTrue();
 				try {
 					ByteBuffer buffer = marshaller.write(subject);
 					// If we were able to marshal, expect failure to unmarshal
