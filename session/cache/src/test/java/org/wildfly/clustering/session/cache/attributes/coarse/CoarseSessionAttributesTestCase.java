@@ -78,8 +78,8 @@ public class CoarseSessionAttributesTestCase {
 			verify(notifier).postActivate();
 			verifyNoMoreInteractions(notifier);
 
-			assertThat(attributes.remove("remove")).isNull();;
-			assertThat(attributes.put("put", null)).isNull();;
+			assertThat(attributes.remove("remove")).isNull();
+			assertThat(attributes.put("put", null)).isNull();
 
 			verify(map).remove("remove");
 			verify(map).remove("put");
