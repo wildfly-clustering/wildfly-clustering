@@ -14,7 +14,9 @@ import java.util.Map;
  * @param <T> the operating type
  */
 public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, Function<T, T> {
+	/** An identity operator that always returns its parameter */
 	UnaryOperator<?> IDENTITY = value -> value;
+	/** An operator that always returns null */
 	UnaryOperator<?> NULL = value -> null;
 
 	/**
@@ -53,7 +55,6 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * Returns an operator that applies the specified operator to the result of this operator.
 	 * @param operator an operator to apply to the result of this operation
 	 * @return an operator that applies the specified operator to the result of this operator.
-	 * @see {@link java.util.function.Function#andThen(java.util.function.Function)}
 	 */
 	default UnaryOperator<T> andThen(java.util.function.UnaryOperator<T> operator) {
 		return new UnaryOperator<>() {
@@ -68,7 +69,6 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * Returns an operator that applies this operator to the result of the specified operator.
 	 * @param operator an operator to apply to the result of this operation
 	 * @return an operator that applies this operator to the result of the specified operator.
-	 * @see {@link java.util.function.Function#compose(java.util.function.Function)}
 	 */
 	default UnaryOperator<T> compose(java.util.function.UnaryOperator<T> operator) {
 		return new UnaryOperator<>() {
@@ -102,7 +102,6 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * Returns an operator that returns its value.
 	 * @param <T> the operating type
 	 * @return an operator that returns its value.
-	 * @see {@link java.util.function.Function#identity()}
 	 */
 	@SuppressWarnings("unchecked")
 	static <T> UnaryOperator<T> identity() {

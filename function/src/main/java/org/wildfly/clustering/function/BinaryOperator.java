@@ -11,8 +11,11 @@ package org.wildfly.clustering.function;
  * @param <T> the operator type
  */
 public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>, BiFunction<T, T, T> {
+	/** An identity function using the former parameter */
 	BinaryOperator<?> FORMER_IDENTITY = (value1, value2) -> value1;
+	/** An identity function using the latter parameter */
 	BinaryOperator<?> LATTER_IDENTITY = (value1, value2) -> value2;
+	/** An operator that always returns null. */
 	BinaryOperator<?> NULL = (value1, value2) -> null;
 
 	/**
@@ -30,6 +33,11 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 		};
 	}
 
+	/**
+	 * An operator variant of {@link BiFunction#andThen(java.util.function.Function)}.
+	 * @param after the operator to invoke using the result of this operator.
+	 * @return a binary operator that invokes the specified operator using the result of this operator.
+	 */
 	default BinaryOperator<T> andThen(java.util.function.UnaryOperator<T> after) {
 		return new BinaryOperator<>() {
 			@Override

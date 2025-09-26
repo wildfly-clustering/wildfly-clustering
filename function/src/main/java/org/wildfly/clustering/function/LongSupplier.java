@@ -10,8 +10,11 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  */
 public interface LongSupplier extends java.util.function.LongSupplier {
+	/** A supplier that always returns {@value Long#MIN_VALUE}. */
 	LongSupplier MINIMUM = of(Long.MIN_VALUE);
+	/** A supplier that always returns zero. */
 	LongSupplier ZERO = of(0L);
+	/** A supplier that always returns {@value Long#MAX_VALUE}. */
 	LongSupplier MAXIMUM = of(Long.MAX_VALUE);
 
 	/**
@@ -125,6 +128,11 @@ public interface LongSupplier extends java.util.function.LongSupplier {
 		};
 	}
 
+	/**
+	 * Returns a supplier of the specified value.
+	 * @param value the supplied value
+	 * @return a supplier of the specified value.
+	 */
 	static LongSupplier of(long value) {
 		return new LongSupplier() {
 			@Override

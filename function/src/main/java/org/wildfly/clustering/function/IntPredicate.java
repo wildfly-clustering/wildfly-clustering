@@ -10,65 +10,70 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  */
 public interface IntPredicate extends java.util.function.IntPredicate {
+	/** A predicate that always returns true */
 	IntPredicate ALWAYS = value -> true;
+	/** A predicate that always returns false */
 	IntPredicate NEVER = value -> false;
+	/** A predicate that returns true if the parameter is greater than zero. */
 	IntPredicate POSITIVE = greaterThan(0);
+	/** A predicate that returns true if the parameter is zero. */
 	IntPredicate ZERO = equalTo(0);
+	/** A predicate that returns true if the parameter is less than zero. */
 	IntPredicate NEGATIVE = lessThan(0);
 
 	/**
 	 * Returns a predicate that applies the specified mapping to its argument before evaluating.
 	 * @param <V> the mapped type
-	 * @param mapper
+	 * @param composer a composing function
 	 * @return a mapped predicate
 	 */
-	default <V> Predicate<V> compose(java.util.function.ToIntFunction<V> mapper) {
+	default <V> Predicate<V> compose(java.util.function.ToIntFunction<V> composer) {
 		return new Predicate<>() {
 			@Override
 			public boolean test(V value) {
-				return IntPredicate.this.test(mapper.applyAsInt(value));
+				return IntPredicate.this.test(composer.applyAsInt(value));
 			}
 		};
 	}
 
 	/**
 	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping function
+	 * @param composer a composing function
 	 * @return a mapped predicate
 	 */
-	default DoublePredicate composeDouble(java.util.function.DoubleToIntFunction function) {
+	default DoublePredicate composeDouble(java.util.function.DoubleToIntFunction composer) {
 		return new DoublePredicate() {
 			@Override
 			public boolean test(double value) {
-				return IntPredicate.this.test(function.applyAsInt(value));
+				return IntPredicate.this.test(composer.applyAsInt(value));
 			}
 		};
 	}
 
 	/**
 	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping operator
+	 * @param composer a composing operator
 	 * @return a mapped predicate
 	 */
-	default IntPredicate composeInt(java.util.function.IntUnaryOperator function) {
+	default IntPredicate composeInt(java.util.function.IntUnaryOperator composer) {
 		return new IntPredicate() {
 			@Override
 			public boolean test(int value) {
-				return IntPredicate.this.test(function.applyAsInt(value));
+				return IntPredicate.this.test(composer.applyAsInt(value));
 			}
 		};
 	}
 
 	/**
 	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping function
+	 * @param composer a composing function
 	 * @return a mapped predicate
 	 */
-	default LongPredicate composeLong(java.util.function.LongToIntFunction function) {
+	default LongPredicate composeLong(java.util.function.LongToIntFunction composer) {
 		return new LongPredicate() {
 			@Override
 			public boolean test(long value) {
-				return IntPredicate.this.test(function.applyAsInt(value));
+				return IntPredicate.this.test(composer.applyAsInt(value));
 			}
 		};
 	}
@@ -103,6 +108,11 @@ public interface IntPredicate extends java.util.function.IntPredicate {
 		};
 	}
 
+	/**
+	 * Returns a predicate returning the exclusive disjunction of this predicate with the specified predicate.
+	 * @param other another predicate
+	 * @return a predicate returning the exclusive disjunction of this predicate with the specified predicate.
+	 */
 	default IntPredicate xor(java.util.function.IntPredicate other) {
 		return new IntPredicate() {
 			@Override

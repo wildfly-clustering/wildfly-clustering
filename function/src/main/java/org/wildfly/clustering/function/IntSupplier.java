@@ -10,8 +10,11 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  */
 public interface IntSupplier extends java.util.function.IntSupplier {
-	IntSupplier ZERO = of(0);
+	/** A supplier that always returns {@value Integer#MIN_VALUE}. */
 	IntSupplier MINIMUM = of(Integer.MIN_VALUE);
+	/** A supplier that always returns zero. */
+	IntSupplier ZERO = of(0);
+	/** A supplier that always returns {@value Integer#MAX_VALUE}. */
 	IntSupplier MAXIMUM = of(Integer.MAX_VALUE);
 
 	/**
@@ -125,6 +128,11 @@ public interface IntSupplier extends java.util.function.IntSupplier {
 		};
 	}
 
+	/**
+	 * Returns a supplier of the specified value.
+	 * @param value the supplied value
+	 * @return a supplier of the specified value.
+	 */
 	static IntSupplier of(int value) {
 		return new IntSupplier() {
 			@Override

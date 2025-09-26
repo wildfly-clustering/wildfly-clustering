@@ -106,6 +106,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	/**
 	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
 	 * @param factory a factory of the function return value
+	 * @param <R> the return type
 	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
 	 */
 	default <R> Function<T, R> thenReturn(java.util.function.Supplier<R> factory) {
@@ -118,10 +119,12 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		};
 	}
 
+	/** A consumer that does nothing with its parameter */
 	Consumer<?> EMPTY = value -> {};
+	/** A map of exception logging consumers per level */
 	Map<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), ExceptionLogger::new, BinaryOperator.former(), () -> new EnumMap<>(System.Logger.Level.class)));
+	/** A function returning the exception logger for a given level */
 	Function<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGER = EXCEPTION_LOGGERS::get;
-	Map<System.Logger.Level, Consumer<AutoCloseable>> SILENT_CLOSERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), EXCEPTION_LOGGER.andThen(Consumer::close), BinaryOperator.former(), () -> new EnumMap<>(System.Logger.Level.class)));
 
 	/**
 	 * Returns a consumer that performs no action.
@@ -145,6 +148,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	/**
 	 * Returns a consumer that logs an exception at the specified level.
 	 * @param level the log level
+	 * @param <E> the exception type
 	 * @return an exception logging consumer
 	 */
 	@SuppressWarnings("unchecked")
@@ -154,6 +158,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 
 	/**
 	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#ERROR} level.
+	 * @param <E> the exception type
 	 * @return an exception logging consumer
 	 */
 	static <E extends Exception> Consumer<E> error() {
@@ -162,6 +167,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 
 	/**
 	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#WARNING} level.
+	 * @param <E> the exception type
 	 * @return an exception logging consumer
 	 */
 	static <E extends Exception> Consumer<E> warning() {
@@ -170,6 +176,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 
 	/**
 	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#INFO} level.
+	 * @param <E> the exception type
 	 * @return an exception logging consumer
 	 */
 	static <E extends Exception> Consumer<E> info() {
@@ -178,6 +185,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 
 	/**
 	 * Returns a consumer that logs an exception at the {@link java.lang.System.Logger.Level#DEBUG} level.
+	 * @param <E> the exception type
 	 * @return an exception logging consumer
 	 */
 	static <E extends Exception> Consumer<E> debug() {
@@ -252,6 +260,10 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		};
 	}
 
+	/**
+	 * A consumer of an exception that logs its parameter.
+	 * @param <E> the exception type
+	 */
 	class ExceptionLogger<E extends Exception> implements Consumer<E> {
 		private static final System.Logger LOGGER = System.getLogger(Consumer.class.getName());
 		private final System.Logger.Level level;

@@ -71,7 +71,7 @@ public interface DoubleConsumer extends java.util.function.DoubleConsumer {
 	 * @param composer a composing function
 	 * @return a composed consumer
 	 */
-	default DoubleConsumer composeAsLong(java.util.function.DoubleUnaryOperator composer) {
+	default DoubleConsumer composeAsDouble(java.util.function.DoubleUnaryOperator composer) {
 		return new DoubleConsumer() {
 			@Override
 			public void accept(double value) {
@@ -132,12 +132,28 @@ public interface DoubleConsumer extends java.util.function.DoubleConsumer {
 	 * @param factory a factory of the function return value
 	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
 	 */
-	default DoubleUnaryOperator thenReturnAsInt(java.util.function.DoubleSupplier factory) {
+	default DoubleUnaryOperator thenReturnDouble(java.util.function.DoubleSupplier factory) {
 		return new DoubleUnaryOperator() {
 			@Override
 			public double applyAsDouble(double value) {
 				DoubleConsumer.this.accept(value);
 				return factory.getAsDouble();
+			}
+		};
+	}
+
+	/**
+	 * Returns a composite consumer that delegates to the specified consumers.
+	 * @param consumers a number of consumers
+	 * @return a composite consumer
+	 */
+	static DoubleConsumer acceptAll(Iterable<? extends DoubleConsumer> consumers) {
+		return new DoubleConsumer() {
+			@Override
+			public void accept(double value) {
+				for (DoubleConsumer consumer : consumers) {
+					consumer.accept(value);
+				}
 			}
 		};
 	}

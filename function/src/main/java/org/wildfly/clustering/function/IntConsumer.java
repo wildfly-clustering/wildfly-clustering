@@ -132,12 +132,28 @@ public interface IntConsumer extends java.util.function.IntConsumer {
 	 * @param factory a factory of the function return value
 	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
 	 */
-	default IntUnaryOperator thenReturnAsInt(java.util.function.IntSupplier factory) {
+	default IntUnaryOperator thenReturnInt(java.util.function.IntSupplier factory) {
 		return new IntUnaryOperator() {
 			@Override
 			public int applyAsInt(int value) {
 				IntConsumer.this.accept(value);
 				return factory.getAsInt();
+			}
+		};
+	}
+
+	/**
+	 * Returns a composite consumer that delegates to the specified consumers.
+	 * @param consumers a number of consumers
+	 * @return a composite consumer
+	 */
+	static IntConsumer acceptAll(Iterable<? extends IntConsumer> consumers) {
+		return new IntConsumer() {
+			@Override
+			public void accept(int value) {
+				for (IntConsumer consumer : consumers) {
+					consumer.accept(value);
+				}
 			}
 		};
 	}

@@ -12,7 +12,9 @@ package org.wildfly.clustering.function;
  * @param <U> the second parameter type
  */
 public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
+	/** A predicate that always returns true */
 	BiPredicate<?, ?> ALWAYS = (value1, value2) -> true;
+	/** A predicate that always returns false */
 	BiPredicate<?, ?> NEVER = (value1, value2) -> false;
 
 	@Override

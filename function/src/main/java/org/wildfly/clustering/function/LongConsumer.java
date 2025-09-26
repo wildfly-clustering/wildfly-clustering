@@ -132,12 +132,28 @@ public interface LongConsumer extends java.util.function.LongConsumer {
 	 * @param factory a factory of the function return value
 	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
 	 */
-	default LongUnaryOperator thenReturnAsInt(java.util.function.LongSupplier factory) {
+	default LongUnaryOperator thenReturnLong(java.util.function.LongSupplier factory) {
 		return new LongUnaryOperator() {
 			@Override
 			public long applyAsLong(long value) {
 				LongConsumer.this.accept(value);
 				return factory.getAsLong();
+			}
+		};
+	}
+
+	/**
+	 * Returns a composite consumer that delegates to the specified consumers.
+	 * @param consumers a number of consumers
+	 * @return a composite consumer
+	 */
+	static LongConsumer acceptAll(Iterable<? extends LongConsumer> consumers) {
+		return new LongConsumer() {
+			@Override
+			public void accept(long value) {
+				for (LongConsumer consumer : consumers) {
+					consumer.accept(value);
+				}
 			}
 		};
 	}

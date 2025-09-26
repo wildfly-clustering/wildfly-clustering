@@ -10,6 +10,7 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  */
 public interface DoubleSupplier extends java.util.function.DoubleSupplier {
+	/** A supplier that always returns zero. */
 	DoubleSupplier ZERO = of(0d);
 
 	/**
@@ -123,6 +124,11 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier {
 		};
 	}
 
+	/**
+	 * Returns a supplier of the specified value.
+	 * @param value the supplied value
+	 * @return a supplier of the specified value.
+	 */
 	static DoubleSupplier of(double value) {
 		return new DoubleSupplier() {
 			@Override
