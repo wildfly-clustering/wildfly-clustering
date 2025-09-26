@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
@@ -25,6 +26,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @param <V> the map value type
  */
 public class LinkedHashMapMarshaller<K, V> extends AbstractMapMarshaller<K, V, LinkedHashMap<K, V>> {
+	static final ProtoStreamMarshaller<?> INSTANCE = new LinkedHashMapMarshaller<>();
 
 	private static final int ACCESS_ORDER_INDEX = ENTRY_INDEX + 1;
 
@@ -56,7 +58,7 @@ public class LinkedHashMapMarshaller<K, V> extends AbstractMapMarshaller<K, V, L
 	};
 
 	@SuppressWarnings("unchecked")
-	public LinkedHashMapMarshaller() {
+	private LinkedHashMapMarshaller() {
 		super((Class<LinkedHashMap<K, V>>) (Class<?>) LinkedHashMap.class);
 	}
 

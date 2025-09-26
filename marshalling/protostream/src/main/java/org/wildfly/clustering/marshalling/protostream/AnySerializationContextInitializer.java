@@ -6,10 +6,17 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 /**
- * Initializer that registers protobuf schema and marshaller for {@link Any}.
+ * Serialization context initializer for this package.
  * @author Paul Ferraro
  */
 public class AnySerializationContextInitializer extends AbstractSerializationContextInitializer {
+
+	/**
+	 * Creates a new serialization context initializer.
+	 */
+	public AnySerializationContextInitializer() {
+		// Do nothing
+	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {

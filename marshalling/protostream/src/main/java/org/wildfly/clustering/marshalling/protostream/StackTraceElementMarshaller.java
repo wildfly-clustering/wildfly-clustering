@@ -10,9 +10,11 @@ import java.io.IOException;
 import org.infinispan.protostream.descriptors.WireType;
 
 /**
+ * ProtoStream marshaller for a {@link StackTraceElement}.
  * @author Paul Ferraro
  */
 public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTraceElement> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int CLASS_NAME_INDEX = 1;

@@ -28,6 +28,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int NANOS_PER_MILLI = ChronoUnit.MILLIS.getDuration().getNano();

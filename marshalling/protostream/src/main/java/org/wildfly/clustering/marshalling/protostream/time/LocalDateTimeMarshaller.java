@@ -24,7 +24,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public class LocalDateTimeMarshaller implements ProtoStreamMarshaller<LocalDateTime> {
+public enum LocalDateTimeMarshaller implements ProtoStreamMarshaller<LocalDateTime> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int DATE_INDEX = 1;
 	private static final int TIME_INDEX = LocalDateMarshaller.INSTANCE.nextIndex(DATE_INDEX);

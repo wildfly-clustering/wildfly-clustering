@@ -29,6 +29,13 @@ public abstract class AbstractMemberMarshaller<T, M extends Member> implements P
 	private final BiFunction<Object, M, Object> accessor;
 	private final List<M> members;
 
+	/**
+	 * Creates a marshaller using the specified member fields.
+	 * @param type the marshalled object type
+	 * @param accessor a field accessor
+	 * @param memberLocator a member locator function
+	 * @param memberTypes the field types
+	 */
 	public AbstractMemberMarshaller(Class<? extends T> type, BiFunction<Object, M, Object> accessor, BiFunction<Class<?>, Class<?>, M> memberLocator, Class<?>... memberTypes) {
 		this.type = type;
 		this.accessor = accessor;

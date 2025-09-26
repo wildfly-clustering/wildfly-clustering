@@ -22,6 +22,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum InetAddressMarshaller implements FieldSetMarshaller.Simple<InetAddress> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final InetAddress DEFAULT = InetAddress.getLoopbackAddress();

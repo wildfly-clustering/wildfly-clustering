@@ -68,6 +68,7 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 	 * Object will be read via {@link ProtoStreamReader#readEnum(Class)}.
 	 * @param index a field index
 	 * @param value an enum to be written
+	 * @param <E> the enum type
 	 * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
 	 */
 	default <E extends Enum<E>> void writeEnum(int index, E value) throws IOException {

@@ -24,6 +24,10 @@ public class MapMarshaller<K, V, T extends Map<K, V>> extends AbstractMapMarshal
 
 	private final Supplier<T> factory;
 
+	/**
+	 * Creates a marshaller for a map.
+	 * @param factory a map factory
+	 */
 	@SuppressWarnings("unchecked")
 	public MapMarshaller(Supplier<T> factory) {
 		super((Class<T>) factory.get().getClass());

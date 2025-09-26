@@ -16,6 +16,13 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices(LoadableExtension.class)
 public class UnmanagedContainerExtension implements LoadableExtension {
 
+	/**
+	 * Constructs a new unmanaged container extension.
+	 */
+	public UnmanagedContainerExtension() {
+		// Do nothing
+	}
+
 	@Override
 	public void register(ExtensionBuilder builder) {
 		builder.service(ResourceProvider.class, DeploymentContainerRegistryResourceProvider.class);

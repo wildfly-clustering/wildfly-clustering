@@ -8,14 +8,14 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.DataOutput;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
-import java.util.function.DoubleConsumer;
-import java.util.function.IntConsumer;
-import java.util.function.LongConsumer;
 
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.DoubleConsumer;
+import org.wildfly.clustering.function.IntConsumer;
+import org.wildfly.clustering.function.LongConsumer;
 
 /**
- * {@link DataOutput} implementation used to write the unexposed serializable fields of an object.
+ * {@link DataOutput} implementation used to read the unexposed serializable fields of an object.
  * @author Paul Ferraro
  */
 public class SimpleDataOutput implements DataOutput {
@@ -114,6 +114,9 @@ public class SimpleDataOutput implements DataOutput {
 		this.stringConsumer.accept(value);
 	}
 
+	/**
+	 * Builds a simple data output.
+	 */
 	public static class Builder {
 		Consumer<String> stringConsumer = Consumer.empty();
 		Consumer<Character> charConsumer = Consumer.empty();
@@ -121,83 +124,128 @@ public class SimpleDataOutput implements DataOutput {
 		Consumer<Boolean> booleanConsumer = Consumer.empty();
 		Consumer<Byte> byteConsumer = Consumer.empty();
 		Consumer<Short> shortConsumer = Consumer.empty();
-		IntConsumer intConsumer = DiscardingConsumer.INSTANCE;
-		LongConsumer longConsumer = DiscardingConsumer.INSTANCE;
+		IntConsumer intConsumer = IntConsumer.EMPTY;
+		LongConsumer longConsumer = LongConsumer.EMPTY;
 		Consumer<Float> floatConsumer = Consumer.empty();
-		DoubleConsumer doubleConsumer = DiscardingConsumer.INSTANCE;
+		DoubleConsumer doubleConsumer = DoubleConsumer.EMPTY;
 
+		/**
+		 * Creates a builder of a data output.
+		 */
+		public Builder() {
+			// For javadoc comment
+		}
+
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#writeUTF(String)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(String[] values) {
 			this.stringConsumer = new ArrayConsumer<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#writeChar(int)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(char[] values) {
 			this.charConsumer = new GenericArrayConsumer<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#write(byte[], int, int)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(ByteBuffer[] values) {
 			this.bufferConsumer = new ArrayConsumer<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#writeBoolean(boolean)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(boolean[] values) {
 			this.booleanConsumer = new GenericArrayConsumer<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#write(byte[])}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(byte[] values) {
 			this.byteConsumer = new GenericArrayConsumer<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#writeShort(int)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(short[] values) {
 			this.shortConsumer = new GenericArrayConsumer<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#writeInt(int)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(int[] values) {
 			this.intConsumer = new IntArrayConsumer(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#writeLong(long)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(long[] values) {
 			this.longConsumer = new LongArrayConsumer(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#writeFloat(float)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(float[] values) {
 			this.floatConsumer = new GenericArrayConsumer<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link DataOutput#writeDouble(double)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(double[] values) {
 			this.doubleConsumer = new DoubleArrayConsumer(values);
 			return this;
 		}
 
+		/**
+		 * Builds a simple data output.
+		 * @return a simple data output.
+		 */
 		public DataOutput build() {
 			return new SimpleDataOutput(this);
 		}
 	}
 
-	enum DiscardingConsumer implements IntConsumer, LongConsumer, DoubleConsumer {
-		INSTANCE;
-
-		@Override
-		public void accept(long value) {
-		}
-
-		@Override
-		public void accept(int value) {
-		}
-
-		@Override
-		public void accept(double value) {
-		}
-	}
-
-	public static class ArrayConsumer<T> implements Consumer<T> {
+	static class ArrayConsumer<T> implements Consumer<T> {
 		private T[] values;
 		private int index = 0;
 
@@ -211,7 +259,7 @@ public class SimpleDataOutput implements DataOutput {
 		}
 	}
 
-	public static class GenericArrayConsumer<T> implements Consumer<T> {
+	static class GenericArrayConsumer<T> implements Consumer<T> {
 		private Object values;
 		private int index = 0;
 

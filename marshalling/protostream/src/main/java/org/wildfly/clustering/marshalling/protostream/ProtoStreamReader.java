@@ -50,7 +50,8 @@ public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 
 	/**
 	 * Reads an object of an arbitrary type from this reader, cast to the specified type.
-	 * @param targetClass the expected type
+	 * @param <T> the target type
+	 * @param targetClass the target type
 	 * @return a supplier of the unmarshalled object
 	 * @throws IOException if the object could not be read with the associated marshaller.
 	 */

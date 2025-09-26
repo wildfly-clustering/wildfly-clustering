@@ -15,10 +15,14 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
+ * Serialization context initializer for the {@link java.util.concurrent.atomic} package.
  * @author Paul Ferraro
  */
 public class AtomicSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public AtomicSerializationContextInitializer() {
 		super(AtomicReference.class.getPackage());
 	}

@@ -17,7 +17,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * @author Paul Ferraro
  */
 public enum ScalarClass implements ScalarMarshaller<Class<?>> {
-
+	/** A reference to an arbitrary class */
 	ANY(WireType.LENGTH_DELIMITED) {
 		@Override
 		public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
@@ -29,6 +29,7 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
 			writer.writeObjectNoTag(value);
 		}
 	},
+	/** An identified class */
 	ID(WireType.VARINT) {
 		@Override
 		public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
@@ -47,6 +48,7 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
 			writer.writeVarint32(typeId);
 		}
 	},
+	/** An named class */
 	NAME(WireType.LENGTH_DELIMITED) {
 		@Override
 		public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
@@ -62,6 +64,7 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
 			Scalar.BYTE_BUFFER.writeTo(writer, StandardCharsets.UTF_8.encode(typeName));
 		}
 	},
+	/** A field class */
 	FIELD(WireType.VARINT) {
 		@Override
 		public Class<?> readFrom(ProtoStreamReader reader) throws IOException {

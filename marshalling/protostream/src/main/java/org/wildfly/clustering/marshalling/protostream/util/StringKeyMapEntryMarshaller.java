@@ -27,9 +27,13 @@ public class StringKeyMapEntryMarshaller<T extends Map.Entry<String, Object>> im
 	private final Class<? extends T> targetClass;
 	private final BiFunction<String, Object, T> factory;
 
+	/**
+	 * Creates a marshaller for a string-keyed map entry
+	 * @param factory the map entry factory
+	 */
 	@SuppressWarnings("unchecked")
 	public StringKeyMapEntryMarshaller(BiFunction<String, Object, T> factory) {
-		this.targetClass = (Class<T>) factory.apply(null, null).getClass();
+		this.targetClass = (Class<T>) factory.apply("", null).getClass();
 		this.factory = factory;
 	}
 

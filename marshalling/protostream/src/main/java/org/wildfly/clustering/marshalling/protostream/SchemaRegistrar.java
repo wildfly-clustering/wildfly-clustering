@@ -10,47 +10,40 @@ import java.io.UncheckedIOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.function.Consumer;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.FileDescriptorSource;
 
 /**
- * An abstract initializer of a serialization context handling location and registration of the protobuf schemas.
+ * Registers a protobuf schema.
  * @author Paul Ferraro
  */
-public abstract class AbstractSerializationContextInitializer implements SerializationContextInitializer {
+public class SchemaRegistrar implements Consumer<SerializationContext> {
 
 	private final String resourceName;
 	private final ClassLoader loader;
 
 	/**
-	 * Creates a new serialization context initializer that loads a protobuf schema file using the name of the specified package.
-	 * @param targetPackage the package whose name corresponds to the protobuf schema file
-	 * @return
+	 * Creates a new protobuf schema registrar for the specified initializer implementation class.
+	 * @param initializerClass the serialization context initializer class
 	 */
-	private static String getResourceName(Package targetPackage) {
-		return targetPackage.getName() + ".proto";
+	public SchemaRegistrar(Class<? extends SerializationContextInitializer> initializerClass) {
+		this(initializerClass, initializerClass.getPackage());
 	}
 
 	/**
-	 * Creates a new serialization context initializer that loads a protobuf schema file using the name of the package of this implementation class.
+	 * Creates a new protobuf schema registrar for the specified initializer implementation class and schema package.
+	 * @param initializerClass the serialization context initializer class
+	 * @param schemaPackage the package for which the protobuf schema file is named
 	 */
-	protected AbstractSerializationContextInitializer() {
-		this.resourceName = getResourceName(this.getClass().getPackage());
-		this.loader = Privileged.getClassLoader(this.getClass());
-	}
-
-	/**
-	 * Creates a new serialization context initializer that loads a protobuf schema file using the name of the specified package.
-	 * @param targetPackage the package whose name corresponds to the protobuf schema file
-	 */
-	protected AbstractSerializationContextInitializer(Package targetPackage) {
-		this.resourceName = getResourceName(targetPackage);
+	public SchemaRegistrar(Class<? extends SerializationContextInitializer> initializerClass, Package schemaPackage) {
+		this.resourceName = schemaPackage.getName() + ".proto";
 		this.loader = Privileged.getClassLoader(this.getClass());
 	}
 
 	@Override
-	public void registerSchema(SerializationContext context) {
+	public void accept(SerializationContext context) {
 		try {
 			context.registerProtoFiles(getFileDescriptorSource(this.loader, this.resourceName));
 		} catch (DescriptorParserException e) {

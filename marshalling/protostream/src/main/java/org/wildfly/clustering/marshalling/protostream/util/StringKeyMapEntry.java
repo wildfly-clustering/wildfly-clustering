@@ -16,10 +16,19 @@ import java.util.Map;
 public class StringKeyMapEntry<V> extends AbstractMap.SimpleEntry<String, V> {
 	private static final long serialVersionUID = 6746886011081684846L;
 
+	/**
+	 * Creates a string-keyed map entry.
+	 * @param entry a map entry
+	 */
 	public StringKeyMapEntry(Map.Entry<String, V> entry) {
 		super(entry);
 	}
 
+	/**
+	 * Creates a string-keyed map entry.
+	 * @param key a map key
+	 * @param value a map value
+	 */
 	public StringKeyMapEntry(String key, V value) {
 		super(key, value);
 	}

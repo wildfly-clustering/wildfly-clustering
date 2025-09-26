@@ -27,10 +27,14 @@ import org.wildfly.clustering.marshalling.protostream.util.SortedMapMarshaller;
 import org.wildfly.clustering.marshalling.protostream.util.SortedSetMarshaller;
 
 /**
+ * Serialization context initializer for the {@link java.util.concurrent} package.
  * @author Paul Ferraro
  */
 public class ConcurrentSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public ConcurrentSerializationContextInitializer() {
 		super(TimeUnit.class.getPackage());
 	}

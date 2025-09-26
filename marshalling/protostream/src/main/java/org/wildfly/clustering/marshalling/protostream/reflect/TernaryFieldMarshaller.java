@@ -17,6 +17,14 @@ import java.lang.reflect.Field;
  */
 public class TernaryFieldMarshaller<T, F1, F2, F3> extends TernaryMemberMarshaller<T, Field, F1, F2, F3> {
 
+	/**
+	 * Creates a marshaller for the specified fields.
+	 * @param type the marshalled object type
+	 * @param field1Type the former field type
+	 * @param field2Type the latter field type
+	 * @param field3Type the latter field type
+	 * @param factory the object factory
+	 */
 	public TernaryFieldMarshaller(Class<? extends T> type, Class<F1> field1Type, Class<F2> field2Type, Class<F3> field3Type, TriFunction<F1, F2, F3, T> factory) {
 		super(type, Reflect::getValue, Reflect::findField, field1Type, field2Type, field3Type, factory);
 	}

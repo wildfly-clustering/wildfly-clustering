@@ -17,10 +17,21 @@ import java.util.function.Function;
  */
 public class UnaryFieldMarshaller<T, F> extends UnaryMemberMarshaller<T, Field, F> {
 
+	/**
+	 * Creates a marshaller for the specified field.
+	 * @param targetClass the marshalled object type
+	 * @param fieldClass the field type
+	 * @param factory the object factory
+	 */
 	public UnaryFieldMarshaller(Class<? extends T> targetClass, Class<F> fieldClass, Function<F, T> factory) {
 		super(targetClass, Reflect::getValue, Reflect::findField, fieldClass, factory);
 	}
 
+	/**
+	 * Creates a marshaller for the specified field.
+	 * @param targetClass the marshalled object type
+	 * @param fieldClass the field type
+	 */
 	public UnaryFieldMarshaller(Class<? extends T> targetClass, Class<F> fieldClass) {
 		this(targetClass, fieldClass, Reflect.getConstructor(targetClass, fieldClass));
 	}

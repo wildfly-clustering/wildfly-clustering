@@ -19,10 +19,14 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
+ * Serialization context initializer for the {@link java.time} package.
  * @author Paul Ferraro
  */
 public class TimeSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public TimeSerializationContextInitializer() {
 		super(Instant.class.getPackage());
 	}
@@ -35,17 +39,17 @@ public class TimeSerializationContextInitializer extends AbstractSerializationCo
 		// Marshall as duration since epoch
 		context.registerMarshaller(durationMarshaller.wrap(Instant.class, instant -> Duration.ofSeconds(instant.getEpochSecond(), instant.getNano()), duration -> Instant.ofEpochSecond(duration.getSeconds(), duration.getNano())));
 		context.registerMarshaller(LocalDateMarshaller.INSTANCE.asMarshaller());
-		context.registerMarshaller(new LocalDateTimeMarshaller());
+		context.registerMarshaller(LocalDateTimeMarshaller.INSTANCE);
 		context.registerMarshaller(LocalTimeMarshaller.INSTANCE.asMarshaller());
 		context.registerMarshaller(ProtoStreamMarshaller.of(Month.class));
-		context.registerMarshaller(new MonthDayMarshaller());
-		context.registerMarshaller(new OffsetDateTimeMarshaller());
-		context.registerMarshaller(new OffsetTimeMarshaller());
-		context.registerMarshaller(new PeriodMarshaller());
+		context.registerMarshaller(MonthDayMarshaller.INSTANCE);
+		context.registerMarshaller(OffsetDateTimeMarshaller.INSTANCE);
+		context.registerMarshaller(OffsetTimeMarshaller.INSTANCE);
+		context.registerMarshaller(PeriodMarshaller.INSTANCE);
 		context.registerMarshaller(YearMarshaller.INSTANCE.asMarshaller());
-		context.registerMarshaller(new YearMonthMarshaller());
+		context.registerMarshaller(YearMonthMarshaller.INSTANCE);
 		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(ZoneId.class, ZoneId::getId, Supplier.of(ZoneOffset.UTC), ZoneId::of));
 		context.registerMarshaller(ZoneOffsetMarshaller.INSTANCE.asMarshaller());
-		context.registerMarshaller(new ZonedDateTimeMarshaller());
+		context.registerMarshaller(ZonedDateTimeMarshaller.INSTANCE);
 	}
 }

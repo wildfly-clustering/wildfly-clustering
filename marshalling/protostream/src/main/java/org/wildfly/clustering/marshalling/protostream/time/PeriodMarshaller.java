@@ -23,7 +23,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public class PeriodMarshaller implements ProtoStreamMarshaller<Period> {
+public enum PeriodMarshaller implements ProtoStreamMarshaller<Period> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int YEARS_INDEX = 1;
 	private static final int MONTHS_INDEX = 2;

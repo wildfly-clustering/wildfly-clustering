@@ -32,6 +32,13 @@ public class StringKeyMapMarshaller<V, T extends Map<String, V>> implements Prot
 	private final BiFunction<T, String, V> value;
 	private final BiConsumer<T, Map.Entry<String, V>> accumulator;
 
+	/**
+	 * Creates a marshaller for a string-keyed map.
+	 * @param factory the map factory
+	 * @param keys a function returning the keys of the map
+	 * @param value a function returning the value for a given key
+	 * @param accumulator an accumulator of read entries
+	 */
 	public StringKeyMapMarshaller(Supplier<T> factory, Function<T, Set<String>> keys, BiFunction<T, String, V> value, BiConsumer<T, Map.Entry<String, V>> accumulator) {
 		this.factory = factory;
 		this.keys = keys;

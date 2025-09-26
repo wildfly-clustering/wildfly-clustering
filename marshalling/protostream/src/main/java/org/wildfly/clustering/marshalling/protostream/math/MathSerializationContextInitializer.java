@@ -16,19 +16,23 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
+ * Serialization context initializer for the {@link java.math} package.
  * @author Paul Ferraro
  */
 public class MathSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public MathSerializationContextInitializer() {
 		super(MathContext.class.getPackage());
 	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new BigDecimalMarshaller());
+		context.registerMarshaller(BigDecimalMarshaller.INSTANCE);
 		context.registerMarshaller(Scalar.BYTE_ARRAY.cast(byte[].class).toMarshaller(BigInteger.class, BigInteger::toByteArray, Supplier.of(BigInteger.ZERO), BigInteger::new));
-		context.registerMarshaller(new MathContextMarshaller());
+		context.registerMarshaller(MathContextMarshaller.INSTANCE);
 		context.registerMarshaller(ProtoStreamMarshaller.of(RoundingMode.class));
 	}
 }

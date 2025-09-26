@@ -26,6 +26,10 @@ public class PropertyMarshaller<T extends Map.Entry<String, String>> implements 
 
 	private final BiFunction<String, String, T> factory;
 
+	/**
+	 * Creates a marshaller for a property
+	 * @param factory the property factory
+	 */
 	public PropertyMarshaller(BiFunction<String, String, T> factory) {
 		this.factory = factory;
 	}

@@ -24,6 +24,16 @@ public class TernaryMemberMarshaller<T, M extends Member, M1, M2, M3> extends Ab
 	private final Class<M3> member3Type;
 	private final TriFunction<M1, M2, M3, T> factory;
 
+	/**
+	 * Creates a marshaller for the specified members.
+	 * @param type the marshalled object type
+	 * @param accessor the member accessor
+	 * @param memberLocator the member locator function
+	 * @param member1Type the former member type
+	 * @param member2Type the latter member type
+	 * @param member3Type the latter member type
+	 * @param factory the marshalled object factory
+	 */
 	public TernaryMemberMarshaller(Class<? extends T> type, BiFunction<Object, M, Object> accessor, BiFunction<Class<?>, Class<?>, M> memberLocator, Class<M1> member1Type, Class<M2> member2Type, Class<M3> member3Type, TriFunction<M1, M2, M3, T> factory) {
 		super(type, accessor, memberLocator, member1Type, member2Type, member3Type);
 		this.member1Type = member1Type;

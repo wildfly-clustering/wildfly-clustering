@@ -22,6 +22,10 @@ public class WrappedMessageByteBufferMarshaller implements ByteBufferMarshaller 
 
 	private final ImmutableSerializationContext context;
 
+	/**
+	 * Creates a new marshaller using the specified context.
+	 * @param context a serialization context
+	 */
 	public WrappedMessageByteBufferMarshaller(ImmutableSerializationContext context) {
 		this.context = context;
 	}

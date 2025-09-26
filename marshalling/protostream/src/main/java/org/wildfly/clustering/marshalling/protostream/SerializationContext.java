@@ -14,6 +14,10 @@ import org.infinispan.protostream.ImmutableSerializationContext;
  */
 public interface SerializationContext extends org.infinispan.protostream.SerializationContext {
 
+	/**
+	 * Registers a marshaller with this context.
+	 * @param marshaller the marshaller to register
+	 */
 	void registerMarshaller(ProtoStreamMarshaller<?> marshaller);
 
 	@Override
@@ -25,8 +29,16 @@ public interface SerializationContext extends org.infinispan.protostream.Seriali
 	@Override
 	<T> ProtoStreamMarshaller<T> getMarshaller(String fullTypeName);
 
+	/**
+	 * Returns an immutable view of this context.
+	 * @return an immutable view of this context.
+	 */
 	ImmutableSerializationContext getImmutableSerializationContext();
 
+	/**
+	 * An instance marshaller provider that ensures all registered marshallers implement {@link ProtoStreamMarshaller}.
+	 * @param <T> the marshalled type
+	 */
 	interface InstanceMarshallerProvider<T> extends org.infinispan.protostream.SerializationContext.InstanceMarshallerProvider<T> {
 
 		@Override

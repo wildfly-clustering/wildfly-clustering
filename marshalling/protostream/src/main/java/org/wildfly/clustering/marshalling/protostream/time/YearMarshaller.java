@@ -21,6 +21,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum YearMarshaller implements FieldSetMarshaller.Simple<Year> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int POST_EPOCH_YEAR = 0;

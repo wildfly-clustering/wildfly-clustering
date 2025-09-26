@@ -24,7 +24,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public class YearMonthMarshaller implements ProtoStreamMarshaller<YearMonth> {
+public enum YearMonthMarshaller implements ProtoStreamMarshaller<YearMonth> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final Month[] MONTHS = Month.values();
 	private static final YearMonth DEFAULT = YearMonth.of(YearMarshaller.INSTANCE.createInitialValue().getValue(), Month.JANUARY);

@@ -15,7 +15,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * Generic marshaller for instances of {@link Class}.
  * @author Paul Ferraro
  */
-public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
+class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 
 	private final Field<Class<?>> field;
 

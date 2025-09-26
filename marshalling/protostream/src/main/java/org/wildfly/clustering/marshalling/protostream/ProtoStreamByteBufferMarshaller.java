@@ -20,12 +20,17 @@ import org.infinispan.protostream.impl.TagWriterImpl;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
+ * A ProtoStream marshaller.
  * @author Paul Ferraro
  */
 public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
 	private final ImmutableSerializationContext context;
 
+	/**
+	 * Constructs a new ProtoStream marshaller using the specified context
+	 * @param context a serialization context
+	 */
 	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context) {
 		this.context = context;
 	}

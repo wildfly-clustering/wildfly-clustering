@@ -21,11 +21,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for an {@link EnumMap}.
+ * ProtoStream marshaller for an {@link EnumMap}.
  * @author Paul Ferraro
  * @param <E> the enum key type of this marshaller
  */
-public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumMap<E, Object>> {
+class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumMap<E, Object>> {
+	static final ProtoStreamMarshaller<?> INSTANCE = new EnumMapMarshaller<>();
 
 	static final Field ENUM_MAP_KEY_CLASS_FIELD = Reflect.findField(EnumMap.class, Class.class);
 

@@ -14,7 +14,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * Various strategies for marshalling a Class.
  * @author Paul Ferraro
  */
-public enum ClassField implements Field<Class<?>> {
+enum ClassField implements Field<Class<?>> {
 	ANY(ScalarClass.ANY),
 	ID(ScalarClass.ID),
 	NAME(ScalarClass.NAME),

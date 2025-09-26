@@ -15,6 +15,11 @@ import org.infinispan.protostream.descriptors.WireType;
  */
 public interface ClassLoaderMarshaller extends FieldSetMarshaller.Simple<ClassLoader> {
 
+	/**
+	 * Creates a simple marshaller for the specified class loader.
+	 * @param loader a class loader
+	 * @return a simple marshaller for the specified class loader.
+	 */
 	static ClassLoaderMarshaller of(ClassLoader loader) {
 		return new ClassLoaderMarshaller() {
 			@Override

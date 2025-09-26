@@ -20,6 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum ComparatorMarshaller implements FieldSetMarshaller.Simple<Comparator<?>> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int REVERSE_INDEX = 0;

@@ -32,6 +32,10 @@ public class SortedMapMarshaller<K, V, T extends SortedMap<K, V>> extends Abstra
 
 	private final Function<Comparator<? super K>, T> factory;
 
+	/**
+	 * Creates a marshaller for a sorted map.
+	 * @param factory a sorted map factory
+	 */
 	@SuppressWarnings("unchecked")
 	public SortedMapMarshaller(Function<Comparator<? super K>, T> factory) {
 		super((Class<T>) factory.apply((Comparator<K>) ComparatorMarshaller.INSTANCE.createInitialValue()).getClass());

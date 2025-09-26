@@ -26,7 +26,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public class OffsetDateTimeMarshaller implements ProtoStreamMarshaller<OffsetDateTime> {
+public enum OffsetDateTimeMarshaller implements ProtoStreamMarshaller<OffsetDateTime> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int DATE_INDEX = 1;
 	private static final int TIME_INDEX = LocalDateMarshaller.INSTANCE.nextIndex(DATE_INDEX);

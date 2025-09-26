@@ -18,12 +18,16 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @param <T> the collection type of this marshaller
  */
 public abstract class AbstractCollectionMarshaller<E, T extends Collection<E>> implements ProtoStreamMarshaller<T> {
-
+	/** Index of the repeated element field */
 	protected static final int ELEMENT_INDEX = 1;
 
 	private final Class<? extends T> collectionClass;
 
-	public AbstractCollectionMarshaller(Class<? extends T> collectionClass) {
+	/**
+	 * Creates a collection marshaller for the specified implementation class.
+	 * @param collectionClass the collection implementation class.
+	 */
+	protected AbstractCollectionMarshaller(Class<? extends T> collectionClass) {
 		this.collectionClass = collectionClass;
 	}
 

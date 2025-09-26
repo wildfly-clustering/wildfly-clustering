@@ -125,6 +125,9 @@ public class SimpleDataInput implements DataInput {
 		return this.strings.next();
 	}
 
+	/**
+	 * Builds a simple data input.
+	 */
 	public static class Builder {
 		Iterable<String> strings = Collections.emptyList();
 		Iterable<ByteBuffer> buffers = Collections.emptyList();
@@ -137,56 +140,117 @@ public class SimpleDataInput implements DataInput {
 		Iterable<Float> floats = Collections.emptyList();
 		DoubleStream doubles = DoubleStream.empty();
 
+		/**
+		 * Constructs a builder of a data input.
+		 */
+		public Builder() {
+			// For javadoc purposes
+		}
+
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readUTF()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(String... values) {
 			this.strings = Arrays.asList(values);
 			return this;
 		}
 
-		public Builder with(ByteBuffer... buffers) {
-			this.buffers = Arrays.asList(buffers);
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readFully(byte[])}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
+		public Builder with(ByteBuffer... values) {
+			this.buffers = Arrays.asList(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readChar()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(char... values) {
 			this.characters = new ArrayIterable<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readBoolean()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(boolean... values) {
 			this.booleans = new ArrayIterable<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readByte()} or {@link DataInput#readUnsignedByte()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(byte... values) {
 			this.bytes = new ArrayIterable<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readShort()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(short... values) {
 			this.shorts = new ArrayIterable<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readInt()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(int... values) {
 			this.integers = IntStream.of(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readLong()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(long... values) {
 			this.longs = LongStream.of(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readFloat()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(float... values) {
 			this.floats = new ArrayIterable<>(values);
 			return this;
 		}
 
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link DataInput#readDouble()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(double... values) {
 			this.doubles = DoubleStream.of(values);
 			return this;
 		}
 
+		/**
+		 * Builds a simple data input.
+		 * @return a simple data input
+		 */
 		public DataInput build() {
 			return new SimpleDataInput(this);
 		}

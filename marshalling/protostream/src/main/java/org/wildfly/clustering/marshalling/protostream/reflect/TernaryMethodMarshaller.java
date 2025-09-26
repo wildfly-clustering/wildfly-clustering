@@ -17,6 +17,14 @@ import java.lang.reflect.Method;
  */
 public class TernaryMethodMarshaller<T, M1, M2, M3> extends TernaryMemberMarshaller<T, Method, M1, M2, M3> {
 
+	/**
+	 * Creates a marshaller for the specified methods.
+	 * @param type the marshalled object type
+	 * @param member1Type the former member type
+	 * @param member2Type the latter member type
+	 * @param member3Type the latter member type
+	 * @param factory the marshalled object factory
+	 */
 	public TernaryMethodMarshaller(Class<? extends T> type, Class<M1> member1Type, Class<M2> member2Type, Class<M3> member3Type, TriFunction<M1, M2, M3, T> factory) {
 		super(type, Reflect::invoke, Reflect::findMethod, member1Type, member2Type, member3Type, factory);
 	}

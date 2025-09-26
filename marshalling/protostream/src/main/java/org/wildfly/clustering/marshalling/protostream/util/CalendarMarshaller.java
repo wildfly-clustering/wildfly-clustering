@@ -16,10 +16,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Mashaller for a {@link java.util.Calendar}.
+ * ProtoStream mashaller for a {@link java.util.Calendar}.
  * @author Paul Ferraro
  */
-public class CalendarMarshaller implements ProtoStreamMarshaller<Calendar> {
+public enum CalendarMarshaller implements ProtoStreamMarshaller<Calendar> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int TYPE_INDEX = 1;
 	private static final int TIME_INDEX = 2;
