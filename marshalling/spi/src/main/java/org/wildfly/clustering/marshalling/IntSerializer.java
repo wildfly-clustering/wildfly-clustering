@@ -34,6 +34,11 @@ public interface IntSerializer {
 		return input.readInt();
 	}
 
+	/**
+	 * Returns the serialized size of the specified value.
+	 * @param value a numeric value
+	 * @return the serialized size of the specified value.
+	 */
 	default int size(int value) {
 		return Integer.BYTES;
 	}

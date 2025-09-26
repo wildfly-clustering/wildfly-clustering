@@ -14,7 +14,7 @@ import java.io.IOException;
  * @author Paul Ferraro
  */
 public enum IndexSerializer implements IntSerializer {
-
+	/** A serializer for a integer in the range 0 - 255. */
 	UNSIGNED_BYTE() {
 		@Override
 		public int readInt(DataInput input) throws IOException {
@@ -34,6 +34,7 @@ public enum IndexSerializer implements IntSerializer {
 			return Byte.BYTES;
 		}
 	},
+	/** A serializer for a integer in the range 0 - 65535. */
 	UNSIGNED_SHORT() {
 		@Override
 		public int readInt(DataInput input) throws IOException {
@@ -53,6 +54,7 @@ public enum IndexSerializer implements IntSerializer {
 			return Short.BYTES;
 		}
 	},
+	/** A serializer for a integer in the range 0 - {@value Integer#MAX_VALUE}. */
 	INTEGER(),
 	/**
 	 * Reads/write an unsigned integer using a variable-length format.

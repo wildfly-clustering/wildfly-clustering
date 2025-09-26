@@ -15,6 +15,10 @@ import java.io.IOException;
 public class MarshalledValueMarshaller<V, C> implements Marshaller<V, MarshalledValue<V, C>> {
 	private final MarshalledValueFactory<C> factory;
 
+	/**
+	 * Constructs a new marshaller using the specified marshalled value factory.
+	 * @param factory a marshalled value factory
+	 */
 	public MarshalledValueMarshaller(MarshalledValueFactory<C> factory) {
 		this.factory = factory;
 	}

@@ -6,6 +6,7 @@
 package org.wildfly.clustering.marshalling;
 
 /**
+ * Encapsulates the builder of a marshaller configuration.
  * @author Paul Ferraro
  * @param <C> the configuration type
  * @param <E> the marshalling configuration entry type

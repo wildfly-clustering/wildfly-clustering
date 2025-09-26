@@ -20,6 +20,10 @@ public abstract class AbstractByteBufferMarshaller implements ByteBufferMarshall
 
 	private final Supplier<Context<ClassLoader>> contextProvider;
 
+	/**
+	 * Constructs a new byte buffer marshaller using the specified context class loader.
+	 * @param loader a context class loader
+	 */
 	protected AbstractByteBufferMarshaller(ClassLoader loader) {
 		this.contextProvider = ThreadContextClassLoaderReference.CURRENT.provide(loader);
 	}
