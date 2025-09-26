@@ -14,6 +14,10 @@ public class ThreadContextClassLoaderReference extends ThreadContextReference<Cl
 	/** A context reference for the class loader of the current thread */
 	public static final ContextReference<ClassLoader> CURRENT = new ThreadContextClassLoaderReference(Thread::currentThread);
 
+	/**
+	 * Constructs a context class loader reference for a given thread provider.
+	 * @param reference a provider of a thread
+	 */
 	public ThreadContextClassLoaderReference(Supplier<Thread> reference) {
 		super(reference, Thread::getContextClassLoader, Thread::setContextClassLoader);
 	}

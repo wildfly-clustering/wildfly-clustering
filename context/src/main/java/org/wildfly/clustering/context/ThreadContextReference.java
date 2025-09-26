@@ -20,6 +20,12 @@ public class ThreadContextReference<C> implements ContextReference<C> {
 	private final Function<Thread, C> accessor;
 	private final BiConsumer<Thread, C> applicator;
 
+	/**
+	 * Constructs a context reference for a provided thread.
+	 * @param reference a provider of a thread
+	 * @param accessor a function used to access the context of a thread.
+	 * @param applicator a consumer used to apply context to a thread.
+	 */
 	public ThreadContextReference(Supplier<Thread> reference, Function<Thread, C> accessor, BiConsumer<Thread, C> applicator) {
 		this.reference = reference;
 		this.accessor = accessor;

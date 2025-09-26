@@ -16,14 +16,29 @@ import java.util.function.Function;
  */
 public class DefaultExecutorService extends ContextualExecutorService {
 
+	/**
+	 * Constructs a contextual executor service from the default contextualizer factory.
+	 * @param factory a function creating an executor service for a given thread factory.
+	 * @param loader the target class loader context
+	 */
 	@SuppressWarnings("removal")
 	public DefaultExecutorService(Function<ThreadFactory, ExecutorService> factory, ClassLoader loader) {
 		// Use thread group of current thread
-		super(factory.apply(AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
+		this(factory.apply(AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
 			@Override
 			public ThreadFactory run() {
 				return new DefaultThreadFactory(Thread.currentThread().getThreadGroup(), DefaultExecutorService.class.getClassLoader());
 			}
-		})), DefaultContextualizerFactory.INSTANCE.createContextualizer(loader));
+		})), loader);
+	}
+
+	/**
+	 * Constructs a contextual executor service from the specified executor and class loader.
+	 * @param executor the decorated executor service
+	 * @param loader the target class loader context
+	 */
+	public DefaultExecutorService(ExecutorService executor, ClassLoader loader) {
+		// Use thread group of current thread
+		super(executor, DefaultContextualizerFactory.INSTANCE.createContextualizer(loader));
 	}
 }

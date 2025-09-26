@@ -15,6 +15,7 @@ import org.wildfly.clustering.function.Runnable;
  * @param <T> the context value type
  */
 public interface Context<T> extends Supplier<T>, AutoCloseable {
+	/** An empty context */
 	Context<?> EMPTY = of(null, Runnable.empty());
 
 	@Override
@@ -34,6 +35,7 @@ public interface Context<T> extends Supplier<T>, AutoCloseable {
 	 * Returns a context that provides the specified value and invokes the specified task on close.
 	 * @param value the context value
 	 * @param closeTask the action to perform on {@link #close()}.
+	 * @param <T> the context value type
 	 * @return a context that provides the specified value and invokes the specified task on close.
 	 */
 	static <T> Context<T> of(T value, java.lang.Runnable closeTask) {
