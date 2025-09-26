@@ -16,6 +16,7 @@ import com.github.benmanes.caffeine.cache.Expiry;
 import com.github.benmanes.caffeine.cache.Weigher;
 
 /**
+ * A factory for creating a Caffeine cache using a given configuration.
  * @author Paul Ferraro
  * @param <K> the cache key type
  * @param <V> the cache value type
@@ -41,6 +42,13 @@ public class CacheFactory<K, V> implements Function<CacheConfiguration<K, V>, Ca
 	@SuppressWarnings("unchecked")
 	static <K, V> Expiry<K, V> never() {
 		return (Expiry<K, V>) NEVER;
+	}
+
+	/**
+	 * Constructs a new cache factory.
+	 */
+	public CacheFactory() {
+		// Do nothing
 	}
 
 	@Override
