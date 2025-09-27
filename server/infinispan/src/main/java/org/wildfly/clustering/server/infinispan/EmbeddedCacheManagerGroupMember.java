@@ -10,13 +10,13 @@ import java.util.Optional;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.jgroups.util.NameCache;
-import org.wildfly.clustering.server.group.GroupMember;
+import org.wildfly.clustering.server.group.AbstractGroupMember;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 
 /**
  * @author Paul Ferraro
  */
-public class EmbeddedCacheManagerGroupMember implements CacheContainerGroupMember {
+public class EmbeddedCacheManagerGroupMember extends AbstractGroupMember<Address> implements CacheContainerGroupMember {
 
 	private final JGroupsAddress address;
 
@@ -29,7 +29,7 @@ public class EmbeddedCacheManagerGroupMember implements CacheContainerGroupMembe
 	}
 
 	@Override
-	public JGroupsAddress getAddress() {
+	public JGroupsAddress getId() {
 		return this.address;
 	}
 
@@ -40,29 +40,7 @@ public class EmbeddedCacheManagerGroupMember implements CacheContainerGroupMembe
 	}
 
 	@Override
-	public int compareTo(GroupMember<Address> member) {
-		return this.address.compareTo(member.getAddress());
-	}
-
-	@Override
-	public int hashCode() {
-		return this.address.getJGroupsAddress().hashCode();
-	}
-
-	@Override
 	public boolean equals(Object object) {
-		if (this == object) return true;
-		if (object instanceof CacheContainerGroupMember member) {
-			return this.address.equals(member.getAddress());
-		}
-		if (object instanceof ChannelGroupMember member) {
-			return this.address.getJGroupsAddress().equals(member.getAddress());
-		}
-		return false;
-	}
-
-	@Override
-	public String toString() {
-		return this.getName();
+		return super.equals(object) || ((object instanceof ChannelGroupMember member) && this.address.getJGroupsAddress().equals(member.getId()));
 	}
 }

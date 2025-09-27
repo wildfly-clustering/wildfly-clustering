@@ -145,7 +145,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 
 	@Override
 	public Map<K, V> getEntries() {
-		Set<Address> addresses = this.group.getMembership().getMembers().stream().map(CacheContainerGroupMember::getAddress).collect(Collectors.toUnmodifiableSet());
+		Set<Address> addresses = this.group.getMembership().getMembers().stream().map(CacheContainerGroupMember::getId).collect(Collectors.toUnmodifiableSet());
 		Map<K, V> result = new HashMap<>();
 		for (Map.Entry<K, V> entry : this.cache.getAdvancedCache().getAll(addresses).values()) {
 			result.put(entry.getKey(), entry.getValue());
@@ -155,7 +155,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 
 	@Override
 	public Map.Entry<K, V> getEntry(CacheContainerGroupMember member) {
-		return this.cache.get(member.getAddress());
+		return this.cache.get(member.getId());
 	}
 
 	@TopologyChanged

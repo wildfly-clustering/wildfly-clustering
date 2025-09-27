@@ -14,7 +14,7 @@ import org.wildfly.clustering.server.group.GroupMember;
 public interface LocalGroupMember extends GroupMember<String> {
 
 	@Override
-	default String getAddress() {
+	default String getId() {
 		return this.getName();
 	}
 

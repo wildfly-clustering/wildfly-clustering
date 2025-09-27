@@ -63,7 +63,7 @@ public interface ScheduledEntries<K, V> extends Iterable<Map.Entry<K, V>> {
 		return this.stream().iterator();
 	}
 
-	static <K, V> ScheduledEntries<K, V> linked() {
+	static <K, V> ScheduledEntries<K, V> queued() {
 		return new LinkedScheduledEntries<>();
 	}
 

@@ -22,7 +22,7 @@ import org.wildfly.clustering.marshalling.jboss.SerializerExternalizer;
 public enum JChannelGroupMemberSerializer implements Serializer<JChannelGroupMember> {
 	INSTANCE;
 
-	private final Serializer<JChannelGroupMember> serializer = AddressSerializer.INSTANCE.wrap(JChannelGroupMember::getAddress, JChannelGroupMember::new);
+	private final Serializer<JChannelGroupMember> serializer = AddressSerializer.INSTANCE.wrap(JChannelGroupMember::getId, JChannelGroupMember::new);
 
 	@Override
 	public void write(DataOutput output, JChannelGroupMember value) throws IOException {

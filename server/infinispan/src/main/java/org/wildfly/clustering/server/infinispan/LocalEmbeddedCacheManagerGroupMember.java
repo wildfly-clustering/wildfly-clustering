@@ -9,12 +9,13 @@ import java.io.Serializable;
 
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
-import org.wildfly.clustering.server.group.GroupMember;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.group.AbstractGroupMember;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalEmbeddedCacheManagerGroupMember implements CacheContainerGroupMember, Serializable {
+public class LocalEmbeddedCacheManagerGroupMember extends AbstractGroupMember<Address> implements CacheContainerGroupMember, Serializable {
 	private static final long serialVersionUID = -8987757972156115087L;
 
 	private final String name;
@@ -24,7 +25,7 @@ public class LocalEmbeddedCacheManagerGroupMember implements CacheContainerGroup
 	}
 
 	@Override
-	public Address getAddress() {
+	public Address getId() {
 		return LocalModeAddress.INSTANCE;
 	}
 
@@ -34,24 +35,12 @@ public class LocalEmbeddedCacheManagerGroupMember implements CacheContainerGroup
 	}
 
 	@Override
-	public int compareTo(GroupMember<Address> member) {
-		return this.name.compareTo(member.getName());
-	}
-
-	@Override
 	public int hashCode() {
 		return this.name.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object object) {
-		if (this == object) return true;
-		if (!(object instanceof GroupMember member)) return false;
-		return this.name.equals(member.getName());
-	}
-
-	@Override
-	public String toString() {
-		return this.name;
+		return (object instanceof GroupMember member) && this.getName().equals(member.getName());
 	}
 }

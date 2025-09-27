@@ -30,8 +30,8 @@ public class EmbeddedCacheManagerCommandDispatcherFactory<A extends Comparable<A
 	public EmbeddedCacheManagerCommandDispatcherFactory(EmbeddedCacheManagerCommandDispatcherFactoryConfiguration<A, M> configuration) {
 		this.dispatcherFactory = configuration.getCommandDispatcherFactory();
 		this.group = new EmbeddedCacheManagerGroup<>(configuration);
-		this.wrapper = configuration.getAddressWrapper().<M>compose(GroupMember::getAddress).andThen(this.group.getGroupMemberFactory()::createGroupMember);
-		this.unwrapper = configuration.getAddressUnwrapper().compose(CacheContainerGroupMember::getAddress).andThen(configuration.getGroup().getGroupMemberFactory()::createGroupMember);
+		this.wrapper = configuration.getAddressWrapper().<M>compose(GroupMember::getId).andThen(this.group.getGroupMemberFactory()::createGroupMember);
+		this.unwrapper = configuration.getAddressUnwrapper().compose(CacheContainerGroupMember::getId).andThen(configuration.getGroup().getGroupMemberFactory()::createGroupMember);
 	}
 
 	@Override

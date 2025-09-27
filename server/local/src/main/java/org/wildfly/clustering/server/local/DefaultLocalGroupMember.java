@@ -4,11 +4,13 @@
  */
 package org.wildfly.clustering.server.local;
 
+import org.wildfly.clustering.server.group.AbstractGroupMember;
+
 /**
  * Non-clustered {@link GroupMember} implementation.
  * @author Paul Ferraro
  */
-class DefaultLocalGroupMember implements LocalGroupMember {
+class DefaultLocalGroupMember extends AbstractGroupMember<String> implements LocalGroupMember {
 
 	private final String name;
 

@@ -54,7 +54,7 @@ public class NaryGroupMemberAffinity<I> implements Function<I, List<CacheContain
 		List<CacheContainerGroupMember> members = new LinkedList<>();
 		boolean locallyOwned = false;
 		for (Address address : this.distribution.get().getOwners(new CacheKey<>(id))) {
-			locallyOwned |= this.localMember.getAddress().equals(address);
+			locallyOwned |= this.localMember.getId().equals(address);
 			members.add(this.factory.createGroupMember(address));
 		}
 		if (!locallyOwned) {

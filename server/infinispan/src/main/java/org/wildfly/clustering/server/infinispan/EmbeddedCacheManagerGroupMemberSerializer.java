@@ -24,7 +24,7 @@ public enum EmbeddedCacheManagerGroupMemberSerializer implements Serializer<Embe
 
 	@Override
 	public void write(DataOutput output, EmbeddedCacheManagerGroupMember member) throws IOException {
-		JGroupsAddressSerializer.INSTANCE.write(output, member.getAddress());
+		JGroupsAddressSerializer.INSTANCE.write(output, member.getId());
 	}
 
 	@Override

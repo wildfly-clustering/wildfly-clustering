@@ -84,7 +84,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 			return this.execute(command);
 		}
 		ByteBuffer buffer = this.createBuffer(command);
-		Address address = member.getAddress();
+		Address address = member.getId();
 		Message message = this.createMessage(buffer, address);
 		ServiceRequest<R, MC> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), address, this.options, this.marshallingContext);
 		return request.send(message);
@@ -99,7 +99,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 				if (this.group.getLocalMember().equals(member)) {
 					results.put(member, this.execute(command));
 				} else {
-					Address address = member.getAddress();
+					Address address = member.getId();
 					try {
 						ServiceRequest<R, MC> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), address, this.options, this.marshallingContext);
 						Message message = this.createMessage(buffer, address);
@@ -137,7 +137,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 	}
 
 	private Message createMessage(ByteBuffer buffer, Address destination) {
-		return new BytesMessage().setArray(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset()).src(this.group.getLocalMember().getAddress()).dest(destination);
+		return new BytesMessage().setArray(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset()).src(this.group.getLocalMember().getId()).dest(destination);
 	}
 
 	private static class PruneCancellationTask<R> implements BiConsumer<R, Throwable> {

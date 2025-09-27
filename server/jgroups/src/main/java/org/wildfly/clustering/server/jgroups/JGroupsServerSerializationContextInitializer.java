@@ -20,6 +20,6 @@ public class JGroupsServerSerializationContextInitializer extends AbstractSerial
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(AddressMarshaller.INSTANCE.asMarshaller(Address.class).wrap(JChannelGroupMember.class, ChannelGroupMember::getAddress, JChannelGroupMember::new));
+		context.registerMarshaller(AddressMarshaller.INSTANCE.asMarshaller(Address.class).wrap(JChannelGroupMember.class, ChannelGroupMember::getId, JChannelGroupMember::new));
 	}
 }

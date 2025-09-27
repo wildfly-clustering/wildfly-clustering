@@ -29,7 +29,7 @@ public interface ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguratio
 		return new Function<>() {
 			@Override
 			public org.jgroups.Address apply(Address address) {
-				return (address != LocalModeAddress.INSTANCE) ? JGroupsAddress.class.cast(address).getJGroupsAddress() : ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration.this.getCommandDispatcherFactory().getGroup().getLocalMember().getAddress();
+				return (address != LocalModeAddress.INSTANCE) ? JGroupsAddress.class.cast(address).getJGroupsAddress() : ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration.this.getCommandDispatcherFactory().getGroup().getLocalMember().getId();
 			}
 		};
 	}
