@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -30,11 +31,10 @@ public interface BasicCacheConfiguration extends CacheConfiguration, BasicCacheC
 
 	<K, V, O> CacheEntryMutatorFactory<K, O> getCacheEntryMutatorFactory(Function<O, BiFunction<Object, V, V>> functionFactory);
 
-	TransactionManager getTransactionManager();
+	Optional<TransactionManager> getTransactionManager();
 
 	@Override
 	default Supplier<Batch> getBatchFactory() {
-		TransactionManager tm = this.getTransactionManager();
-		return (tm != null) ? new TransactionalBatchFactory(this.getName(), tm, CacheException::new) : new SimpleContextualBatchFactory(this.getName());
+		return this.getTransactionManager().<Supplier<Batch>>map(tm -> new TransactionalBatchFactory(this.getName(), tm, CacheException::new)).orElseGet(() -> new SimpleContextualBatchFactory(this.getName()));
 	}
 }

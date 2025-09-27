@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -54,8 +55,8 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	}
 
 	@Override
-	default TransactionManager getTransactionManager() {
-		return this.getCache().getAdvancedCache().getTransactionManager();
+	default Optional<TransactionManager> getTransactionManager() {
+		return Optional.ofNullable(this.getCache().getAdvancedCache().getTransactionManager());
 	}
 
 	@Override

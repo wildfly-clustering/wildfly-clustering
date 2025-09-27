@@ -6,6 +6,7 @@
 package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiFunction;
@@ -73,8 +74,8 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 	}
 
 	@Override
-	default TransactionManager getTransactionManager() {
-		return this.getCache().getTransactionManager();
+	default Optional<TransactionManager> getTransactionManager() {
+		return Optional.ofNullable(this.getCache().getTransactionManager());
 	}
 
 	/**
