@@ -47,6 +47,10 @@ public interface BlockingReference<T> extends Reference<T> {
 	 */
 	Writer<T> writer(java.util.function.UnaryOperator<T> updater);
 
+	/**
+	 * Describes the writer of a reference.
+	 * @param <T> the referenced type
+	 */
 	interface Writer<T> extends java.util.function.Supplier<T> {
 		/**
 		 * Returns a mapped writer, whose mapping function is invoked while holding a lock.
@@ -64,6 +68,12 @@ public interface BlockingReference<T> extends Reference<T> {
 		java.util.function.Supplier<T> when(Predicate<T> condition);
 	}
 
+	/**
+	 * Returns a blocking reference with the specified initial value.
+	 * @param <T> the referenced object type
+	 * @param initialValue the initial value of the returned reference
+	 * @return a blocking reference with the specified initial value.
+	 */
 	static <T> BlockingReference<T> of(T initialValue) {
 		AtomicReference<T> reference = new AtomicReference<>(initialValue);
 		StampedLock lock = new StampedLock();
@@ -82,6 +92,11 @@ public interface BlockingReference<T> extends Reference<T> {
 		};
 	}
 
+	/**
+	 * A writer implementation for a reference.
+	 * @param <T> the referenced object type
+	 * @param <V> the mapped type
+	 */
 	class ReferenceWriter<T, V> implements Writer<V> {
 		private final StampedLock lock;
 		private final java.util.function.Supplier<T> reader;
@@ -120,6 +135,11 @@ public interface BlockingReference<T> extends Reference<T> {
 		}
 	}
 
+	/**
+	 * A conditional writer implementation for a reference.
+	 * @param <T> the referenced object type
+	 * @param <V> the mapped type
+	 */
 	class ConditionalReferenceWriter<T, V> implements java.util.function.Supplier<V> {
 		private final StampedLock lock;
 		private final java.util.function.Supplier<T> reader;

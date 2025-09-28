@@ -22,6 +22,7 @@ public interface BlockingExecutor extends Executor, AutoCloseable {
 	 * Executes the specified task, but only if the service was not already closed.
 	 * If service is already closed, the task is not run.
 	 * If executed, the specified task must return a non-null value, to be distinguishable from a non-execution.
+	 * @param <R> the return type of the specified task
 	 * @param executeTask a task to execute
 	 * @return an optional value that is present only if the specified task was run.
 	 */
@@ -31,6 +32,7 @@ public interface BlockingExecutor extends Executor, AutoCloseable {
 	 * Executes the specified task, but only if the service was not already closed.
 	 * If service is already closed, the task is not run.
 	 * If executed, the specified task must return a non-null value, to be distinguishable from a non-execution.
+	 * @param <R> the return type of the specified task
 	 * @param executeTask a task to execute
 	 * @throws Exception if the specified task fails to execute
 	 * @return an optional value that is present only if the specified task was run.

@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import org.wildfly.clustering.server.Registrar;
 
 /**
+ * Registrar for a listener.
  * @param <T> the listener type
  * @author Paul Ferraro
  */

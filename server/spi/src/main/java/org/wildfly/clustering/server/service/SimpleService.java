@@ -21,10 +21,19 @@ public class SimpleService<T extends AutoCloseable> implements Service {
 	private final UnaryOperator<T> update;
 	private final AtomicReference<T> reference;
 
+	/**
+	 * Creates a simple service from the specified value factory.
+	 * @param factory a value factory
+	 */
 	public SimpleService(Supplier<T> factory) {
 		this(factory, new AtomicReference<>());
 	}
 
+	/**
+	 * Creates a simple service from the specified value factory.
+	 * @param factory a value factory
+	 * @param reference a reference to the service value
+	 */
 	public SimpleService(Supplier<T> factory, AtomicReference<T> reference) {
 		this.update = UnaryOperator.<T>identity().orDefault(Objects::nonNull, factory);
 		this.reference = reference;

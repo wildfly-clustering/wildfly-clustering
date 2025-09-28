@@ -55,14 +55,29 @@ public interface OffsetValue<V> extends Value<V> {
 	 */
 	OffsetValue<V> rebase();
 
+	/**
+	 * Creates a duration-based offset value from the specified basis.
+	 * @param duration the offset basis
+	 * @return a duration-based offset value from the specified basis.
+	 */
 	static OffsetValue<Duration> from(Duration duration) {
 		return new DurationOffsetValue(Supplier.of(duration));
 	}
 
+	/**
+	 * Creates a instant-based offset value from the specified basis.
+	 * @param instant the offset basis
+	 * @return a instant-based offset value from the specified basis.
+	 */
 	static OffsetValue<Instant> from(Instant instant) {
 		return new InstantOffsetValue(Supplier.of(instant));
 	}
 
+	/**
+	 * The default offset value implementation.
+	 * @param <O> the offset value type
+	 * @param <V> the basis value type
+	 */
 	class DefaultOffsetValue<O, V> extends AbstractValue<V> implements OffsetValue<V> {
 		private final BiFunction<V, V, O> factory;
 		private final Function<O, Offset<V>> offsetFactory;
@@ -108,6 +123,10 @@ public interface OffsetValue<V> extends Value<V> {
 		}
 	}
 
+	/**
+	 * A temporal offset value implementation.
+	 * @param <V> the basis value type
+	 */
 	class TemporalOffsetValue<V> extends DefaultOffsetValue<Duration, V> {
 
 		TemporalOffsetValue(java.util.function.Supplier<V> basis, BiFunction<V, V, Duration> factory, Function<Duration, Offset<V>> offsetFactory, Function<java.util.function.Supplier<V>, OffsetValue<V>> offsetValueFactory) {
@@ -115,6 +134,9 @@ public interface OffsetValue<V> extends Value<V> {
 		}
 	}
 
+	/**
+	 * A duration-based offset value implementation.
+	 */
 	class DurationOffsetValue extends TemporalOffsetValue<Duration> {
 		private static final BiFunction<Duration, Duration, Duration> MINUS = Duration::minus;
 		private static final BiFunction<Duration, Duration, Duration> FACTORY = MINUS.andThen(Duration::negated);
@@ -124,6 +146,9 @@ public interface OffsetValue<V> extends Value<V> {
 		}
 	}
 
+	/**
+	 * An instant-based offset value implementation.
+	 */
 	class InstantOffsetValue extends TemporalOffsetValue<Instant> {
 		private static final BiFunction<Instant, Instant, Duration> FACTORY = Duration::between;
 

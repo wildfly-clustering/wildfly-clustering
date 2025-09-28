@@ -20,6 +20,10 @@ public interface Value<V> extends Supplier<V> {
 	 */
 	void set(V value);
 
+	/**
+	 * An abstract value implementation.
+	 * @param <V> the referenced value type
+	 */
 	abstract class AbstractValue<V> implements Value<V> {
 
 		AbstractValue() {

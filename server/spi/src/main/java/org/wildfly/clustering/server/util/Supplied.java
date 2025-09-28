@@ -16,6 +16,7 @@ import org.wildfly.clustering.function.UnaryOperator;
  * @param <T> the supplied value type
  */
 public interface Supplied<T> {
+	/** A simple supplied value */
 	Supplied<?> SIMPLE = new Supplied<>() {
 		@Override
 		public Object get(Supplier<Object> supplier) {
@@ -48,7 +49,7 @@ public interface Supplied<T> {
 
 	/**
 	 * A simple supplied value.
-	 * @param <T>
+	 * @param <T> the supplied value type
 	 * @return the supplied value
 	 */
 	@SuppressWarnings("unchecked")
