@@ -97,6 +97,12 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 	private volatile Supplier<Batch> batchFactory;
 	private final Map<Transaction, SuspendedBatch> transactions = new ConcurrentHashMap<>();
 
+	/**
+	 * Creates a remote cache store.
+	 */
+	public RemoteCacheStore() {
+	}
+
 	@Override
 	public Set<Characteristic> characteristics() {
 		// N.B. we must return a new, mutable instance, since this value may be modified by PersistenceManagerImpl

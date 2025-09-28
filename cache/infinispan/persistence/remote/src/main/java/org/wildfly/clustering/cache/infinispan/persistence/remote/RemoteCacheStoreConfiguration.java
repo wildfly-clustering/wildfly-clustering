@@ -43,18 +43,35 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 	}
 }""", String.class).build();
 
+	/**
+	 * Creates the configuration of a remote cache store.
+	 * @param attributes the set of attributes
+	 * @param async asynchronous store configuration
+	 */
 	public RemoteCacheStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async) {
 		super(Element.HOTROD_STORE, attributes, async);
 	}
 
+	/**
+	 * Returns the remote cache container associated with this cache store.
+	 * @return the remote cache container associated with this cache store.
+	 */
 	public RemoteCacheContainer container() {
 		return this.attributes.attribute(CONTAINER).get();
 	}
 
+	/**
+	 * Returns the remote cache configuration for use by this cache store.
+	 * @return the remote cache configuration for use by this cache store.
+	 */
 	public String configuration() {
 		return this.attributes.attribute(CONFIGURATION).get();
 	}
 
+	/**
+	 * Returns the remote cache configuration template for use by this cache store.
+	 * @return the remote cache configuration template for use by this cache store.
+	 */
 	public String template() {
 		return this.attributes.attribute(TEMPLATE).get();
 	}
