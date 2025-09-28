@@ -15,10 +15,16 @@ import org.infinispan.lifecycle.ModuleLifecycle;
 import org.infinispan.persistence.manager.PersistenceManager;
 
 /**
+ * An Infinispan module that overrides specific Infinispan components.
  * @author Paul Ferraro
  */
-@InfinispanModule(name = "wildfly-clustering", requiredModules = "core", optionalModules = "cachestore-remote")
+@InfinispanModule(name = "WildFlyClustering", requiredModules = "core")
 public class WildFlyClusteringModuleLifecycle implements ModuleLifecycle {
+	/**
+	 * Creates a module lifecycle.
+	 */
+	public WildFlyClusteringModuleLifecycle() {
+	}
 
 	@Override
 	public void cacheStarting(ComponentRegistry registry, Configuration configuration, String cacheName) {

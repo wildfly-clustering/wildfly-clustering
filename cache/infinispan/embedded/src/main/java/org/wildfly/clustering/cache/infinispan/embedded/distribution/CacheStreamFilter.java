@@ -17,6 +17,7 @@ import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.remoting.transport.Address;
 
 /**
+ * A operator that filters a cache stream.
  * @author Paul Ferraro
  * @param <T> the stream element type
  */

@@ -27,6 +27,7 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.BasicCacheConfiguration;
 
 /**
+ * Configuration associated with an embedded Infinispan cache.
  * @author Paul Ferraro
  */
 public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfiguration, BasicCacheConfiguration {

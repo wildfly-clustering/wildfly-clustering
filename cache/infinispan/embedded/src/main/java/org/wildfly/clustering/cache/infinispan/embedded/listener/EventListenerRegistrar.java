@@ -16,11 +16,20 @@ public class EventListenerRegistrar implements ListenerRegistrar {
 	private final Listenable listenable;
 	private final Object listener;
 
+	/**
+	 * Creates a registrar of event listeners.
+	 * @param listenable the listener target
+	 */
 	public EventListenerRegistrar(Listenable listenable) {
 		this.listenable = listenable;
 		this.listener = this;
 	}
 
+	/**
+	 * Creates a registrar of event listeners.
+	 * @param listenable the listener target
+	 * @param listener a listener
+	 */
 	public EventListenerRegistrar(Listenable listenable, Object listener) {
 		this.listenable = listenable;
 		this.listener = listener;

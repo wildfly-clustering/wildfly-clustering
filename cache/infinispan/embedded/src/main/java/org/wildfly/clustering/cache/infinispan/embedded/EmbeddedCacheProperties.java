@@ -23,10 +23,18 @@ public class EmbeddedCacheProperties implements CacheProperties {
 	private final boolean persistent;
 	private final boolean transactional;
 
+	/**
+	 * Creates an encapsulation of the properties of the specified cache.
+	 * @param cache an embedded cache
+	 */
 	public EmbeddedCacheProperties(Cache<?, ?> cache) {
 		this(cache.getCacheConfiguration());
 	}
 
+	/**
+	 * Creates an encapsulation of the properties of the specified cache configuration.
+	 * @param configuration an embedded cache configuration
+	 */
 	public EmbeddedCacheProperties(Configuration configuration) {
 		this.transactional = configuration.transaction().transactionMode().isTransactional();
 		this.lockOnWrite = this.transactional && (configuration.transaction().lockingMode() == LockingMode.PESSIMISTIC);

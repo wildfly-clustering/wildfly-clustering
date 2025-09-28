@@ -37,6 +37,9 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 	private final List<Formatter<?>> formatters;
 	private final int padding;
 
+	/**
+	 * Creates formatter-based key-string mapper.
+	 */
 	@SuppressWarnings("removal")
 	public FormatterKeyMapper() {
 		List<Formatter<?>> formatters = new LinkedList<>();
@@ -52,6 +55,10 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 		this.padding = this.padding();
 	}
 
+	/**
+	 * Creates key-string mapper using the specified formatters.
+	 * @param formatters a list of formatters
+	 */
 	public FormatterKeyMapper(List<? extends Formatter<?>> formatters) {
 		this.formatters = List.copyOf(formatters);
 		this.padding = this.padding();

@@ -17,7 +17,12 @@ import org.infinispan.Cache;
  */
 public class PrePassivateBlockingListener<K, V> extends CacheEventListenerRegistrar<K, V> {
 
-	public PrePassivateBlockingListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
-		super(cache, new PrePassivateListener<>(new BlockingCacheEventListener<>(cache, consumer)));
+	/**
+	 * Creates a blocking listener of pre-passivate events.
+	 * @param cache an embedded cache
+	 * @param listener a consumer of pre-passivate events
+	 */
+	public PrePassivateBlockingListener(Cache<K, V> cache, BiConsumer<K, V> listener) {
+		super(cache, new PrePassivateListener<>(new BlockingCacheEventListener<>(cache, listener)));
 	}
 }

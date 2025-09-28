@@ -18,6 +18,11 @@ import org.infinispan.util.DependencyGraph;
  * @author Paul Ferraro
  */
 public class LocalConfigurationStorage extends org.infinispan.globalstate.impl.VolatileLocalConfigurationStorage {
+	/**
+	 * Creates a local configuration storage.
+	 */
+	public LocalConfigurationStorage() {
+	}
 
 	@Override
 	public CompletionStage<Void> removeCache(String name, EnumSet<CacheContainerAdmin.AdminFlag> flags) {

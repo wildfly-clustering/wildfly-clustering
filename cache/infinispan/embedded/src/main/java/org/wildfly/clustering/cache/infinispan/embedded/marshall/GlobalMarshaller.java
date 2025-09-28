@@ -24,6 +24,12 @@ import org.infinispan.factories.scopes.Scopes;
 @Scope(Scopes.GLOBAL)
 public class GlobalMarshaller extends org.infinispan.marshall.core.GlobalMarshaller {
 
+	/**
+	 * Creates a global marshaller.
+	 */
+	public GlobalMarshaller() {
+	}
+
 	@Override
 	public Object objectFromByteBuffer(byte[] buf) throws IOException, ClassNotFoundException {
 		if (System.getSecurityManager() == null) {

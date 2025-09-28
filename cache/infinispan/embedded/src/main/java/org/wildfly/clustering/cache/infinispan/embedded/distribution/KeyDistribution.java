@@ -32,11 +32,22 @@ public interface KeyDistribution {
 	 */
 	List<Address> getOwners(Object key);
 
+	/**
+	 * Creates a key distribution for the current consistent hash of the specified cache.
+	 * @param cache an embedded cache
+	 * @return a key distribution for the current consistent hash of the specified cache.
+	 */
 	static KeyDistribution forCache(Cache<?, ?> cache) {
 		DistributionManager distribution = cache.getAdvancedCache().getDistributionManager();
 		return (distribution != null) ? new ConsistentHashKeyDistribution(cache) : LocalKeyDistribution.INSTANCE;
 	}
 
+	/**
+	 * Creates a key distribution for the specified consistent hash of the specified cache.
+	 * @param cache an embedded cache
+	 * @param hash a consistent hash
+	 * @return a key distribution for the specified consistent hash of the specified cache.
+	 */
 	static KeyDistribution forConsistentHash(Cache<?, ?> cache, ConsistentHash hash) {
 		return new ConsistentHashKeyDistribution(cache, hash);
 	}

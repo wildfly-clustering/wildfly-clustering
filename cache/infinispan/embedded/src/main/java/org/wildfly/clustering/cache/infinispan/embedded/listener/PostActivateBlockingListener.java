@@ -26,11 +26,21 @@ public class PostActivateBlockingListener<K, V> extends CacheEventListenerRegist
 
 	private final Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener;
 
-	public PostActivateBlockingListener(Cache<K, V> cache, BiConsumer<K, V> consumer) {
+	/**
+	 * Creates a blocking listener of post-activate events.
+	 * @param cache an embedded cache
+	 * @param listener a consumer of post-activate events
+	 */
+	public PostActivateBlockingListener(Cache<K, V> cache, BiConsumer<K, V> listener) {
 		super(cache);
-		this.listener = new BlockingCacheEventListener<>(cache, consumer);
+		this.listener = new BlockingCacheEventListener<>(cache, listener);
 	}
 
+	/**
+	 * Handles cache entry activation events.
+	 * @param event a cache entry activation event
+	 * @return a completion stage
+	 */
 	@CacheEntryActivated
 	public CompletionStage<Void> postActivate(CacheEntryActivatedEvent<K, V> event) {
 		return this.listener.apply(event);

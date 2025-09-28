@@ -21,7 +21,14 @@ import org.infinispan.reactive.publisher.impl.LocalClusterPublisherManagerImpl;
  */
 @Scope(Scopes.NAMED_CACHE)
 public class LocalClusterPublisherManager<K, V> extends LocalClusterPublisherManagerImpl<K, V> {
+
 	@Inject Configuration configuration;
+
+	/**
+	 * Creates a local cluster publisher manager.
+	 */
+	public LocalClusterPublisherManager() {
+	}
 
 	@Override
 	public void start() {

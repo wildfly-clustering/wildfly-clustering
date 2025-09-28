@@ -15,6 +15,11 @@ import org.infinispan.reactive.publisher.impl.LocalPublisherManager;
  */
 @DefaultFactoryFor(classes = { LocalPublisherManager.class, ClusterPublisherManager.class }, names = org.infinispan.factories.PublisherManagerFactory.LOCAL_CLUSTER_PUBLISHER)
 public class PublisherManagerFactory extends org.infinispan.factories.PublisherManagerFactory {
+	/**
+	 * Creates a publisher manager factory.
+	 */
+	public PublisherManagerFactory() {
+	}
 
 	@Override
 	public Object construct(String componentName) {

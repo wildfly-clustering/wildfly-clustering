@@ -21,15 +21,31 @@ public interface Locality {
 	 */
 	boolean isLocal(Object key);
 
+	/**
+	 * Returns a locality that returns the same value for any key.
+	 * @param local specifies whether or not all keys are local
+	 * @return a locality that returns the same value for any key.
+	 */
 	static Locality of(boolean local) {
 		return new SimpleLocality(local);
 	}
 
+	/**
+	 * Returns the locality for the current consistent hash of the specified cache.
+	 * @param cache an embedded cache
+	 * @return the locality for the current consistent hash of the specified cache.
+	 */
 	static Locality forCurrentConsistentHash(Cache<?, ?> cache) {
 		DistributionManager distribution = cache.getAdvancedCache().getDistributionManager();
 		return (distribution != null) ? forConsistentHash(cache, distribution.getCacheTopology().getWriteConsistentHash()) : of(true);
 	}
 
+	/**
+	 * Returns the locality for the specified consistent hash of the specified cache.
+	 * @param cache an embedded cache
+	 * @param hash a consistent hash
+	 * @return the locality for the specified consistent hash of the specified cache.
+	 */
 	static Locality forConsistentHash(Cache<?, ?> cache, ConsistentHash hash) {
 		return new ConsistentHashLocality(cache, hash);
 	}

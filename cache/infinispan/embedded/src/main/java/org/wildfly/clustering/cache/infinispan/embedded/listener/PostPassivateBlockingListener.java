@@ -26,11 +26,21 @@ public class PostPassivateBlockingListener<K, V> extends CacheEventListenerRegis
 
 	private Consumer<CacheEntryEvent<K, V>> listener;
 
+	/**
+	 * Creates a blocking listener of post-passivate events.
+	 * @param cache an embedded cache
+	 * @param listener a consumer of post-passivate events
+	 */
 	public PostPassivateBlockingListener(Cache<K, V> cache, Consumer<K> listener) {
 		super(cache);
 		this.listener = new BlockingCacheEventListener<>(cache, listener);
 	}
 
+	/**
+	 * Handles cache entry passivation events.
+	 * @param event a cache entry passivation event
+	 * @return a completion stage
+	 */
 	@CacheEntryPassivated
 	public CompletionStage<Void> postPassivate(CacheEntryPassivatedEvent<K, V> event) {
 		this.listener.accept(event);

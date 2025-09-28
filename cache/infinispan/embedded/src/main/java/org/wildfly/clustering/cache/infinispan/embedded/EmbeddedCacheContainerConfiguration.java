@@ -15,6 +15,7 @@ import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.cache.infinispan.BasicCacheContainerConfiguration;
 
 /**
+ * Configuration associated with an embedded Infinispan cache container.
  * @author Paul Ferraro
  */
 public interface EmbeddedCacheContainerConfiguration extends BasicCacheContainerConfiguration {
