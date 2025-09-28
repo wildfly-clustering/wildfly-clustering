@@ -78,7 +78,7 @@ import java.util.function.Predicate;
  * @param <E> the type of elements held in this deque
  */
 @SuppressWarnings("unqualified-field-access")
-public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements ConcurrentDirectDeque<E>, Serializable {
+class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements ConcurrentDirectDeque<E>, Serializable {
 
 	/*
 	 * This is an implementation of a concurrent lock-free deque
@@ -724,7 +724,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 	/**
 	 * Constructs an empty deque.
 	 */
-	public FastConcurrentDirectDeque() {
+	FastConcurrentDirectDeque() {
 		head = tail = new Node<>();
 	}
 
@@ -737,7 +737,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 	 * @throws NullPointerException if the specified collection or any
 	 *		 of its elements are null
 	 */
-	public FastConcurrentDirectDeque(Collection<? extends E> c) {
+	FastConcurrentDirectDeque(Collection<? extends E> c) {
 		// Copy c into a private chain of Nodes
 		Node<E> h = null, t = null;
 		for (E e : c) {

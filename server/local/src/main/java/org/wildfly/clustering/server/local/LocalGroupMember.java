@@ -18,6 +18,11 @@ public interface LocalGroupMember extends GroupMember<String> {
 		return this.getName();
 	}
 
+	/**
+	 * Creates a local group member with the specified name.
+	 * @param memberName the group member name
+	 * @return a local group member with the specified name.
+	 */
 	static LocalGroupMember of(String memberName) {
 		return new DefaultLocalGroupMember(memberName);
 	}

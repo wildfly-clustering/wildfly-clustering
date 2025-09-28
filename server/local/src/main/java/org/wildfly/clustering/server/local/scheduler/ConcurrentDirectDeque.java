@@ -15,7 +15,11 @@ import java.util.Deque;
  * @param <E> the element type
  */
 public interface ConcurrentDirectDeque<E> extends Deque<E> {
-
+	/**
+	 * Creates a new concurrent direct deque.
+	 * @param <K> the element type
+	 * @return a new concurrent direct deque.
+	 */
 	static <K> ConcurrentDirectDeque<K> newInstance() {
 		return new FastConcurrentDirectDeque<>();
 	}

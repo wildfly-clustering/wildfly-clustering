@@ -24,6 +24,12 @@ public interface LocalServiceProviderRegistrar<T> extends ServiceProviderRegistr
 	@Override
 	LocalGroup getGroup();
 
+	/**
+	 * Creates a local service provider registrar for the specified group.
+	 * @param <T> the service type
+	 * @param group a local group
+	 * @return a local service provider registrar for the specified group.
+	 */
 	static <T> LocalServiceProviderRegistrar<T> of(LocalGroup group) {
 		Set<T> services = ConcurrentHashMap.newKeySet();
 		return new LocalServiceProviderRegistrar<>() {

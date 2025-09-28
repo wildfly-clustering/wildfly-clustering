@@ -11,6 +11,7 @@ import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 
 /**
+ * An affinity function that always returns the local group member.
  * @param <I> the identifier type for group members
  * @param <M> the group member type
  * @author Paul Ferraro
@@ -19,6 +20,10 @@ public class LocalGroupMemberAffinity<I, M extends GroupMember> implements Funct
 
 	private final M member;
 
+	/**
+	 * Creates an affinity function that always returns the local group member.
+	 * @param group a group
+	 */
 	public LocalGroupMemberAffinity(Group<M> group) {
 		this(group.getLocalMember());
 	}

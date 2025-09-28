@@ -39,6 +39,10 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 		}
 	};
 
+	/**
+	 * Creates a local listener registrar with the specified shutdown timeout.
+	 * @param shutdownTimeout the duration of time to wait for termination of listener tasks on close.
+	 */
 	public LocalListenerRegistrar(Duration shutdownTimeout) {
 		this.shutdownTimeout = shutdownTimeout;
 	}

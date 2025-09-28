@@ -23,6 +23,12 @@ public class DefaultServiceProviderRegistration<T, M extends GroupMember> implem
 	private final T service;
 	private final Runnable closeTask;
 
+	/**
+	 * Creates a service provider registration for the specified service.
+	 * @param registrar a service provider registrar
+	 * @param service a service provider type
+	 * @param closeTask a task to execute on registration close
+	 */
 	public DefaultServiceProviderRegistration(ServiceProviderRegistrar<T, M> registrar, T service, Runnable closeTask) {
 		this.registrar = registrar;
 		this.service = service;
