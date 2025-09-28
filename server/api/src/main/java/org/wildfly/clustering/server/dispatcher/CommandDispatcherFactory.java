@@ -18,15 +18,14 @@ public interface CommandDispatcherFactory<M extends GroupMember> {
 
 	/**
 	 * Returns the group upon which the this command dispatcher operates.
-	 *
-	 * @return a group
+	 * @return the group associated with this command dispatcher factory.
 	 */
 	Group<M> getGroup();
 
 	/**
 	 * Creates a new command dispatcher using the specified identifier and context.
 	 * The resulting {@link CommandDispatcher} will communicate with those dispatchers within the group sharing the same identifier.
-	 *
+	 * @param <C> the command context type
 	 * @param id a unique identifier for this dispatcher
 	 * @param context the context used for executing commands
 	 * @return a new command dispatcher
@@ -38,7 +37,7 @@ public interface CommandDispatcherFactory<M extends GroupMember> {
 	/**
 	 * Creates a new command dispatcher using the specified identifier and context whose marshaller will be configured from the specified class loader.
 	 * The resulting {@link CommandDispatcher} will communicate with those dispatchers within the group sharing the same identifier.
-	 *
+	 * @param <C> the command context type
 	 * @param id a unique identifier for this dispatcher
 	 * @param context the context used for executing commands
 	 * @param loader the class loader used to load commands to be dispatched.

@@ -30,6 +30,7 @@ public interface CommandDispatcher<M extends GroupMember, C> extends AutoCloseab
 	 * If the member has no corresponding dispatcher, the returned completion stage throws a {@link java.util.concurrent.CancellationException}.
 	 *
 	 * @param <R> the command execution return type
+	 * @param <E> the command exception type
 	 * @param command the command to execute
 	 * @param member the group member on which to execute the command
 	 * @return the future result of the command execution
@@ -42,6 +43,7 @@ public interface CommandDispatcher<M extends GroupMember, C> extends AutoCloseab
 	 * If a given member has no corresponding dispatcher, its completion stage throws a {@link java.util.concurrent.CancellationException}.
 	 *
 	 * @param <R> the command execution return type
+	 * @param <E> the command exception type
 	 * @param command the command to execute
 	 * @return a completion stage per member of the group on which the command was executed
 	 * @throws IOException if the command could not be sent
@@ -55,6 +57,7 @@ public interface CommandDispatcher<M extends GroupMember, C> extends AutoCloseab
 	 * If a given member has no corresponding dispatcher, its completion stage throws a {@link java.util.concurrent.CancellationException}.
 	 *
 	 * @param <R> the command execution return type
+	 * @param <E> the command exception type
 	 * @param command the command to execute
 	 * @param excluding the members to be excluded from group command execution
 	 * @return a completion stage per member of the group on which the command was executed
