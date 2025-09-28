@@ -17,6 +17,12 @@ import org.wildfly.clustering.context.ContextualizerFactory;
 @MetaInfServices({ ContextualizerFactory.class, BatchContextualizerFactory.class })
 public class TransactionalBatchContextualizerFactory implements BatchContextualizerFactory {
 
+	/**
+	 * Provides a contextualizer factory that auto-suspends/resumes an associated batch.
+	 */
+	public TransactionalBatchContextualizerFactory() {
+	}
+
 	@Override
 	public Contextualizer createContextualizer(ClassLoader loader) {
 		return Contextualizer.withContextProvider(ThreadContextBatch.INSTANCE::suspendWithContext);

@@ -15,6 +15,12 @@ import jakarta.transaction.TransactionManager;
  */
 public class TransactionalBatchFactory extends ThreadContextBatchFactory {
 
+	/**
+	 * Creates a transactional batch factory.
+	 * @param name the name of this context
+	 * @param tm a transaaction manager
+	 * @param exceptionTransformer a runtime exception wrapper for transaction exceptions
+	 */
 	public TransactionalBatchFactory(String name, TransactionManager tm, Function<Exception, RuntimeException> exceptionTransformer) {
 		super(() -> new DefaultTransactionalBatch(name, tm, exceptionTransformer));
 	}

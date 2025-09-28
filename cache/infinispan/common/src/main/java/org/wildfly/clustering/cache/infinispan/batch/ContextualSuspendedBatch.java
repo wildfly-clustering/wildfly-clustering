@@ -8,6 +8,7 @@ package org.wildfly.clustering.cache.infinispan.batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 
 /**
+ * A contextual suspended batch.
  * @author Paul Ferraro
  */
 public interface ContextualSuspendedBatch extends SuspendedBatch, Contextual {

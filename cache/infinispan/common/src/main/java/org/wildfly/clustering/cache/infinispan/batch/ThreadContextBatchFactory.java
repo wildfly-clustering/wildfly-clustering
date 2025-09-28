@@ -15,6 +15,10 @@ import org.wildfly.clustering.function.Supplier;
 public class ThreadContextBatchFactory implements Supplier<Batch> {
 	private final Supplier<ContextualBatch> factory;
 
+	/**
+	 * Creates a batch factory whose batches are referenced via {@link ThreadLocal}.
+	 * @param factory a batch factory
+	 */
 	public ThreadContextBatchFactory(Supplier<ContextualBatch> factory) {
 		this.factory = factory;
 	}

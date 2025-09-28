@@ -13,6 +13,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SimpleContextualBatchFactory extends ThreadContextBatchFactory {
 
+	/**
+	 * Creates a contextual batch factory
+	 * @param name the name of this batch context
+	 */
 	public SimpleContextualBatchFactory(String name) {
 		this(name, new AtomicLong(0L));
 	}

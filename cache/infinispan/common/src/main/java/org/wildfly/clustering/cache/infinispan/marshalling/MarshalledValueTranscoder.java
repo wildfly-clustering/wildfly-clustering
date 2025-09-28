@@ -26,6 +26,12 @@ public class MarshalledValueTranscoder<C> extends OneToManyTranscoder {
 	private final MarshalledValueFactory<C> factory;
 	private final Marshaller marshaller;
 
+	/**
+	 * Creates a transcoder for converting cache values to/from a marshalled value.
+	 * @param type the default media type
+	 * @param factory a factory for creating marshalled value
+	 * @param marshaller the marshaller used to create marshalled values
+	 */
 	public MarshalledValueTranscoder(MediaType type, MarshalledValueFactory<C> factory, Marshaller marshaller) {
 		super(type, MediaType.APPLICATION_OBJECT, MediaType.APPLICATION_OCTET_STREAM);
 		this.factory = factory;
