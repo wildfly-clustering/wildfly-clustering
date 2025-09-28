@@ -24,10 +24,21 @@ public class JavaByteBufferMarshaller extends AbstractByteBufferMarshaller {
 	private final Serializer<ClassLoader> classLoaderSerializer;
 	private final ObjectInputFilter filter;
 
+	/**
+	 * Creates a new marshaller using the specified class loader and filter.
+	 * @param loader a class loader
+	 * @param filter a filter use secure serialization
+	 */
 	public JavaByteBufferMarshaller(ClassLoader loader, ObjectInputFilter filter) {
 		this(Serializer.of(loader), loader, filter);
 	}
 
+	/**
+	 * Creates a new marshaller using the specified class loader and filter.
+	 * @param classLoaderSerializer a class loader serializer
+	 * @param loader a class loader
+	 * @param filter a filter use secure serialization
+	 */
 	public JavaByteBufferMarshaller(Serializer<ClassLoader> classLoaderSerializer, ClassLoader loader, ObjectInputFilter filter) {
 		super(loader);
 		this.classLoaderSerializer = classLoaderSerializer;

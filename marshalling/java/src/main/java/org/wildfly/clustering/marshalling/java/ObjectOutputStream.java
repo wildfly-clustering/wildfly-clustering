@@ -34,24 +34,30 @@ import org.wildfly.clustering.marshalling.Serializer;
  */
 public class ObjectOutputStream extends java.io.ObjectOutputStream {
 
-	private final Serializer<ClassLoader> seralizer;
+	private final Serializer<ClassLoader> serializer;
 
-	public ObjectOutputStream(OutputStream output, Serializer<ClassLoader> seralizer) throws IOException {
+	/**
+	 * Creates an object output stream decorator using the specified class loader serializer
+	 * @param output the output input stream
+	 * @param serializer a class loader serializer
+	 * @throws IOException if the object input stream could not be created
+	 */
+	public ObjectOutputStream(OutputStream output, Serializer<ClassLoader> serializer) throws IOException {
 		super(output);
-		this.seralizer = seralizer;
+		this.serializer = serializer;
 	}
 
 	@Override
 	protected void annotateClass(Class<?> targetClass) throws IOException {
-		this.seralizer.write(this, getClassLoader(targetClass));
+		this.serializer.write(this, getClassLoader(targetClass));
 	}
 
 	@Override
 	protected void annotateProxyClass(Class<?> proxyClass) throws IOException {
 		for (Class<?> interfaceClass : proxyClass.getInterfaces()) {
-			this.seralizer.write(this, getClassLoader(interfaceClass));
+			this.serializer.write(this, getClassLoader(interfaceClass));
 		}
-		this.seralizer.write(this, getClassLoader(proxyClass));
+		this.serializer.write(this, getClassLoader(proxyClass));
 	}
 
 	@SuppressWarnings("removal")
