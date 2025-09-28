@@ -9,6 +9,7 @@ import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.wildfly.clustering.cache.infinispan.BasicCacheContainerConfiguration;
 
 /**
+ * A configuration with an associated remote cache container.
  * @author Paul Ferraro
  */
 public interface RemoteCacheContainerConfiguration extends BasicCacheContainerConfiguration {

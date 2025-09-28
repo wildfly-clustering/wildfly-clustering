@@ -24,7 +24,7 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.BasicCacheConfiguration;
 
 /**
- * Configuration identifying a remote cache.
+ * Configuration associated with a remote cache.
  * @author Paul Ferraro
  */
 public interface RemoteCacheConfiguration extends RemoteCacheContainerConfiguration, BasicCacheConfiguration {
@@ -89,16 +89,32 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 		return this.getCacheProperties().isLockOnRead() ? new ReadForUpdateRemoteCache<>(cache) : cache;
 	}
 
+	/**
+	 * Returns a remote cache that whose writes will ignore return values.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @return a remote cache that whose writes will ignore return values.
+	 */
 	default <K, V> RemoteCache<K, V> getIgnoreReturnCache() {
 		RemoteCache<K, V> cache = this.getCache();
 		return this.getNearCacheMode().enabled() ? cache : cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
 	}
 
+	/**
+	 * Returns a remote cache that whose writes will include return values.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @return a remote cache that whose writes will indlude return values.
+	 */
 	default <K, V> RemoteCache<K, V> getForceReturnCache() {
 		RemoteCache<K, V> cache = this.getCache();
 		return this.getNearCacheMode().enabled() ? cache.withFlags(Flag.FORCE_RETURN_VALUE) : cache.withFlags(Flag.FORCE_RETURN_VALUE, Flag.SKIP_LISTENER_NOTIFICATION);
 	}
 
+	/**
+	 * Returns the near cache mode of the associated cache.
+	 * @return the near cache mode of the associated cache.
+	 */
 	default NearCacheMode getNearCacheMode() {
 		RemoteCache<?, ?> cache = this.getCache();
 		return cache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(cache.getName()).nearCacheMode();

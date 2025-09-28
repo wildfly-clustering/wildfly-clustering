@@ -41,6 +41,10 @@ import org.reactivestreams.Publisher;
 public abstract class AbstractRemoteCache<K, V> extends RemoteCacheSupport<K, V> implements UnaryOperator<RemoteCache<K, V>> {
 	private final RemoteCache<K, V> cache;
 
+	/**
+	 * Creates a remote cache decorator.
+	 * @param cache the decorated remote cache
+	 */
 	protected AbstractRemoteCache(RemoteCache<K, V> cache) {
 		this.cache = cache;
 	}
