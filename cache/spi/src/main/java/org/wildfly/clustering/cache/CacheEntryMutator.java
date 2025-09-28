@@ -18,6 +18,7 @@ import org.wildfly.clustering.function.Runnable;
  * @author Paul Ferraro
  */
 public interface CacheEntryMutator extends java.lang.Runnable {
+	/** The mutator logger */
 	System.Logger LOGGER = System.getLogger(CacheEntryMutator.class.getName());
 
 	@Override
@@ -29,8 +30,17 @@ public interface CacheEntryMutator extends java.lang.Runnable {
 		}
 	}
 
+	/**
+	 * Mutates the associated cache entry asynchronously.
+	 * @return a stage that completes when the cache entry mutation completes.
+	 */
 	CompletionStage<Void> runAsync();
 
+	/**
+	 * Applies a maximum idle duration to the mutated cache entry.
+	 * @param maxIdle a provider of a maximum idle duration
+	 * @return a reference to this mutator.
+	 */
 	CacheEntryMutator withMaxIdle(Supplier<Duration> maxIdle);
 
 	/**
@@ -51,6 +61,11 @@ public interface CacheEntryMutator extends java.lang.Runnable {
 		}
 	};
 
+	/**
+	 * Returns a composite mutator that runs the specified mutators.
+	 * @param mutators a number of mutators
+	 * @return a composite mutator.
+	 */
 	static CacheEntryMutator of(Iterable<CacheEntryMutator> mutators) {
 		return new CacheEntryMutator() {
 			@Override

@@ -15,6 +15,10 @@ import java.util.Collections;
  */
 public class MapRemoveFunction<K, V> extends MapComputeFunction<K, V> {
 
+	/**
+	 * Constructs a new map remove operation.
+	 * @param key a map key
+	 */
 	public MapRemoveFunction(K key) {
 		super(Collections.singletonMap(key, null));
 	}

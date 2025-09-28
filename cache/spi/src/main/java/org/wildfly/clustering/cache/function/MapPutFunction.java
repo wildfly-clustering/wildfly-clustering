@@ -15,10 +15,19 @@ import java.util.Map;
  */
 public class MapPutFunction<K, V> extends MapComputeFunction<K, V> {
 
+	/**
+	 * Constructs a new map put operation using the specified key and value.
+	 * @param key a map key
+	 * @param value a map value
+	 */
 	public MapPutFunction(K key, V value) {
 		super(Map.of(key, value));
 	}
 
+	/**
+	 * Constructs a new map put operation using the specified entry.
+	 * @param entry a map entry
+	 */
 	MapPutFunction(Map.Entry<K, V> entry) {
 		this(entry.getKey(), entry.getValue());
 	}

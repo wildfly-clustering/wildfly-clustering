@@ -17,6 +17,11 @@ import org.wildfly.clustering.marshalling.Serializer;
  */
 public class KeySerializer<I, K extends Key<I>> extends Serializer.Provided<K> {
 
+	/**
+	 * Creates a serializer for a cache key using the specified identifier factory and factory.
+	 * @param serializer the serializer of the identifier of a cache key
+	 * @param factory the cache key factory
+	 */
 	public KeySerializer(Serializer<I> serializer, Function<I, K> factory) {
 		super(serializer.wrap(Key::getId, factory));
 	}

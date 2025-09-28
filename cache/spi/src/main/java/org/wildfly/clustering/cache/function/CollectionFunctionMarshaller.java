@@ -17,6 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * A marshaller of a collection function.
  * @param <V> the collection element type
  * @param <C> the collection type
  * @param <F> the function type
@@ -28,6 +29,11 @@ public class CollectionFunctionMarshaller<V, C extends Collection<V>, F extends 
 	private final Class<? extends F> targetClass;
 	private final Function<Collection<V>, F> factory;
 
+	/**
+	 * Creates a marshaller for a collection function.
+	 * @param targetClass the function class
+	 * @param factory the function factory
+	 */
 	public CollectionFunctionMarshaller(Class<? extends F> targetClass, Function<Collection<V>, F> factory) {
 		this.targetClass = targetClass;
 		this.factory = factory;

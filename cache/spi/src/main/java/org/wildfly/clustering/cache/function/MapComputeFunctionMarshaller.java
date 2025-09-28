@@ -19,7 +19,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * ProtoStream marshaller for {@link MapComputeFunction}.
  * @author Paul Ferraro
  */
-public class MapComputeFunctionMarshaller implements ProtoStreamMarshaller<MapComputeFunction<Object, Object>> {
+public enum MapComputeFunctionMarshaller implements ProtoStreamMarshaller<MapComputeFunction<Object, Object>> {
+	/** Singleton instance */
+	INSTANCE;
+
 	private static final int ENTRY_INDEX = 1;
 
 	@SuppressWarnings("unchecked")

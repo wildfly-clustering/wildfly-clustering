@@ -15,6 +15,11 @@ import java.util.Collection;
  */
 public abstract class CollectionFunction<V, C extends Collection<V>> extends AbstractFunction<Collection<V>, C> {
 
+	/**
+	 * Constructs a new collection operation function
+	 * @param operand the operation operand
+	 * @param operations the collection operations
+	 */
 	public CollectionFunction(Collection<V> operand, Operations<C> operations) {
 		super(operand, operations.getCopier(), operations.getFactory(), operations.isEmpty());
 	}
