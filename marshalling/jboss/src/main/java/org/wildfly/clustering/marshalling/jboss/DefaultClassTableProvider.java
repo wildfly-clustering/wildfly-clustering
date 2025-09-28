@@ -22,26 +22,32 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshalledValue;
  * @author Paul Ferraro
  */
 enum DefaultClassTableProvider implements Supplier<ClassTable> {
+	/** Marshallable objects of {@link java.io}. */
 	IO(List.of(
 			java.io.Externalizable.class,
 			java.io.Serializable.class)),
+	/** Marshallable objects of {@link java.lang}. */
 	LANG(List.of(
 			Class.class,
 			StackTraceElement.class)),
+	/** Marshallable objects of {@link java.math}. */
 	MATH(List.of(
 			java.math.BigDecimal.class,
 			java.math.BigInteger.class,
 			java.math.MathContext.class,
 			java.math.RoundingMode.class)),
+	/** Marshallable objects of {@link java.net}. */
 	NET(List.of(
 			java.net.InetAddress.getLoopbackAddress().getClass(),
 			java.net.InetSocketAddress.class,
 			java.net.URI.class,
 			java.net.URL.class)),
+	/** Marshallable objects of {@link java.sql}. */
 	SQL(List.of(
 			java.sql.Date.class,
 			java.sql.Time.class,
 			java.sql.Timestamp.class)),
+	/** Marshallable objects of {@link java.time}. */
 	TIME(List.of(
 			java.time.Clock.systemDefaultZone().getClass(),
 			java.time.DayOfWeek.class,
@@ -61,11 +67,13 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 			java.time.ZoneId.systemDefault().getClass(),
 			java.time.ZoneOffset.class,
 			java.time.ZonedDateTime.class)),
+	/** Marshallable objects of {@link java.util.concurrent.atomic}. */
 	CONCURRENT_ATOMIC(List.of(
 			java.util.concurrent.atomic.AtomicBoolean.class,
 			java.util.concurrent.atomic.AtomicInteger.class,
 			java.util.concurrent.atomic.AtomicLong.class,
 			java.util.concurrent.atomic.AtomicReference.class)),
+	/** Marshallable objects of {@link java.util.concurrent}. */
 	CONCURRENT(List.of(
 			java.util.concurrent.ArrayBlockingQueue.class,
 			java.util.concurrent.ConcurrentHashMap.class,
@@ -82,6 +90,7 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 			java.util.concurrent.PriorityBlockingQueue.class,
 			java.util.concurrent.SynchronousQueue.class,
 			java.util.concurrent.TimeUnit.class)),
+	/** Marshallable objects of {@link java.util}. */
 	UTIL(List.of(
 			Collections.checkedCollection(List.of(), Void.class).getClass(),
 			// Random access
@@ -162,6 +171,7 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 			java.util.UUID.class,
 			java.util.Vector.class
 			)),
+		/** Marshallable objects of {@link org.wildfly.clustering.marshalling}. */
 		MARSHALLING(List.of(ByteBufferMarshalledKey.class, ByteBufferMarshalledValue.class)),
 	;
 

@@ -22,11 +22,28 @@ import org.wildfly.clustering.marshalling.IntSerializer;
  * @author Paul Ferraro
  */
 public interface IdentityTable<T> {
-
+	/**
+	 * Returns a writer for the specified object.
+	 * @param value an object
+	 * @return a writer for the specified object, or null, if none exists.
+	 */
 	Writable<T> findWriter(T value);
 
+	/**
+	 * Reads an object from the specified unmarshaller.
+	 * @param unmarshaller an unmarshaller
+	 * @return the read object
+	 * @throws IOException if the object could not be read
+	 * @throws ClassNotFoundException if the class of the marshalled object could not be resolved.
+	 */
 	T read(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException;
 
+	/**
+	 * Creates an identity table from the list of table entries.
+	 * @param <T> the table entry type
+	 * @param entries a list of table entries
+	 * @return an identity table from the list of table entries.
+	 */
 	static <T> IdentityTable<T> from(List<T> entries) {
 		IntSerializer indexSerializer = IndexSerializer.select(entries.size());
 		Map<T, Integer> indexes = new IdentityHashMap<>(entries.size());

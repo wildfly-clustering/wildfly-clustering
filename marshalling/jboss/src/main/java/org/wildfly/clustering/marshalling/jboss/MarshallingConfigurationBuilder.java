@@ -28,6 +28,7 @@ import org.jboss.marshalling.SerializabilityChecker;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 
 /**
+ * Builds a JBoss Marshalling configuration
  * @author Paul Ferraro
  */
 public interface MarshallingConfigurationBuilder extends MarshallerConfigurationBuilder<MarshallingConfiguration, ExternalizerProvider, MarshallingConfigurationBuilder> {
@@ -41,6 +42,9 @@ public interface MarshallingConfigurationBuilder extends MarshallerConfiguration
 		return new DefaultMarshallingConfigurationBuilder(resolver);
 	}
 
+	/**
+	 * Builder of a JBoss marshalling configuration.
+	 */
 	class DefaultMarshallingConfigurationBuilder implements MarshallingConfigurationBuilder {
 		private final MarshallingConfiguration configuration = new MarshallingConfiguration();
 		private final Map<Class<?>, Externalizer> externalizers = new LinkedHashMap<>();

@@ -19,6 +19,10 @@ public class IdentityClassTable implements ClassTable {
 
 	private final IdentityTable<Class<?>> table;
 
+	/**
+	 * Creates a new class table for the specified classes.
+	 * @param classes a list of classes
+	 */
 	public IdentityClassTable(List<Class<?>> classes) {
 		this.table = IdentityTable.from(classes);
 	}

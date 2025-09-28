@@ -20,6 +20,10 @@ public class IdentitySerializabilityChecker implements SerializabilityChecker {
 
 	private final Set<Class<?>> classes;
 
+	/**
+	 * Creates a serializability checker from the specified marshallable classes
+	 * @param classes a collection of marshallable classes
+	 */
 	public IdentitySerializabilityChecker(Collection<Class<?>> classes) {
 		this.classes = Collections.newSetFromMap(new IdentityHashMap<>(classes.size()));
 		this.classes.addAll(classes);
