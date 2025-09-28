@@ -17,9 +17,11 @@ import org.wildfly.clustering.marshalling.jboss.ExternalizerProvider;
 import org.wildfly.clustering.marshalling.jboss.SerializerExternalizer;
 
 /**
+ * A serializer for a channel-based group member.
  * @author Paul Ferraro
  */
 public enum JChannelGroupMemberSerializer implements Serializer<JChannelGroupMember> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private final Serializer<JChannelGroupMember> serializer = AddressSerializer.INSTANCE.wrap(JChannelGroupMember::getId, JChannelGroupMember::new);
@@ -39,9 +41,18 @@ public enum JChannelGroupMemberSerializer implements Serializer<JChannelGroupMem
 		return this.serializer.size(object);
 	}
 
+	/**
+	 * Provides an externalizer for a {@link JChannelGroupMember}.
+	 */
 	@MetaInfServices(ExternalizerProvider.class)
 	public static class JChannelGroupMemberExternalizerProvider implements ExternalizerProvider {
 		private final Externalizer externalizer = new SerializerExternalizer(INSTANCE);
+
+		/**
+		 * Creates a provider of an externalizer for a {@link JChannelGroupMember}.
+		 */
+		public JChannelGroupMemberExternalizerProvider() {
+		}
 
 		@Override
 		public Class<?> getType() {

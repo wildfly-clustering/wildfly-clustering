@@ -22,6 +22,11 @@ public class ViewMembership implements GroupMembership<ChannelGroupMember> {
 	private final List<ChannelGroupMember> members;
 	private final int coordinatorIndex;
 
+	/**
+	 * Creates a group membership based on the specified view.
+	 * @param view a channel view.
+	 * @param factory a member factory
+	 */
 	public ViewMembership(View view, ChannelGroupMemberFactory factory) {
 		this.id = view.getViewId().getId();
 		List<Address> addresses = view.getMembers();

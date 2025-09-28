@@ -15,7 +15,21 @@ import org.wildfly.clustering.marshalling.MarshalledValueFactory;
  * @author Paul Ferraro
  */
 public interface CommandDispatcherContext<CC, MC> {
+	/**
+	 * Returns the command context.
+	 * @return the command context.
+	 */
 	CC getCommandContext();
+
+	/**
+	 * Returns the contextualizer for a command dispatcher.
+	 * @return the contextualizer for a command dispatcher.
+	 */
 	Contextualizer getContextualizer();
+
+	/**
+	 * Returns a marshalled value factory.
+	 * @return a marshalled value factory.
+	 */
 	MarshalledValueFactory<MC> getMarshalledValueFactory();
 }

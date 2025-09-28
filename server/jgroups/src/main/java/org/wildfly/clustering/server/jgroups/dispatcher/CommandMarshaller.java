@@ -12,12 +12,13 @@ import org.wildfly.clustering.server.dispatcher.Command;
 /**
  * Marshalling strategy for a command.
  * @author Paul Ferraro
- *
  * @param <C> command execution context
  */
 public interface CommandMarshaller<C> {
 	/**
 	 * Marshals the specified command to a byte[].
+	 * @param <R> the command return type
+	 * @param <E> the command execution exception type
 	 * @param command a command
 	 * @return a serialized command.
 	 * @throws IOException if marshalling fails.

@@ -18,6 +18,12 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 @MetaInfServices(SerializationContextInitializer.class)
 public class JGroupsServerSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a serialization context initializer for this package.
+	 */
+	public JGroupsServerSerializationContextInitializer() {
+	}
+
 	@Override
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(AddressMarshaller.INSTANCE.asMarshaller(Address.class).wrap(JChannelGroupMember.class, ChannelGroupMember::getId, JChannelGroupMember::new));

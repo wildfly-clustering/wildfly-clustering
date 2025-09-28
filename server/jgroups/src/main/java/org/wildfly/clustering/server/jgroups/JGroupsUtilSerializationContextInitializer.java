@@ -17,6 +17,9 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 @MetaInfServices(SerializationContextInitializer.class)
 public class JGroupsUtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a serialization context initializer.
+	 */
 	public JGroupsUtilSerializationContextInitializer() {
 		super(UUID.class.getPackage());
 	}

@@ -12,12 +12,17 @@ import org.jgroups.util.NameCache;
 import org.wildfly.clustering.server.group.AbstractGroupMember;
 
 /**
+ * A channel based group member.
  * @author Paul Ferraro
  */
 public class JChannelGroupMember extends AbstractGroupMember<Address> implements ChannelGroupMember {
 
 	private final Address address;
 
+	/**
+	 * Creates a group member for the specified address.
+	 * @param address a JGroups address
+	 */
 	public JChannelGroupMember(Address address) {
 		this.address = address;
 	}
