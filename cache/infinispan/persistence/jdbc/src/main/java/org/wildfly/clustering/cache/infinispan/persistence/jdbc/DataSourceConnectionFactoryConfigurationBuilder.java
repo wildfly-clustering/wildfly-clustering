@@ -7,6 +7,7 @@ package org.wildfly.clustering.cache.infinispan.persistence.jdbc;
 
 import javax.sql.DataSource;
 
+import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.Combine;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -23,11 +24,20 @@ public class DataSourceConnectionFactoryConfigurationBuilder<S extends AbstractJ
 
 	private volatile DataSource dataSource;
 
+	/**
+	 * Creates a connection factory configuration builder.
+	 * @param builder the parent builder
+	 */
 	public DataSourceConnectionFactoryConfigurationBuilder(AbstractJdbcStoreConfigurationBuilder<?, S> builder) {
 		super(builder);
 	}
 
-	public DataSourceConnectionFactoryConfigurationBuilder<S> setDataSource(DataSource dataSource) {
+	/**
+	 * Uses the specified DataSource.
+	 * @param dataSource a data source
+	 * @return a reference to this builder
+	 */
+	public DataSourceConnectionFactoryConfigurationBuilder<S> withDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 		return this;
 	}
@@ -39,7 +49,9 @@ public class DataSourceConnectionFactoryConfigurationBuilder<S extends AbstractJ
 
 	@Override
 	public void validate(GlobalConfiguration globalConfig) {
-		// Nothing to validate
+		if (this.dataSource == null) {
+			throw new CacheConfigurationException(DataSource.class.getName());
+		}
 	}
 
 	@Override

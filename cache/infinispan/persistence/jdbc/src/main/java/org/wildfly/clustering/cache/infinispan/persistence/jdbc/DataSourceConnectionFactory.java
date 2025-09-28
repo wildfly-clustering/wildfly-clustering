@@ -23,6 +23,12 @@ public class DataSourceConnectionFactory extends ConnectionFactory {
 
 	private volatile DataSource factory;
 
+	/**
+	 * Creates a {@link DataSource} connection factory.
+	 */
+	public DataSourceConnectionFactory() {
+	}
+
 	@Override
 	public void start(ConnectionFactoryConfiguration configuration, ClassLoader classLoader) throws PersistenceException {
 		this.factory = ((DataSourceConnectionFactoryConfiguration) configuration).getDataSource();
