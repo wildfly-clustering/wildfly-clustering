@@ -18,6 +18,7 @@ import org.wildfly.clustering.marshalling.Marshaller;
  * @author Paul Ferraro
  */
 public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
+	/** Marshals session identifier as a ISO 8859 encoded string */
 	ISO_LATIN_1() {
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
@@ -39,9 +40,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 			return true;
 		}
 	},
-	/**
-	 * Specific optimization for Base64-encoded identifiers (e.g. Undertow).
-	 */
+	/** Marshals session identifier as a Base64-decoded string */
 	BASE64() {
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
@@ -53,9 +52,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 			return Base64.getUrlDecoder().decode(ISO_LATIN_1.write(value));
 		}
 	},
-	/**
-	 * Specific optimization for hex-encoded identifiers (e.g. Tomcat).
-	 */
+	/** Marshals session identifier as an upper case hex-decoded string */
 	HEX_UPPER() {
 		private final Marshaller<String, ByteBuffer> marshaller = new HexMarshaller(HexFormat.of().withUpperCase());
 
@@ -69,9 +66,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 			return this.marshaller.write(value);
 		}
 	},
-	/**
-	 * Specific optimization for hex-encoded identifiers (e.g. Tomcat).
-	 */
+	/** Marshals session identifier as a lower case hex-decoded string */
 	HEX_LOWER() {
 		private final Marshaller<String, ByteBuffer> marshaller = new HexMarshaller(HexFormat.of().withLowerCase());
 

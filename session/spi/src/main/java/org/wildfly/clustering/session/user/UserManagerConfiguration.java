@@ -16,6 +16,15 @@ import org.wildfly.clustering.server.manager.ManagerConfiguration;
  * @param <T> the transient context type
  */
 public interface UserManagerConfiguration<T> extends ManagerConfiguration<String> {
+	/**
+	 * Returns the marshaller used to marshal the persistent user context.
+	 * @return the marshaller used to marshal the persistent user context.
+	 */
 	ByteBufferMarshaller getMarshaller();
+
+	/**
+	 * Returns a factory for creating the transient context of a user.
+	 * @return a factory for creating the transient context of a user.
+	 */
 	Supplier<T> getTransientContextFactory();
 }

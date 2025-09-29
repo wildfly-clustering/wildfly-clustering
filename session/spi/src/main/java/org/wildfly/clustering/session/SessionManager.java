@@ -10,6 +10,7 @@ import java.util.concurrent.CompletionStage;
 import org.wildfly.clustering.server.manager.Manager;
 
 /**
+ * Manager of the sessions of an application.
  * @author Paul Ferraro
  * @param <C> the session context type
  */

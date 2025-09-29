@@ -8,6 +8,7 @@ package org.wildfly.clustering.session;
 import java.util.Set;
 
 /**
+ * Encapsulates the statistics provided by a session manager.
  * @author Paul Ferraro
  */
 public interface SessionStatistics {
@@ -25,7 +26,8 @@ public interface SessionStatistics {
 	Set<String> getSessions();
 
 	/**
-	 * @return The number of active sessions
+	 * Returns the number of active sessions.
+	 * @return the number of active sessions.
 	 */
 	default long getActiveSessionCount() {
 		return this.getActiveSessions().size();
