@@ -18,7 +18,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * ProtoStream marshaller for a {@link SimpleExpirationMetaData}.
  * @author Paul Ferraro
  */
-public class SimpleExpirationMetaDataMarshaller implements ProtoStreamMarshaller<SimpleExpirationMetaData> {
+public enum SimpleExpirationMetaDataMarshaller implements ProtoStreamMarshaller<SimpleExpirationMetaData> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int TIMEOUT_INDEX = 1;
 	private static final int LAST_ACCESS_TIME_INDEX = 2;

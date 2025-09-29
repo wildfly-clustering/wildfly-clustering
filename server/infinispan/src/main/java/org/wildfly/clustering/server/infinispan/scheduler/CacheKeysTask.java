@@ -25,17 +25,39 @@ public class CacheKeysTask<K, V> implements Consumer<CacheStreamFilter<K>> {
 	private final Predicate<? super K> filter;
 	private final Consumer<K> task;
 
-	public static <I, K extends Key<I>, V, M> CacheKeysTask<K, V> schedule(Cache<K, V> cache, Predicate<? super K> filter, Scheduler<I, M> scheduler) {
+	/**
+	 * Creates a schedule task for keys matching the specified filter.
+	 * @param <I> the scheduled object identifier type
+	 * @param <K> the cache entry key type
+	 * @param <V> the cache entry value type
+	 * @param <M> the scheduled object metadata type
+	 * @param cache an embedded cache
+	 * @param filter a cache key filter
+	 * @param scheduler a scheduler
+	 * @return a schedule task for keys matching the specified filter.
+	 */
+	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<K>> schedule(Cache<K, V> cache, Predicate<? super K> filter, Scheduler<I, M> scheduler) {
 		org.wildfly.clustering.function.Consumer<I> schedule = scheduler::schedule;
 		return new CacheKeysTask<>(cache, filter, schedule.compose(Key::getId));
 	}
 
-	public static <I, K extends Key<I>, V, M> CacheKeysTask<K, V> cancel(Cache<K, V> cache, Predicate<? super K> filter, Scheduler<I, M> scheduler) {
+	/**
+	 * Creates a schedule task for keys matching the specified filter.
+	 * @param <I> the scheduled object identifier type
+	 * @param <K> the cache entry key type
+	 * @param <V> the cache entry value type
+	 * @param <M> the scheduled object metadata type
+	 * @param cache an embedded cache
+	 * @param filter a cache key filter
+	 * @param scheduler a scheduler
+	 * @return a schedule task for keys matching the specified filter.
+	 */
+	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<K>> cancel(Cache<K, V> cache, Predicate<? super K> filter, Scheduler<I, M> scheduler) {
 		org.wildfly.clustering.function.Consumer<I> cancel = scheduler::cancel;
 		return new CacheKeysTask<>(cache, filter, cancel.compose(Key::getId));
 	}
 
-	public CacheKeysTask(Cache<K, V> cache, Predicate<? super K> filter, Consumer<K> task) {
+	CacheKeysTask(Cache<K, V> cache, Predicate<? super K> filter, Consumer<K> task) {
 		this.cache = cache;
 		this.filter = filter;
 		this.task = task;

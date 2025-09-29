@@ -10,6 +10,7 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 
 /**
+ * A service provider registrar associated with a cache container group.
  * @author Paul Ferraro
  * @param <T> the service type
  */

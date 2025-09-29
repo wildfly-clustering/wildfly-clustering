@@ -14,16 +14,25 @@ import org.wildfly.clustering.server.group.AbstractGroupMember;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 
 /**
+ * A group member of an Infinispan cache container.
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerGroupMember extends AbstractGroupMember<Address> implements CacheContainerGroupMember {
 
 	private final JGroupsAddress address;
 
+	/**
+	 * Creates a cache container-based group member.
+	 * @param address the Infinispan address of the group member
+	 */
 	public EmbeddedCacheManagerGroupMember(Address address) {
 		this((JGroupsAddress) address);
 	}
 
+	/**
+	 * Creates a cache container-based group member.
+	 * @param address the Infinispan address of the group member
+	 */
 	public EmbeddedCacheManagerGroupMember(JGroupsAddress address) {
 		this.address = address;
 	}

@@ -13,6 +13,7 @@ import org.wildfly.clustering.server.local.LocalGroupMember;
 import org.wildfly.clustering.server.local.dispatcher.LocalCommandDispatcherFactory;
 
 /**
+ * Encapsulates the configuration of a command dispatcher factory associated with a non-clustered cache container.
  * @author Paul Ferraro
  */
 public interface LocalEmbeddedCacheManagerCommandDispatcherFactoryConfiguration extends LocalEmbeddedCacheManagerGroupConfiguration, EmbeddedCacheManagerCommandDispatcherFactoryConfiguration<String, LocalGroupMember> {

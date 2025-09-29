@@ -11,7 +11,7 @@ import java.time.Instant;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 
 /**
- * Simple {@link ExpirationMetaData} implementation.
+ * A cached {@link ExpirationMetaData} implementation.
  * @author Paul Ferraro
  */
 public class SimpleExpirationMetaData implements ExpirationMetaData {
@@ -19,6 +19,10 @@ public class SimpleExpirationMetaData implements ExpirationMetaData {
 	private final Duration timeout;
 	private final Instant lastAccessTime;
 
+	/**
+	 * Creates a cached expiration meta data.
+	 * @param metaData expiration metadata
+	 */
 	public SimpleExpirationMetaData(ExpirationMetaData metaData) {
 		this(metaData.getTimeout(), metaData.getLastAccessTime());
 	}

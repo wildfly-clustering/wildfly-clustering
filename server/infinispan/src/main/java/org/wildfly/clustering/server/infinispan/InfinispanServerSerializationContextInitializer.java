@@ -18,6 +18,11 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class InfinispanServerSerializationContextInitializer extends AbstractSerializationContextInitializer {
+	/**
+	 * Creates a serialization context initializer.
+	 */
+	public InfinispanServerSerializationContextInitializer() {
+	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {

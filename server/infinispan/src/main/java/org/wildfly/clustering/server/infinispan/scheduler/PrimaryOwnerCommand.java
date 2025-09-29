@@ -15,6 +15,9 @@ import org.wildfly.clustering.server.dispatcher.Command;
  * @param <R> the command return type
  */
 public interface PrimaryOwnerCommand<I, M, R> extends Command<R, Scheduler<I, M>, RuntimeException> {
-
+	/**
+	 * Returns the identifier of a scheduled item.
+	 * @return the identifier of a scheduled item.
+	 */
 	I getId();
 }

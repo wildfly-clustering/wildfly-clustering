@@ -60,6 +60,12 @@ public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRe
 	private final Consumer<CacheStreamFilter<CE>> cancelTask;
 	private final BlockingManager blocking;
 
+	/**
+	 * Creates the topology change listener for a scheduler.
+	 * @param cache an embedded cache
+	 * @param scheduleTask a schedule task
+	 * @param cancelTask a cancel task
+	 */
 	public SchedulerTopologyChangeListener(Cache<K, V> cache, Consumer<CacheStreamFilter<SE>> scheduleTask, Consumer<CacheStreamFilter<CE>> cancelTask) {
 		this.cache = cache;
 		this.scheduleTask = scheduleTask;
@@ -84,6 +90,11 @@ public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRe
 		};
 	}
 
+	/**
+	 * Handler for topology changed events.
+	 * @param event a topology changed event
+	 * @return a completion stage
+	 */
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<K, V> event) {
 		Cache<K, V> cache = event.getCache();

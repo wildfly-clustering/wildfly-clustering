@@ -13,13 +13,19 @@ import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.group.AbstractGroupMember;
 
 /**
+ * A group member of a local cache container-based group.
  * @author Paul Ferraro
  */
 public class LocalEmbeddedCacheManagerGroupMember extends AbstractGroupMember<Address> implements CacheContainerGroupMember, Serializable {
 	private static final long serialVersionUID = -8987757972156115087L;
 
+	/** The group name */
 	private final String name;
 
+	/**
+	 * Creates a group member for a local cache container
+	 * @param name the group member name
+	 */
 	public LocalEmbeddedCacheManagerGroupMember(String name) {
 		this.name = name;
 	}

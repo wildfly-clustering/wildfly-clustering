@@ -27,17 +27,39 @@ public class CacheEntriesTask<K, V> implements Consumer<CacheStreamFilter<Map.En
 	private final Predicate<Map.Entry<? super K, ? super V>> filter;
 	private final Consumer<Map.Entry<K, V>> task;
 
-	public static <I, K extends Key<I>, V, M> CacheEntriesTask<K, V> schedule(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<I, K, V, M> scheduler) {
+	/**
+	 * Creates a task that schedules entries matching the specified filter.
+	 * @param <I> the cache key identifier type
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @param <M> the group member type
+	 * @param cache an embedded cache
+	 * @param filter a cache entry filter
+	 * @param scheduler the target scheduler
+	 * @return a task that schedules entries matching the specified filter.
+	 */
+	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> schedule(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<I, K, V, M> scheduler) {
 		return new CacheEntriesTask<>(cache, filter, scheduler::schedule);
 	}
 
-	public static <I, K extends Key<I>, V, M> CacheEntriesTask<K, V> cancel(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<I, K, V, M> scheduler) {
+	/**
+	 * Creates a task that cancels entries matching the specified filter.
+	 * @param <I> the cache key identifier type
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @param <M> the group member type
+	 * @param cache an embedded cache
+	 * @param filter a cache entry filter
+	 * @param scheduler the target scheduler
+	 * @return a task that cancels entries matching the specified filter.
+	 */
+	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> cancel(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<I, K, V, M> scheduler) {
 		org.wildfly.clustering.function.Consumer<I> cancel = scheduler::cancel;
 		Function<Map.Entry<K, V>, K> key = Map.Entry::getKey;
 		return new CacheEntriesTask<>(cache, filter, cancel.compose(key.andThen(Key::getId)));
 	}
 
-	public CacheEntriesTask(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, Consumer<Map.Entry<K, V>> task) {
+	CacheEntriesTask(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, Consumer<Map.Entry<K, V>> task) {
 		this.cache = cache;
 		this.filter = filter;
 		this.task = task;

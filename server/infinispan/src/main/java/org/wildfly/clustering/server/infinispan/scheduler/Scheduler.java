@@ -42,15 +42,35 @@ public interface Scheduler<I, M> extends org.wildfly.clustering.server.scheduler
 		return new ReferenceScheduler<>(reference);
 	}
 
+	/**
+	 * An inactive scheduler.
+	 * @param <I> the scheduled entry identifier type
+	 * @param <M> the scheduled entry metadata type
+	 */
 	class InactiveScheduler<I, M> extends org.wildfly.clustering.server.scheduler.Scheduler.InactiveScheduler<I, M> implements Scheduler<I, M> {
+		/**
+		 * Creates an inactive scheduler.
+		 */
+		InactiveScheduler() {
+		}
+
 		@Override
 		public void schedule(I id) {
 		}
 	}
 
+	/**
+	 * A scheduler decorator.
+	 * @param <I> the scheduled entry identifier type
+	 * @param <M> the scheduled entry metadata type
+	 */
 	class ReferenceScheduler<I, M> extends org.wildfly.clustering.server.scheduler.Scheduler.ReferenceScheduler<I, M> implements Scheduler<I, M> {
 		private final Supplier<? extends Scheduler<I, M>> reference;
 
+		/**
+		 * Creates a scheduler decorator.
+		 * @param reference a scheduler reference
+		 */
 		ReferenceScheduler(Supplier<? extends Scheduler<I, M>> reference) {
 			super(reference);
 			this.reference = reference;

@@ -27,6 +27,10 @@ public class EmbeddedCacheManagerCommandDispatcherFactory<A extends Comparable<A
 	private final Function<M, CacheContainerGroupMember> wrapper;
 	private final Function<CacheContainerGroupMember, M> unwrapper;
 
+	/**
+	 * Creates a command dispatcher factory using the specified configuration
+	 * @param configuration the configuration of the command dispatcher factory
+	 */
 	public EmbeddedCacheManagerCommandDispatcherFactory(EmbeddedCacheManagerCommandDispatcherFactoryConfiguration<A, M> configuration) {
 		this.dispatcherFactory = configuration.getCommandDispatcherFactory();
 		this.group = new EmbeddedCacheManagerGroup<>(configuration);

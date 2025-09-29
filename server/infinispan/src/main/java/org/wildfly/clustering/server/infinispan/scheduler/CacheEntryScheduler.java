@@ -51,13 +51,32 @@ public interface CacheEntryScheduler<I, K extends Key<I>, V, M> extends Schedule
 		return new ReferenceCacheEntryScheduler<>(reference);
 	}
 
+	/**
+	 * An inactive cache entry scheduler.
+	 * @param <I> the scheduled item identifier type
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @param <M> the scheduled item metadata type
+	 */
 	class InactiveCacheEntryScheduler<I, K extends Key<I>, V, M> extends Scheduler.InactiveScheduler<I, M> implements CacheEntryScheduler<I, K, V, M> {
+		/**
+		 * Creates an inactive cache entry scheduler.
+		 */
+		InactiveCacheEntryScheduler() {
+		}
 
 		@Override
 		public void schedule(Map.Entry<K, V> entry) {
 		}
 	}
 
+	/**
+	 * A cache entry scheduler decorator.
+	 * @param <I> the scheduled item identifier type
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @param <M> the scheduled item metadata type
+	 */
 	class ReferenceCacheEntryScheduler<I, K extends Key<I>, V, M> extends Scheduler.ReferenceScheduler<I, M> implements CacheEntryScheduler<I, K, V, M> {
 		private final Supplier<? extends CacheEntryScheduler<I, K, V, M>> reference;
 

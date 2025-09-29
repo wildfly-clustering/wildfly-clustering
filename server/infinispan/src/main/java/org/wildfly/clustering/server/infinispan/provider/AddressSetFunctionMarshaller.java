@@ -33,6 +33,11 @@ public class AddressSetFunctionMarshaller<F extends CollectionFunction<Address, 
 	private final Class<? extends F> targetClass;
 	private final Function<Collection<Address>, F> factory;
 
+	/**
+	 * Creates an address set function of the specified implementation type
+	 * @param targetClass the function implementation type
+	 * @param factory the function factory
+	 */
 	public AddressSetFunctionMarshaller(Class<? extends F> targetClass, Function<Collection<Address>, F> factory) {
 		this.targetClass = targetClass;
 		this.factory = factory;

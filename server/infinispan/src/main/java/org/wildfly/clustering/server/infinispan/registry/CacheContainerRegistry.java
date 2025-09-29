@@ -10,6 +10,7 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 
 /**
+ * A registry associated with a cache container group.
  * @author Paul Ferraro
  * @param <K> the registry key type
  * @param <V> the registry value type

@@ -26,6 +26,11 @@ public class AffinityIdentifierFactoryService<I> implements IdentifierFactorySer
 	private final KeyAffinityService<? extends Key<I>> affinity;
 	private final Address localAddress;
 
+	/**
+	 * Creates an affinity identifier factory service.
+	 * @param factory the decorated identifier factory
+	 * @param cache the cache of the associated key affinity service.
+	 */
 	public AffinityIdentifierFactoryService(Supplier<I> factory, Cache<? extends Key<I>, ?> cache) {
 		this.factory = factory;
 		this.affinity = KeyAffinityServiceFactory.INSTANCE.createService(cache, this);

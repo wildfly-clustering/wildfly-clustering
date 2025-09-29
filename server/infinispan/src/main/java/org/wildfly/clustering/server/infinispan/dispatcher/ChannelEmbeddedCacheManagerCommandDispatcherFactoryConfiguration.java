@@ -15,6 +15,7 @@ import org.wildfly.clustering.server.infinispan.ChannelEmbeddedCacheManagerGroup
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 
 /**
+ * Encapsulates the configuration of a command dispatcher factory associated with a clustered cache container.
  * @author Paul Ferraro
  */
 public interface ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration extends ChannelEmbeddedCacheManagerGroupConfiguration, EmbeddedCacheManagerCommandDispatcherFactoryConfiguration<org.jgroups.Address, ChannelGroupMember> {

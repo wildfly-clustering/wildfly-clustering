@@ -19,8 +19,15 @@ import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupConfigu
  * @author Paul Ferraro
  */
 public interface EmbeddedCacheManagerCommandDispatcherFactoryConfiguration<A extends Comparable<A>, M extends GroupMember<A>> extends EmbeddedCacheManagerGroupConfiguration<A, M> {
-
+	/**
+	 * Returns the decorated command dispatcher factory
+	 * @return the decorated command dispatcher factory
+	 */
 	GroupCommandDispatcherFactory<A, M> getCommandDispatcherFactory();
 
+	/**
+	 * Returns a function that converts an Infinispan address to the identifier expected by the decorated command dispatcher factory.
+	 * @return a function that converts an Infinispan address to the identifier expected by the decorated command dispatcher factory.
+	 */
 	Function<Address, A> getAddressUnwrapper();
 }

@@ -37,6 +37,10 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 	private final CheckedFunction<I, CompletionStage<Void>> primaryOwnerCancel;
 	private final CheckedFunction<I, CompletionStage<Boolean>> primaryOwnerContains;
 
+	/**
+	 * Creates a primary owner scheduler from the specified configuration.
+	 * @param configuration the configuration of a primary owner scheduler
+	 */
 	@SuppressWarnings("removal")
 	public PrimaryOwnerScheduler(PrimaryOwnerSchedulerConfiguration<I, M> configuration) {
 		this.name = configuration.getName();

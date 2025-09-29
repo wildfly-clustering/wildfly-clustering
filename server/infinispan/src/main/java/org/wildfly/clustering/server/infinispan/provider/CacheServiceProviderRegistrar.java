@@ -66,6 +66,10 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	private final CacheContainerGroup group;
 	private final Executor executor;
 
+	/**
+	 * Creates a service provider registrar using the specified configuration
+	 * @param config a service provider registrar configuration
+	 */
 	public CacheServiceProviderRegistrar(CacheServiceProviderRegistrarConfiguration config) {
 		this.group = config.getGroup();
 		this.cache = config.getWriteOnlyCache();
@@ -178,6 +182,11 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		return addresses.stream().map(this.group.getGroupMemberFactory()::createGroupMember).filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
 	}
 
+	/**
+	 * Non-blocking handler of topology changed events.
+	 * @param event a topology changed event
+	 * @return a completion stage
+	 */
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<T, Set<Address>> event) {
 		// A singleton group does not care about topology changes
@@ -228,11 +237,21 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		return CompletableFuture.completedStage(null);
 	}
 
+	/**
+	 * Non-blocking handler of cache entry creation events.
+	 * @param event a cache entry creation event
+	 * @return a completion stage
+	 */
 	@CacheEntryCreated
 	public CompletionStage<Void> created(CacheEntryCreatedEvent<T, Set<Address>> event) {
 		return this.updated(event.getKey(), Set.of(), event.getValue());
 	}
 
+	/**
+	 * Non-blocking handler of cache entry modified events.
+	 * @param event a cache entry modified event
+	 * @return a completion stage
+	 */
 	@CacheEntryModified
 	public CompletionStage<Void> modified(CacheEntryModifiedEvent<T, Set<Address>> event) {
 		return !Objects.equals(event.getOldValue(), event.getNewValue()) ? this.updated(event.getKey(), event.getOldValue(), event.getNewValue()) : CompletableFuture.completedFuture(null);

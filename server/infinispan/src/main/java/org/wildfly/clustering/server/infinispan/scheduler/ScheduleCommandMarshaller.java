@@ -14,34 +14,33 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * ProtoStream marshaller for a {@link ScheduleCommand}.
- * @param <I> the scheduled entry identifier type
- * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
-public class ScheduleCommandMarshaller<I, M> implements ProtoStreamMarshaller<ScheduleCommand<I, M>> {
+public enum ScheduleCommandMarshaller implements ProtoStreamMarshaller<ScheduleCommand<Object, Object>> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final byte ID_INDEX = 1;
 	private static final byte META_DATA_INDEX = 2;
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends ScheduleCommand<I, M>> getJavaClass() {
-		return (Class<ScheduleCommand<I, M>>) (Class<?>) ScheduleCommand.class;
+	public Class<? extends ScheduleCommand<Object, Object>> getJavaClass() {
+		return (Class<ScheduleCommand<Object, Object>>) (Class<?>) ScheduleCommand.class;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public ScheduleCommand<I, M> readFrom(ProtoStreamReader reader) throws IOException {
-		I id = null;
-		M metaData = null;
+	public ScheduleCommand<Object, Object> readFrom(ProtoStreamReader reader) throws IOException {
+		Object id = null;
+		Object metaData = null;
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
 				case ID_INDEX -> {
-					id = (I) reader.readAny();
+					id = reader.readAny();
 				}
 				case META_DATA_INDEX -> {
-					metaData = (M) reader.readAny();
+					metaData = reader.readAny();
 				}
 				default -> reader.skipField(tag);
 			}
@@ -50,12 +49,12 @@ public class ScheduleCommandMarshaller<I, M> implements ProtoStreamMarshaller<Sc
 	}
 
 	@Override
-	public void writeTo(ProtoStreamWriter writer, ScheduleCommand<I, M> command) throws IOException {
-		I id = command.getId();
+	public void writeTo(ProtoStreamWriter writer, ScheduleCommand<Object, Object> command) throws IOException {
+		Object id = command.getId();
 		if (id != null) {
 			writer.writeAny(ID_INDEX, id);
 		}
-		M metaData = command.getMetaData();
+		Object metaData = command.getMetaData();
 		if (metaData != null) {
 			writer.writeAny(META_DATA_INDEX, metaData);
 		}

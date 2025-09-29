@@ -17,8 +17,14 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 @MetaInfServices(SerializationContextInitializer.class)
 public class ExpirationSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a serialization context initializer.
+	 */
+	public ExpirationSerializationContextInitializer() {
+	}
+
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new SimpleExpirationMetaDataMarshaller());
+		context.registerMarshaller(SimpleExpirationMetaDataMarshaller.INSTANCE);
 	}
 }

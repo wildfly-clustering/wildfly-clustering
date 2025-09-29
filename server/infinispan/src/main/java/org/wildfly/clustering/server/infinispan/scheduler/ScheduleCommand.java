@@ -15,15 +15,28 @@ public class ScheduleCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Voi
 
 	private final M metaData;
 
+	/**
+	 * Creates a schedule command for a scheduled entry with the specified identifier
+	 * @param id a scheduler entry identifier
+	 */
 	ScheduleCommand(I id) {
 		this(id, null);
 	}
 
+	/**
+	 * Creates a schedule command for a scheduled entry with the specified identifier with the specified metadata
+	 * @param id a scheduler entry identifier
+	 * @param metaData the schedule entry metadata
+	 */
 	ScheduleCommand(I id, M metaData) {
 		super(id);
 		this.metaData = metaData;
 	}
 
+	/**
+	 * Returns the metadata associated with this metadata.
+	 * @return the metadata associated with this metadata.
+	 */
 	protected M getMetaData() {
 		return this.metaData;
 	}

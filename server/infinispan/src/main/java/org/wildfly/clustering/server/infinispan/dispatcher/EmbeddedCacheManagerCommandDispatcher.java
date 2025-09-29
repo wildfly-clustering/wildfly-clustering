@@ -29,6 +29,12 @@ public class EmbeddedCacheManagerCommandDispatcher<A extends Comparable<A>, M ex
 	private final Function<CacheContainerGroupMember, M> unwrapper;
 	private final Function<M, CacheContainerGroupMember> wrapper;
 
+	/**
+	 * Creates a command dispatcher decorator.
+	 * @param dispatcher the decorated command dispatcher
+	 * @param unwrapper a function that converts a cache container group member to the member type expected by the decorated command dispatcher
+	 * @param wrapper a function that converts a cache container group member from the member type expected by the decorated command dispatcher
+	 */
 	public EmbeddedCacheManagerCommandDispatcher(CommandDispatcher<M, C> dispatcher, Function<CacheContainerGroupMember, M> unwrapper, Function<M, CacheContainerGroupMember> wrapper) {
 		this.dispatcher = dispatcher;
 		this.wrapper = wrapper;

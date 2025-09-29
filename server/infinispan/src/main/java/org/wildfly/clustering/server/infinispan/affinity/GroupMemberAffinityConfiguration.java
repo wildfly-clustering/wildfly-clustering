@@ -15,8 +15,15 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
  * @author Paul Ferraro
  */
 public interface GroupMemberAffinityConfiguration<I> {
-
+	/**
+	 * Returns the cache associated with the group.
+	 * @return the cache associated with the group.
+	 */
 	Cache<? extends Key<I>, ?> getCache();
 
+	/**
+	 * Returns the associated cache container group.
+	 * @return the associated cache container group.
+	 */
 	CacheContainerGroup getGroup();
 }

@@ -20,18 +20,41 @@ import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommand
  * @author Paul Ferraro
  */
 public interface PrimaryOwnerSchedulerConfiguration<I, M> {
-
+	/**
+	 * Returns the name of the primary owner scheduler.
+	 * @return the name of the primary owner scheduler.
+	 */
 	String getName();
 
+	/**
+	 * Returns the command dispatcher factory for this scheduler.
+	 * @return the command dispatcher factory for this scheduler.
+	 */
 	CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
 
+	/**
+	 * Returns the delegated scheduler.
+	 * @return the delegated scheduler.
+	 */
 	Scheduler<I, M> getScheduler();
 
+	/**
+	 * Returns the affinity function.
+	 * @return the affinity function.
+	 */
 	Function<I, CacheContainerGroupMember> getAffinity();
 
+	/**
+	 * Returns the factory for creating a scheduler command.
+	 * @return the factory for creating a scheduler command.
+	 */
 	default BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory() {
 		return ScheduleWithTransientMetaDataCommand::new;
 	}
 
+	/**
+	 * Returns the retry configuration.
+	 * @return the retry configuration.
+	 */
 	RetryConfig getRetryConfig();
 }

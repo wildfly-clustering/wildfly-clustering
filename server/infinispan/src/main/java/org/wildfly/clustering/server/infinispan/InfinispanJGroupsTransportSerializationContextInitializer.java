@@ -19,7 +19,9 @@ import org.wildfly.clustering.server.jgroups.AddressMarshaller;
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class InfinispanJGroupsTransportSerializationContextInitializer extends AbstractSerializationContextInitializer {
-
+	/**
+	 * Creates a serialization context initializer.
+	 */
 	public InfinispanJGroupsTransportSerializationContextInitializer() {
 		super(JGroupsAddress.class.getPackage());
 	}

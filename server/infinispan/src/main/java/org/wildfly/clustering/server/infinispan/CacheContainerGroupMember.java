@@ -9,6 +9,7 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.server.group.GroupMember;
 
 /**
+ * A cache container-based group member.
  * @author Paul Ferraro
  */
 public interface CacheContainerGroupMember extends GroupMember<Address> {

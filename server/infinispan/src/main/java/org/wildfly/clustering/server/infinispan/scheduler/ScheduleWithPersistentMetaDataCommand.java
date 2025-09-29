@@ -12,7 +12,11 @@ package org.wildfly.clustering.server.infinispan.scheduler;
  * @author Paul Ferraro
  */
 public class ScheduleWithPersistentMetaDataCommand<I, M> extends ScheduleCommand<I, M> {
-
+	/**
+	 * Creates a schedule command for a cache entry.
+	 * @param id the identifier of a cache entry
+	 * @param metaData the cache entry metadata
+	 */
 	public ScheduleWithPersistentMetaDataCommand(I id, M metaData) {
 		super(id, metaData);
 	}

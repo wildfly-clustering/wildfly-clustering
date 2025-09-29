@@ -78,6 +78,12 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		}
 	};
 
+	/**
+	 * Creates a cache registry using the specified configuration and local entry.
+	 * @param config a registry configuration
+	 * @param entry the local group member entry
+	 * @param closeTask a task to run on registry close
+	 */
 	public CacheRegistry(CacheRegistryConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
 		this.cache = config.getWriteOnlyCache();
 		this.batchFactory = config.getBatchFactory();
@@ -158,6 +164,11 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		return this.cache.get(member.getId());
 	}
 
+	/**
+	 * Non-blocking handler of topology changed events.
+	 * @param event a topology changed event.
+	 * @return a completion stage
+	 */
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<Address, Map.Entry<K, V>> event) {
 		ConsistentHash previousHash = event.getWriteConsistentHashAtStart();
@@ -227,6 +238,11 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		return CompletableFuture.completedStage(null);
 	}
 
+	/**
+	 * Non-blocking handler of cache entry creation/modified events.
+	 * @param event a cache entry event.
+	 * @return a completion stage
+	 */
 	@CacheEntryCreated
 	@CacheEntryModified
 	public CompletionStage<Void> event(CacheEntryEvent<Address, Map.Entry<K, V>> event) {
@@ -239,6 +255,11 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		return CompletableFuture.completedStage(null);
 	}
 
+	/**
+	 * Non-blocking handler of cache entry removal events.
+	 * @param event a cache entry removal event.
+	 * @return a completion stage
+	 */
 	@CacheEntryRemoved
 	public CompletionStage<Void> removed(CacheEntryRemovedEvent<Address, Map.Entry<K, V>> event) {
 		if (!event.isOriginLocal()) {
