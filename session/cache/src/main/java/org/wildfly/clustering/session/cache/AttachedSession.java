@@ -21,7 +21,7 @@ import org.wildfly.clustering.session.SessionMetaData;
 public class AttachedSession<C> extends DecoratedSession<C> {
 	private final Consumer<ImmutableSession> closeTask;
 
-	public AttachedSession(Session<C> session, Consumer<ImmutableSession> closeTask) {
+	AttachedSession(Session<C> session, Consumer<ImmutableSession> closeTask) {
 		super(Supplier.of(session));
 		this.closeTask = closeTask;
 	}

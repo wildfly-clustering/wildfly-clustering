@@ -32,7 +32,7 @@ public class DetachedSessionTestCase {
 	private final String id = UUID.randomUUID().toString();
 	private final Object localContext = new Object();
 
-	private final Session<Object> session = new DetachedSession<>(this.manager, this.id, this.localContext);
+	private final Session<Object> session = new DetachedSession<>(Supplier.of(this.manager), this.id, this.localContext);
 
 	@Test
 	public void getId() {

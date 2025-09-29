@@ -14,6 +14,7 @@ import io.github.resilience4j.retry.RetryConfig;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
+import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
@@ -23,8 +24,6 @@ import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
-import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactoryService;
@@ -39,12 +38,14 @@ import org.wildfly.clustering.server.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.cache.CachedSessionManager;
 import org.wildfly.clustering.session.cache.CompositeSessionFactory;
+import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.IdentityMarshallerSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
@@ -70,7 +71,7 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
  */
 public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC> {
 	private final Scheduler<String, ExpirationMetaData> scheduler;
-	private final SessionFactory<C, ContextualSessionMetaDataEntry<SC>, ?, SC> factory;
+	private final SessionFactory<C, ContextualSessionMetaDataEntry<SC>, Object, SC> factory;
 	private final Consumer<CacheStreamFilter<Map.Entry<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>>>> scheduleTask;
 	private final ListenerRegistration schedulerListenerRegistration;
 	private final EmbeddedCacheConfiguration configuration;
@@ -81,7 +82,9 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		SessionAttributeActivationNotifierFactory<S, C, L, SC> notifierFactory = new SessionAttributeActivationNotifierFactory<>(sessionProvider, listenerProvider);
 		CacheProperties properties = infinispan.getCacheProperties();
 		SessionMetaDataFactory<ContextualSessionMetaDataEntry<SC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(infinispan);
-		this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, notifierFactory, infinispan), properties, configuration.getSessionContextFactory());
+		@SuppressWarnings("unchecked")
+		SessionAttributesFactory<C, Object> attributesFactory = (SessionAttributesFactory<C, Object>) this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, notifierFactory, infinispan);
+		this.factory = (SessionFactory<C, ContextualSessionMetaDataEntry<SC>, Object, SC>) new CompositeSessionFactory<>(metaDataFactory, attributesFactory, properties, configuration.getSessionContextFactory());
 		ExpiredSessionRemover<C, ?, ?, SC> remover = new ExpiredSessionRemover<>(this.factory);
 		this.managerRegistrarFactory = new Function<>() {
 			@Override
@@ -120,8 +123,8 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public java.util.function.Function<String, CacheContainerGroupMember> getAffinity() {
-				return new UnaryGroupMemberAffinity<>(cache, group);
+			public Cache<? extends Key<String>, ?> getCache() {
+				return cache;
 			}
 
 			@Override
@@ -142,37 +145,71 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 
 	@Override
 	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<C> configuration) {
-		IdentifierFactoryService<String> identifierFactory = new AffinityIdentifierFactoryService<>(configuration.getIdentifierFactory(), this.configuration.getCache());
+		EmbeddedCacheConfiguration cacheConfiguration = this.configuration;
+		SessionFactory<C, ContextualSessionMetaDataEntry<SC>, Object, SC> sessionFactory = this.factory;
+		IdentifierFactoryService<String> identifierFactory = new AffinityIdentifierFactoryService<>(configuration.getIdentifierFactory(), cacheConfiguration.getCache());
 		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
-		Runnable startTask = () -> this.scheduleTask.accept(CacheStreamFilter.local(this.configuration.getCache()));
-		InfinispanSessionManagerConfiguration<SC> infinispanConfiguration = new InfinispanSessionManagerConfiguration<>() {
-			@Override
-			public Scheduler<String, ExpirationMetaData> getExpirationScheduler() {
-				return InfinispanSessionManagerFactory.this.scheduler;
-			}
-
-			@Override
-			public Runnable getStartTask() {
-				return startTask;
-			}
-
-			@Override
-			public Registrar<SessionManager<SC>> getRegistrar() {
-				return registrar;
-			}
-
-			@Override
-			public <K, V> Cache<K, V> getCache() {
-				return InfinispanSessionManagerFactory.this.configuration.getCache();
-			}
-
+		Scheduler<String, ExpirationMetaData> scheduler = this.scheduler;
+		Runnable startTask = () -> this.scheduleTask.accept(CacheStreamFilter.local(cacheConfiguration.getCache()));
+		AtomicReference<SessionManager<SC>> reference = new AtomicReference<>();
+		BiFunction<String, SC, Session<SC>> detachedSessionFactory = (id, context) -> new DetachedSession<>(reference::getPlain, id, context);
+		SessionManager<SC> manager = new CachedSessionManager<>(new InfinispanSessionManager<>(new InfinispanSessionManager.Configuration<C, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public IdentifierFactoryService<String> getIdentifierFactory() {
 				return identifierFactory;
 			}
+
+			@Override
+			public SessionFactory<C, ContextualSessionMetaDataEntry<SC>, Object, SC> getSessionFactory() {
+				return sessionFactory;
+			}
+
+			@Override
+			public BiFunction<String, SC, Session<SC>> getDetachedSessionFactory() {
+				return detachedSessionFactory;
+			}
+
+			@Override
+			public C getContext() {
+				return configuration.getContext();
+			}
+
+			@Override
+			public Consumer<ImmutableSession> getExpirationListener() {
+				return configuration.getExpirationListener();
+			}
+
+			@Override
+			public Duration getTimeout() {
+				return configuration.getTimeout();
+			}
+
+			@Override
+			public EmbeddedCacheConfiguration getCacheConfiguration() {
+				return cacheConfiguration;
+			}
+
+			@Override
+			public Scheduler<String, ExpirationMetaData> getExpirationScheduler() {
+				return scheduler;
+			}
+		}), CacheStrategy.CONCURRENT) {
+			private final AtomicReference<Registration> registration = new AtomicReference<>();
+
+			@Override
+			public void start() {
+				this.registration.set(registrar.register(this));
+				super.start();
+				startTask.run();
+			}
+
+			@Override
+			public void stop() {
+				try (Registration registration = this.registration.getAndSet(null)) {
+					super.stop();
+				}
+			}
 		};
-		AtomicReference<SessionManager<SC>> reference = new AtomicReference<>();
-		SessionManager<SC> manager = new CachedSessionManager<>(new InfinispanSessionManager<>(reference::getPlain, configuration, infinispanConfiguration, this.factory), CacheStrategy.CONCURRENT);
 		reference.setPlain(manager);
 		return manager;
 	}

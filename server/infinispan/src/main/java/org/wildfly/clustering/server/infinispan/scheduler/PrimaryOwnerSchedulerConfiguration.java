@@ -6,11 +6,11 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import io.github.resilience4j.retry.RetryConfig;
 
-import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
+import org.wildfly.clustering.server.infinispan.affinity.GroupMemberAffinityConfiguration;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 
 /**
@@ -19,7 +19,7 @@ import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommand
  * @param <M> the scheduled entry metadata type
  * @author Paul Ferraro
  */
-public interface PrimaryOwnerSchedulerConfiguration<I, M> {
+public interface PrimaryOwnerSchedulerConfiguration<I, M> extends GroupMemberAffinityConfiguration<I> {
 	/**
 	 * Returns the name of the primary owner scheduler.
 	 * @return the name of the primary owner scheduler.
@@ -32,17 +32,16 @@ public interface PrimaryOwnerSchedulerConfiguration<I, M> {
 	 */
 	CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
 
+	@Override
+	default CacheContainerGroup getGroup() {
+		return this.getCommandDispatcherFactory().getGroup();
+	}
+
 	/**
 	 * Returns the delegated scheduler.
 	 * @return the delegated scheduler.
 	 */
 	Scheduler<I, M> getScheduler();
-
-	/**
-	 * Returns the affinity function.
-	 * @return the affinity function.
-	 */
-	Function<I, CacheContainerGroupMember> getAffinity();
 
 	/**
 	 * Returns the factory for creating a scheduler command.

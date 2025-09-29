@@ -17,11 +17,11 @@ import org.wildfly.clustering.session.SessionManagerConfiguration;
  * @author Paul Ferraro
  * @param <C> the servlet context type
  */
-public class DelegatingSessionManagerConfiguration<C> implements SessionManagerConfiguration<C> {
+public class DecoratedSessionManagerConfiguration<C> implements SessionManagerConfiguration<C> {
 
 	private final SessionManagerConfiguration<C> configuration;
 
-	public DelegatingSessionManagerConfiguration(SessionManagerConfiguration<C> configuration) {
+	public DecoratedSessionManagerConfiguration(SessionManagerConfiguration<C> configuration) {
 		this.configuration = configuration;
 	}
 

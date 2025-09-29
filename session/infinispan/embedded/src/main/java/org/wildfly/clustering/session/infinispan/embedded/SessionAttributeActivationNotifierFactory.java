@@ -14,7 +14,6 @@ import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
@@ -74,7 +73,7 @@ public class SessionAttributeActivationNotifierFactory<S, C, L, SC> implements F
 					for (Map.Entry<C, SessionManager<SC>> entry : contexts.entrySet()) {
 						C context = entry.getKey();
 						SessionManager<SC> manager = entry.getValue();
-						Session<SC> session = new DetachedSession<>(manager, sessionId, null);
+						Session<SC> session = manager.getDetachedSession(sessionId);
 						notifier.apply(listener).accept(sessionProvider.asSession(session, context));
 					}
 				});

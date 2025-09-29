@@ -5,11 +5,9 @@
 package org.wildfly.clustering.session.infinispan.embedded;
 
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.clustering.session.SessionManager;
 
 /**
  * Configuration for an {@link InfinispanSessionManager}.
@@ -19,7 +17,5 @@ import org.wildfly.clustering.session.SessionManager;
 public interface InfinispanSessionManagerConfiguration<SC> extends EmbeddedCacheConfiguration {
 
 	Scheduler<String, ExpirationMetaData> getExpirationScheduler();
-	Runnable getStartTask();
-	Registrar<SessionManager<SC>> getRegistrar();
 	IdentifierFactoryService<String> getIdentifierFactory();
 }

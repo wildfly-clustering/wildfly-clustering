@@ -7,9 +7,7 @@ package org.wildfly.clustering.session.infinispan.remote;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -20,8 +18,6 @@ import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
-import org.wildfly.clustering.server.Registrar;
-import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeSessionFactory;
@@ -45,14 +41,14 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreation
  * @param <SC> the local context type
  */
 @ClientListener
-public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC, SessionMetaDataEntry<SC>, AV, SC> implements Registrar<Consumer<ImmutableSession>> {
+public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC, SessionMetaDataEntry<SC>, AV, SC> {
 	private static final System.Logger LOGGER = System.getLogger(HotRodSessionFactory.class.getName());
 
 	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache;
 	private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory;
 	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
 	private final CacheEntryRemover<String> attributesRemover;
-	private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
+	private final Consumer<ImmutableSession> expirationListener;
 	private final Executor executor;
 
 	/**
@@ -61,12 +57,14 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	 * @param metaDataFactory
 	 * @param attributesFactory
 	 * @param localContextFactory
+	 * @param expirationListener
 	 */
-	public HotRodSessionFactory(RemoteCacheConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> localContextFactory) {
+	public HotRodSessionFactory(RemoteCacheConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> localContextFactory, Consumer<ImmutableSession> expirationListener) {
 		super(metaDataFactory, attributesFactory, config.getCacheProperties(), localContextFactory);
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
 		this.attributesRemover = attributesFactory;
+		this.expirationListener = expirationListener;
 		this.creationMetaDataCache = config.getForceReturnCache();
 		this.executor = config.getExecutor();
 		this.creationMetaDataCache.addClientListener(this);
@@ -84,7 +82,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 		ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = this.metaDataFactory;
 		ImmutableSessionAttributesFactory<AV> attributesFactory = this.attributesFactory;
 		CacheEntryRemover<String> attributesRemover = this.attributesRemover;
-		Collection<Consumer<ImmutableSession>> listeners = this.listeners;
+		Consumer<ImmutableSession> expirationListener = this.expirationListener;
 		String id = event.getKey().getId();
 		Runnable task = new Runnable() {
 			@Override
@@ -104,20 +102,12 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 						Map<String, Object> attributes = attributesFactory.createImmutableSessionAttributes(id, attributesValue);
 						ImmutableSession session = HotRodSessionFactory.this.createImmutableSession(id, metaData, attributes);
 						LOGGER.log(System.Logger.Level.TRACE, "Session {0} has expired.", id);
-						for (Consumer<ImmutableSession> listener : listeners) {
-							listener.accept(session);
-						}
+						expirationListener.accept(session);
 						attributesRemover.remove(id);
 					}
 				}
 			}
 		};
 		this.executor.execute(task);
-	}
-
-	@Override
-	public Registration register(Consumer<ImmutableSession> listener) {
-		this.listeners.add(listener);
-		return () -> this.listeners.remove(listener);
 	}
 }

@@ -4,24 +4,17 @@
  */
 package org.wildfly.clustering.session.infinispan.remote;
 
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.function.Supplier;
-import org.wildfly.clustering.server.Registrar;
-import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
-import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreationMetaDataKey;
 
 /**
@@ -33,32 +26,21 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreation
  * @author Paul Ferraro
  */
 public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
-	private final Registrar<java.util.function.Consumer<ImmutableSession>> expirationListenerRegistrar;
-	private final java.util.function.Consumer<ImmutableSession> expirationListener;
 	private final RemoteCache<Key<String>, ?> cache;
 
-	private AtomicReference<Registration> expirationListenerRegistration = new AtomicReference<>();
+	interface Configuration<C, MV, AV, SC> extends AbstractSessionManager.Configuration<C, MV, AV, SC> {
+		@Override
+		RemoteCacheConfiguration getCacheConfiguration();
 
-	public HotRodSessionManager(Supplier<SessionManager<SC>> manager, SessionManagerConfiguration<C> configuration, SessionFactory<C, MV, AV, SC> factory, HotRodSessionManagerConfiguration hotrod) {
-		super(manager, configuration, hotrod, factory, Consumer.empty());
-		this.expirationListenerRegistrar = hotrod.getExpirationListenerRegistrar();
-		this.expirationListener = configuration.getExpirationListener();
-		this.cache = hotrod.getCache();
+		@Override
+		default java.util.function.Consumer<ImmutableSession> getSessionCloseTask() {
+			return Consumer.empty();
+		}
 	}
 
-	@Override
-	public boolean isStarted() {
-		return this.expirationListenerRegistration.get() != null;
-	}
-
-	@Override
-	public void start() {
-		this.expirationListenerRegistration.set(this.expirationListenerRegistrar.register(this.expirationListener));
-	}
-
-	@Override
-	public void stop() {
-		Optional.ofNullable(this.expirationListenerRegistration.getAndSet(null)).ifPresent(Registration::close);
+	public HotRodSessionManager(Configuration<C, MV, AV, SC> configuration) {
+		super(configuration);
+		this.cache = configuration.getCacheConfiguration().getCache();
 	}
 
 	@Override
