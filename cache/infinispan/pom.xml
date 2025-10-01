@@ -15,7 +15,11 @@
 	<artifactId>wildfly-clustering-cache-infinispan</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Cache: Infinispan: Modules</name>
+	<properties>
+		<project.prefix.cache.infinispan>${project.prefix.cache}: Infinispan</project.prefix.cache.infinispan>
+	</properties>
+
+	<name>${project.prefix.cache.infinispan}: Modules</name>
 
 	<modules>
 		<module>common</module>

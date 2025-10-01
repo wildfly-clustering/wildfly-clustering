@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-session-cache</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Session Management: Cache implementation</name>
+	<name>${project.prefix.session}: Cache</name>
 
 	<dependencies>
 		<dependency>

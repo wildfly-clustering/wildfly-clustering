@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-server-local</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Server: Local implementation</name>
+	<name>${project.prefix.server}: Local implementation</name>
 
 	<dependencies>
 		<dependency>

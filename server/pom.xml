@@ -16,7 +16,11 @@
 	<artifactId>wildfly-clustering-server</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Server: Modules</name>
+	<properties>
+		<project.prefix.server>${project.repository.name}: Server</project.prefix.server>
+	</properties>
+
+	<name>${project.prefix.server}: Modules</name>
 
 	<modules>
 		<module>api</module>

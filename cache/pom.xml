@@ -15,7 +15,11 @@
 	<artifactId>wildfly-clustering-cache</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Cache: Modules</name>
+	<properties>
+		<project.prefix.cache>${project.repository.name}: Cache</project.prefix.cache>
+	</properties>
+
+	<name>${project.prefix.cache}: Modules</name>
 
 	<modules>
 		<module>caffeine</module>

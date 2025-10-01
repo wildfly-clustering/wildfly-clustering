@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-server-infinispan</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Server: Infinispan implementation</name>
+	<name>${project.prefix.server}: Infinispan implementation</name>
 
 	<dependencies>
 		<dependency>
@@ -37,6 +37,11 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-server-jgroups</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-component-annotations</artifactId>
 		</dependency>
 
 		<dependency>

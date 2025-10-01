@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-arquillian</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Arquillian extension</name>
+	<name>${project.repository.name}: Arquillian extension</name>
 
 	<dependencies>
 		<dependency>

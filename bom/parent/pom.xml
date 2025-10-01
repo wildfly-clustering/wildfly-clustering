@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright The WildFly Authors
+	SPDX-License-Identifier: Apache-2.0
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" child.project.url.inherit.append.path="false">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.wildfly.clustering</groupId>
+	<artifactId>wildfly-clustering-parent</artifactId>
+	<version>8.0.0.Beta1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<properties>
+		<jacoco.skip>true</jacoco.skip>
+		<java.util.logging.manager>java.util.logging.LogManager</java.util.logging.manager>
+		<java.runtime.parameters>-Djava.util.logging.manager=${java.util.logging.manager} --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</java.runtime.parameters>
+		<java.compiler.version>17</java.compiler.version>
+		<maven.surefire.parameters>${java.runtime.parameters}</maven.surefire.parameters>
+		<maven.failsafe.parameters>${java.runtime.parameters}</maven.failsafe.parameters>
+		<!-- Sets encoding for compiler/resources plugins -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<project.repository.organization.id>wildfly-clustering</project.repository.organization.id>
+		<project.repository.organization.name>WildFly Clustering</project.repository.organization.name>
+		<project.repository.organization.url>https://github.com/${project.repository.organization.id}</project.repository.organization.url>
+		<project.repository.id>wildfly-clustering</project.repository.id>
+		<project.repository.name>WildFly Clustering</project.repository.name>
+		<project.repository.host>github.com</project.repository.host>
+		<project.repository.url>${project.repository.organization.url}/${project.repository.id}</project.repository.url>
+	</properties>
+
+	<name>${project.repository.name}: Parent</name>
+	<description>${project.name}</description>
+	<url>${project.repository.url}</url>
+
+	<developers>
+		<developer>
+			<name>${project.repository.organization.name}</name>
+			<organization>${project.organization.name}</organization>
+			<organizationUrl>${project.organization.url}</organizationUrl>
+		</developer>
+	</developers>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>${project.url}/issues</url>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Commonhaus Foundation</name>
+		<url>https://www.commonhaus.org/</url>
+	</organization>
+
+	<scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+		<connection>scm:git:git://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
+		<developerConnection>scm:git:ssh@${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
+		<url>${project.repository.url}</url>
+		<tag>HEAD</tag>
+	</scm>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>3.6.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>3.5.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.14.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>3.8.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.6.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>3.5.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>3.2.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-help-plugin</artifactId>
+					<version>3.5.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>3.1.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.4.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.12.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>3.1.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.3.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.21.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.3.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.5.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-verifier-plugin</artifactId>
+					<version>1.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>buildnumber-maven-plugin</artifactId>
+					<version>3.2.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.8.13</version>
+				</plugin>
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nxrm3-maven-plugin</artifactId>
+					<version>1.0.12</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<configuration>
+					<checkstyleRules>
+						<module name="Checker">
+							<module name="NewlineAtEndOfFile"/>
+							<module name="RegexpSingleline">
+								<property name="format" value="^\t*(?! \*) "/>
+								<property name="message" value="Non-tab indentation detected"/>
+								<property name="fileExtensions" value="java"/>
+							</module>
+							<module name="RegexpSingleline">
+								<property name="format" value="^\t* "/>
+								<property name="message" value="Non-tab indentation detected"/>
+								<property name="fileExtensions" value="proto xml"/>
+							</module>
+							<module name="RegexpSingleline">
+								<property name="format" value="\s+$"/>
+								<property name="message" value="Tailing whitespace detected"/>
+							</module>
+							<module name="TreeWalker">
+								<module name="ArrayTypeStyle"/>
+								<module name="AvoidStarImport">
+									<property name="allowStaticMemberImports" value="true"/>
+								</module>
+								<module name="EmptyStatement"/>
+								<module name="GenericWhitespace"/>
+								<module name="IllegalImport"/>
+								<module name="IllegalInstantiation"/>
+								<module name="IllegalThrows"/>
+								<module name="ImportOrder">
+									<property name="groups" value="java,javax,jakarta,io,org,com"/>
+									<property name="option" value="top"/>
+									<property name="separated" value="true"/>
+									<property name="separatedStaticGroups" value="true"/>
+									<property name="sortStaticImportsAlphabetically" value="true"/>
+								</module>
+								<module name="LeftCurly"/>
+								<module name="MethodParamPad"/>
+								<module name="ModifierOrder"/>
+								<module name="ParenPad"/>
+								<module name="RedundantImport"/>
+								<module name="RedundantModifier"/>
+								<module name="RightCurly"/>
+								<module name="SingleSpaceSeparator"/>
+								<module name="UnusedImports"/>
+								<module name="UpperEll"/>
+								<module name="WhitespaceAfter"/>
+							</module>
+						</module>
+					</checkstyleRules>
+					<logViolationsToConsole>true</logViolationsToConsole>
+					<sourceDirectories>
+						<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+						<sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+					</sourceDirectories>
+				</configuration>
+				<executions>
+					<execution>
+						<id>check-sources</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>check-test-sources</id>
+						<phase>process-test-sources</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<release>${java.compiler.version}</release>
+					<source>${java.compiler.version}</source>
+					<target>${java.compiler.version}</target>
+					<testRelease>${java.compiler.version}</testRelease>
+					<testSource>${java.compiler.version}</testSource>
+					<testTarget>${java.compiler.version}</testTarget>
+					<showDeprecation>true</showDeprecation>
+				</configuration>
+				<executions>
+					<execution>
+						<id>default-testCompile</id>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<parameters>true</parameters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+						<bannedRepositories>
+							<bannedRepository>http://*</bannedRepository>
+						</bannedRepositories>
+						<bannedPluginRepositories>
+							<bannedPluginRepository>http://*</bannedPluginRepository>
+						</bannedPluginRepositories>
+					</rules>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-integration-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<argLine>${maven.failsafe.parameters}</argLine>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<header>${project.name} ${project.version}</header>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-URL>${project.url}</Implementation-URL>
+							<Scm-Connection>${project.scm.connection}</Scm-Connection>
+							<Scm-Revision>${project.scm.revision}</Scm-Revision>
+						</manifestEntries>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>package-javadoc</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<doclint>all</doclint>
+							<failOnWarnings>true</failOnWarnings>
+						</configuration>
+					</execution>
+					<execution>
+						<id>package-test-javadoc</id>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+						<configuration>
+							<doclint>all,-missing</doclint>
+							<failOnWarnings>true</failOnWarnings>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-URL>${project.url}</Implementation-URL>
+							<Scm-Connection>${project.scm.connection}</Scm-Connection>
+							<Scm-Revision>${project.scm.revision}</Scm-Revision>
+						</manifestEntries>
+					</archive>
+					<skipIfEmpty>true</skipIfEmpty>
+				</configuration>
+				<executions>
+					<execution>
+						<id>default-test-jar</id>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<releaseProfiles>release</releaseProfiles>
+					<signTag>true</signTag>
+					<tagNameFormat>@{project.version}</tagNameFormat>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-URL>${project.url}</Implementation-URL>
+							<Scm-Connection>${project.scm.connection}</Scm-Connection>
+							<Scm-Revision>${project.scm.revision}</Scm-Revision>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>${maven.surefire.parameters}</argLine>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>get-scm-revision</id>
+						<goals>
+							<goal>create</goal>
+						</goals>
+						<configuration>
+							<buildNumberPropertyName>project.scm.revision</buildNumberPropertyName>
+							<getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>coverage</id>
+			<properties>
+				<jacoco.skip>false</jacoco.skip>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<configuration>
+							<argLine>${maven.failsafe.parameters}</argLine>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<argLine>${maven.surefire.parameters}</argLine>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>jacoco-prepare-agent</id>
+								<goals>
+									<goal>prepare-agent</goal>
+									<goal>prepare-agent-integration</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<reporting>
+				<plugins>
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<reportSets>
+							<reportSet>
+								<id>jacoco</id>
+								<reports>
+									<report>report</report>
+									<report>report-integration</report>
+								</reports>
+							</reportSet>
+						</reportSets>
+					</plugin>
+				</plugins>
+			</reporting>
+		</profile>
+		<profile>
+			<id>quickly</id>
+			<properties>
+				<checkstyle.skip>true</checkstyle.skip>
+				<maven.javadoc.skip>true</maven.javadoc.skip>
+				<skipTests>true</skipTests>
+				<skipITs>true</skipITs>
+			</properties>
+		</profile>
+		<profile>
+			<id>release</id>
+			<properties>
+				<checkstyle.skip>true</checkstyle.skip>
+				<skipTests>true</skipTests>
+				<skipITs>true</skipITs>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>default-sign</id>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>javadoc-jar</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>aggregate-javadoc-jar</id>
+								<inherited>false</inherited>
+								<goals>
+									<goal>aggregate-jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<configuration>
+							<archive>
+								<manifest>
+									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+								</manifest>
+								<manifestEntries>
+									<Implementation-URL>${project.url}</Implementation-URL>
+									<Scm-Connection>${project.scm.connection}</Scm-Connection>
+									<Scm-Revision>${project.scm.revision}</Scm-Revision>
+								</manifestEntries>
+							</archive>
+						</configuration>
+						<executions>
+							<execution>
+								<id>package-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+									<goal>test-jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nxrm3-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>default-deploy</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>staging-deploy</goal>
+								</goals>
+								<configuration>
+									<nexusUrl>https://repository.jboss.org/nexus/</nexusUrl>
+									<repository>releases</repository>
+									<serverId>jboss</serverId>
+									<tag>${project.groupId}-${project.version}</tag>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
