@@ -15,7 +15,9 @@ import org.wildfly.clustering.session.infinispan.embedded.SessionKeyFormatter;
  */
 @MetaInfServices(Formatter.class)
 public class SessionMetaDataKeyFormatter extends SessionKeyFormatter<SessionMetaDataKey> {
-
+	/**
+	 * Creates the formatter for a session metadata key.
+	 */
 	public SessionMetaDataKeyFormatter() {
 		super(SessionMetaDataKey::new);
 	}

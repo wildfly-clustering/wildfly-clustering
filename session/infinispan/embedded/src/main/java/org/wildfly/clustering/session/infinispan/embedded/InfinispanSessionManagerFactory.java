@@ -77,6 +77,15 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 	private final EmbeddedCacheConfiguration configuration;
 	private final Function<SessionManagerConfiguration<C>, Registrar<SessionManager<SC>>> managerRegistrarFactory;
 
+	/**
+	 * Creates a session manager factory.
+	 * @param <S> the session manager context type
+	 * @param <L> the specification type for a session passivation listener
+	 * @param configuration the configuration of this factory
+	 * @param sessionProvider the session specification provider
+	 * @param listenerProvider a specification provider for session listeners
+	 * @param infinispan the configuration of the associated cache
+	 */
 	public <S, L> InfinispanSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, InfinispanSessionManagerFactoryConfiguration infinispan) {
 		this.configuration = infinispan;
 		SessionAttributeActivationNotifierFactory<S, C, L, SC> notifierFactory = new SessionAttributeActivationNotifierFactory<>(sessionProvider, listenerProvider);

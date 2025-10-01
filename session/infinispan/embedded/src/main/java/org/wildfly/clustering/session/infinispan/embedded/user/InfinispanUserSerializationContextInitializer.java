@@ -10,9 +10,15 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.session.cache.SessionKeyMarshaller;
 
 /**
+ * The serialization context initializer for this package.
  * @author Paul Ferraro
  */
 public class InfinispanUserSerializationContextInitializer extends AbstractSerializationContextInitializer {
+	/**
+	 * Creates a serialization context initializer.
+	 */
+	public InfinispanUserSerializationContextInitializer() {
+	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {

@@ -20,6 +20,7 @@ import org.wildfly.clustering.session.cache.user.UserSessionsFactory;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
+ * The factory for creating user sessions.
  * @param <D> the deployment type
  * @param <S> the session type
  * @author Paul Ferraro
@@ -30,6 +31,10 @@ public class InfinispanUserSessionsFactory<D, S> implements UserSessionsFactory<
 	private final Cache<UserSessionsKey, Map<D, S>> writeOnlyCache;
 	private final CacheEntryMutatorFactory<UserSessionsKey, Map<D, S>> mutatorFactory;
 
+	/**
+	 * Creates a factory for creating user sessions.
+	 * @param configuration the configuration associated with the cache
+	 */
 	public InfinispanUserSessionsFactory(EmbeddedCacheConfiguration configuration) {
 		this.cache = configuration.getReadForUpdateCache();
 		this.writeOnlyCache = configuration.getWriteOnlyCache();

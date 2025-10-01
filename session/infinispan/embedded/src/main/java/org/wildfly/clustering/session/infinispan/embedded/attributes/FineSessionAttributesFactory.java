@@ -61,6 +61,13 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	private final ListenerRegistration prePassivateListenerRegistration;
 	private final ListenerRegistration postActivateListenerRegistration;
 
+	/**
+	 * Creates a factory for fine-granularity session attributes entry.
+	 * @param configuration the configuration for this factory
+	 * @param notifierFactory the notifier factory
+	 * @param detachedNotifierFactory the detached notifier factory
+	 * @param infinispan the configuration of the associated cache
+	 */
 	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory, Function<String, SessionAttributeActivationNotifier> detachedNotifierFactory, EmbeddedCacheConfiguration infinispan) {
 		this.cache = infinispan.getCache();
 		this.writeCache = infinispan.getWriteOnlyCache();
@@ -158,11 +165,11 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	}
 
 	private void prePassivate(SessionAttributesKey key, Map<String, V> attributes) {
-		this.notify(SessionAttributeActivationNotifier.PRE_PASSIVATE, key, attributes);
+		this.notify(SessionAttributeActivationNotifier::prePassivate, key, attributes);
 	}
 
 	private void postActivate(SessionAttributesKey key, Map<String, V> attributes) {
-		this.notify(SessionAttributeActivationNotifier.POST_ACTIVATE, key, attributes);
+		this.notify(SessionAttributeActivationNotifier::postActivate, key, attributes);
 	}
 
 	private void notify(BiConsumer<SessionAttributeActivationNotifier, Object> notification, SessionAttributesKey key, Map<String, V> attributes) {

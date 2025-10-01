@@ -22,6 +22,7 @@ import org.wildfly.clustering.session.cache.user.UserContextEntry;
 import org.wildfly.clustering.session.cache.user.UserContextFactory;
 
 /**
+ * The factory for creating the context of a user.
  * @param <PC> the persistent context type
  * @param <PV> the marshalled persistent context type
  * @param <TC> the transient context type
@@ -34,6 +35,12 @@ public class InfinispanUserContextFactory<PC, PV, TC> implements UserContextFact
 	private final Marshaller<PC, PV> marshaller;
 	private final Supplier<TC> contextFactory;
 
+	/**
+	 * Creates a user context factory
+	 * @param configuration the configuration for the associated cache
+	 * @param marshaller a marshaller for the persistent context of a user
+	 * @param contextFactory a factory for creating the user context
+	 */
 	public InfinispanUserContextFactory(EmbeddedCacheConfiguration configuration, Marshaller<PC, PV> marshaller, Supplier<TC> contextFactory) {
 		this.writeCache = configuration.getWriteOnlyCache();
 		this.findCache = configuration.getReadForUpdateCache();

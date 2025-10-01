@@ -22,11 +22,14 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
 import org.wildfly.clustering.session.infinispan.embedded.user.InfinispanUserSerializationContextInitializer;
 
 /**
+ * The serialization context initializer for this module.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class InfinispanSessionSerializationContextInitializer extends CompositeSerializationContextInitializer {
-
+	/**
+	 * Creates the serialization context for this module.
+	 */
 	public InfinispanSessionSerializationContextInitializer() {
 		super(List.of(
 				new AbstractSerializationContextInitializer() {

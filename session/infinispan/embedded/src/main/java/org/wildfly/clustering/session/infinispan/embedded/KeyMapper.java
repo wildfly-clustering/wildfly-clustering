@@ -10,8 +10,14 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.cache.infinispan.embedded.persistence.FormatterKeyMapper;
 
 /**
+ * Provider of the mapper for cache keys.
  * @author Paul Ferraro
  */
 @MetaInfServices(TwoWayKey2StringMapper.class)
 public class KeyMapper extends FormatterKeyMapper {
+	/**
+	 * Creates a key mapper.
+	 */
+	public KeyMapper() {
+	}
 }

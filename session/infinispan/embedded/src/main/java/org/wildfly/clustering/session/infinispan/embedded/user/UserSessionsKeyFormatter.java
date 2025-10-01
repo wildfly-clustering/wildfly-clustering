@@ -15,7 +15,9 @@ import org.wildfly.clustering.session.infinispan.embedded.SessionKeyFormatter;
  */
 @MetaInfServices(Formatter.class)
 public class UserSessionsKeyFormatter extends SessionKeyFormatter<UserSessionsKey> {
-
+	/**
+	 * Creates a formatter of a user sessions cache key.
+	 */
 	public UserSessionsKeyFormatter() {
 		super(UserSessionsKey::new);
 	}

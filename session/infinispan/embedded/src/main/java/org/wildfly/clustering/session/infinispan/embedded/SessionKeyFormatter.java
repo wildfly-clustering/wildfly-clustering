@@ -17,7 +17,10 @@ import org.wildfly.clustering.marshalling.Formatter;
  * @author Paul Ferraro
  */
 public class SessionKeyFormatter<K extends Key<String>> extends KeyFormatter<String, K> {
-
+	/**
+	 * Creates the formatter of a session key.
+	 * @param factory the key factory
+	 */
 	@SuppressWarnings("unchecked")
 	protected SessionKeyFormatter(Function<String, K> factory) {
 		this((Class<K>) factory.apply("").getClass(), factory);

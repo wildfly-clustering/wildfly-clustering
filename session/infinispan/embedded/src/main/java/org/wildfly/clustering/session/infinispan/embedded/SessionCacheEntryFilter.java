@@ -17,6 +17,7 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
  * @author Paul Ferraro
  */
 public enum SessionCacheEntryFilter implements SerializablePredicate<Map.Entry<Object, Object>> {
+	/** The filter selecting session metadata entries */
 	META_DATA(SessionMetaDataKey.class);
 
 	private final Class<?> keyClass;
@@ -30,6 +31,12 @@ public enum SessionCacheEntryFilter implements SerializablePredicate<Map.Entry<O
 		return this.keyClass.isInstance(entry.getKey());
 	}
 
+	/**
+	 * Returns a typed cache entry filter.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @return a typed cache entry filter.
+	 */
 	@SuppressWarnings("unchecked")
 	public <K, V> Predicate<Map.Entry<? super K, ? super V>> cast() {
 		return (Predicate<Map.Entry<? super K, ? super V>>) (Predicate<?>) this;

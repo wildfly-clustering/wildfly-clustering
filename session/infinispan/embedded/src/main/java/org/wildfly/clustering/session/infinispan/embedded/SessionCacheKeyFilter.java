@@ -14,6 +14,7 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
  * @author Paul Ferraro
  */
 public enum SessionCacheKeyFilter implements SerializablePredicate<Object> {
+	/** The filter selecting session metadata keys */
 	META_DATA(SessionMetaDataKey.class);
 
 	private final Class<?> keyClass;

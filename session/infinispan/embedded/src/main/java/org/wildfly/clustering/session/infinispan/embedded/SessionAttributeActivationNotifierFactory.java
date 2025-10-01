@@ -35,6 +35,11 @@ public class SessionAttributeActivationNotifierFactory<S, C, L, SC> implements F
 	private final Function<L, Consumer<S>> prePassivateFactory;
 	private final Function<L, Consumer<S>> postActivateFactory;
 
+	/**
+	 * Creates a session attribute notifier of activation events.
+	 * @param sessionProvider the session specification provider
+	 * @param listenerProvider the session event listener specification provider
+	 */
 	public SessionAttributeActivationNotifierFactory(SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider) {
 		this.sessionProvider = sessionProvider;
 		this.listenerProvider = listenerProvider;
