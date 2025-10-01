@@ -22,6 +22,7 @@ import org.wildfly.clustering.session.cache.user.UserContextEntry;
 import org.wildfly.clustering.session.cache.user.UserContextFactory;
 
 /**
+ * The user context factory.
  * @param <PC> the persistent context type
  * @param <PV> the marshalled persistent context type
  * @param <TC> the transient context type
@@ -34,6 +35,12 @@ public class HotRodUserContextFactory<PC, PV, TC> implements UserContextFactory<
 	private final Marshaller<PC, PV> marshaller;
 	private final Supplier<TC> contextFactory;
 
+	/**
+	 * Creates a user context factory
+	 * @param configuration the configuration of the associated cache
+	 * @param marshaller the marshaller for the persistent context of the user
+	 * @param contextFactory the user context factory
+	 */
 	public HotRodUserContextFactory(RemoteCacheConfiguration configuration, Marshaller<PC, PV> marshaller, Supplier<TC> contextFactory) {
 		this.readCache = configuration.getCache();
 		this.writeCache = configuration.getIgnoreReturnCache();

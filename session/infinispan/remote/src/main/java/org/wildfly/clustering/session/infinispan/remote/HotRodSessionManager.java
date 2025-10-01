@@ -38,6 +38,10 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 		}
 	}
 
+	/**
+	 * Creates a session manager.
+	 * @param configuration the configuration of this session manager
+	 */
 	public HotRodSessionManager(Configuration<C, MV, AV, SC> configuration) {
 		super(configuration);
 		this.cache = configuration.getCacheConfiguration().getCache();

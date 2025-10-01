@@ -37,6 +37,10 @@ public class SessionManagerNearCacheFactory implements NearCacheFactory {
 
 	private final EvictionConfiguration configuration;
 
+	/**
+	 * Creates the near cache factory for this session manager.
+	 * @param configuration the eviction configuration
+	 */
 	public SessionManagerNearCacheFactory(EvictionConfiguration configuration) {
 		this.configuration = configuration;
 	}

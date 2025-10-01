@@ -50,12 +50,21 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 	private final SessionFactory<C, SessionMetaDataEntry<SC>, Object, SC> sessionFactory;
 	private final Collection<Consumer<ImmutableSession>> expirationListeners = new CopyOnWriteArraySet<>();
 
-	public <S, L> HotRodSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, RemoteCacheConfiguration sessionFactoryConfiguration) {
-		this.configuration = sessionFactoryConfiguration;
-		SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(sessionFactoryConfiguration);
+	/**
+	 * Creates a session manager factory.
+	 * @param <S> the session specification type
+	 * @param <L> the session event listener specification type
+	 * @param configuration the configuration of this session manager factory
+	 * @param sessionProvider the session specification type
+	 * @param listenerProvider the session event listener specification type
+	 * @param hotrod the configuration of the associated cache
+	 */
+	public <S, L> HotRodSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, RemoteCacheConfiguration hotrod) {
+		this.configuration = hotrod;
+		SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(hotrod);
 		@SuppressWarnings("unchecked")
-		SessionAttributesFactory<C, Object> attributesFactory = (SessionAttributesFactory<C, Object>) this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, sessionFactoryConfiguration);
-		this.sessionFactory = new HotRodSessionFactory<>(sessionFactoryConfiguration, metaDataFactory, attributesFactory, configuration.getSessionContextFactory(), org.wildfly.clustering.function.Consumer.acceptAll(this.expirationListeners));
+		SessionAttributesFactory<C, Object> attributesFactory = (SessionAttributesFactory<C, Object>) this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, hotrod);
+		this.sessionFactory = new HotRodSessionFactory<>(hotrod, metaDataFactory, attributesFactory, configuration.getSessionContextFactory(), org.wildfly.clustering.function.Consumer.acceptAll(this.expirationListeners));
 	}
 
 	@Override

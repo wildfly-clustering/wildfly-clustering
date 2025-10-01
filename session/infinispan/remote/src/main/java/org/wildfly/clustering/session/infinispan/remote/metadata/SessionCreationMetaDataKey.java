@@ -12,7 +12,10 @@ import org.wildfly.clustering.cache.infinispan.CacheKey;
  * @author Paul Ferraro
  */
 public class SessionCreationMetaDataKey extends CacheKey<String> {
-
+	/**
+	 * Creates a session creation metadata key.
+	 * @param id the identifier of the session
+	 */
 	public SessionCreationMetaDataKey(String id) {
 		super(id);
 	}

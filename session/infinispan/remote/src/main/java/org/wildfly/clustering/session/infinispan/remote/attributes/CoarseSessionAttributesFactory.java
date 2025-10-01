@@ -48,6 +48,12 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	private final CacheEntryMutatorFactory<SessionAttributesKey, V> mutatorFactory;
 	private final BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory;
 
+	/**
+	 * Creates a session attributes factory.
+	 * @param configuration the configuration of this factory
+	 * @param notifierFactory a passivation/activation notifier factory
+	 * @param hotrod the configuration of the associated cache
+	 */
 	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
 		this.readCache = hotrod.getCache();
 		this.writeCache = hotrod.getIgnoreReturnCache();

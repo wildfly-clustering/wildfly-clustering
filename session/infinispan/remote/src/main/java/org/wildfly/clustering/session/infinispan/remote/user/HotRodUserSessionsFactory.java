@@ -20,6 +20,7 @@ import org.wildfly.clustering.session.cache.user.UserSessionsFactory;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
+ * A user sessions factory.
  * @param <D> the deployment type
  * @param <S> the session type
  * @author Paul Ferraro
@@ -30,6 +31,10 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 	private final RemoteCache<UserSessionsKey, Map<D, S>> writeCache;
 	private final CacheEntryMutatorFactory<UserSessionsKey, Map<D, S>> mutatorFactory;
 
+	/**
+	 * Creates a user sessions factory
+	 * @param configuration the configuration associated with the cache
+	 */
 	public HotRodUserSessionsFactory(RemoteCacheConfiguration configuration) {
 		this.readCache = configuration.getCache();
 		this.writeCache = configuration.getIgnoreReturnCache();

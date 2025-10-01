@@ -52,6 +52,10 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 	private final CacheEntryMutatorFactory<SessionCreationMetaDataKey, OffsetValue<Duration>> creationMetaDataMutatorFactory;
 	private final CacheEntryMutatorFactory<SessionAccessMetaDataKey, MutableSessionAccessMetaDataOffsetValues> accessMetaDataMutatorFactory;
 
+	/**
+	 * Creates a session metadata factory.
+	 * @param configuration the configuration of the associated cache
+	 */
 	public HotRodSessionMetaDataFactory(RemoteCacheConfiguration configuration) {
 		this.readCreationMetaDataCache = configuration.getReadForUpdateCache();
 		this.writeCreationMetaDataCache = configuration.getIgnoreReturnCache();

@@ -52,15 +52,15 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	private final Executor executor;
 
 	/**
-	 * Constructs a new session factory
-	 * @param config
-	 * @param metaDataFactory
-	 * @param attributesFactory
-	 * @param localContextFactory
-	 * @param expirationListener
+	 * Constructs a new session factory.
+	 * @param config the configuration of the associated cache
+	 * @param metaDataFactory a session metadata factory
+	 * @param attributesFactory a session attributes factory
+	 * @param contextFactory a session context factory
+	 * @param expirationListener the consumer invoked on session expiration
 	 */
-	public HotRodSessionFactory(RemoteCacheConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> localContextFactory, Consumer<ImmutableSession> expirationListener) {
-		super(metaDataFactory, attributesFactory, config.getCacheProperties(), localContextFactory);
+	public HotRodSessionFactory(RemoteCacheConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> contextFactory, Consumer<ImmutableSession> expirationListener) {
+		super(metaDataFactory, attributesFactory, config.getCacheProperties(), contextFactory);
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
 		this.attributesRemover = attributesFactory;
@@ -76,6 +76,10 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 		super.close();
 	}
 
+	/**
+	 * Handles expiration events from the remote cluster.
+	 * @param event a cache entry expiration event
+	 */
 	@ClientCacheEntryExpired
 	public void expired(ClientCacheEntryExpiredEvent<SessionAccessMetaDataKey> event) {
 		RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache = this.creationMetaDataCache;
