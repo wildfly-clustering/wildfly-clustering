@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache.metadata;
 import org.wildfly.clustering.session.SessionMetaData;
 
 /**
+ * An invalidatable view of session metadata.
  * @author Paul Ferraro
  */
 public interface InvalidatableSessionMetaData extends SessionMetaData, AutoCloseable {

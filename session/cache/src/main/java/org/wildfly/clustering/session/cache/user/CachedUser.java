@@ -9,6 +9,7 @@ import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.user.User;
 
 /**
+ * A cached user.
  * @author Paul Ferraro
  * @param <C> the persistent context type
  * @param <T> the transient context type
@@ -19,6 +20,11 @@ public class CachedUser<C, T, D, S> extends DecoratedUser<C, T, D, S> implements
 
 	private final Runnable closeTask;
 
+	/**
+	 * Creates a cached user.
+	 * @param user the user object.
+	 * @param closeTask a task to run on {@link User#close()}.
+	 */
 	public CachedUser(User<C, T, D, S> user, Runnable closeTask) {
 		super(Supplier.of(user));
 		this.closeTask = closeTask;

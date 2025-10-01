@@ -10,6 +10,7 @@ import java.time.Duration;
 import org.wildfly.clustering.server.offset.Value;
 
 /**
+ * A mutable session access metadata.
  * @author Paul Ferraro
  */
 public class MutableSessionAccessMetaData implements SessionAccessMetaData {
@@ -18,6 +19,11 @@ public class MutableSessionAccessMetaData implements SessionAccessMetaData {
 	private final Value<Duration> sinceCreation;
 	private final Value<Duration> lastAccess;
 
+	/**
+	 * Creates a mutable session access metadata.
+	 * @param metaData the immutable session access metadata
+	 * @param values the set of session access metadata values
+	 */
 	public MutableSessionAccessMetaData(ImmutableSessionAccessMetaData metaData, MutableSessionAccessMetaDataValues values) {
 		this.metaData = metaData;
 		this.sinceCreation = values.getSinceCreation();

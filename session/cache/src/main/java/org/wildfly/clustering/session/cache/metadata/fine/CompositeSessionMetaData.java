@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 
 /**
- * Composite view of the meta data of a session, combining volatile and static aspects.
+ * Session meta data composed of separate creation and access metadata.
  * @author Paul Ferraro
  */
 public class CompositeSessionMetaData extends CompositeImmutableSessionMetaData implements InvalidatableSessionMetaData {
@@ -23,6 +23,12 @@ public class CompositeSessionMetaData extends CompositeImmutableSessionMetaData 
 	private final Runnable mutator;
 	private final AtomicBoolean valid = new AtomicBoolean(true);
 
+	/**
+	 * Creates composite session metadata
+	 * @param creationMetaData the creation metadata
+	 * @param accessMetaData the access metadata
+	 * @param mutator the mutator of access metadata
+	 */
 	public CompositeSessionMetaData(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator) {
 		super(creationMetaData, accessMetaData);
 		this.creationMetaData = creationMetaData;

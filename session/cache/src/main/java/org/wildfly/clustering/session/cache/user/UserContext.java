@@ -14,8 +14,15 @@ import org.wildfly.clustering.server.util.Supplied;
  * @author Paul Ferraro
  */
 public interface UserContext<PC, TC> {
-
+	/**
+	 * Returns the persistent context of the associated user.
+	 * @return the persistent context of the associated user.
+	 */
 	PC getPersistentContext();
 
+	/**
+	 * Returns the transient context of the associated user.
+	 * @return the transient context of the associated user.
+	 */
 	Supplied<TC> getTransientContext();
 }

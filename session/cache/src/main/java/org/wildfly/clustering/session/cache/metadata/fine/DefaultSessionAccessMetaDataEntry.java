@@ -9,11 +9,18 @@ import java.time.Duration;
 import java.util.Map;
 
 /**
+ * A session access metadata entry.
  * @author Paul Ferraro
  */
 public class DefaultSessionAccessMetaDataEntry implements SessionAccessMetaDataEntry {
 
 	private volatile Map.Entry<Duration, Duration> lastAccess = Map.entry(Duration.ZERO, Duration.ZERO);
+
+	/**
+	 * Creates session access metadata entry.
+	 */
+	public DefaultSessionAccessMetaDataEntry() {
+	}
 
 	@Override
 	public boolean isNew() {

@@ -14,9 +14,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * ProtoStream marshaller for a {@link SessionAttributeMapEntry}.
  * @author Paul Ferraro
  */
-public class SessionAttributeMapEntryMarshaller implements ProtoStreamMarshaller<SessionAttributeMapEntry<ByteBufferMarshalledValue<Object>>> {
+public enum SessionAttributeMapEntryMarshaller implements ProtoStreamMarshaller<SessionAttributeMapEntry<ByteBufferMarshalledValue<Object>>> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int NAME_INDEX = 1;
 	private static final int VALUE_INDEX = 2;

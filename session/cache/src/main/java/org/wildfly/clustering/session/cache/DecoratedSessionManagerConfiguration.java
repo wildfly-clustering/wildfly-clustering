@@ -13,7 +13,7 @@ import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 
 /**
- * A {@link SessionManagerConfiguration} implementation that delegates to another {@link SessionManagerConfiguration}.
+ * A session manager configuration decorator.
  * @author Paul Ferraro
  * @param <C> the servlet context type
  */
@@ -21,6 +21,10 @@ public class DecoratedSessionManagerConfiguration<C> implements SessionManagerCo
 
 	private final SessionManagerConfiguration<C> configuration;
 
+	/**
+	 * Creates a session manager configuration decorator.
+	 * @param configuration the decorated configuration
+	 */
 	public DecoratedSessionManagerConfiguration(SessionManagerConfiguration<C> configuration) {
 		this.configuration = configuration;
 	}

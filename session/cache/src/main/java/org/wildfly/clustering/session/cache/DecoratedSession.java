@@ -6,20 +6,25 @@
 package org.wildfly.clustering.session.cache;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
 
 /**
- * A generic decorated session.
+ * A session decorator.
  * @param <C> the session context type
  * @author Paul Ferraro
  */
-public class DecoratedSession<C> implements Session<C>, java.util.function.Supplier<Session<C>> {
+public class DecoratedSession<C> implements Session<C>, Supplier<Session<C>> {
 
-	private final java.util.function.Supplier<Session<C>> reference;
+	private final Supplier<Session<C>> reference;
 
-	public DecoratedSession(java.util.function.Supplier<Session<C>> reference) {
+	/**
+	 * Creates a session decorator.
+	 * @param reference a provider of the decorated session
+	 */
+	public DecoratedSession(Supplier<Session<C>> reference) {
 		this.reference = reference;
 	}
 

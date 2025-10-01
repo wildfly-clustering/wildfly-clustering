@@ -35,6 +35,16 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 	private final SessionAttributeActivationNotifier notifier;
 	private final BlockingReferenceMap<String, Object> updates = BlockingReferenceMap.of(new TreeMap<>());
 
+	/**
+	 * Creates a fine-granularity session attributes implementation.
+	 * @param key the session attributes cache key
+	 * @param attributes a map of session attributes
+	 * @param mutatorFactory a factory for creating a mutator of the session attributes cache entry
+	 * @param marshaller a marshaller of session attributes
+	 * @param immutable a predicate used to determine whether a given session attribute is immutable
+	 * @param properties the properties of the associated cache
+	 * @param notifier a notifier of session attribute activation/passivation
+	 */
 	public FineSessionAttributes(K key, Map<String, Object> attributes, CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory, Marshaller<Object, V> marshaller, Predicate<Object> immutable, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
 		super(attributes);
 		this.key = key;

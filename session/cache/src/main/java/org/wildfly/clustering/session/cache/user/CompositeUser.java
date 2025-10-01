@@ -25,6 +25,13 @@ public class CompositeUser<C, T, D, S> implements User<C, T, D, S> {
 	private final CacheEntryRemover<String> remover;
 	private final AtomicBoolean valid = new AtomicBoolean(true);
 
+	/**
+	 * A user composed of a context entry and user sessions.
+	 * @param id the identifier of the user
+	 * @param contextEntry a content entry
+	 * @param sessions the session associated with the user
+	 * @param remover a remover for the user
+	 */
 	public CompositeUser(String id, Map.Entry<C, T> contextEntry, UserSessions<D, S> sessions, CacheEntryRemover<String> remover) {
 		this.id = id;
 		this.contextEntry = contextEntry;

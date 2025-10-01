@@ -14,7 +14,7 @@ import org.wildfly.clustering.session.cache.attributes.ImmutableSessionAttribute
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
 
 /**
- * Generic immutable session factory implementation - independent of cache mapping strategy.
+ * An immutable session factory that delegates to immutable factories for metadata and attributes.
  * @author Paul Ferraro
  * @param <MV> the session metadata type
  * @param <AV> the session attributes type
@@ -24,6 +24,12 @@ public class CompositeImmutableSessionFactory<MV, AV> implements ImmutableSessio
 	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
 	private final CacheProperties properties;
 
+	/**
+	 * Creates an immutable session factory.
+	 * @param metaDataFactory a metadata factory
+	 * @param attributesFactory an attributes factory
+	 * @param properties the properties of the associated cache
+	 */
 	public CompositeImmutableSessionFactory(ImmutableSessionMetaDataFactory<MV> metaDataFactory, ImmutableSessionAttributesFactory<AV> attributesFactory, CacheProperties properties) {
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;

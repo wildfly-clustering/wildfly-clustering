@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import org.wildfly.clustering.session.user.User;
 
 /**
+ * Encapsulates a cacheable user.
  * @author Paul Ferraro
  * @param <C> the persistent context type
  * @param <T> the transient context type

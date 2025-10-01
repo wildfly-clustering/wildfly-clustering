@@ -14,7 +14,11 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
  * @param <V> the attributes value type
  */
 public class IdentityMarshallerSessionAttributesFactoryConfiguration<V> extends MarshallerSessionAttributesFactoryConfiguration<V, V> {
-
+	/**
+	 * Creates a session attributes factory configuration
+	 * @param <SC> a session context type
+	 * @param configuration a session manager factory configuration
+	 */
 	public <SC> IdentityMarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<SC> configuration) {
 		super(configuration, Marshaller.identity());
 	}

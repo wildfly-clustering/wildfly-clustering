@@ -27,6 +27,12 @@ public class DefaultUserManager<CV, C, T, SV, D, S> implements UserManager<C, T,
 	private final Supplier<Batch> batchFactory;
 	private final IdentifierFactoryService<String> identifierFactory;
 
+	/**
+	 * Creates a user manager.
+	 * @param factory a user factory
+	 * @param identifierFactory an identifier factory
+	 * @param batchFactory a batch factory
+	 */
 	public DefaultUserManager(UserFactory<CV, C, T, SV, D, S> factory, IdentifierFactoryService<String> identifierFactory, Supplier<Batch> batchFactory) {
 		this.factory = factory;
 		this.batchFactory = batchFactory;

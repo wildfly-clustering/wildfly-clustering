@@ -27,6 +27,12 @@ public class MutableUserSessions<K, D, S> implements UserSessions<D, S> {
 	private final CacheEntryMutatorFactory<K, Map<D, S>> mutatorFactory;
 	private final BlockingReferenceMap<D, S> updates = BlockingReferenceMap.of(new TreeMap<>());
 
+	/**
+	 * Creates a mutable user sessions.
+	 * @param key the cache key
+	 * @param sessions a map of session identifiers per deployment
+	 * @param mutatorFactory a cache entry mutator factory
+	 */
 	public MutableUserSessions(K key, Map<D, S> sessions, CacheEntryMutatorFactory<K, Map<D, S>> mutatorFactory) {
 		this.key = key;
 		this.sessions = sessions;

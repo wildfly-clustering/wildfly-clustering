@@ -15,7 +15,7 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.user.User;
 
 /**
- * Creates an {@link User} from its cache storage value.
+ * Creates an {@link User} composed from a {@link UserContextFactory} and {@link UserSessionsFactory}.
  * @author Paul Ferraro
  * @param <CV> the user context value type
  * @param <C> the persistent context type
@@ -25,11 +25,30 @@ import org.wildfly.clustering.session.user.User;
  * @param <S> the session type
  */
 public interface UserFactory<CV, C, T, SV, D, S> extends BiCacheEntryCreator<String, CV, SV, C>, BiCacheEntryLocator<String, CV, SV>, CacheEntryRemover<String> {
-
+	/**
+	 * Returns the user context factory.
+	 * @return the user context factory.
+	 */
 	UserContextFactory<CV, C, T> getUserContextFactory();
+
+	/**
+	 * Returns the user sessions factory.
+	 * @return the user sessions factory.
+	 */
 	UserSessionsFactory<SV, D, S> getUserSessionsFactory();
+
+	/**
+	 * Returns the properties of the cache.
+	 * @return the properties of the cache.
+	 */
 	CacheProperties getCacheProperties();
 
+	/**
+	 * Creates a user from its composing cache entries.
+	 * @param id the identifier of the user
+	 * @param value a tuple of cache values.
+	 * @return a user
+	 */
 	User<C, T, D, S> createUser(String id, Map.Entry<CV, SV> value);
 
 	@Override

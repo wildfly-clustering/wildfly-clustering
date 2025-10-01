@@ -18,6 +18,10 @@ public class DefaultImmutableSessionMetaData implements ImmutableSessionMetaData
 
 	private final ImmutableSessionMetaDataEntry entry;
 
+	/**
+	 * Immutable session metadata referencing the specified entry.
+	 * @param entry a session metadata entry
+	 */
 	public DefaultImmutableSessionMetaData(ImmutableSessionMetaDataEntry entry) {
 		this.entry = entry;
 	}

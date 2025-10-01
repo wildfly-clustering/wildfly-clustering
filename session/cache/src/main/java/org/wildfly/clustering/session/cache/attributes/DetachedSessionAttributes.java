@@ -22,6 +22,11 @@ public class DetachedSessionAttributes<C, B extends Batch> implements SessionAtt
 	private final Supplier<B> batchFactory;
 	private final Supplier<Session<C>> sessionFactory;
 
+	/**
+	 * Creates a detached session attributes implementation.
+	 * @param batchFactory a batch factory
+	 * @param sessionFactory a session factory
+	 */
 	public DetachedSessionAttributes(Supplier<B> batchFactory, Supplier<Session<C>> sessionFactory) {
 		this.batchFactory = batchFactory;
 		this.sessionFactory = sessionFactory;

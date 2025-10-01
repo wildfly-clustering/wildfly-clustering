@@ -15,6 +15,15 @@ import org.wildfly.clustering.server.immutable.Immutability;
  * @author Paul Ferraro
  */
 public interface SessionAttributesFactoryConfiguration<V, MV> {
+	/**
+	 * Returns the marshaller for the attributes of a session.
+	 * @return the marshaller for the attributes of a session.
+	 */
 	Marshaller<V, MV> getMarshaller();
+
+	/**
+	 * Returns the immutability predicate for the attributes of a session.
+	 * @return the immutability predicate for the attributes of a session.
+	 */
 	Immutability getImmutability();
 }

@@ -30,6 +30,7 @@ import org.wildfly.clustering.session.SessionStatistics;
  * @author Paul Ferraro
  */
 public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
+	/** The logger for this session manager */
 	protected final System.Logger logger = System.getLogger(this.getClass().getName());
 
 	private final SessionFactory<C, MV, AV, SC> sessionFactory;
@@ -41,15 +42,46 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 	private final Supplier<Batch> batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
 
+	/**
+	 * Configuration of a session manager.
+	 * @param <C> the session manager context type
+	 * @param <MV> the session metadata value type
+	 * @param <AV> the session attribute value type
+	 * @param <SC> the session context type
+	 */
 	protected interface Configuration<C, MV, AV, SC> extends SessionManagerConfiguration<C> {
 		@Override
 		IdentifierFactoryService<String> getIdentifierFactory();
+
+		/**
+		 * Returns the configuration associated with a cache.
+		 * @return the configuration associated with a cache.
+		 */
 		CacheConfiguration getCacheConfiguration();
+
+		/**
+		 * Returns a factory for creating a session.
+		 * @return a factory for creating a session.
+		 */
 		SessionFactory<C, MV, AV, SC> getSessionFactory();
+
+		/**
+		 * Returns a factory for creating a detached session.
+		 * @return a factory for creating a detached session.
+		 */
 		BiFunction<String, SC, Session<SC>> getDetachedSessionFactory();
+
+		/**
+		 * Returns a task to invoke on session close.
+		 * @return a task to invoke on session close.
+		 */
 		Consumer<ImmutableSession> getSessionCloseTask();
 	}
 
+	/**
+	 * Creates a session manager using the specified configuration.
+	 * @param configuration the configuration of the session manager
+	 */
 	protected AbstractSessionManager(Configuration<C, MV, AV, SC> configuration) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();

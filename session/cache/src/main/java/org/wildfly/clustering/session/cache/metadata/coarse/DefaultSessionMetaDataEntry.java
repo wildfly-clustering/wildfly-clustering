@@ -27,11 +27,18 @@ public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaData
 	private final OffsetValue<Instant> lastAccessEndTime;
 	private final Supplied<C> context = Supplied.cached();
 
+	/**
+	 * Create a session metadata entry for a new session.
+	 */
 	public DefaultSessionMetaDataEntry() {
 		// Only retain millisecond precision
 		this(Instant.now().truncatedTo(ChronoUnit.MILLIS));
 	}
 
+	/**
+	 * Create a session metadata entry for an existing session.
+	 * @param creationTime the instant this session was created.
+	 */
 	public DefaultSessionMetaDataEntry(Instant creationTime) {
 		this.lastAccessStartTime = OffsetValue.from(creationTime);
 		this.lastAccessEndTime = this.lastAccessStartTime.rebase();

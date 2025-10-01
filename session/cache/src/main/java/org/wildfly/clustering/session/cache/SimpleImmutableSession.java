@@ -20,6 +20,10 @@ public class SimpleImmutableSession extends AbstractImmutableSession {
 	private final ImmutableSessionMetaData metaData;
 	private final Map<String, Object> attributes;
 
+	/**
+	 * Creates an immutable session snapshot.
+	 * @param session an immutable session
+	 */
 	public SimpleImmutableSession(ImmutableSession session) {
 		super(session.getId());
 		this.valid = session.isValid();

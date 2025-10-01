@@ -17,6 +17,10 @@ public class UserContextEntry<C, T> implements UserContext<C, T> {
 	private final C persistentContext;
 	private final Supplied<T> transientContext = Supplied.cached();
 
+	/**
+	 * Creates a user context entry.
+	 * @param persistentContext the persistent context of the associated user
+	 */
 	public UserContextEntry(C persistentContext) {
 		this.persistentContext = persistentContext;
 	}

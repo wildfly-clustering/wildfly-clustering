@@ -14,7 +14,7 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaData;
 
 /**
- * Generic session implementation composed of attributes and metadata.
+ * A session composed of attributes, metadata, and context.
  * @param <C> the session context type
  * @author Paul Ferraro
  */
@@ -27,6 +27,15 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 	private final Supplier<C> contextFactory;
 	private final CacheEntryRemover<String> remover;
 
+	/**
+	 * Creates a session composed of metadata, attributes, and context.
+	 * @param id the identifier of this session
+	 * @param metaData the metadata of this session
+	 * @param attributes the attributes of this session
+	 * @param context the supplied context of this session
+	 * @param contextFactory a supplier of session context
+	 * @param remover a session remover
+	 */
 	public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, Supplied<C> context, Supplier<C> contextFactory, CacheEntryRemover<String> remover) {
 		super(id, metaData, attributes);
 		this.metaData = metaData;

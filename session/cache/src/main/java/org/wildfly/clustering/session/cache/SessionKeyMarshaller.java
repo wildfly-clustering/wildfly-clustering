@@ -38,6 +38,10 @@ public class SessionKeyMarshaller<K extends Key<String>> implements ProtoStreamM
 
 	private final Function<String, K> factory;
 
+	/**
+	 * Creates a session key marshaller using the specified factory
+	 * @param factory a session key factory
+	 */
 	public SessionKeyMarshaller(Function<String, K> factory) {
 		this.factory = factory;
 	}

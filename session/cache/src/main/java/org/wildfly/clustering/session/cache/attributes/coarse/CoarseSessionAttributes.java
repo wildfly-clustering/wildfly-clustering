@@ -23,6 +23,14 @@ public class CoarseSessionAttributes extends AbstractSessionAttributes {
 	private final SessionActivationNotifier notifier;
 	private final AtomicBoolean dirty = new AtomicBoolean(false);
 
+	/**
+	 * Creates a coarse-granularity session attributes object.
+	 * @param attributes a map of session attributes
+	 * @param mutator a mutator for associated cache entry.
+	 * @param marshallable a predicate used to determine whether a given session attribute is marshallable.
+	 * @param immutable a predicate used to determine whether a given session attribute is immutable.
+	 * @param notifier a notifier of session activation/passivation
+	 */
 	public CoarseSessionAttributes(Map<String, Object> attributes, Runnable mutator, Predicate<Object> marshallable, Predicate<Object> immutable, SessionActivationNotifier notifier) {
 		super(attributes);
 		this.attributes = attributes;

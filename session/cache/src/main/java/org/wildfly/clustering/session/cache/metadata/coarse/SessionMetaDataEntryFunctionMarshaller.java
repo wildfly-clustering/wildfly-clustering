@@ -20,7 +20,9 @@ import org.wildfly.clustering.server.offset.Offset;
  * ProtoStream marshaller for a {@link SessionMetaDataEntryFunction}.
  * @author Paul Ferraro
  */
-public class SessionMetaDataEntryFunctionMarshaller implements ProtoStreamMarshaller<SessionMetaDataEntryFunction<Object>> {
+public enum SessionMetaDataEntryFunctionMarshaller implements ProtoStreamMarshaller<SessionMetaDataEntryFunction<Object>> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int TIMEOUT_OFFSET_INDEX = 1;
 	private static final int LAST_ACCESS_START_TIME_OFFSET_INDEX = 2;

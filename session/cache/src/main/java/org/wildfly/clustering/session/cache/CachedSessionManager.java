@@ -22,7 +22,7 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionMetaData;
 
 /**
- * A concurrent session manager, that can share session references across concurrent threads.
+ * A session manager decorator that shares session references across concurrent threads.
  * @param <C> the session context type
  * @author Paul Ferraro
  */
@@ -47,6 +47,11 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 		}
 	};
 
+	/**
+	 * Creates a cached session manager decorator.
+	 * @param manager a session manager
+	 * @param cacheFactory a cache factory
+	 */
 	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
 		super(manager);
 		this.sessionCreator = new BiFunction<>() {

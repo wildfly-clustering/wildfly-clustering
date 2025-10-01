@@ -19,6 +19,12 @@ public abstract class MarshallerSessionAttributesFactoryConfiguration<V, MV> imp
 	private final Immutability immutability;
 	private final Marshaller<V, MV> marshaller;
 
+	/**
+	 * Creates a session attributes factory configuration
+	 * @param <SC> a session context type
+	 * @param configuration a session manager factory configuration
+	 * @param marshaller a session attributes marshaller
+	 */
 	protected <SC> MarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<SC> configuration, Marshaller<V, MV> marshaller) {
 		this.immutability = configuration.getImmutability();
 		this.marshaller = marshaller;

@@ -24,6 +24,12 @@ public class NarySessionAffinity<M extends GroupMember> implements UnaryOperator
 	private String delimiter;
 	private int maxMembers;
 
+	/**
+	 * Creates an affinity to multiple members.
+	 * @param affinity an affinity function
+	 * @param mapper a mapping of group member to name
+	 * @param config the affinity configuration
+	 */
 	public NarySessionAffinity(Function<String, List<M>> affinity, Function<M, String> mapper, NarySessionAffinityConfiguration config) {
 		this.affinity = affinity;
 		this.mapper = mapper;

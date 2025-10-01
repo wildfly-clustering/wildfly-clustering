@@ -16,6 +16,7 @@ import org.wildfly.clustering.session.cache.metadata.InvalidatableSessionMetaDat
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 
 /**
+ * A session factory composed of metadata, attribute, and context factories.
  * @param <C> the session manager context type
  * @param <MV> the session metadata type
  * @param <AV> the session attributes type
@@ -27,11 +28,18 @@ public class CompositeSessionFactory<C, MV extends Contextual<SC>, AV, SC> exten
 	private final SessionAttributesFactory<C, AV> attributesFactory;
 	private final Supplier<SC> contextFactory;
 
-	public CompositeSessionFactory(SessionMetaDataFactory<MV> metaDataFactory, SessionAttributesFactory<C, AV> attributesFactory, CacheProperties properties, Supplier<SC> localContextFactory) {
+	/**
+	 * Creates a session factory composed from metadata, attribute, and context factories.
+	 * @param metaDataFactory the session metadata factory
+	 * @param attributesFactory the session atttributes factory
+	 * @param properties the cache properties
+	 * @param contextFactory the session context factory
+	 */
+	public CompositeSessionFactory(SessionMetaDataFactory<MV> metaDataFactory, SessionAttributesFactory<C, AV> attributesFactory, CacheProperties properties, Supplier<SC> contextFactory) {
 		super(metaDataFactory, attributesFactory, properties);
 		this.metaDataFactory = metaDataFactory;
 		this.attributesFactory = attributesFactory;
-		this.contextFactory = localContextFactory;
+		this.contextFactory = contextFactory;
 	}
 
 	@Override

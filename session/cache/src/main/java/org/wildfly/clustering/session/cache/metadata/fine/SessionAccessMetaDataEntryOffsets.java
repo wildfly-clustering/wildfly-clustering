@@ -14,8 +14,15 @@ import org.wildfly.clustering.server.offset.Offset;
  * @author Paul Ferraro
  */
 public interface SessionAccessMetaDataEntryOffsets {
-
+	/**
+	 * Returns the offset since creation.
+	 * @return the offset since creation.
+	 */
 	Offset<Duration> getSinceCreationOffset();
 
+	/**
+	 * Returns the last access offset.
+	 * @return the last access offset.
+	 */
 	Offset<Duration> getLastAccessOffset();
 }

@@ -10,10 +10,16 @@ import java.time.Duration;
 import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
+ * A set of session access metadata values.
  * @author Paul Ferraro
  */
 public interface MutableSessionAccessMetaDataOffsetValues extends MutableSessionAccessMetaDataValues {
 
+	/**
+	 * Creates mutable session access metadata offset values.
+	 * @param accessMetaData the session access metadata
+	 * @return mutable session access metadata offset values.
+	 */
 	static MutableSessionAccessMetaDataOffsetValues from(ImmutableSessionAccessMetaData accessMetaData) {
 		OffsetValue<Duration> sinceCreation = OffsetValue.from(accessMetaData.getSinceCreationDuration());
 		OffsetValue<Duration> lastAccess = OffsetValue.from(accessMetaData.getLastAccessDuration());

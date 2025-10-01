@@ -11,12 +11,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * A session attributes implementation based on a map.
  * @author Paul Ferraro
  */
 public abstract class AbstractSessionAttributes implements SessionAttributes {
 
 	private final Map<String, Object> attributes;
 
+	/**
+	 * Creates the attributes of a session.
+	 * @param attributes a map of attributes.
+	 */
 	protected AbstractSessionAttributes(Map<String, Object> attributes) {
 		this.attributes = Collections.unmodifiableMap(attributes);
 	}

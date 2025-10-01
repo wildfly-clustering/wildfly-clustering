@@ -28,6 +28,12 @@ public class DetachedSession<C> extends AbstractImmutableSession implements Sess
 	private final SessionMetaData metaData;
 	private final Map<String, Object> attributes;
 
+	/**
+	 * Creates a detached session.
+	 * @param manager the session manager
+	 * @param id the identifier of the detached session
+	 * @param context the context of the detached session
+	 */
 	public DetachedSession(Supplier<SessionManager<C>> manager, String id, C context) {
 		super(id);
 		this.manager = manager;
