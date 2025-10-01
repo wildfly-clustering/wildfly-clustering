@@ -12,9 +12,11 @@ import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
+ * Provider of a specification facade for a session.
  * @author Paul Ferraro
  */
 public enum HttpSessionProvider implements SessionSpecificationProvider<HttpSession, ServletContext> {
+	/** Singleton instance */
 	INSTANCE;
 
 	@Override
