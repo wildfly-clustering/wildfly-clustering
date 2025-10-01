@@ -28,6 +28,12 @@ public interface LocalGroup extends Group<String, LocalGroupMember> {
 		return Registration.EMPTY;
 	}
 
+	/**
+	 * Creates a local group with the specified group and member names.
+	 * @param groupName a group name
+	 * @param memberName a member name
+	 * @return a local group with the specified group and member names.
+	 */
 	static LocalGroup of(String groupName, String memberName) {
 		return new DefaultLocalGroup(groupName, memberName);
 	}

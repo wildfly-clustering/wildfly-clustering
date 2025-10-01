@@ -17,10 +17,16 @@ import org.wildfly.clustering.marshalling.Serializer;
  * @author Paul Ferraro
  */
 public class ObjectInputStream extends java.io.ObjectInputStream {
-
 	private static final InvocationHandler NULL_HANDLER = (proxy, method, args) -> null;
+
 	private final Serializer<ClassLoader> serializer;
 
+	/**
+	 * Creates an object input stream decorator using the specified class loader serializer
+	 * @param input the decorated input stream
+	 * @param serializer a class loader serializer
+	 * @throws IOException if the object input stream could not be created
+	 */
 	public ObjectInputStream(InputStream input, Serializer<ClassLoader> serializer) throws IOException {
 		super(input);
 		this.serializer = serializer;

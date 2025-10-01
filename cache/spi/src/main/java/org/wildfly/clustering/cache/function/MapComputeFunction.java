@@ -15,6 +15,10 @@ import java.util.Map;
  */
 public class MapComputeFunction<K, V> extends MapFunction<K, V, Map<K, V>> {
 
+	/**
+	 * Constructs a map compute function.
+	 * @param operand the updated map entries
+	 */
 	public MapComputeFunction(Map<K, V> operand) {
 		super(operand, MapOperations.forOperandKey(operand.keySet().iterator().next()));
 	}

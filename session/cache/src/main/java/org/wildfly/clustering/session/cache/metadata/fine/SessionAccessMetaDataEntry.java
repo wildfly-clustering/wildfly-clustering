@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache.metadata.fine;
 import org.wildfly.clustering.cache.function.Remappable;
 
 /**
+ * The session access metadata entry.
  * @author Paul Ferraro
  */
 public interface SessionAccessMetaDataEntry extends SessionAccessMetaData, Remappable<SessionAccessMetaDataEntry, SessionAccessMetaDataEntryOffsets> {

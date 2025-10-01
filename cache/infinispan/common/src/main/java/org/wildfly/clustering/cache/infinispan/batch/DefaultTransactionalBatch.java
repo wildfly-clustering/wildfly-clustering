@@ -19,6 +19,10 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
+/**
+ * A transactional batch.
+ * @author Paul Ferraro
+ */
 public class DefaultTransactionalBatch extends AbstractContextualBatch implements TransactionalBatch, TransactionalSuspendedBatch, Synchronization {
 	private final TransactionManager tm;
 	private final Transaction tx;

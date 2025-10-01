@@ -20,10 +20,18 @@ public class KeyFilter<K> implements CacheEventFilter<K, Object> {
 
 	private final Predicate<? super K> predicate;
 
+	/**
+	 * Creates a filter that accepts keys of the specified class.
+	 * @param keyClass a key class
+	 */
 	public KeyFilter(Class<? super K> keyClass) {
 		this(keyClass::isInstance);
 	}
 
+	/**
+	 * Creates a filter that accepts keys matching the specified predicate.
+	 * @param predicate a key predicate
+	 */
 	public KeyFilter(Predicate<? super K> predicate) {
 		this.predicate = predicate;
 	}

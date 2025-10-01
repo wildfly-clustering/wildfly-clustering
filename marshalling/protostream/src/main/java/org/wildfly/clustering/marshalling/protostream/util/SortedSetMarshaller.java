@@ -27,6 +27,10 @@ public class SortedSetMarshaller<E, T extends SortedSet<E>> extends AbstractColl
 
 	private final Function<Comparator<? super E>, T> factory;
 
+	/**
+	 * Creates a marshaller for a sorted set.
+	 * @param factory a sorted set factory
+	 */
 	@SuppressWarnings("unchecked")
 	public SortedSetMarshaller(Function<Comparator<? super E>, T> factory) {
 		super((Class<T>) factory.apply((Comparator<E>) ComparatorMarshaller.INSTANCE.createInitialValue()).getClass());

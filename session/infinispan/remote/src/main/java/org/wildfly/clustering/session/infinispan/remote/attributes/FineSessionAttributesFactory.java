@@ -50,6 +50,12 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	private final CacheEntryMutatorFactory<SessionAttributesKey, Map<String, V>> mutatorFactory;
 	private final BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory;
 
+	/**
+	 * Creates a session attributes factory
+	 * @param configuration the configuration of this factory
+	 * @param notifierFactory a session attribute activation/passivation notifier factory
+	 * @param hotrod the configuration of the associated cache
+	 */
 	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
 		this.readCache = hotrod.getCache();
 		this.writeCache = hotrod.getIgnoreReturnCache();

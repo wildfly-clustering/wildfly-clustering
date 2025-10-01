@@ -12,6 +12,7 @@ import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.wildfly.clustering.cache.CacheProperties;
 
 /**
+ * Eagerly captured properties of a remote cache.
  * @author Paul Ferraro
  */
 public class RemoteCacheProperties implements CacheProperties {
@@ -19,6 +20,10 @@ public class RemoteCacheProperties implements CacheProperties {
 	private final boolean transactional;
 	private final boolean cached;
 
+	/**
+	 * Creates properties of a remote cache.
+	 * @param cache a remote cache
+	 */
 	public RemoteCacheProperties(RemoteCache<?, ?> cache) {
 		// TODO query server configuration to determine whether reads are actually repeatable.
 		this.transactional = cache.isTransactional();

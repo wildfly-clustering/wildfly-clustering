@@ -13,8 +13,11 @@ package org.wildfly.clustering.function;
  * @param <R> the result type
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
+	/** An identity function using the former parameter */
 	BiFunction<?, ?, ?> FORMER_IDENTITY = (value1, value2) -> value1;
+	/** An identity function using the latter parameter */
 	BiFunction<?, ?, ?> LATTER_IDENTITY = (value1, value2) -> value2;
+	/** A function that always returns null. */
 	BiFunction<?, ?, ?> NULL = (value1, value2) -> null;
 
 	/**

@@ -22,6 +22,10 @@ public class DefaultSerializationContext extends NativeSerializationContext impl
 
 	private final org.infinispan.protostream.SerializationContext context;
 
+	/**
+	 * Creates a new serialization context from the specified context
+	 * @param context a decorated serialization context implementation
+	 */
 	public DefaultSerializationContext(org.infinispan.protostream.SerializationContext context) {
 		super(context);
 		this.context = context;

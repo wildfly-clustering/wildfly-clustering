@@ -14,6 +14,7 @@ import java.util.List;
  * @param <U> the second parameter type
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
+	/** An empty consumer */
 	BiConsumer<?, ?> EMPTY = (value1, value2) -> {};
 
 	@Override

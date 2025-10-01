@@ -13,6 +13,9 @@ import org.infinispan.protostream.ImmutableSerializationContext;
  */
 public interface ProtoStreamOperation {
 
+	/**
+	 * An operation context.
+	 */
 	interface Context {
 		/**
 		 * Records the specified object, so that it can be referenced later within the same stream

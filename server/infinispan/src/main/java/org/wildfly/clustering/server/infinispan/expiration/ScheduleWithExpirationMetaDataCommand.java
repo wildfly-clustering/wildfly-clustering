@@ -16,6 +16,11 @@ import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithPersistent
  */
 public class ScheduleWithExpirationMetaDataCommand<I> extends ScheduleWithPersistentMetaDataCommand<I, ExpirationMetaData> {
 
+	/**
+	 * Creates a schedule command for the cache entry associated with the specified identifier.
+	 * @param id the identifier of a scheduled item
+	 * @param metaData a scheduled entry metadata
+	 */
 	public ScheduleWithExpirationMetaDataCommand(I id, ExpirationMetaData metaData) {
 		super(id, metaData);
 	}

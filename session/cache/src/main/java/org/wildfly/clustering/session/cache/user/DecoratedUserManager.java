@@ -11,6 +11,7 @@ import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
 /**
+ * A decorated user manager.
  * @author Paul Ferraro
  * @param <C> the persistent context type
  * @param <T> the transient context type
@@ -21,10 +22,19 @@ public class DecoratedUserManager<C, T, D, S> extends DecoratedManager<String> i
 
 	private final UserManager<C, T, D, S> manager;
 
+	/**
+	 * Creates a user manager decorator.
+	 * @param manager the decorated user manager
+	 */
 	public DecoratedUserManager(UserManager<C, T, D, S> manager) {
 		this(manager, manager);
 	}
 
+	/**
+	 * Creates a user manager decorator.
+	 * @param manager the decorated user manager
+	 * @param service an alternate service
+	 */
 	protected DecoratedUserManager(UserManager<C, T, D, S> manager, Service service) {
 		super(manager, service);
 		this.manager = manager;

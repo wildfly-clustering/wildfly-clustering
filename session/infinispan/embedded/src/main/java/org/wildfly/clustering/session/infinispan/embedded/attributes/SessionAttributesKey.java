@@ -11,7 +11,10 @@ import org.wildfly.clustering.cache.infinispan.CacheKey;
  * @author Paul Ferraro
  */
 public class SessionAttributesKey extends CacheKey<String> {
-
+	/**
+	 * Creates a session attribute key.
+	 * @param id the identifier of this session
+	 */
 	public SessionAttributesKey(String id) {
 		super(id);
 	}

@@ -17,6 +17,12 @@ public class ContextualThreadFactory<C> implements ThreadFactory {
 	private final ThreadFactory factory;
 	private final Contextualizer contextualizer;
 
+	/**
+	 * Constructs a contextual thread factory.
+	 * @param factory the decorated thread factory
+	 * @param targetContext the context with which new thread tasks should run.
+	 * @param contextReference the context reference used by this thread factory
+	 */
 	public ContextualThreadFactory(ThreadFactory factory, C targetContext, ContextReference<C> contextReference) {
 		this(factory, Contextualizer.withContextProvider(contextReference.provide(targetContext)));
 	}

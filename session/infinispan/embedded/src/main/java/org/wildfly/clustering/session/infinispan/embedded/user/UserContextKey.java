@@ -12,7 +12,10 @@ import org.wildfly.clustering.cache.infinispan.CacheKey;
  * @author Paul Ferraro
  */
 public class UserContextKey extends CacheKey<String> {
-
+	/**
+	 * The cache key of the user context entry.
+	 * @param id the identifier of the user
+	 */
 	public UserContextKey(String id) {
 		super(id);
 	}

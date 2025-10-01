@@ -15,7 +15,11 @@
 	<artifactId>wildfly-clustering-session-infinispan</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Session Management: Infinispan: Modules</name>
+	<properties>
+		<project.prefix.session.infinispan>${project.prefix.session}: Infinispan</project.prefix.session.infinispan>
+	</properties>
+
+	<name>${project.prefix.session.infinispan}: Modules</name>
 
 	<modules>
 		<module>embedded</module>

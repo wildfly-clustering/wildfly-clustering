@@ -25,6 +25,11 @@ import com.github.benmanes.caffeine.cache.Cache;
 public class CaffeineNearCacheService<K, V> extends NearCacheService<K, V> {
 	private final Supplier<Cache<K, MetadataValue<V>>> factory;
 
+	/**
+	 * Creates a Caffeine-based near cache service.
+	 * @param factory a factory for creating a Caffeine cache
+	 * @param listenerNotifier a notifier for client listeners
+	 */
 	public CaffeineNearCacheService(Supplier<Cache<K, MetadataValue<V>>> factory, ClientListenerNotifier listenerNotifier) {
 		super(new NearCacheConfiguration(NearCacheMode.INVALIDATED, 0, false), listenerNotifier);
 		this.factory = factory;

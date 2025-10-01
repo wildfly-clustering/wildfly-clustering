@@ -26,6 +26,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum ZoneOffsetMarshaller implements FieldSetMarshaller.Simple<ZoneOffset> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int HOURS_INDEX = 0;

@@ -42,6 +42,14 @@ public class SessionExpirationScheduler<K extends Key<String>, V> extends Abstra
 
 	private final ImmutableSessionMetaDataFactory<V> metaDataFactory;
 
+	/**
+	 * Creates a session expiration scheduler
+	 * @param name the name of this scheduler
+	 * @param batchFactory the batch factory
+	 * @param metaDataFactory the session metadata factory
+	 * @param remover the remover for sessions
+	 * @param closeTimeout the duration of time to wait for scheduled tasks to complete during {@link Scheduler#close()}.
+	 */
 	public SessionExpirationScheduler(String name, Supplier<Batch> batchFactory, ImmutableSessionMetaDataFactory<V> metaDataFactory, Predicate<String> remover, Duration closeTimeout) {
 		this(new LocalSchedulerConfiguration<>() {
 			@Override
@@ -66,10 +74,20 @@ public class SessionExpirationScheduler<K extends Key<String>, V> extends Abstra
 		}, metaDataFactory);
 	}
 
+	/**
+	 * Creates a session expiration scheduler.
+	 * @param config the configuration of this scheduler
+	 * @param metaDataFactory the session metadata factory
+	 */
 	public SessionExpirationScheduler(LocalSchedulerConfiguration<String> config, ImmutableSessionMetaDataFactory<V> metaDataFactory) {
 		this(new LocalScheduler<>(config), metaDataFactory);
 	}
 
+	/**
+	 * Creates a session expiration scheduler.
+	 * @param scheduler the local scheduler
+	 * @param metaDataFactory the session metadata factory
+	 */
 	public SessionExpirationScheduler(Scheduler<String, Instant> scheduler, ImmutableSessionMetaDataFactory<V> metaDataFactory) {
 		super(scheduler.map(ExpirationMetaData::getExpirationTime));
 		this.metaDataFactory = metaDataFactory;

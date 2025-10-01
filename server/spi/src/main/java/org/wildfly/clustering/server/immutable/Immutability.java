@@ -47,10 +47,19 @@ public interface Immutability extends Predicate<Object> {
 		};
 	}
 
+	/**
+	 * Returns a composite immutability predicate based on the default set of predicates.
+	 * @return a composite immutability predicate based on the default set of predicates.
+	 */
 	static Immutability getDefault() {
 		return composite(EnumSet.allOf(DefaultImmutability.class));
 	}
 
+	/**
+	 * Returns a composite immutability predicate using the specified predicates.
+	 * @param immutabilities a collection of immutability predicates
+	 * @return a composite immutability predicate using the specified predicates.
+	 */
 	static Immutability composite(Collection<? extends Immutability> immutabilities) {
 		return new Immutability() {
 			private Immutability unmodifiable = new UnmodifiableImmutability(this);
@@ -72,6 +81,11 @@ public interface Immutability extends Predicate<Object> {
 		};
 	}
 
+	/**
+	 * Returns an immutability predicate using the specified collection of concrete immutable classes.
+	 * @param immutableClasses a collection of immutable classes
+	 * @return an immutability predicate using the specified collection of concrete immutable classes.
+	 */
 	static Immutability classes(Collection<Class<?>> immutableClasses) {
 		Set<Class<?>> classes = UnmodifiableImmutability.identitySet(immutableClasses);
 		return new Immutability() {
@@ -82,6 +96,11 @@ public interface Immutability extends Predicate<Object> {
 		};
 	}
 
+	/**
+	 * Returns an immutability predicate using the specified collection of immutable objects.
+	 * @param immutableObjects a collection of immutable objects.
+	 * @return an immutability predicate using the specified collection of immutable objects.
+	 */
 	static Immutability identity(Collection<Object> immutableObjects) {
 		Set<Object> objects = UnmodifiableImmutability.identitySet(immutableObjects);
 		return new Immutability() {
@@ -92,6 +111,11 @@ public interface Immutability extends Predicate<Object> {
 		};
 	}
 
+	/**
+	 * Returns an immutability predicate using the specified collection of potentially non-concrete classes.
+	 * @param immutableClasses a collection of potentially non-concrete immutable classes
+	 * @return an immutability predicate using the specified collection of potentially non-concrete classes.
+	 */
 	static Immutability instanceOf(Collection<Class<?>> immutableClasses) {
 		return new Immutability() {
 			@Override

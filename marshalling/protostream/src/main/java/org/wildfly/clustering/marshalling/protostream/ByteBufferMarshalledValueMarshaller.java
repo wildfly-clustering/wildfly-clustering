@@ -17,6 +17,7 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshalledValue;
  * @author Paul Ferraro
  */
 public enum ByteBufferMarshalledValueMarshaller implements ProtoStreamMarshaller<ByteBufferMarshalledValue<Object>> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int BUFFER_INDEX = 1;

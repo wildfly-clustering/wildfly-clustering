@@ -38,6 +38,11 @@ import org.infinispan.factories.annotations.SurvivesRestarts;
 @DefaultFactoryFor(classes = InternalDataContainer.class)
 @SurvivesRestarts
 public class DataContainerFactory extends AbstractNamedCacheComponentFactory implements AutoInstantiableFactory {
+	/**
+	 * Creates a new data container factory.
+	 */
+	public DataContainerFactory() {
+	}
 
 	@Override
 	public Object construct(String componentName) {

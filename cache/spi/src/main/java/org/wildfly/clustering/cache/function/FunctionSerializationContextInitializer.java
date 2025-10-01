@@ -12,14 +12,22 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
+ * The serialization context initializer for this package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class FunctionSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a serialization context initializer.
+	 */
+	public FunctionSerializationContextInitializer() {
+		super();
+	}
+
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new MapComputeFunctionMarshaller());
+		context.registerMarshaller(MapComputeFunctionMarshaller.INSTANCE);
 		context.registerMarshaller(new CollectionFunctionMarshaller<>(SetAddFunction.class, SetAddFunction::new));
 		context.registerMarshaller(new CollectionFunctionMarshaller<>(SetRemoveFunction.class, SetRemoveFunction::new));
 		context.registerMarshaller(Scalar.ANY.toMarshaller(RemappingFunction.class, RemappingFunction::getOperand, RemappingFunction::new));

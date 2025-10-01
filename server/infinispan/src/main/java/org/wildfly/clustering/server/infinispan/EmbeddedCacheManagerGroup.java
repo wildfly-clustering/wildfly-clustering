@@ -32,11 +32,15 @@ public class EmbeddedCacheManagerGroup<A extends Comparable<A>, M extends GroupM
 	private final CacheContainerGroupMemberFactory factory;
 	private final CacheContainerGroupMember localMember;
 
+	/**
+	 * Creates a group associated with a cache container.
+	 * @param configuration the configuration of a cache container-based group.
+	 */
 	public EmbeddedCacheManagerGroup(EmbeddedCacheManagerGroupConfiguration<A, M> configuration) {
 		this.manager = configuration.getCacheContainer();
 		this.group = configuration.getGroup();
 		this.factory = new EmbeddedCacheManagerGroupMemberFactory(configuration);
-		this.wrapper = configuration.getAddressWrapper().<M>compose(GroupMember::getAddress).andThen(this.factory::createGroupMember);
+		this.wrapper = configuration.getAddressWrapper().<M>compose(GroupMember::getId).andThen(this.factory::createGroupMember);
 		this.localMember = this.wrapper.apply(this.group.getLocalMember());
 	}
 

@@ -22,6 +22,10 @@ public class CaffeineNearCache<K, V> implements NearCache<K, V> {
 
 	private final Map<K, MetadataValue<V>> map;
 
+	/**
+	 * Creates a near cache backed by a Caffeine cache.
+	 * @param cache a Caffeine cache
+	 */
 	public CaffeineNearCache(Cache<K, MetadataValue<V>> cache) {
 		this.map = cache.asMap();
 	}

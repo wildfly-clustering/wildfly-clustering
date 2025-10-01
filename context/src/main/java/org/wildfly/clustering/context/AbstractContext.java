@@ -18,6 +18,13 @@ public abstract class AbstractContext<T> implements Context<T>, Consumer<Runnabl
 
 	private final Deque<Runnable> tasks = new LinkedList<>();
 
+	/**
+	 * Constructs a new context.
+	 */
+	protected AbstractContext() {
+		// Do nothing
+	}
+
 	@Override
 	public void accept(Runnable task) {
 		this.tasks.add(task);

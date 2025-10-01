@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpSession;
 import org.wildfly.clustering.session.ImmutableSession;
 
 /**
+ * Abstract {@link HttpSession} facade implementing read-only and deprecated methods.
  * @author Paul Ferraro
  */
 public abstract class AbstractHttpSession implements HttpSession {
@@ -22,6 +23,11 @@ public abstract class AbstractHttpSession implements HttpSession {
 	private final ImmutableSession session;
 	private final ServletContext context;
 
+	/**
+	 * Creates a specification facade for a session.
+	 * @param session the decorated session
+	 * @param context the associated servlet context
+	 */
 	protected AbstractHttpSession(ImmutableSession session, ServletContext context) {
 		this.session = session;
 		this.context = context;

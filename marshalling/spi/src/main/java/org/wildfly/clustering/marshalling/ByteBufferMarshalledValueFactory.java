@@ -13,13 +13,17 @@ public class ByteBufferMarshalledValueFactory implements MarshalledValueFactory<
 
 	private final ByteBufferMarshaller marshaller;
 
+	/**
+	 * Creates a new marshalled value factory with the specified marshaller.
+	 * @param marshaller a marshaller
+	 */
 	public ByteBufferMarshalledValueFactory(ByteBufferMarshaller marshaller) {
 		this.marshaller = marshaller;
 	}
 
 	@Override
-	public boolean isMarshallable(Object object) {
-		return this.marshaller.isMarshallable(object);
+	public boolean test(Object object) {
+		return this.marshaller.test(object);
 	}
 
 	@Override

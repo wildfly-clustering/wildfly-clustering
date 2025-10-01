@@ -25,6 +25,7 @@ import org.wildfly.clustering.marshalling.jboss.SerializerExternalizer;
  * @author Paul Ferraro
  */
 public enum AddressSerializer implements Serializer<Address> {
+	/** Singleton instance */
 	INSTANCE;
 
 	@Override
@@ -46,6 +47,10 @@ public enum AddressSerializer implements Serializer<Address> {
 		return OptionalInt.of(Util.size(address));
 	}
 
+	/**
+	 * Provides an externalizer of a JGroups address.
+	 * @param <A> the address type
+	 */
 	static class AddressExternalizerProvider<A extends Address> implements ExternalizerProvider {
 		private static final Externalizer EXTERNALIZER = new SerializerExternalizer(INSTANCE);
 		private final Class<?> type;
@@ -65,15 +70,27 @@ public enum AddressSerializer implements Serializer<Address> {
 		}
 	}
 
+	/**
+	 * Provider of a {@link UUID} externalizer.
+	 */
 	@MetaInfServices(ExternalizerProvider.class)
 	public static class UUIDExternalizerProvider extends AddressExternalizerProvider<UUID> {
+		/**
+		 * Creates a provider of a {@link UUID} externalizer.
+		 */
 		public UUIDExternalizerProvider() {
 			super(UUID.class);
 		}
 	}
 
+	/**
+	 * Provider of a {@link IpAddress} externalizer.
+	 */
 	@MetaInfServices(ExternalizerProvider.class)
 	public static class IpAddressExternalizerProvider extends AddressExternalizerProvider<IpAddress> {
+		/**
+		 * Creates a provider of a {@link IpAddress} externalizer.
+		 */
 		public IpAddressExternalizerProvider() {
 			super(IpAddress.class);
 		}

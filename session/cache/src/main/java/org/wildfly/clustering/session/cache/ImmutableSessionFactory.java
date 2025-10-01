@@ -23,9 +23,22 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  * @author Paul Ferraro
  */
 public interface ImmutableSessionFactory<MV, AV> extends BiCacheEntryLocator<String, MV, AV> {
-
+	/**
+	 * Returns the immutable session meta data factory.
+	 * @return the immutable session meta data factory.
+	 */
 	ImmutableSessionMetaDataFactory<MV> getMetaDataFactory();
+
+	/**
+	 * Returns the immutable session attributes factory.
+	 * @return the immutable session attributes factory.
+	 */
 	ImmutableSessionAttributesFactory<AV> getAttributesFactory();
+
+	/**
+	 * Returns the properties of the associated cache.
+	 * @return the properties of the associated cache.
+	 */
 	CacheProperties getCacheProperties();
 
 	@Override
@@ -44,6 +57,12 @@ public interface ImmutableSessionFactory<MV, AV> extends BiCacheEntryLocator<Str
 		return Map.entry(metaDataStage, attributesStage);
 	}
 
+	/**
+	 * Creates an immutable session from the specified identifier and metadata/attribute entry.
+	 * @param id a session identifier
+	 * @param entry a map entry containing the metadata and attributes of the session
+	 * @return an immutable session
+	 */
 	default ImmutableSession createImmutableSession(String id, Map.Entry<MV, AV> entry) {
 		MV metaDataValue = entry.getKey();
 		AV attributesValue = entry.getValue();
@@ -53,5 +72,12 @@ public interface ImmutableSessionFactory<MV, AV> extends BiCacheEntryLocator<Str
 		return this.createImmutableSession(id, metaData, attributes);
 	}
 
+	/**
+	 * Creates an immutable session from the specified identifier, metadata, and attributes.
+	 * @param id the identifier of this session
+	 * @param metaData the metadata of this session
+	 * @param attributes the attributes of this session
+	 * @return an immutable session
+	 */
 	ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, Map<String, Object> attributes);
 }

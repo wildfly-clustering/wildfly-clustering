@@ -11,6 +11,7 @@ import org.wildfly.clustering.server.jgroups.ChannelGroup;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 
 /**
+ * A channel-based command dispatcher factory.
  * @author Paul Ferraro
  */
 public interface ChannelCommandDispatcherFactory extends GroupCommandDispatcherFactory<Address, ChannelGroupMember>, AutoCloseable {

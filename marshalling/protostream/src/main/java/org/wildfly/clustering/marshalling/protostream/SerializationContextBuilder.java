@@ -32,6 +32,7 @@ import org.wildfly.clustering.marshalling.protostream.util.concurrent.Concurrent
 import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.AtomicSerializationContextInitializer;
 
 /**
+ * A builder of a serialization context.
  * @author Paul Ferraro
  * @param <I> the initializer type
  */
@@ -74,6 +75,9 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 		return new NativeSerializationContextBuilder(wrapper.apply(ProtobufUtil.newSerializationContext(Configuration.builder().build())));
 	}
 
+	/**
+	 * Default serialization context builder.
+	 */
 	class DefaultSerializationContextBuilder implements SerializationContextBuilder<SerializationContextInitializer> {
 		private static final System.Logger LOGGER = System.getLogger(SerializationContextBuilder.class.getName());
 		private static final String PROTOSTREAM_BASE_PACKAGE_NAME = org.infinispan.protostream.BaseMarshaller.class.getPackage().getName();
@@ -172,6 +176,9 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 		}
 	}
 
+	/**
+	 * Native serialization context builder.
+	 */
 	class NativeSerializationContextBuilder implements SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer> {
 		private final org.infinispan.protostream.SerializationContext context;
 
@@ -201,7 +208,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	}
 
 	@SuppressWarnings("removal")
-	static <T> List<T> loadAll(Class<T> targetClass, ClassLoader loader) {
+	private static <T> List<T> loadAll(Class<T> targetClass, ClassLoader loader) {
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public List<T> run() {

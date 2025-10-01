@@ -18,6 +18,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -45,7 +46,6 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.KeyFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -74,10 +74,16 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 	private final Function<RegistryListener<K, V>, ExecutorService> executorServiceFactory = new Function<>() {
 		@Override
 		public ExecutorService apply(RegistryListener<K, V> listener) {
-			return new DefaultExecutorService(ExecutorServiceFactory.SINGLE_THREAD, Thread.currentThread().getContextClassLoader());
+			return new DefaultExecutorService(Executors::newSingleThreadExecutor, Thread.currentThread().getContextClassLoader());
 		}
 	};
 
+	/**
+	 * Creates a cache registry using the specified configuration and local entry.
+	 * @param config a registry configuration
+	 * @param entry the local group member entry
+	 * @param closeTask a task to run on registry close
+	 */
 	public CacheRegistry(CacheRegistryConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
 		this.cache = config.getWriteOnlyCache();
 		this.batchFactory = config.getBatchFactory();
@@ -145,7 +151,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 
 	@Override
 	public Map<K, V> getEntries() {
-		Set<Address> addresses = this.group.getMembership().getMembers().stream().map(CacheContainerGroupMember::getAddress).collect(Collectors.toUnmodifiableSet());
+		Set<Address> addresses = this.group.getMembership().getMembers().stream().map(CacheContainerGroupMember::getId).collect(Collectors.toUnmodifiableSet());
 		Map<K, V> result = new HashMap<>();
 		for (Map.Entry<K, V> entry : this.cache.getAdvancedCache().getAll(addresses).values()) {
 			result.put(entry.getKey(), entry.getValue());
@@ -155,9 +161,14 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 
 	@Override
 	public Map.Entry<K, V> getEntry(CacheContainerGroupMember member) {
-		return this.cache.get(member.getAddress());
+		return this.cache.get(member.getId());
 	}
 
+	/**
+	 * Non-blocking handler of topology changed events.
+	 * @param event a topology changed event.
+	 * @return a completion stage
+	 */
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<Address, Map.Entry<K, V>> event) {
 		ConsistentHash previousHash = event.getWriteConsistentHashAtStart();
@@ -227,6 +238,11 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		return CompletableFuture.completedStage(null);
 	}
 
+	/**
+	 * Non-blocking handler of cache entry creation/modified events.
+	 * @param event a cache entry event.
+	 * @return a completion stage
+	 */
 	@CacheEntryCreated
 	@CacheEntryModified
 	public CompletionStage<Void> event(CacheEntryEvent<Address, Map.Entry<K, V>> event) {
@@ -239,6 +255,11 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		return CompletableFuture.completedStage(null);
 	}
 
+	/**
+	 * Non-blocking handler of cache entry removal events.
+	 * @param event a cache entry removal event.
+	 * @return a completion stage
+	 */
 	@CacheEntryRemoved
 	public CompletionStage<Void> removed(CacheEntryRemovedEvent<Address, Map.Entry<K, V>> event) {
 		if (!event.isOriginLocal()) {

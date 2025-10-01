@@ -64,9 +64,24 @@ public class SimpleObjectInput extends SimpleDataInput implements ObjectInput {
 		// Nothing to close
 	}
 
+	/**
+	 * Builder of a simple object input.
+	 */
 	public static class Builder extends SimpleDataInput.Builder {
 		List<Object> objects = Collections.emptyList();
 
+		/**
+		 * Creates a builder of an object input
+		 */
+		public Builder() {
+			super();
+		}
+
+		/**
+		 * Specifies the values to be returned via consecutive calls to {@link ObjectInput#readObject()}.
+		 * @param values the consecutive values to be read
+		 * @return a reference to this builder
+		 */
 		public Builder with(Object... values) {
 			this.objects = Arrays.asList(values);
 			return this;

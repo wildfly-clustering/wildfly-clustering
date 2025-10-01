@@ -16,6 +16,7 @@ import java.util.ServiceLoader;
  * @author Paul Ferraro
  */
 public enum DefaultContextualizerFactory implements ContextualizerFactory {
+	/** The default extensible contextualizer factory */
 	INSTANCE;
 
 	private final List<ContextualizerFactory> factories = new LinkedList<>();

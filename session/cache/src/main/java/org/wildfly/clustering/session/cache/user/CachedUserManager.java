@@ -14,6 +14,7 @@ import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
 /**
+ * A user manager that shares user references between concurrent threads.
  * @author Paul Ferraro
  * @param <C> the persistent context type
  * @param <T> the transient context type
@@ -26,6 +27,11 @@ public class CachedUserManager<C, T, D, S> extends DecoratedUserManager<C, T, D,
 	private final Cache<String, CacheableUser<C, T, D, S>> cache;
 	private final BiFunction<String, Runnable, CacheableUser<C, T, D, S>> finder;
 
+	/**
+	 * Creates a cached user manager.
+	 * @param manager the decorated user manager
+	 * @param cacheFactory a cache factory
+	 */
 	public CachedUserManager(UserManager<C, T, D, S> manager, CacheFactory cacheFactory) {
 		super(manager);
 		this.finder = new BiFunction<>() {

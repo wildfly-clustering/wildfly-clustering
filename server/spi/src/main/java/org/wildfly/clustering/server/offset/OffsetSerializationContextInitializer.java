@@ -14,10 +14,17 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
+ * The serialization context initializer for this package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class OffsetSerializationContextInitializer extends AbstractSerializationContextInitializer {
+
+	/**
+	 * Creates a new serialization context initializer.
+	 */
+	public OffsetSerializationContextInitializer() {
+	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {

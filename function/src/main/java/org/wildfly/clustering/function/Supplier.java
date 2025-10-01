@@ -14,6 +14,7 @@ import java.util.Map;
  * @param <T> the supplied type
  */
 public interface Supplier<T> extends java.util.function.Supplier<T> {
+	/** A supplier that always returns null */
 	Supplier<?> NULL = () -> null;
 
 	/**

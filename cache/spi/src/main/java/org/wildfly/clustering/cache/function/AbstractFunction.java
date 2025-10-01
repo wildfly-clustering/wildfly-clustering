@@ -17,12 +17,19 @@ import java.util.function.UnaryOperator;
  * @param <T> the operand type
  * @param <O> the operable object type
  */
-public abstract class AbstractFunction<T, O> implements BiFunction<Object, O, O>, BiConsumer<O, T> {
+public abstract class AbstractFunction<T, O> implements BiFunction<Object, O, O>, BiConsumer<O, T>, Operation<T> {
 	private final T operand;
 	private final UnaryOperator<O> copier;
 	private final Supplier<O> factory;
 	private final Predicate<O> empty;
 
+	/**
+	 * Constructs a function.
+	 * @param operand the function operand
+	 * @param copier an operable copier
+	 * @param factory an operable factory
+	 * @param empty a predicate testing for an empty operable
+	 */
 	public AbstractFunction(T operand, UnaryOperator<O> copier, Supplier<O> factory, Predicate<O> empty) {
 		this.operand = operand;
 		this.copier = copier;
@@ -37,6 +44,7 @@ public abstract class AbstractFunction<T, O> implements BiFunction<Object, O, O>
 		return !this.empty.test(result) ? result : null;
 	}
 
+	@Override
 	public T getOperand() {
 		return this.operand;
 	}

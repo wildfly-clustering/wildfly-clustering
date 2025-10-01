@@ -27,11 +27,15 @@ public class EmbeddedCacheManagerCommandDispatcherFactory<A extends Comparable<A
 	private final Function<M, CacheContainerGroupMember> wrapper;
 	private final Function<CacheContainerGroupMember, M> unwrapper;
 
+	/**
+	 * Creates a command dispatcher factory using the specified configuration
+	 * @param configuration the configuration of the command dispatcher factory
+	 */
 	public EmbeddedCacheManagerCommandDispatcherFactory(EmbeddedCacheManagerCommandDispatcherFactoryConfiguration<A, M> configuration) {
 		this.dispatcherFactory = configuration.getCommandDispatcherFactory();
 		this.group = new EmbeddedCacheManagerGroup<>(configuration);
-		this.wrapper = configuration.getAddressWrapper().<M>compose(GroupMember::getAddress).andThen(this.group.getGroupMemberFactory()::createGroupMember);
-		this.unwrapper = configuration.getAddressUnwrapper().compose(CacheContainerGroupMember::getAddress).andThen(configuration.getGroup().getGroupMemberFactory()::createGroupMember);
+		this.wrapper = configuration.getAddressWrapper().<M>compose(GroupMember::getId).andThen(this.group.getGroupMemberFactory()::createGroupMember);
+		this.unwrapper = configuration.getAddressUnwrapper().compose(CacheContainerGroupMember::getId).andThen(configuration.getGroup().getGroupMemberFactory()::createGroupMember);
 	}
 
 	@Override

@@ -7,16 +7,16 @@ package org.wildfly.clustering.server.group;
 
 /**
  * A factory for creating a group member.
- * @param <A> the group member address type
+ * @param <I> the group member identifier type
  * @param <M> the group member type
  * @author Paul Ferraro
  */
-public interface GroupMemberFactory<A extends Comparable<A>, M extends GroupMember<A>> {
+public interface GroupMemberFactory<I extends Comparable<I>, M extends GroupMember<I>> {
 
 	/**
 	 * Creates a group member with the specified identifier.
-	 * @param address the unique identifier of the group member
+	 * @param id the unique identifier of the group member
 	 * @return a group member.
 	 */
-	M createGroupMember(A address);
+	M createGroupMember(I id);
 }

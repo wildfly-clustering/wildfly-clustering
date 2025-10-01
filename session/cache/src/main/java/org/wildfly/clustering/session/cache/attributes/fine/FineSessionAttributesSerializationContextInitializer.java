@@ -14,10 +14,15 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
  * @author Paul Ferraro
  */
 public class FineSessionAttributesSerializationContextInitializer extends AbstractSerializationContextInitializer {
+	/**
+	 * Creates a serialization context initializer.
+	 */
+	public FineSessionAttributesSerializationContextInitializer() {
+	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new SessionAttributeMapComputeFunctionMarshaller());
-		context.registerMarshaller(new SessionAttributeMapEntryMarshaller());
+		context.registerMarshaller(SessionAttributeMapComputeFunctionMarshaller.INSTANCE);
+		context.registerMarshaller(SessionAttributeMapEntryMarshaller.INSTANCE);
 	}
 }

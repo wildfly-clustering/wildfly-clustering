@@ -20,10 +20,15 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @param <T> the map type of this marshaller
  */
 public abstract class AbstractMapMarshaller<K, V, T extends Map<K, V>> implements ProtoStreamMarshaller<T> {
+	/** Index of the repeated entry field */
 	protected static final int ENTRY_INDEX = 1;
 
 	private final Class<? extends T> mapClass;
 
+	/**
+	 * Creates a new map marshaller for the specified implementation class.
+	 * @param mapClass the map implementation class
+	 */
 	public AbstractMapMarshaller(Class<? extends T> mapClass) {
 		this.mapClass = mapClass;
 	}

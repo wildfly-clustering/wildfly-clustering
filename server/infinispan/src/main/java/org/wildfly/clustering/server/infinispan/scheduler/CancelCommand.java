@@ -12,7 +12,10 @@ package org.wildfly.clustering.server.infinispan.scheduler;
  * @author Paul Ferraro
  */
 public class CancelCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Void> {
-
+	/**
+	 * Creates a cancel command for a scheduled entry with the specified identifier
+	 * @param id a scheduler entry identifier
+	 */
 	public CancelCommand(I id) {
 		super(id);
 	}

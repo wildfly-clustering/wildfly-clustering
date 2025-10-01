@@ -15,6 +15,11 @@ public class SimpleContextualBatch extends AbstractContextualBatch implements Co
 	private final long id;
 	private final Status status;
 
+	/**
+	 * Creates a contextual batch.
+	 * @param name the name of this batch context
+	 * @param id the usage count of this contextual batch
+	 */
 	SimpleContextualBatch(String name, long id) {
 		this(name, id, new AtomicBoolean(true));
 	}

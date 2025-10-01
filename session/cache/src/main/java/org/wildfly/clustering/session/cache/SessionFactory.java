@@ -30,6 +30,10 @@ public interface SessionFactory<C, MV, AV, SC> extends ImmutableSessionFactory<M
 	@Override
 	SessionAttributesFactory<C, AV> getAttributesFactory();
 
+	/**
+	 * Returns a session context factory.
+	 * @return a session context factory.
+	 */
 	Supplier<SC> getContextFactory();
 
 	@Override
@@ -47,6 +51,13 @@ public interface SessionFactory<C, MV, AV, SC> extends ImmutableSessionFactory<M
 		return CompletableFuture.allOf(this.getMetaDataFactory().purgeAsync(id).toCompletableFuture(), this.getAttributesFactory().purgeAsync(id).toCompletableFuture());
 	}
 
+	/**
+	 * Creates a session from the specified identifier, metadata, attributes, and context.
+	 * @param id a session identifier
+	 * @param entry a map entry containing the metadata and attributes of the session
+	 * @param context the session context
+	 * @return a session from the specified identifier, metadata, attributes, and context.
+	 */
 	Session<SC> createSession(String id, Map.Entry<MV, AV> entry, C context);
 
 	@Override

@@ -16,7 +16,13 @@ import java.util.function.Function;
  */
 public class UnaryMethodMarshaller<T, M> extends UnaryMemberMarshaller<T, Method, M> {
 
-	public UnaryMethodMarshaller(Class<? extends T> targetClass, Class<M> fieldClass, Function<M, T> factory) {
-		super(targetClass, Reflect::invoke, Reflect::findMethod, fieldClass, factory);
+	/**
+	 * Creates a marshaller for the specified methods.
+	 * @param targetClass the marshalled object type
+	 * @param memberClass the member type
+	 * @param factory the marshalled object factory
+	 */
+	public UnaryMethodMarshaller(Class<? extends T> targetClass, Class<M> memberClass, Function<M, T> factory) {
+		super(targetClass, Reflect::invoke, Reflect::findMethod, memberClass, factory);
 	}
 }

@@ -21,6 +21,14 @@ public class UnaryMemberMarshaller<T, M extends Member, M1> extends AbstractMemb
 	private final Class<M1> memberType;
 	private final Function<M1, T> factory;
 
+	/**
+	 * Creates a marshaller for the specified members.
+	 * @param type the marshalled object type
+	 * @param accessor the member accessor
+	 * @param memberLocator the member locator function
+	 * @param memberType the member type
+	 * @param factory the marshalled object factory
+	 */
 	public UnaryMemberMarshaller(Class<? extends T> type, BiFunction<Object, M, Object> accessor, BiFunction<Class<?>, Class<?>, M> memberLocator, Class<M1> memberType, Function<M1, T> factory) {
 		super(type, accessor, memberLocator, memberType);
 		this.memberType = memberType;

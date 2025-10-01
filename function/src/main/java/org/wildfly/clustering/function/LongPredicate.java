@@ -10,10 +10,15 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  */
 public interface LongPredicate extends java.util.function.LongPredicate {
+	/** A predicate that always returns true */
 	LongPredicate ALWAYS = value -> true;
+	/** A predicate that always returns false */
 	LongPredicate NEVER = value -> false;
+	/** A predicate that returns true if its parameter is greater than zero. */
 	LongPredicate POSITIVE = greaterThan(0L);
+	/** A predicate that returns true if its parameter is zero. */
 	LongPredicate ZERO = equalTo(0L);
+	/** A predicate that returns true if its parameter is less than zero. */
 	LongPredicate NEGATIVE = lessThan(0L);
 
 	/**
@@ -103,6 +108,11 @@ public interface LongPredicate extends java.util.function.LongPredicate {
 		};
 	}
 
+	/**
+	 * Returns a predicate returning the exclusive disjunction of this predicate with the specified predicate.
+	 * @param other another predicate
+	 * @return a predicate returning the exclusive disjunction of this predicate with the specified predicate.
+	 */
 	default LongPredicate xor(java.util.function.LongPredicate other) {
 		return new LongPredicate() {
 			@Override

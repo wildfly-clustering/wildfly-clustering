@@ -280,12 +280,12 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 	private void validate(JChannel channel, Group<A, M> group) {
 
 		assertThat(group.getLocalMember().getName()).isEqualTo(channel.getName());
-		assertThat(this.mapper.apply(group.getLocalMember().getAddress())).isEqualTo(channel.getAddress());
+		assertThat(this.mapper.apply(group.getLocalMember().getId())).isEqualTo(channel.getAddress());
 
 		View view = channel.getView();
 		GroupMembership<M> membership = group.getMembership();
 
-		assertThat(this.mapper.apply(membership.getCoordinator().getAddress())).isEqualTo(view.getCoord());
-		assertThat(membership.getMembers().stream().map(GroupMember::getAddress).map(this.mapper).toList()).containsExactlyElementsOf(view.getMembers());
+		assertThat(this.mapper.apply(membership.getCoordinator().getId())).isEqualTo(view.getCoord());
+		assertThat(membership.getMembers().stream().map(GroupMember::getId).map(this.mapper).toList()).containsExactlyElementsOf(view.getMembers());
 	}
 }

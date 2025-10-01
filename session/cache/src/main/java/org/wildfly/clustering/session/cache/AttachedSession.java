@@ -14,14 +14,14 @@ import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
 
 /**
- * Decorated {@link Session} whose methods throw an {@link IllegalStateException} if the session is not valid.
+ * A {@link Session} decorator whose methods throw an {@link IllegalStateException} if the session is not valid.
  * @param <C> the session context type
  * @author Paul Ferraro
  */
 public class AttachedSession<C> extends DecoratedSession<C> {
 	private final Consumer<ImmutableSession> closeTask;
 
-	public AttachedSession(Session<C> session, Consumer<ImmutableSession> closeTask) {
+	AttachedSession(Session<C> session, Consumer<ImmutableSession> closeTask) {
 		super(Supplier.of(session));
 		this.closeTask = closeTask;
 	}

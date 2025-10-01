@@ -20,9 +20,11 @@ import org.wildfly.clustering.marshalling.jboss.ExternalizerProvider;
 import org.wildfly.clustering.marshalling.jboss.SerializerExternalizer;
 
 /**
+ * Serializer of local Infinispan address.
  * @author Paul Ferraro
  */
 public enum LocalAddressSerializer implements Serializer<Address> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private final Serializer<Address> serializer = Serializer.of(LocalModeAddress.INSTANCE);
@@ -42,9 +44,18 @@ public enum LocalAddressSerializer implements Serializer<Address> {
 		return this.serializer.size(address);
 	}
 
+	/**
+	 * Provides an externalizer of a local Infinispan address.
+	 */
 	@MetaInfServices(ExternalizerProvider.class)
 	public static class LocalAddressExternalizerProvider implements ExternalizerProvider {
 		private final Externalizer externalizer = new SerializerExternalizer(INSTANCE);
+
+		/**
+		 * Creates an externalizer provider of a local Infinispan address.
+		 */
+		public LocalAddressExternalizerProvider() {
+		}
 
 		@Override
 		public Class<?> getType() {
@@ -57,8 +68,14 @@ public enum LocalAddressSerializer implements Serializer<Address> {
 		}
 	}
 
+	/**
+	 * A formatter of a local Infinispan address.
+	 */
 	@MetaInfServices(Formatter.class)
 	public static class LocalAddressFormatter extends Formatter.Provided<Address> {
+		/**
+		 * Creates a formatter of a local Infinispan address.
+		 */
 		public LocalAddressFormatter() {
 			super(Formatter.of(LocalModeAddress.INSTANCE));
 		}

@@ -13,7 +13,15 @@ import org.jboss.marshalling.Externalizer;
  */
 public interface ExternalizerProvider {
 
+	/**
+	 * Returns the externalized type
+	 * @return the externalized type
+	 */
 	Class<?> getType();
 
+	/**
+	 * Returns the provided externalizer
+	 * @return the provided externalizer
+	 */
 	Externalizer getExternalizer();
 }

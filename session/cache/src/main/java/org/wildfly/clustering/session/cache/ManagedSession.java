@@ -18,6 +18,11 @@ public class ManagedSession<C> extends DecoratedSession<C> {
 	private final AtomicReference<Session<C>> session;
 	private final Session<C> detachedSession;
 
+	/**
+	 * Creates a managed session.
+	 * @param attachedSession the attached session
+	 * @param detachedSession the detached session
+	 */
 	public ManagedSession(Session<C> attachedSession, Session<C> detachedSession) {
 		this(new AtomicReference<>(attachedSession), detachedSession);
 	}

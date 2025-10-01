@@ -15,9 +15,13 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * ProtoStream marshaller for a {@link SessionAttributeMapComputeFunction}.
  * @author Paul Ferraro
  */
-public class SessionAttributeMapComputeFunctionMarshaller implements ProtoStreamMarshaller<SessionAttributeMapComputeFunction<Object>> {
+public enum SessionAttributeMapComputeFunctionMarshaller implements ProtoStreamMarshaller<SessionAttributeMapComputeFunction<Object>> {
+	/** Singleton instance */
+	INSTANCE;
+
 	private static final int ENTRY_INDEX = 1;
 
 	@SuppressWarnings("unchecked")

@@ -27,6 +27,14 @@ public interface RegistryFactory<M extends GroupMember, K, V> {
 	 */
 	Registry<M, K, V> createRegistry(Map.Entry<K, V> entry);
 
+	/**
+	 * Creates a registry factory from the specified function.
+	 * @param <M> the member type
+	 * @param <K> the type of the registry entry key
+	 * @param <V> the type of the registry entry value
+	 * @param factory the function on which the returned registry factory is based
+	 * @return a registry factory.
+	 */
 	static <M extends GroupMember, K, V> RegistryFactory<M, K, V> singleton(BiFunction<Map.Entry<K, V>, Runnable, Registry<M, K, V>> factory) {
 		AtomicReference<Map.Entry<K, V>> reference = new AtomicReference<>();
 		return new RegistryFactory<>() {

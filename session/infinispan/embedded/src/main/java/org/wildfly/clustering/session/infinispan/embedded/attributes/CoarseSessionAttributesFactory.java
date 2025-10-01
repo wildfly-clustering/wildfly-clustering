@@ -24,7 +24,7 @@ import org.wildfly.clustering.cache.infinispan.embedded.listener.PostPassivateBl
 import org.wildfly.clustering.cache.infinispan.embedded.listener.PrePassivateBlockingListener;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.marshalling.Marshallability;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -61,6 +61,13 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	private final ListenerRegistration prePassivateListenerRegistration;
 	private final ListenerRegistration postActivateListenerRegistration;
 
+	/**
+	 * Creates a factory for session attributes.
+	 * @param configuration the configuration of this factory
+	 * @param notifierFactory a factory for notifier
+	 * @param detachedNotifierFactory a factory for detached notifiers
+	 * @param infinispan the configuration associated with this cache
+	 */
 	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory, Function<String, SessionAttributeActivationNotifier> detachedNotifierFactory, EmbeddedCacheConfiguration infinispan) {
 		this.cache = infinispan.getCache();
 		this.writeCache = infinispan.getWriteOnlyCache();
@@ -132,7 +139,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		return this.deleteAsync(this.silentCache, id);
 	}
 
-	public CompletionStage<Void> deleteAsync(Cache<SessionAttributesKey, V> cache, String id) {
+	private CompletionStage<Void> deleteAsync(Cache<SessionAttributesKey, V> cache, String id) {
 		return cache.removeAsync(new SessionAttributesKey(id)).thenAccept(Consumer.empty());
 	}
 
@@ -146,7 +153,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		try {
 			Runnable mutator = (this.properties.isTransactional() && metaData.isNew()) ? CacheEntryMutator.EMPTY : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
 			SessionActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : null;
-			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Marshallability.TRUE , this.immutability, notifier);
+			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Predicate.always() , this.immutability, notifier);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -157,11 +164,11 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	}
 
 	private void prePassivate(SessionAttributesKey key, V value) {
-		this.notify(key, value, SessionAttributeActivationNotifier.PRE_PASSIVATE);
+		this.notify(key, value, SessionAttributeActivationNotifier::prePassivate);
 	}
 
 	private void postActivate(SessionAttributesKey key, V value) {
-		this.notify(key, value, SessionAttributeActivationNotifier.POST_ACTIVATE);
+		this.notify(key, value, SessionAttributeActivationNotifier::postActivate);
 	}
 
 	private void notify(SessionAttributesKey key, V value, BiConsumer<SessionAttributeActivationNotifier, Object> notification) {

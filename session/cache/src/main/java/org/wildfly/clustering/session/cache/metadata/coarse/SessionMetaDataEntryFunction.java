@@ -17,26 +17,33 @@ import org.wildfly.clustering.server.offset.Offset;
  * @author Paul Ferraro
  */
 public class SessionMetaDataEntryFunction<C> extends RemappingFunction<ContextualSessionMetaDataEntry<C>, SessionMetaDataEntryOffsets> {
-
-	public SessionMetaDataEntryFunction(MutableSessionMetaDataOffsetValues delta) {
+	/**
+	 * Creates a session metadata entry function.
+	 * @param values the set of offset values
+	 */
+	public SessionMetaDataEntryFunction(MutableSessionMetaDataOffsetValues values) {
 		this(new SessionMetaDataEntryOffsets() {
 			@Override
 			public Offset<Duration> getTimeoutOffset() {
-				return delta.getTimeout().getOffset();
+				return values.getTimeout().getOffset();
 			}
 
 			@Override
 			public Offset<Instant> getLastAccessStartTimeOffset() {
-				return delta.getLastAccessStartTime().getOffset();
+				return values.getLastAccessStartTime().getOffset();
 			}
 
 			@Override
 			public Offset<Instant> getLastAccessEndTimeOffset() {
-				return delta.getLastAccessEndTime().getOffset();
+				return values.getLastAccessEndTime().getOffset();
 			}
 		});
 	}
 
+	/**
+	 * Creates a session metadata entry function from the specified operand
+	 * @param operand the remapping function operand
+	 */
 	public SessionMetaDataEntryFunction(SessionMetaDataEntryOffsets operand) {
 		super(operand);
 	}

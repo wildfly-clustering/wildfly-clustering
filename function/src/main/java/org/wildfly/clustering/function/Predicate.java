@@ -18,7 +18,9 @@ import java.util.function.LongFunction;
  * @param <T> the argument type
  */
 public interface Predicate<T> extends java.util.function.Predicate<T> {
+	/** A predicate that always returns true */
 	Predicate<?> ALWAYS = value -> true;
+	/** A predicate that always returns false */
 	Predicate<?> NEVER = value -> false;
 
 	/**
@@ -42,6 +44,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	/**
 	 * Returns a predicate that applies the specified function to its argument before evaluating.
 	 * @param function a mapping function
+	 * @param <V> the return type of the composed predicate
 	 * @return a composed predicate
 	 */
 	default <V> Predicate<V> compose(Function<V, T> function) {
@@ -141,6 +144,11 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 		};
 	}
 
+	/**
+	 * Returns a predicate returning the exclusive disjunction of this predicate with the specified predicate.
+	 * @param other another predicate
+	 * @return a predicate returning the exclusive disjunction of this predicate with the specified predicate.
+	 */
 	default Predicate<T> xor(java.util.function.Predicate<? super T> other) {
 		return new Predicate<>() {
 			@Override

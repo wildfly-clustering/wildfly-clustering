@@ -15,9 +15,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * ProtoStream marshaller for an {@link Locale}.
  * @author Paul Ferraro
  */
-public class LocaleMarshaller implements ProtoStreamMarshaller<Locale> {
+public enum LocaleMarshaller implements ProtoStreamMarshaller<Locale> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int LANGUAGE_INDEX = 1;
 	private static final int REGION_INDEX = 2;

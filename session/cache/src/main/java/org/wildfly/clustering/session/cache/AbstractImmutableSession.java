@@ -15,7 +15,11 @@ public abstract class AbstractImmutableSession implements ImmutableSession {
 
 	private final String id;
 
-	public AbstractImmutableSession(String id) {
+	/**
+	 * Creates an immutable session with the specified identifier.
+	 * @param id the identifier of the session
+	 */
+	protected AbstractImmutableSession(String id) {
 		this.id = id;
 	}
 

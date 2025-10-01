@@ -16,9 +16,10 @@ import java.util.function.UnaryOperator;
  * @author Paul Ferraro
  */
 public enum SetOperations implements CollectionOperations<Object, Set<Object>> {
-
-	TREE(TreeSet::new, TreeSet::new),
+	/** {@link HashSet} */
 	HASH(HashSet::new, HashSet::new),
+	/** {@link TreeSet} */
+	TREE(TreeSet::new, TreeSet::new),
 	;
 
 	static <T> Operations<Set<T>> forOperand(T value) {

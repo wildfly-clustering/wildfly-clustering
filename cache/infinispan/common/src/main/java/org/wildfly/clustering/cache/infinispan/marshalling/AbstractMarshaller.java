@@ -24,6 +24,12 @@ public abstract class AbstractMarshaller implements Marshaller, StreamAwareMarsh
 
 	private final MarshallableTypeHints hints = new MarshallableTypeHints();
 
+	/**
+	 * Creates an Infinispan marshaller.
+	 */
+	protected AbstractMarshaller() {
+	}
+
 	@Override
 	public void stop() {
 		this.hints.clear();

@@ -23,6 +23,10 @@ public interface Reference<T> {
 	 */
 	Reader<T> reader();
 
+	/**
+	 * A reader of an object reference.
+	 * @param <T> the referenced object type
+	 */
 	interface Reader<T> extends Supplier<T> {
 		/**
 		 * Consumes the referenced value while holding a pessimistic read lock.
@@ -39,6 +43,11 @@ public interface Reference<T> {
 		<R> Reader<R> map(Function<T, R> mapper);
 	}
 
+	/**
+	 * A reader of an object reference.
+	 * @param <T> the referenced object type
+	 * @param <V> the mapped value type
+	 */
 	class ReferenceReader<T, V> implements Reader<V> {
 		private final StampedLock lock;
 		private final Supplier<T> reader;

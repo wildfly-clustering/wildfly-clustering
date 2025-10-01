@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.function.Predicate;
 
 /**
+ * Defines operations for creating and copying an operable collection.
  * @param <V> the collection element type
  * @param <C> the collection type
  * @author Paul Ferraro

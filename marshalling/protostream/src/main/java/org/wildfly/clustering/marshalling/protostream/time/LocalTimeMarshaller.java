@@ -26,6 +26,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum LocalTimeMarshaller implements FieldSetMarshaller.Simple<LocalTime> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int HOURS_OF_DAY_INDEX = 0;

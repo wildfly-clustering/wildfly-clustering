@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.context;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -13,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 /**
  * {@link ExecutorService} decorator that contextualizes tasks to be executed.
@@ -23,6 +23,11 @@ public class ContextualExecutorService implements ExecutorService {
 	private final ExecutorService executor;
 	private final Contextualizer contextualizer;
 
+	/**
+	 * Constructs a new contextual executor service.
+	 * @param executor the decorated executor service
+	 * @param contextualizer a contextualizer
+	 */
 	public ContextualExecutorService(ExecutorService executor, Contextualizer contextualizer) {
 		this.executor = executor;
 		this.contextualizer = contextualizer;
@@ -94,10 +99,6 @@ public class ContextualExecutorService implements ExecutorService {
 	}
 
 	private <T> Collection<Callable<T>> contextualize(Collection<? extends Callable<T>> tasks) {
-		List<Callable<T>> result = new ArrayList<>(tasks.size());
-		for (Callable<T> task : tasks) {
-			result.add(this.contextualizer.contextualize(task));
-		}
-		return result;
+		return tasks.stream().map(this.contextualizer::contextualize).collect(Collectors.toUnmodifiableList());
 	}
 }

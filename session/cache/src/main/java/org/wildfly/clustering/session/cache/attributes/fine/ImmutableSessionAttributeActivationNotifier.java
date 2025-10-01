@@ -33,6 +33,13 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 	private final S session;
 	private final Map<Supplier<L>, L> listeners = new ConcurrentHashMap<>();
 
+	/**
+	 * Creates a session activation notifier.
+	 * @param sessionProvider provider of specification views
+	 * @param listenerProvider provider of listener specification views
+	 * @param session an immutable session
+	 * @param context a session context
+	 */
 	public ImmutableSessionAttributeActivationNotifier(SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, ImmutableSession session, C context) {
 		this.provider = listenerProvider;
 		this.prePassivateNotifier = listenerProvider::preEvent;

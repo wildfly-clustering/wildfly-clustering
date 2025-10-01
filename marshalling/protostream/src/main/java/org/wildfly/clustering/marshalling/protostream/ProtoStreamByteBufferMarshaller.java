@@ -17,21 +17,21 @@ import org.infinispan.protostream.ProtobufTagMarshaller.ReadContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
 import org.infinispan.protostream.impl.TagReaderImpl;
 import org.infinispan.protostream.impl.TagWriterImpl;
-import org.wildfly.clustering.marshalling.AbstractByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
+ * A ProtoStream marshaller.
  * @author Paul Ferraro
  */
-public class ProtoStreamByteBufferMarshaller extends AbstractByteBufferMarshaller {
+public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
 	private final ImmutableSerializationContext context;
 
+	/**
+	 * Constructs a new ProtoStream marshaller using the specified context
+	 * @param context a serialization context
+	 */
 	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context) {
-		this(context, null);
-	}
-
-	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context, ClassLoader loader) {
-		super(loader);
 		this.context = context;
 	}
 
@@ -43,18 +43,18 @@ public class ProtoStreamByteBufferMarshaller extends AbstractByteBufferMarshalle
 	}
 
 	@Override
-	public boolean isMarshallable(Object object) {
+	public boolean test(Object object) {
 		if ((object == null) || (object instanceof Class)) return true;
 		Class<?> targetClass = object.getClass();
 		if (AnyField.fromJavaType(targetClass) != null) return true;
 		if (targetClass.isArray()) {
 			for (int i = 0; i < Array.getLength(object); ++i) {
-				if (!this.isMarshallable(Array.get(object, i))) return false;
+				if (!this.test(Array.get(object, i))) return false;
 			}
 			return true;
 		}
 		if (Proxy.isProxyClass(targetClass)) {
-			return this.isMarshallable(Proxy.getInvocationHandler(object));
+			return this.test(Proxy.getInvocationHandler(object));
 		}
 		while (targetClass != null) {
 			if (this.context.canMarshall(targetClass)) {

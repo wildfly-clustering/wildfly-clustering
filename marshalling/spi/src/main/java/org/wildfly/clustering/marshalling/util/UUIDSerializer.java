@@ -14,9 +14,11 @@ import java.util.UUID;
 import org.wildfly.clustering.marshalling.Serializer;
 
 /**
+ * A serializer of a {@link UUID}.
  * @author Paul Ferraro
  */
 public enum UUIDSerializer implements Serializer<UUID> {
+	/** The default {@link UUID} serializer */
 	INSTANCE;
 
 	@Override

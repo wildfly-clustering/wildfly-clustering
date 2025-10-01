@@ -18,10 +18,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * ProtoStream marshaller for an {@link EnumSet}.
  * @author Paul Ferraro
  * @param <E> enum type
  */
-public class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumSet<E>> {
+class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumSet<E>> {
+	static final ProtoStreamMarshaller<?> INSTANCE = new EnumSetMarshaller<>();
 
 	static final Field ENUM_SET_CLASS_FIELD = Reflect.findField(EnumSet.class, Class.class);
 

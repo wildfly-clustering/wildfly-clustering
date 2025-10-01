@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache.attributes;
 import java.util.Map;
 
 /**
+ * Encapsulates the lifecycle of the attributes of a session.
  * @author Paul Ferraro
  */
 public interface SessionAttributes extends Map<String, Object>, AutoCloseable {
@@ -37,6 +38,10 @@ public interface SessionAttributes extends Map<String, Object>, AutoCloseable {
 		map.entrySet().stream().forEach(this::put);
 	}
 
+	/**
+	 * Adds the specified entry to this map.
+	 * @param entry a map entry
+	 */
 	default void put(Map.Entry<? extends String, ? extends Object> entry) {
 		this.put(entry.getKey(), entry.getValue());
 	}

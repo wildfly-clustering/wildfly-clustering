@@ -29,6 +29,10 @@ public class MapEntryMarshaller<K, V, T extends Map.Entry<K, V>> implements Prot
 	private final Class<? extends T> targetClass;
 	private final BiFunction<K, V, T> factory;
 
+	/**
+	 * Creates a new map entry marshaller.
+	 * @param factory a map entry factory.
+	 */
 	@SuppressWarnings("unchecked")
 	public MapEntryMarshaller(BiFunction<K, V, T> factory) {
 		this.targetClass = (Class<T>) factory.apply(null, null).getClass();

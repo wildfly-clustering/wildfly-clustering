@@ -20,6 +20,9 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 @MetaInfServices(SerializationContextInitializer.class)
 public class JGroupsStackSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a serialization context initializer.
+	 */
 	public JGroupsStackSerializationContextInitializer() {
 		super(IpAddress.class.getPackage());
 	}

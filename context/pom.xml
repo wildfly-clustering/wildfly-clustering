@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-context</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Context propagation</name>
+	<name>${project.repository.name}: Context propagation</name>
 
 	<dependencies>
 		<dependency>

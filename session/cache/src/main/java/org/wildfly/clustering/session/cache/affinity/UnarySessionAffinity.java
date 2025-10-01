@@ -20,6 +20,11 @@ public class UnarySessionAffinity<M extends GroupMember> implements UnaryOperato
 	private Function<String, M> affinity;
 	private Function<M, String> mapper;
 
+	/**
+	 * Creates a session affinity to a single member.
+	 * @param affinity an affinity function
+	 * @param mapper an affinity mapper
+	 */
 	public UnarySessionAffinity(Function<String, M> affinity, Function<M, String> mapper) {
 		this.affinity = affinity;
 		this.mapper = mapper;

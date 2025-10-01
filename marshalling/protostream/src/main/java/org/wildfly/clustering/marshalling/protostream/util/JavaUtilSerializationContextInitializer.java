@@ -40,10 +40,17 @@ import org.wildfly.clustering.marshalling.protostream.reflect.DecoratorMarshalle
 import org.wildfly.clustering.marshalling.protostream.reflect.SynchronizedDecoratorMarshaller;
 
 /**
+ * Serialization context initializer for the {@link java.util} package.
  * @author Paul Ferraro
  */
 public class JavaUtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
+	private static final ProtoStreamMarshaller<Collection<Object>> LINKED_LIST_MARSHALLER = new CollectionMarshaller<>(LinkedList::new);
+	private static final ProtoStreamMarshaller<Map<Object, Object>> HASH_MAP_MARSHALLER = new MapMarshaller<>(HashMap::new);
+	private static final ProtoStreamMarshaller<Map.Entry<Object, Object>> SIMPLE_MAP_ENTRY_MARSHALLER = new MapEntryMarshaller<>(AbstractMap.SimpleEntry::new);
 
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public JavaUtilSerializationContextInitializer() {
 		super(Collection.class.getPackage());
 	}
@@ -51,31 +58,27 @@ public class JavaUtilSerializationContextInitializer extends AbstractSerializati
 	@SuppressWarnings("unchecked")
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		ProtoStreamMarshaller<Collection<Object>> linkedListMarshaller = new CollectionMarshaller<>(LinkedList::new);
-		ProtoStreamMarshaller<Map<Object, Object>> hashMapMarshaller = new MapMarshaller<>(HashMap::new);
-		ProtoStreamMarshaller<AbstractMap.SimpleEntry<Object, Object>> mapEntryMarshaller = new MapEntryMarshaller<>(AbstractMap.SimpleEntry::new);
-
 		context.registerMarshaller(new CollectionMarshaller<>(ArrayDeque::new));
 		context.registerMarshaller(new CollectionMarshaller<>(ArrayList::new));
 		context.registerMarshaller(Scalar.BYTE_ARRAY.cast(byte[].class).toMarshaller(BitSet.class, BitSet::isEmpty, BitSet::toByteArray, BitSet::new, BitSet::valueOf));
-		context.registerMarshaller(new CalendarMarshaller());
+		context.registerMarshaller(CalendarMarshaller.INSTANCE);
 		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(Currency.class, Currency::getCurrencyCode, Currency::getInstance));
 		context.registerMarshaller(context.getMarshaller(Instant.class).wrap(Date.class, Date::toInstant, Date::from));
-		context.registerMarshaller(new EnumMapMarshaller<>());
-		context.registerMarshaller(new EnumSetMarshaller<>());
-		context.registerMarshaller(hashMapMarshaller);
+		context.registerMarshaller(EnumMapMarshaller.INSTANCE);
+		context.registerMarshaller(EnumSetMarshaller.INSTANCE);
+		context.registerMarshaller(HASH_MAP_MARSHALLER);
 		context.registerMarshaller(new CollectionMarshaller<>(HashSet::new));
-		context.registerMarshaller(new LinkedHashMapMarshaller<>());
+		context.registerMarshaller(LinkedHashMapMarshaller.INSTANCE);
 		context.registerMarshaller(new CollectionMarshaller<>(LinkedHashSet::new));
-		context.registerMarshaller(linkedListMarshaller);
-		context.registerMarshaller(new LocaleMarshaller());
-		context.registerMarshaller(new PropertiesMarshaller());
+		context.registerMarshaller(LINKED_LIST_MARSHALLER);
+		context.registerMarshaller(LocaleMarshaller.INSTANCE);
+		context.registerMarshaller(PropertiesMarshaller.INSTANCE);
 		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(TimeZone.class, TimeZone::getID, Supplier.of(TimeZone.getTimeZone(ZoneOffset.UTC)), TimeZone::getTimeZone));
 		context.registerMarshaller(new SortedMapMarshaller<>(TreeMap::new));
 		context.registerMarshaller(new SortedSetMarshaller<>(TreeSet::new));
 		context.registerMarshaller(UUIDMarshaller.INSTANCE.asMarshaller());
 
-		context.registerMarshaller(mapEntryMarshaller);
+		context.registerMarshaller(SIMPLE_MAP_ENTRY_MARSHALLER);
 		context.registerMarshaller(new MapEntryMarshaller<>(AbstractMap.SimpleImmutableEntry::new));
 
 		// Empty collections
@@ -89,7 +92,7 @@ public class JavaUtilSerializationContextInitializer extends AbstractSerializati
 
 		// Singleton collections
 		context.registerMarshaller(Scalar.ANY.toMarshaller(Collections.singletonList(null).getClass().asSubclass(List.class), list -> list.get(0), Collections::singletonList));
-		context.registerMarshaller(mapEntryMarshaller.wrap((Class<Map<Object, Object>>) Collections.singletonMap(null, null).getClass().asSubclass(Map.class), map -> new AbstractMap.SimpleEntry<>(map.entrySet().iterator().next()), entry -> Collections.singletonMap(entry.getKey(), entry.getValue())));
+		context.registerMarshaller(SIMPLE_MAP_ENTRY_MARSHALLER.wrap((Class<Map<Object, Object>>) Collections.singletonMap(null, null).getClass().asSubclass(Map.class), map -> new AbstractMap.SimpleEntry<>(map.entrySet().iterator().next()), entry -> Collections.singletonMap(entry.getKey(), entry.getValue())));
 		context.registerMarshaller(Scalar.ANY.toMarshaller(Collections.singleton(null).getClass().asSubclass(Set.class), set -> set.iterator().next(), Collections::singleton));
 
 		// Synchronized collection wrappers
@@ -115,12 +118,12 @@ public class JavaUtilSerializationContextInitializer extends AbstractSerializati
 		context.registerMarshaller(new DecoratorMarshaller<>(SortedSet.class, Collections::unmodifiableSortedSet, Collections.emptySortedSet()));
 
 		// Unmodifiable collections
-		context.registerMarshaller(unmodifiableCollectionMarshaller(linkedListMarshaller, List.of(Boolean.TRUE).getClass().asSubclass(List.class), List::of));
-		context.registerMarshaller(unmodifiableCollectionMarshaller(linkedListMarshaller, List.of().getClass().asSubclass(List.class), List::of));
-		context.registerMarshaller(unmodifiableMapMarshaller(hashMapMarshaller, Map.of(Boolean.TRUE, Boolean.FALSE).getClass().asSubclass(Map.class), Map::ofEntries));
-		context.registerMarshaller(unmodifiableMapMarshaller(hashMapMarshaller, Map.of().getClass().asSubclass(Map.class), Map::ofEntries));
-		context.registerMarshaller(unmodifiableCollectionMarshaller(linkedListMarshaller, Set.of(Boolean.TRUE).getClass().asSubclass(Set.class), Set::of));
-		context.registerMarshaller(unmodifiableCollectionMarshaller(linkedListMarshaller, Set.of().getClass().asSubclass(Set.class), Set::of));
+		context.registerMarshaller(unmodifiableCollectionMarshaller(LINKED_LIST_MARSHALLER, List.of(Boolean.TRUE).getClass().asSubclass(List.class), List::of));
+		context.registerMarshaller(unmodifiableCollectionMarshaller(LINKED_LIST_MARSHALLER, List.of().getClass().asSubclass(List.class), List::of));
+		context.registerMarshaller(unmodifiableMapMarshaller(HASH_MAP_MARSHALLER, Map.of(Boolean.TRUE, Boolean.FALSE).getClass().asSubclass(Map.class), Map::ofEntries));
+		context.registerMarshaller(unmodifiableMapMarshaller(HASH_MAP_MARSHALLER, Map.of().getClass().asSubclass(Map.class), Map::ofEntries));
+		context.registerMarshaller(unmodifiableCollectionMarshaller(LINKED_LIST_MARSHALLER, Set.of(Boolean.TRUE).getClass().asSubclass(Set.class), Set::of));
+		context.registerMarshaller(unmodifiableCollectionMarshaller(LINKED_LIST_MARSHALLER, Set.of().getClass().asSubclass(Set.class), Set::of));
 	}
 
 	private static <T extends Collection<Object>> ProtoStreamMarshaller<T> unmodifiableCollectionMarshaller(ProtoStreamMarshaller<Collection<Object>> collectionMarshaller, Class<T> targetClass, Function<Object[], T> factory) {

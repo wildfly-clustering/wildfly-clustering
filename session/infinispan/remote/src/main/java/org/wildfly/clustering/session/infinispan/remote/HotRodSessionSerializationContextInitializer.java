@@ -18,11 +18,14 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionMetaData
 import org.wildfly.clustering.session.infinispan.remote.user.HotRodUserSerializationContextInitializer;
 
 /**
+ * The serialization context initializer for this module.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class HotRodSessionSerializationContextInitializer extends CompositeSerializationContextInitializer {
-
+	/**
+	 * Creates a serialization context initializer for this module.
+	 */
 	public HotRodSessionSerializationContextInitializer() {
 		// Initialize only those marshallers used by this implementation
 		super(List.of(

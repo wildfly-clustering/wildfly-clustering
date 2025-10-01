@@ -51,10 +51,17 @@ public interface MapEntry<K, V> extends Map.Entry<K, V>, Serializable {
 		return new SimpleMapEntry<>(key, value);
 	}
 
+	/**
+	 * A simple map entry implementation.
+	 * @param <K> the map entry key type
+	 * @param <V> the map entry value type
+	 */
 	class SimpleMapEntry<K, V> implements MapEntry<K, V> {
 		private static final long serialVersionUID = -2330498313768028514L;
 
+		/** The map entry key */
 		private final K key;
+		/** The map entry value */
 		private final V value;
 
 		SimpleMapEntry(K key, V value) {

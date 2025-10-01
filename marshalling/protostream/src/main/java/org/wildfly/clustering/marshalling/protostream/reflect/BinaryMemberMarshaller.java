@@ -22,6 +22,15 @@ public class BinaryMemberMarshaller<T, M extends Member, M1, M2> extends Abstrac
 	private final Class<M2> member2Type;
 	private final BiFunction<M1, M2, T> factory;
 
+	/**
+	 * Creates a marshaller for the specified members.
+	 * @param type the marshalled object type
+	 * @param accessor the member accessor
+	 * @param memberLocator the member locator function
+	 * @param member1Type the former member type
+	 * @param member2Type the latter member type
+	 * @param factory the marshalled object factory
+	 */
 	public BinaryMemberMarshaller(Class<? extends T> type, BiFunction<Object, M, Object> accessor, BiFunction<Class<?>, Class<?>, M> memberLocator, Class<M1> member1Type, Class<M2> member2Type, BiFunction<M1, M2, T> factory) {
 		super(type, accessor, memberLocator, member1Type, member2Type);
 		this.member1Type = member1Type;

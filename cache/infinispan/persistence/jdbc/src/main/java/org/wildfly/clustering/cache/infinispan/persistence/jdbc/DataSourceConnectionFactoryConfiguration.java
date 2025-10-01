@@ -21,10 +21,18 @@ public class DataSourceConnectionFactoryConfiguration implements ConnectionFacto
 
 	private final DataSource dataSource;
 
+	/**
+	 * Creates a connection factory configuration.
+	 * @param dataSource a data source
+	 */
 	public DataSourceConnectionFactoryConfiguration(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
+	/**
+	 * Returns the data source associated with this connection factory.
+	 * @return the data source associated with this connection factory.
+	 */
 	public DataSource getDataSource() {
 		return this.dataSource;
 	}

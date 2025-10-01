@@ -16,10 +16,14 @@ import org.wildfly.clustering.marshalling.protostream.AbstractSerializationConte
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
+ * Serialization context initializer for the {@link java.sql} package.
  * @author Paul Ferraro
  */
 public class SQLSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public SQLSerializationContextInitializer() {
 		super(Timestamp.class.getPackage());
 	}

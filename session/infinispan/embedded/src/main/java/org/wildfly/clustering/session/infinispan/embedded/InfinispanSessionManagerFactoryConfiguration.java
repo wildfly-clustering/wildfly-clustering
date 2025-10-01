@@ -8,9 +8,13 @@ import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfigurati
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 
 /**
+ * Encapsulates the configuration of {@link InfinispanSessionManagerFactory}.
  * @author Paul Ferraro
  */
 public interface InfinispanSessionManagerFactoryConfiguration extends EmbeddedCacheConfiguration {
-
+	/**
+	 * Returns the command dispatcher factory for use this factory.
+	 * @return the command dispatcher factory for use this factory.
+	 */
 	CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
 }

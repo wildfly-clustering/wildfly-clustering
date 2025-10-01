@@ -20,11 +20,12 @@ import org.wildfly.clustering.marshalling.jboss.SerializerExternalizer;
  * @author Paul Ferraro
  */
 public enum EmbeddedCacheManagerGroupMemberSerializer implements Serializer<EmbeddedCacheManagerGroupMember> {
+	/** Singleton instance */
 	INSTANCE;
 
 	@Override
 	public void write(DataOutput output, EmbeddedCacheManagerGroupMember member) throws IOException {
-		JGroupsAddressSerializer.INSTANCE.write(output, member.getAddress());
+		JGroupsAddressSerializer.INSTANCE.write(output, member.getId());
 	}
 
 	@Override
@@ -32,9 +33,18 @@ public enum EmbeddedCacheManagerGroupMemberSerializer implements Serializer<Embe
 		return new EmbeddedCacheManagerGroupMember(JGroupsAddressSerializer.INSTANCE.read(input));
 	}
 
+	/**
+	 * Provides an externalizer of a cache container-based group member.
+	 */
 	@MetaInfServices(ExternalizerProvider.class)
 	public static class AddressGroupMemberExternalizerProvider implements ExternalizerProvider {
 		private final Externalizer externalizer = new SerializerExternalizer(INSTANCE);
+
+		/**
+		 * Creates an externalizer provider for a group member.
+		 */
+		public AddressGroupMemberExternalizerProvider() {
+		}
 
 		@Override
 		public Class<?> getType() {
@@ -47,9 +57,15 @@ public enum EmbeddedCacheManagerGroupMemberSerializer implements Serializer<Embe
 		}
 	}
 
+	/**
+	 * Formatter of a cache container-based group member.
+	 */
 	@MetaInfServices(Formatter.class)
 	public static class AddressGroupMemberFormatter extends Formatter.Provided<EmbeddedCacheManagerGroupMember> {
 
+		/**
+		 * Creates a formatter of a group member.
+		 */
 		public AddressGroupMemberFormatter() {
 			super(INSTANCE.toFormatter(EmbeddedCacheManagerGroupMember.class));
 		}

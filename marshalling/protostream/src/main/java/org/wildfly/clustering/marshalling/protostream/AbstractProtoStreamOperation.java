@@ -10,6 +10,7 @@ import org.infinispan.protostream.ProtobufTagMarshaller.OperationContext;
 import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
+ * A protostream operation.
  * @author Paul Ferraro
  */
 public abstract class AbstractProtoStreamOperation implements ProtoStreamOperation, OperationContext {

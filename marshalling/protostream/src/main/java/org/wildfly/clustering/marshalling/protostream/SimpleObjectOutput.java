@@ -37,9 +37,24 @@ public class SimpleObjectOutput extends SimpleDataOutput implements ObjectOutput
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Builder of a simple object output.
+	 */
 	public static class Builder extends SimpleDataOutput.Builder {
 		Consumer<Object> objects = Consumer.empty();
 
+		/**
+		 * Creates a builder of an object output
+		 */
+		public Builder() {
+			super();
+		}
+
+		/**
+		 * Specifies the values to be consumed by consecutive calls to {@link ObjectOutput#writeObject(Object)}.
+		 * @param values the consecutive values to be written
+		 * @return a reference to this builder
+		 */
 		public Builder with(Object[] values) {
 			this.objects = new SimpleDataOutput.ArrayConsumer<>(values);
 			return this;

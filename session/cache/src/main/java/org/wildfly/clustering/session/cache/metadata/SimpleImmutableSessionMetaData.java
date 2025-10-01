@@ -21,6 +21,10 @@ public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData 
 	private final Instant lastAccessEndTime;
 	private final Duration timeout;
 
+	/**
+	 * Creates an immutable snapshot from the specified metadata.
+	 * @param metaData the metadata of a session
+	 */
 	public SimpleImmutableSessionMetaData(ImmutableSessionMetaData metaData) {
 		this.newSession = metaData.isNew();
 		this.creationTime = metaData.getCreationTime();

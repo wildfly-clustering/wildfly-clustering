@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.wildfly.clustering.function.Consumer;
 
 /**
+ * An abstract contextual batch implementing the lifecycle of a batch.
  * @author Paul Ferraro
  */
 public abstract class AbstractContextualBatch implements ContextualBatch {
@@ -20,6 +21,11 @@ public abstract class AbstractContextualBatch implements ContextualBatch {
 	private final StackTraceElement[] stackTrace;
 	private final Consumer<Status> closeTask;
 
+	/**
+	 * Creates a contextual batch with the specified name and task to execute on batch close.
+	 * @param name the name of this batch
+	 * @param closeTask a task to execute when batch should be closed.
+	 */
 	@SuppressWarnings("removal")
 	AbstractContextualBatch(String name, Consumer<Status> closeTask) {
 		this.name = name;

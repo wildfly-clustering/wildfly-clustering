@@ -10,7 +10,9 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  */
 public interface BooleanSupplier extends java.util.function.BooleanSupplier {
+	/** A supplier that always returns true */
 	BooleanSupplier TRUE = Boolean.TRUE::booleanValue;
+	/** A supplier that always returns false */
 	BooleanSupplier FALSE = Boolean.FALSE::booleanValue;
 
 	/**

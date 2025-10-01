@@ -14,6 +14,9 @@ import org.wildfly.clustering.context.Context;
  */
 public interface Batch extends AutoCloseable {
 
+	/**
+	 * The status of a batch.
+	 */
 	interface Status {
 		/**
 		 * Indicates whether or not this batch is active.
@@ -34,6 +37,10 @@ public interface Batch extends AutoCloseable {
 		boolean isClosed();
 	}
 
+	/**
+	 * Returns the status of this batch.
+	 * @return the status of this batch.
+	 */
 	Status getStatus();
 
 	/**

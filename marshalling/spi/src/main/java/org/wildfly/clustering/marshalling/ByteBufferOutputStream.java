@@ -10,21 +10,33 @@ import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
 /**
- * A specialized ByteArrayOutputStream that exposes the internal buffer.
+ * An output stream for writing to a byte buffer.
  * @author Paul Ferraro
  */
 public final class ByteBufferOutputStream extends ByteArrayOutputStream {
+	private static final int DEFAULT_INITIAL_CAPACITY = 512;
 
+	/**
+	 * Constructs a new output stream with an default initial capacity.
+	 */
 	public ByteBufferOutputStream() {
 		this(OptionalInt.empty());
 	}
 
-	public ByteBufferOutputStream(OptionalInt size) {
-		this(size.orElse(512));
+	/**
+	 * Constructs a new output stream with an optional initial capacity.
+	 * @param capacity an optional initial capacity
+	 */
+	public ByteBufferOutputStream(OptionalInt capacity) {
+		this(capacity.orElse(DEFAULT_INITIAL_CAPACITY));
 	}
 
-	public ByteBufferOutputStream(int size) {
-		super(size);
+	/**
+	 * Constructs a new output stream with the specified initial capacity.
+	 * @param capacity the initial capacity
+	 */
+	public ByteBufferOutputStream(int capacity) {
+		super(capacity);
 	}
 
 	/**

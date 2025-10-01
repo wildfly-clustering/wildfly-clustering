@@ -82,6 +82,12 @@ public interface ContextualExecutor extends Executor {
 	 */
 	<V1, V2, R> R execute(BiFunction<V1, V2, R> function, V1 value1, V2 value2);
 
+	/**
+	 * Creates a contextual executor from the specified context provider.
+	 * @param <C> the context type
+	 * @param provider a supplier of a context
+	 * @return a contextual executor using the specified context provider.
+	 */
 	static <C> ContextualExecutor withContextProvider(Supplier<Context<C>> provider) {
 		return new ContextualExecutor() {
 			@Override

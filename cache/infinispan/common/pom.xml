@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-cache-infinispan-common</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Cache: Infinispan: Common</name>
+	<name>${project.prefix.cache.infinispan}: Common</name>
 
 	<dependencies>
 		<dependency>

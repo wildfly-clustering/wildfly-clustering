@@ -52,10 +52,19 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 		return this.object;
 	}
 
+	/**
+	 * Indicates whether or not this value is empty.
+	 * @return true, if this value is empty, false otherwise
+	 */
 	public synchronized boolean isEmpty() {
 		return (this.buffer == null) && (this.object == null);
 	}
 
+	/**
+	 * Returns the byte buffer of this value, marshalling it if necessary.
+	 * @return the byte buffer of this value.
+	 * @throws IOException if the value could not be marshalled
+	 */
 	public synchronized ByteBuffer getBuffer() throws IOException {
 		ByteBuffer buffer = this.buffer;
 		if ((buffer == null) && (this.object != null)) {
@@ -68,6 +77,10 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 		return buffer;
 	}
 
+	/**
+	 * If present, returns the size of the buffer returned by {@link #getBuffer()}.
+	 * @return an optional buffer size
+	 */
 	public synchronized OptionalInt size() {
 		// N.B. Buffer position is guarded by synchronization on this object
 		// We invalidate buffer upon reading it, ensuring that ByteBuffer.remaining() returns the effective buffer size
@@ -117,6 +130,11 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 		return String.format("%s [%s]", this.getClass().getName(), (this.object != null) ? this.object.getClass().getName() : "<serialized>");
 	}
 
+	/**
+	 * Writes this object to the specified output stream.
+	 * @param output an output stream
+	 * @throws IOException if the fields of this object could not be written
+	 */
 	private void writeObject(ObjectOutputStream output) throws IOException {
 		output.defaultWriteObject();
 		ByteBuffer buffer = this.getBuffer();
@@ -127,6 +145,12 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 		}
 	}
 
+	/**
+	 * Reads this object from the specified input stream.
+	 * @param input an input stream
+	 * @throws IOException if the fields of this object could not be read
+	 * @throws ClassNotFoundException if this class could not be loaded by the class loader of the current thread context
+	 */
 	private void readObject(ObjectInputStream input) throws IOException, ClassNotFoundException {
 		input.defaultReadObject();
 		int size = IndexSerializer.VARIABLE.readInt(input);

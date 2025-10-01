@@ -16,13 +16,24 @@ import java.util.Objects;
 public class ByteBufferMarshalledKey<K> extends ByteBufferMarshalledValue<K> {
 	private static final long serialVersionUID = 7317347779979133897L;
 
+	/** The hash code of the marshalled value */
 	private final int hashCode;
 
+	/**
+	 * Constructs a marshalled key using the specified object and marshaller.
+	 * @param object a key
+	 * @param marshaller a marshaller of the specified key
+	 */
 	public ByteBufferMarshalledKey(K object, ByteBufferMarshaller marshaller) {
 		super(object, marshaller);
 		this.hashCode = Objects.hashCode(object);
 	}
 
+	/**
+	 * Constructs a marshalled key using the specified byte buffer and hash code.
+	 * @param buffer a byte buffer
+	 * @param hashCode the hash code of the key
+	 */
 	public ByteBufferMarshalledKey(ByteBuffer buffer, int hashCode) {
 		super(buffer);
 		this.hashCode = hashCode;

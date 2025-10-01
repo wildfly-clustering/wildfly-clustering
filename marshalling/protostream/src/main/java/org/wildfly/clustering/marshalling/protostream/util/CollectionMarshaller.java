@@ -22,6 +22,10 @@ public class CollectionMarshaller<E, T extends Collection<E>> extends AbstractCo
 
 	private final Supplier<T> factory;
 
+	/**
+	 * Creates a marshaller for a collection.
+	 * @param factory the collection factory
+	 */
 	@SuppressWarnings("unchecked")
 	public CollectionMarshaller(Supplier<T> factory) {
 		super((Class<T>) factory.get().getClass());

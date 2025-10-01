@@ -10,10 +10,15 @@ import org.jgroups.JChannel;
 import org.wildfly.clustering.server.group.Group;
 
 /**
+ * A channel-based group whose membership is based on the channel view.
  * @author Paul Ferraro
  */
 public interface ChannelGroup extends Group<Address, ChannelGroupMember>, AutoCloseable {
 
+	/**
+	 * Returns the channel associated with this group.
+	 * @return the channel associated with this group.
+	 */
 	JChannel getChannel();
 
 	@Override

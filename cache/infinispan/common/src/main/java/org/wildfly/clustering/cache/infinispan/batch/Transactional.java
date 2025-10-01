@@ -9,6 +9,7 @@ import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
 /**
+ * Implemented by transactional batch views.
  * @author Paul Ferraro
  */
 public interface Transactional extends Contextual {

@@ -14,13 +14,18 @@ import org.wildfly.clustering.marshalling.Serializer;
 
 /**
  * An {@link Externalizer} decorator for a {@link Serializer}.
+ * N.B. This object is <em>not</em> serializable.
  * @author Paul Ferraro
  */
+@SuppressWarnings("serial")
 public class SerializerExternalizer implements Externalizer {
-	private static final long serialVersionUID = 5193048457273732365L;
-
+	/** N.B. This is not serializable. */
 	private final Serializer<Object> serializer;
 
+	/**
+	 * Creates a new externalizer using the specified serializer.
+	 * @param serializer a serializer
+	 */
 	@SuppressWarnings("unchecked")
 	public SerializerExternalizer(Serializer<?> serializer) {
 		this.serializer = (Serializer<Object>) serializer;

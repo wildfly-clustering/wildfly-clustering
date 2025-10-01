@@ -13,6 +13,7 @@ import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
 
 /**
+ * Encapsulates a configuration of a group associated with a non-clustered cache container.
  * @author Paul Ferraro
  */
 public interface LocalEmbeddedCacheManagerGroupConfiguration extends EmbeddedCacheManagerGroupConfiguration<String, LocalGroupMember> {

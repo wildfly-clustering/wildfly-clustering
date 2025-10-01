@@ -192,6 +192,11 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 		return null;
 	}
 
+	/**
+	 * Handler for topology change events.
+	 * @param event a topology change event
+	 * @return a completion stage
+	 */
 	@TopologyChanged
 	public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
 		if (!this.getSegments(event.getWriteConsistentHashAtStart()).equals(this.getSegments(event.getWriteConsistentHashAtEnd()))) {

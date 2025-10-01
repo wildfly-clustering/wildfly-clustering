@@ -31,6 +31,12 @@ public class MarshallerFactory extends AbstractComponentFactory implements AutoI
 	@Inject
 	ComponentRef<SerializationContextRegistry> contextRegistry;
 
+	/**
+	 * Creates a marshaller factory.
+	 */
+	public MarshallerFactory() {
+	}
+
 	@Override
 	public Object construct(String componentName) {
 

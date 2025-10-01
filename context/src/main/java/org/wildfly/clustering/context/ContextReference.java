@@ -6,9 +6,7 @@ package org.wildfly.clustering.context;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
-import org.wildfly.clustering.function.UnaryOperator;
 
 /**
  * Reference to some context.
@@ -17,6 +15,12 @@ import org.wildfly.clustering.function.UnaryOperator;
  */
 public interface ContextReference<C> extends java.util.function.Supplier<C>, java.util.function.Consumer<C>, java.util.function.UnaryOperator<C> {
 
+	/**
+	 * Creates a context reference from the specified {@link ThreadLocal}.
+	 * @param <C> the context type
+	 * @param threadLocal a thread local used to store the context
+	 * @return a context reference using the specified {@link ThreadLocal}.
+	 */
 	static <C> ContextReference<C> fromThreadLocal(ThreadLocal<C> threadLocal) {
 		return new ContextReference<>() {
 			@Override
@@ -35,21 +39,29 @@ public interface ContextReference<C> extends java.util.function.Supplier<C>, jav
 		};
 	}
 
-	static <C> ContextReference<C> of(Supplier<C> supplier, Consumer<C> consumer) {
-		return new SimpleContextReference<>(supplier, consumer);
-	}
+	/**
+	 * Creates a context reference from the specified {@link AtomicReference}.
+	 * @param <C> the context type
+	 * @param reference an atomic reference used to store the context
+	 * @return a context reference using the specified {@link AtomicReference}.
+	 */
+	static <C> ContextReference<C> of(AtomicReference<C> reference) {
+		return new ContextReference<>() {
+			@Override
+			public C get() {
+				return reference.get();
+			}
 
-	static <C> ContextReference<C> of(Supplier<C> supplier, Consumer<C> consumer, UnaryOperator<C> operator) {
-		return new SimpleContextReference<>(supplier, consumer) {
+			@Override
+			public void accept(C context) {
+				reference.set(context);
+			}
+
 			@Override
 			public C apply(C context) {
-				return operator.apply(context);
+				return reference.getAndSet(context);
 			}
 		};
-	}
-
-	static <C> ContextReference<C> of(AtomicReference<C> reference) {
-		return of(reference::get, reference::set, reference::getAndSet);
 	}
 
 	@Override
@@ -84,25 +96,5 @@ public interface ContextReference<C> extends java.util.function.Supplier<C>, jav
 				};
 			}
 		} : Supplier.of(Context.empty());
-	}
-
-	class SimpleContextReference<C> implements ContextReference<C> {
-		private final Supplier<C> supplier;
-		private final Consumer<C> consumer;
-
-		SimpleContextReference(Supplier<C> supplier, Consumer<C> consumer) {
-			this.supplier = supplier;
-			this.consumer = consumer;
-		}
-
-		@Override
-		public C get() {
-			return this.supplier.get();
-		}
-
-		@Override
-		public void accept(C context) {
-			this.consumer.accept(context);
-		}
 	}
 }

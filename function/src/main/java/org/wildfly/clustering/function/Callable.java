@@ -11,6 +11,7 @@ package org.wildfly.clustering.function;
  * @param <T> the result type
  */
 public interface Callable<T> extends java.util.concurrent.Callable<T> {
+	/** A caller that always returns null */
 	Callable<?> NULL = () -> null;
 
 	/**
@@ -30,6 +31,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 
 	/**
 	 * Returns a callable that returns null.
+	 * @param <T> the result type
 	 * @return a callable that returns null.
 	 */
 	@SuppressWarnings("unchecked")
@@ -40,6 +42,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	/**
 	 * Returns a callable that runs the specified runner and returns <code>null</code>.
 	 * @param runner a runner
+	 * @param <T> the result type
 	 * @return a callable that runs the specified runner and returns <code>null</code>.
 	 */
 	static <T> Callable<T> run(java.lang.Runnable runner) {
@@ -55,6 +58,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	/**
 	 * Returns a callable that delegates to the specified supplier.
 	 * @param supplier a supplier
+	 * @param <T> the result type
 	 * @return the result of the specified supplier.
 	 */
 	static <T> Callable<T> get(java.util.function.Supplier<T> supplier) {
@@ -69,6 +73,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	/**
 	 * Returns a callable that returns the specified value.
 	 * @param value the result value
+	 * @param <T> the result type
 	 * @return a callable that returns the specified value.
 	 */
 	static <T> Callable<T> of(T value) {
@@ -83,6 +88,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	/**
 	 * Returns a callable that throws the provided exception.
 	 * @param exceptionProvider a provider of an exception
+	 * @param <T> the result type
 	 * @return a callable that throws the provided exception.
 	 */
 	static <T> Callable<T> exceptional(java.util.function.Supplier<? extends Exception> exceptionProvider) {

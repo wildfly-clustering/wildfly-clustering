@@ -6,13 +6,17 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 /**
- * Initializer that registers protobuf schema for java.lang.* classes.
+ * Serialization context initializer for the {@link java.lang} package.
  * @author Paul Ferraro
  */
 public class LangSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	private final ClassLoaderMarshaller loaderMarshaller;
 
+	/**
+	 * Creates a serialization context initializer for the the {@link java.lang} package using the specified class loader marshaller.
+	 * @param loaderMarshaller a class loader marshaller
+	 */
 	public LangSerializationContextInitializer(ClassLoaderMarshaller loaderMarshaller) {
 		super(Class.class.getPackage());
 		this.loaderMarshaller = loaderMarshaller;

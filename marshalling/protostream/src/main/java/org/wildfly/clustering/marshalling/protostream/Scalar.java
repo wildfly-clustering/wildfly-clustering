@@ -17,7 +17,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * @author Paul Ferraro
  */
 public enum Scalar implements ScalarMarshaller<Object> {
-
+	/** A reference to an arbitrary object */
 	ANY(new ScalarMarshaller<>() {
 		@Override
 		public Object readFrom(ProtoStreamReader reader) throws IOException {
@@ -39,6 +39,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.LENGTH_DELIMITED;
 		}
 	}),
+	/** A boolean value */
 	BOOLEAN(new ScalarMarshaller<Boolean>() {
 		@Override
 		public Boolean readFrom(ProtoStreamReader reader) throws IOException {
@@ -60,6 +61,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.VARINT;
 		}
 	}),
+	/** A byte value */
 	BYTE(new ScalarMarshaller<Byte>() {
 		@Override
 		public Byte readFrom(ProtoStreamReader reader) throws IOException {
@@ -83,6 +85,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.VARINT;
 		}
 	}),
+	/** A short value */
 	SHORT(new ScalarMarshaller<Short>() {
 		@Override
 		public Short readFrom(ProtoStreamReader reader) throws IOException {
@@ -106,6 +109,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.VARINT;
 		}
 	}),
+	/** An integer value */
 	INTEGER(new ScalarMarshaller<Integer>() {
 		@Override
 		public Integer readFrom(ProtoStreamReader reader) throws IOException {
@@ -129,6 +133,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.VARINT;
 		}
 	}),
+	/** A long value */
 	LONG(new ScalarMarshaller<Long>() {
 		@Override
 		public Long readFrom(ProtoStreamReader reader) throws IOException {
@@ -152,6 +157,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.VARINT;
 		}
 	}),
+	/** A float value */
 	FLOAT(new ScalarMarshaller<Float>() {
 		@Override
 		public Float readFrom(ProtoStreamReader reader) throws IOException {
@@ -179,6 +185,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.FIXED32;
 		}
 	}),
+	/** A double value */
 	DOUBLE(new ScalarMarshaller<Double>() {
 		@Override
 		public Double readFrom(ProtoStreamReader reader) throws IOException {
@@ -210,6 +217,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.FIXED64;
 		}
 	}),
+	/** A character value */
 	CHARACTER(new ScalarMarshaller<Character>() {
 		@Override
 		public Character readFrom(ProtoStreamReader reader) throws IOException {
@@ -231,6 +239,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.VARINT;
 		}
 	}),
+	/** A byte buffer value */
 	BYTE_BUFFER(new ScalarMarshaller<ByteBuffer>() {
 		@Override
 		public ByteBuffer readFrom(ProtoStreamReader reader) throws IOException {
@@ -264,6 +273,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.LENGTH_DELIMITED;
 		}
 	}),
+	/** A binary value */
 	BYTE_ARRAY(new ScalarMarshaller<byte[]>() {
 		@Override
 		public byte[] readFrom(ProtoStreamReader reader) throws IOException {
@@ -286,6 +296,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.LENGTH_DELIMITED;
 		}
 	}),
+	/** A string value */
 	STRING(new ScalarMarshaller<String>() {
 		@Override
 		public String readFrom(ProtoStreamReader reader) throws IOException {
@@ -307,6 +318,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 			return WireType.LENGTH_DELIMITED;
 		}
 	}),
+	/** A reference value */
 	REFERENCE(new ScalarMarshaller<Reference>() {
 		@Override
 		public Reference readFrom(ProtoStreamReader reader) throws IOException {
@@ -360,6 +372,12 @@ public enum Scalar implements ScalarMarshaller<Object> {
 		return this.cast(Object.class).size(operation, value);
 	}
 
+	/**
+	 * Casts this scalar marshaller to the specified type.
+	 * @param <T> the scalar type
+	 * @param type a scalar type
+	 * @return a typed scalar marshaller
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> ScalarMarshaller<T> cast(Class<T> type) {
 		if (!this.getJavaClass().isAssignableFrom(type) && !type.isAssignableFrom(this.getJavaClass())) {

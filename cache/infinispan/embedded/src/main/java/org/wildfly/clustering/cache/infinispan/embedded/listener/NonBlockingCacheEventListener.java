@@ -23,10 +23,18 @@ public class NonBlockingCacheEventListener<K, V> implements Function<CacheEntryE
 
 	private final java.util.function.BiConsumer<K, V> consumer;
 
+	/**
+	 * Creates a blocking cache event listener.
+	 * @param consumer a consumer for a given event
+	 */
 	public NonBlockingCacheEventListener(java.util.function.Consumer<K> consumer) {
 		this(BiConsumer.of(consumer, Consumer.empty()));
 	}
 
+	/**
+	 * Creates a blocking cache event listener.
+	 * @param consumer a consumer for a given event
+	 */
 	public NonBlockingCacheEventListener(java.util.function.BiConsumer<K, V> consumer) {
 		this.consumer = consumer;
 	}

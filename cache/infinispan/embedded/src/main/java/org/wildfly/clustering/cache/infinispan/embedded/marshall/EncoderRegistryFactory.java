@@ -35,6 +35,12 @@ public class EncoderRegistryFactory extends AbstractComponentFactory implements 
 	@Inject EmbeddedCacheManager manager;
 	@Inject SerializationContextRegistry registry;
 
+	/**
+	 * Creates a encoder registry factory.
+	 */
+	public EncoderRegistryFactory() {
+	}
+
 	@Override
 	public Object construct(String componentName) {
 		ClassLoader classLoader = this.globalConfiguration.classLoader();

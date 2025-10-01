@@ -26,7 +26,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public class ZonedDateTimeMarshaller implements ProtoStreamMarshaller<ZonedDateTime> {
+public enum ZonedDateTimeMarshaller implements ProtoStreamMarshaller<ZonedDateTime> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int DATE_INDEX = 1;
 	private static final int TIME_INDEX = LocalDateMarshaller.INSTANCE.nextIndex(DATE_INDEX);

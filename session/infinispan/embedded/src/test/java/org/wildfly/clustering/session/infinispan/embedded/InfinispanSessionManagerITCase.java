@@ -89,7 +89,7 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 												.key2StringMapper(mapperClass)
 												.shared(true)
 												.table().createOnStart(true).tableNamePrefix("ispn").idColumnName("id").idColumnType("VARCHAR").dataColumnName("data").dataColumnType("VARBINARY").segmentColumnName("segment").segmentColumnType("NUMERIC").timestampColumnName("ts").timestampColumnType("BIGINT")
-												.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).setDataSource(dataSource)
+												.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).withDataSource(dataSource)
 												;
 									}
 									return Runnable.empty();

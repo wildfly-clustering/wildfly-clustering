@@ -96,7 +96,7 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 		this.computeEntryWritten(this.getSegmentForKey(key), key, value);
 	}
 
-	protected void computeEntryWritten(int segment, K key, InternalCacheEntry<K, V> value) {
+	void computeEntryWritten(int segment, K key, InternalCacheEntry<K, V> value) {
 		Map<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
 		if (map != null) {
 			map.put(key, value);
@@ -108,7 +108,7 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 		this.computeEntryRemoved(this.getSegmentForKey(key), key, value);
 	}
 
-	protected void computeEntryRemoved(int segment, K key, InternalCacheEntry<K, V> value) {
+	void computeEntryRemoved(int segment, K key, InternalCacheEntry<K, V> value) {
 		ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
 		if (map != null) {
 			map.remove(key, value);

@@ -30,11 +30,15 @@ public class NaryGroupMemberAffinity<I> implements Function<I, List<CacheContain
 	private final CacheContainerGroupMemberFactory factory;
 	private final CacheContainerGroupMember localMember;
 
+	/**
+	 * Creates a group member affinity function returning multiple values.
+	 * @param configuration a group member affinity configuration
+	 */
 	public NaryGroupMemberAffinity(GroupMemberAffinityConfiguration<I> configuration) {
 		this(configuration.getCache(), configuration.getGroup());
 	}
 
-	public NaryGroupMemberAffinity(Cache<? extends Key<I>, ?> cache, CacheContainerGroup group) {
+	private NaryGroupMemberAffinity(Cache<? extends Key<I>, ?> cache, CacheContainerGroup group) {
 		this(new Supplier<>() {
 			@Override
 			public KeyDistribution get() {
@@ -54,7 +58,7 @@ public class NaryGroupMemberAffinity<I> implements Function<I, List<CacheContain
 		List<CacheContainerGroupMember> members = new LinkedList<>();
 		boolean locallyOwned = false;
 		for (Address address : this.distribution.get().getOwners(new CacheKey<>(id))) {
-			locallyOwned |= this.localMember.getAddress().equals(address);
+			locallyOwned |= this.localMember.getId().equals(address);
 			members.add(this.factory.createGroupMember(address));
 		}
 		if (!locallyOwned) {

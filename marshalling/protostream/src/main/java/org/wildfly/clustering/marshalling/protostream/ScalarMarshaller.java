@@ -83,6 +83,7 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 
 	/**
 	 * Returns a marshaller for an {@link Optional} wrapper of this scalar value.
+	 * @param <V> the scalar value type
 	 * @param unwrapper a function exposing the scalar type written by this marshaller from the wrapper instance
 	 * @param wrapper a function creating a wrapped instance from the scalar value read by this marshaller
 	 * @return an optional marshaller

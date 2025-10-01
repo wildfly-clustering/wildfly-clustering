@@ -16,10 +16,9 @@ public interface Command<R, C, E extends Exception> {
 
 	/**
 	 * Execute this command with the specified context.
-	 *
 	 * @param context the execution context
 	 * @return the result of this command
-	 * @throws Exception exception that occurred during execution
+	 * @throws E exception that occurred during execution
 	 */
 	R execute(C context) throws E;
 }

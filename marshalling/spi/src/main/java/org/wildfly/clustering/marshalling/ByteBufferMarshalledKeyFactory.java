@@ -13,6 +13,10 @@ public class ByteBufferMarshalledKeyFactory extends ByteBufferMarshalledValueFac
 
 	private final ByteBufferMarshaller marshaller;
 
+	/**
+	 * Creates a factory of a marshalled key.
+	 * @param marshaller a marshaller
+	 */
 	public ByteBufferMarshalledKeyFactory(ByteBufferMarshaller marshaller) {
 		super(marshaller);
 		this.marshaller = marshaller;

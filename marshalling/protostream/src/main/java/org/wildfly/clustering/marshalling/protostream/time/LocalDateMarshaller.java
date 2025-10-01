@@ -20,6 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum LocalDateMarshaller implements FieldSetMarshaller.Simple<LocalDate> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int POST_EPOCH_DAY = 0;

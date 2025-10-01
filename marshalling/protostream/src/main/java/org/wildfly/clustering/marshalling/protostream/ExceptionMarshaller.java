@@ -28,6 +28,10 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
 
 	private final Class<E> exceptionClass;
 
+	/**
+	 * Creates a generic exception marshaller for the specified exception class.
+	 * @param exceptionClass an exception class
+	 */
 	public ExceptionMarshaller(Class<E> exceptionClass) {
 		this.exceptionClass = exceptionClass;
 	}

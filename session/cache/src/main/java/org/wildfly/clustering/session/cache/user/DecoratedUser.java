@@ -11,6 +11,7 @@ import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
+ * A user decorator.
  * @author Paul Ferraro
  * @param <C> the persistent context type
  * @param <T> the transient context type
@@ -21,6 +22,10 @@ public class DecoratedUser<C, T, D, S> implements User<C, T, D, S>, Supplier<Use
 
 	private final Supplier<User<C, T, D, S>> reference;
 
+	/**
+	 * Creates a user decorator.
+	 * @param reference a reference to a user
+	 */
 	public DecoratedUser(Supplier<User<C, T, D, S>> reference) {
 		this.reference = reference;
 	}

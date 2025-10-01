@@ -8,12 +8,17 @@ package org.wildfly.clustering.session.cache.affinity;
 import java.util.Map;
 
 /**
+ * A session affinity registry entry.
  * @author Paul Ferraro
  */
 public class SessionAffinityRegistryEntry implements Map.Entry<String, Void> {
 
 	private final String key;
 
+	/**
+	 * Creates a registry entry using the specified key.
+	 * @param key a registry entry key.
+	 */
 	public SessionAffinityRegistryEntry(String key) {
 		this.key = key;
 	}

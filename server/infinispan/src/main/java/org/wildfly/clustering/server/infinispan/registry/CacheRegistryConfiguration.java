@@ -12,5 +12,9 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
  * @author Paul Ferraro
  */
 public interface CacheRegistryConfiguration extends EmbeddedCacheConfiguration {
+	/**
+	 * Returns the group associated with this registry.
+	 * @return the group associated with this registry.
+	 */
 	CacheContainerGroup getGroup();
 }

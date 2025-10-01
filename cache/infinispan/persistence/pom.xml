@@ -15,7 +15,11 @@
 	<artifactId>wildfly-clustering-cache-infinispan-persistence</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Cache: Infinispan: Persistence: Modules</name>
+	<properties>
+		<project.prefix.cache.infinispan.persistence>${project.prefix.cache.infinispan}: Persistence</project.prefix.cache.infinispan.persistence>
+	</properties>
+
+	<name>${project.prefix.cache.infinispan.persistence}: Modules</name>
 
 	<modules>
 		<module>jdbc</module>

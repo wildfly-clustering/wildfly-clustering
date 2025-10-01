@@ -97,7 +97,7 @@ public class JBossByteBufferMarshaller extends AbstractByteBufferMarshaller {
 	}
 
 	@Override
-	public boolean isMarshallable(Object object) {
+	public boolean test(Object object) {
 		if (object == null) return true;
 		Class<?> objectClass = object.getClass();
 		try {

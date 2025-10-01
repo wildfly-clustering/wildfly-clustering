@@ -21,6 +21,10 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
 
 	private final AttributeSet attributes;
 
+	/**
+	 * Creates a new configuration builder.
+	 * @param builder the builder of the associated cache configuration
+	 */
 	public DataContainerConfigurationBuilder(ConfigurationBuilder builder) {
 		this();
 	}
@@ -29,11 +33,22 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
 		this.attributes = new AttributeSet(DataContainerConfiguration.class, DataContainerConfiguration.EVICTABLE, DataContainerConfiguration.IDLE_TIMEOUT);
 	}
 
+	/**
+	 * Specifies a predicate use to determine whether a given cache entry can be auto-evicted.
+	 * @param <K> the cache key type
+	 * @param evictable a predicate use to determine whether a given cache entry can be auto-evicted.
+	 * @return a reference to this builder
+	 */
 	public <K> DataContainerConfigurationBuilder evictable(Predicate<K> evictable) {
 		this.attributes.attribute(DataContainerConfiguration.EVICTABLE).set(evictable);
 		return this;
 	}
 
+	/**
+	 * Specifies the duration of time after which an evictable idle cache entry may be evicted.
+	 * @param timeout an idle timeout
+	 * @return a reference to this builder
+	 */
 	public DataContainerConfigurationBuilder idleTimeout(Duration timeout) {
 		this.attributes.attribute(DataContainerConfiguration.IDLE_TIMEOUT).set(timeout);
 		return this;

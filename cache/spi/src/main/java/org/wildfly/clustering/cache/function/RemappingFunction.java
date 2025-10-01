@@ -13,14 +13,19 @@ import java.util.function.BiFunction;
  * @param <V> the cache value type
  * @param <O> the operand type
  */
-public class RemappingFunction<V extends Remappable<V, O>, O> implements BiFunction<Object, V, V> {
+public class RemappingFunction<V extends Remappable<V, O>, O> implements BiFunction<Object, V, V>, Operation<O> {
 
 	private final O operand;
 
+	/**
+	 * Creates a new remapping function.
+	 * @param operand the operation operand.
+	 */
 	public RemappingFunction(O operand) {
 		this.operand = operand;
 	}
 
+	@Override
 	public O getOperand() {
 		return this.operand;
 	}

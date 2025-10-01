@@ -22,6 +22,7 @@ import org.wildfly.clustering.marshalling.TesterFactory;
  */
 public class TesterFactoryArgumentsProvider extends AnnotationBasedArgumentsProvider<TesterFactorySource> {
 
+	@Deprecated
 	@Override
 	protected Stream<? extends Arguments> provideArguments(ExtensionContext context, TesterFactorySource annotation) {
 		Stream.Builder<Arguments> builder = Stream.builder();

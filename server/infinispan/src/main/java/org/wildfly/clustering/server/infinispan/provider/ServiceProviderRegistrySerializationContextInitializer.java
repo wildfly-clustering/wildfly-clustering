@@ -17,6 +17,12 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 @MetaInfServices(SerializationContextInitializer.class)
 public class ServiceProviderRegistrySerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a serialization context initializer.
+	 */
+	public ServiceProviderRegistrySerializationContextInitializer() {
+	}
+
 	@Override
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(new AddressSetFunctionMarshaller<>(AddressSetAddFunction.class, AddressSetAddFunction::new));

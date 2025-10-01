@@ -11,6 +11,7 @@ import java.time.Instant;
 import org.wildfly.clustering.server.offset.Value;
 
 /**
+ * Mutable session creation metadata.
  * @author Paul Ferraro
  */
 public class MutableSessionCreationMetaData implements SessionCreationMetaData {
@@ -18,6 +19,11 @@ public class MutableSessionCreationMetaData implements SessionCreationMetaData {
 	private final ImmutableSessionCreationMetaData metaData;
 	private final Value<Duration> timeout;
 
+	/**
+	 * Creates mutable session creation metadata.
+	 * @param metaData the immutable session creation metadata
+	 * @param timeout the session timeout value.
+	 */
 	public MutableSessionCreationMetaData(ImmutableSessionCreationMetaData metaData, Value<Duration> timeout) {
 		this.metaData = metaData;
 		this.timeout = timeout;

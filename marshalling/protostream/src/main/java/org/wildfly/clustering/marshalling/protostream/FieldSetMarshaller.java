@@ -6,6 +6,8 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.infinispan.protostream.descriptors.WireType;
@@ -41,6 +43,20 @@ public interface FieldSetMarshaller<T, V> extends FieldReadable<V>, Writable<T> 
 		@Override
 		default T build(T value) {
 			return value;
+		}
+	}
+
+	/**
+	 * A marshaller using a map entry field set.
+	 * @param <T> the marshaller type
+	 * @param <K> the entry key type
+	 * @param <V> the entry value type
+	 */
+	interface Entry<T, K, V> extends FieldSetMarshaller<T, Map.Entry<K, V>> {
+
+		@Override
+		default Map.Entry<K, V> createInitialValue() {
+			return new AbstractMap.SimpleEntry<>(null, null);
 		}
 	}
 

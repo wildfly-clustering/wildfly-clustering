@@ -18,10 +18,14 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
+ * Serialization context initializer for the {@link java.net} package.
  * @author Paul Ferraro
  */
 public class NetSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public NetSerializationContextInitializer() {
 		super(URI.class.getPackage());
 	}
@@ -29,7 +33,7 @@ public class NetSerializationContextInitializer extends AbstractSerializationCon
 	@Override
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(InetAddressMarshaller.INSTANCE.asMarshaller(InetAddress.class));
-		context.registerMarshaller(new InetSocketAddressMarshaller());
+		context.registerMarshaller(InetSocketAddressMarshaller.INSTANCE);
 		ProtoStreamMarshaller<URI> uriMarshaller = Scalar.STRING.cast(String.class).toMarshaller(java.net.URI.class, java.net.URI::toString, java.net.URI::create);
 		context.registerMarshaller(uriMarshaller);
 		context.registerMarshaller(uriMarshaller.wrap(URL.class, new Function<>() {

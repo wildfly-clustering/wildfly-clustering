@@ -9,13 +9,19 @@ import org.wildfly.clustering.marshalling.protostream.AbstractSerializationConte
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
+ * A serialization context initializer for this package.
  * @author Paul Ferraro
  */
 public class CoarseSessionMetaDataSerializationContextInitializer extends AbstractSerializationContextInitializer {
+	/**
+	 * Create a serialization context initializer.
+	 */
+	public CoarseSessionMetaDataSerializationContextInitializer() {
+	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new DefaultSessionMetaDataEntryMarshaller());
-		context.registerMarshaller(new SessionMetaDataEntryFunctionMarshaller());
+		context.registerMarshaller(DefaultSessionMetaDataEntryMarshaller.INSTANCE);
+		context.registerMarshaller(SessionMetaDataEntryFunctionMarshaller.INSTANCE);
 	}
 }

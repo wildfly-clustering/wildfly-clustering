@@ -16,6 +16,11 @@ import java.util.Map;
  */
 public abstract class MapFunction<K, V, T> extends AbstractFunction<T, Map<K, V>> {
 
+	/**
+	 * Constructs a new map operation function
+	 * @param operand the operation operand
+	 * @param operations the map operations
+	 */
 	public MapFunction(T operand, Operations<Map<K, V>> operations) {
 		super(operand, operations.getCopier(), operations.getFactory(), operations.isEmpty());
 	}

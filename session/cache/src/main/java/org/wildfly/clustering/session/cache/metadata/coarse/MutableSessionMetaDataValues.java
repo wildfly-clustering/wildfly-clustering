@@ -15,9 +15,21 @@ import org.wildfly.clustering.server.offset.Value;
  * @author Paul Ferraro
  */
 public interface MutableSessionMetaDataValues {
+	/**
+	 * Returns the session timeout value.
+	 * @return the session timeout value.
+	 */
 	Value<Duration> getTimeout();
 
+	/**
+	 * Returns the last access start time value.
+	 * @return the last access start time value.
+	 */
 	Value<Instant> getLastAccessStartTime();
 
+	/**
+	 * Returns the last access end time value.
+	 * @return the last access end time value.
+	 */
 	Value<Instant> getLastAccessEndTime();
 }

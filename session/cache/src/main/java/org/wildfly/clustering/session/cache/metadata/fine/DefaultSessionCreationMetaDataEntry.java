@@ -14,6 +14,7 @@ import org.wildfly.clustering.server.offset.Offset;
 import org.wildfly.clustering.server.util.Supplied;
 
 /**
+ * The session creation metadata cache entry.
  * @param <C> the session context type
  * @author Paul Ferraro
  */
@@ -23,11 +24,18 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 	private volatile Duration timeout = Duration.ZERO;
 	private final Supplied<C> context = Supplied.cached();
 
+	/**
+	 * Creates a session creation metadata entry for a new session.
+	 */
 	public DefaultSessionCreationMetaDataEntry() {
 		// Only retain millisecond precision
 		this(Instant.now().truncatedTo(ChronoUnit.MILLIS));
 	}
 
+	/**
+	 * Creates a session creation metadata entry for an existing session.
+	 * @param creationTime the instant this session was created
+	 */
 	public DefaultSessionCreationMetaDataEntry(Instant creationTime) {
 		this.creationTime = creationTime;
 	}

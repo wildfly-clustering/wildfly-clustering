@@ -23,10 +23,20 @@ public class UserMarshaller extends AbstractMarshaller {
 	private final MediaType type;
 	private final ByteBufferMarshaller marshaller;
 
+	/**
+	 * Creates a user marshaller based on the specified byte buffer marshaller.
+	 * @param type provider of the marshaller media type
+	 * @param marshaller a byte buffer marshaller
+	 */
 	public UserMarshaller(Supplier<MediaType> type, ByteBufferMarshaller marshaller) {
 		this(type.get(), marshaller);
 	}
 
+	/**
+	 * Creates a user marshaller based on the specified byte buffer marshaller.
+	 * @param type the marshaller media type
+	 * @param marshaller a byte buffer marshaller
+	 */
 	public UserMarshaller(MediaType type, ByteBufferMarshaller marshaller) {
 		this.type = type;
 		this.marshaller = marshaller;
@@ -40,7 +50,7 @@ public class UserMarshaller extends AbstractMarshaller {
 
 	@Override
 	public boolean isMarshallable(Object object) {
-		return this.marshaller.isMarshallable(object);
+		return this.marshaller.test(object);
 	}
 
 	@Override

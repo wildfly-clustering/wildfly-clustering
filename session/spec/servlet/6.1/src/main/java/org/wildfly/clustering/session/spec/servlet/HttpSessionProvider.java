@@ -15,14 +15,18 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
- * Provides an HttpSession for use with application callbacks.
+ * Provider of a specification facade for a session.
  * @author Paul Ferraro
- * @param <C> session context type
+ * @param <C> the session manager context
  */
 public class HttpSessionProvider<C> implements SessionSpecificationProvider<HttpSession, ServletContext> {
 
 	private final SessionManager<C> manager;
 
+	/**
+	 * Creates a specification facade provider.
+	 * @param manager the session manager.
+	 */
 	public HttpSessionProvider(SessionManager<C> manager) {
 		this.manager = manager;
 	}

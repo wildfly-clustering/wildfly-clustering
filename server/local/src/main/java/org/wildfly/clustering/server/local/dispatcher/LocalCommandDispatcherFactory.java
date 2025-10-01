@@ -11,6 +11,7 @@ import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
 
 /**
+ * Factory for creating a local command dispatcher.
  * @author Paul Ferraro
  */
 public interface LocalCommandDispatcherFactory extends GroupCommandDispatcherFactory<String, LocalGroupMember> {
@@ -18,6 +19,11 @@ public interface LocalCommandDispatcherFactory extends GroupCommandDispatcherFac
 	@Override
 	LocalGroup getGroup();
 
+	/**
+	 * Returns a local command dispatcher factory for the specified group.
+	 * @param group a group
+	 * @return a local command dispatcher factory for the specified group.
+	 */
 	static LocalCommandDispatcherFactory of(LocalGroup group) {
 		return new LocalCommandDispatcherFactory() {
 			@Override

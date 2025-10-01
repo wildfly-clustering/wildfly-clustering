@@ -19,6 +19,7 @@ import org.jgroups.conf.ClassConfigurator;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
+ * A request correlator for a command dispatcher.
  * @author Paul Ferraro
  */
 public class CommandDispatcherRequestCorrelator extends RequestCorrelator {
@@ -27,6 +28,12 @@ public class CommandDispatcherRequestCorrelator extends RequestCorrelator {
 	private final ByteBufferMarshaller marshaller;
 	private final Predicate<Message> unknownForkPredicate;
 
+	/**
+	 * Creates a request correlator for a command dispatcher.
+	 * @param channel a channel
+	 * @param handler a request handler
+	 * @param config a command dispatcher factory configuration
+	 */
 	public CommandDispatcherRequestCorrelator(JChannel channel, RequestHandler handler, JChannelCommandDispatcherFactoryConfiguration config) {
 		super(channel.getProtocolStack(), handler, channel.getAddress());
 		this.marshaller = config.getMarshaller();

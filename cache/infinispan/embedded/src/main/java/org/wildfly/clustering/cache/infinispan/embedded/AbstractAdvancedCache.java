@@ -21,6 +21,7 @@ import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 
 /**
+ * An abstract cache decorator.
  * @author Paul Ferraro
  * @param <K> the cache key type
  * @param <V> the cache value type
@@ -28,6 +29,10 @@ import org.infinispan.metadata.Metadata;
 public abstract class AbstractAdvancedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
 	private final Metadata defaultMetadata;
 
+	/**
+	 * Creates a new cache decorator.
+	 * @param cache the cache to which to delegate.
+	 */
 	protected AbstractAdvancedCache(AdvancedCache<K, V> cache) {
 		super(cache);
 		this.defaultMetadata = Configurations.newDefaultMetadata(cache.getCacheConfiguration());

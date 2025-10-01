@@ -8,15 +8,20 @@ package org.wildfly.clustering.cache.function;
 import java.util.Collection;
 
 /**
- * Function that adds an item to a collection.
+ * Function that adds one or more elements to a collection.
  * @author Paul Ferraro
  * @param <V> the collection element type
  * @param <C> the collection type
  */
 public class CollectionAddFunction<V, C extends Collection<V>> extends CollectionFunction<V, C> {
 
-	public CollectionAddFunction(Collection<V> operand, Operations<C> operations) {
-		super(operand, operations);
+	/**
+	 * Constructs a new function that adds the specified elements to a collection.
+	 * @param values the elements to be added to the collection
+	 * @param operations the operations
+	 */
+	public CollectionAddFunction(Collection<V> values, Operations<C> operations) {
+		super(values, operations);
 	}
 
 	@Override

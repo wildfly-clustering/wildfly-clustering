@@ -24,14 +24,29 @@ public interface Offset<V> extends UnaryOperator<V> {
 	 */
 	boolean isZero();
 
+	/**
+	 * Creates a duration-based offset for the specified duration.
+	 * @param offset the offset duration
+	 * @return a duration-based offset for the specified duration.
+	 */
 	static Offset<Duration> forDuration(Duration offset) {
 		return offset.isZero() ? DurationOffset.ZERO : new DurationOffset(offset);
 	}
 
+	/**
+	 * Creates an instant-based offset for the specified duration.
+	 * @param offset the offset duration
+	 * @return an instant-based offset for the specified duration.
+	 */
 	static Offset<Instant> forInstant(Duration offset) {
 		return offset.isZero() ? InstantOffset.ZERO : new InstantOffset(offset);
 	}
 
+	/**
+	 * A default offset implementation.
+	 * @param <O> the offset value type
+	 * @param <V> the basis value type
+	 */
 	class DefaultOffset<O, V> implements Offset<V>, Supplier<O> {
 
 		private final O value;
@@ -76,6 +91,10 @@ public interface Offset<V> extends UnaryOperator<V> {
 		}
 	}
 
+	/**
+	 * A temporal offset implementation.
+	 * @param <V> the basis value type
+	 */
 	class TemporalOffset<V> extends DefaultOffset<Duration, V> {
 		private static final Predicate<Duration> IS_ZERO = Duration::isZero;
 
@@ -84,6 +103,9 @@ public interface Offset<V> extends UnaryOperator<V> {
 		}
 	}
 
+	/**
+	 * A duration-based offset implementation.
+	 */
 	class DurationOffset extends TemporalOffset<Duration> {
 		static final Offset<Duration> ZERO = new DurationOffset(Duration.ZERO);
 		private static final BiFunction<Duration, Duration, Duration> DURATION_APPLICATOR = Duration::plus;
@@ -93,6 +115,9 @@ public interface Offset<V> extends UnaryOperator<V> {
 		}
 	}
 
+	/**
+	 * An instant-based offset implementation.
+	 */
 	class InstantOffset extends TemporalOffset<Instant> {
 		static final Offset<Instant> ZERO = new InstantOffset(Duration.ZERO);
 		private static final BiFunction<Instant, Duration, Instant> INSTANT_APPLICATOR = Instant::plus;

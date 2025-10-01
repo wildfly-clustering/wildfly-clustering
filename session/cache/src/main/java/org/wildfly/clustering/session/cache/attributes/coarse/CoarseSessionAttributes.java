@@ -7,9 +7,8 @@ package org.wildfly.clustering.session.cache.attributes.coarse;
 import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
-import org.wildfly.clustering.marshalling.Marshallability;
-import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
 
 /**
@@ -19,17 +18,25 @@ import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes
 public class CoarseSessionAttributes extends AbstractSessionAttributes {
 	private final Map<String, Object> attributes;
 	private final Runnable mutator;
-	private final Marshallability marshallability;
-	private final Immutability immutability;
+	private final Predicate<Object> marshallable;
+	private final Predicate<Object> immutable;
 	private final SessionActivationNotifier notifier;
 	private final AtomicBoolean dirty = new AtomicBoolean(false);
 
-	public CoarseSessionAttributes(Map<String, Object> attributes, Runnable mutator, Marshallability marshallability, Immutability immutability, SessionActivationNotifier notifier) {
+	/**
+	 * Creates a coarse-granularity session attributes object.
+	 * @param attributes a map of session attributes
+	 * @param mutator a mutator for associated cache entry.
+	 * @param marshallable a predicate used to determine whether a given session attribute is marshallable.
+	 * @param immutable a predicate used to determine whether a given session attribute is immutable.
+	 * @param notifier a notifier of session activation/passivation
+	 */
+	public CoarseSessionAttributes(Map<String, Object> attributes, Runnable mutator, Predicate<Object> marshallable, Predicate<Object> immutable, SessionActivationNotifier notifier) {
 		super(attributes);
 		this.attributes = attributes;
 		this.mutator = mutator;
-		this.marshallability = marshallability;
-		this.immutability = immutability;
+		this.marshallable = marshallable;
+		this.immutable = immutable;
 		this.notifier = notifier;
 		if (this.notifier != null) {
 			this.notifier.postActivate();
@@ -50,7 +57,7 @@ public class CoarseSessionAttributes extends AbstractSessionAttributes {
 		if (value == null) {
 			return this.remove(key);
 		}
-		if (!this.marshallability.isMarshallable(value)) {
+		if (!this.marshallable.test(value)) {
 			throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
 		}
 		Object old = this.attributes.put(key, value);
@@ -64,7 +71,7 @@ public class CoarseSessionAttributes extends AbstractSessionAttributes {
 		Object value = this.attributes.get(key);
 		if (value != null) {
 			// Bypass immutability check if session is already dirty
-			if (!this.dirty.get() && !this.immutability.test(value)) {
+			if (!this.dirty.get() && !this.immutable.test(value)) {
 				this.dirty.set(true);
 			}
 		}

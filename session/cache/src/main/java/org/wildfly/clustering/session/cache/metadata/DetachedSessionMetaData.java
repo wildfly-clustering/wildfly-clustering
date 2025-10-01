@@ -23,6 +23,11 @@ public class DetachedSessionMetaData<C, B extends Batch> implements SessionMetaD
 	private final Supplier<B> batchFactory;
 	private final Supplier<Session<C>> sessionFactory;
 
+	/**
+	 * Creates detached session metadata using the specified session factory.
+	 * @param batchFactory a batch factory
+	 * @param sessionFactory a session factory
+	 */
 	public DetachedSessionMetaData(Supplier<B> batchFactory, Supplier<Session<C>> sessionFactory) {
 		this.batchFactory = batchFactory;
 		this.sessionFactory = sessionFactory;

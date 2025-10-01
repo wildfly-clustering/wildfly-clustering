@@ -15,10 +15,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for a {@link DefaultSessionCreationMetaDataEntry}.
+ * ProtoStream marshaller for a {@link DefaultSessionCreationMetaDataEntry}.
  * @author Paul Ferraro
  */
-public class DefaultSessionCreationMetaDataEntryMarshaller implements ProtoStreamMarshaller<DefaultSessionCreationMetaDataEntry<Object>> {
+public enum DefaultSessionCreationMetaDataEntryMarshaller implements ProtoStreamMarshaller<DefaultSessionCreationMetaDataEntry<Object>> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final Instant DEFAULT_CREATION_TIME = Instant.EPOCH;
 	// Optimize for specification default

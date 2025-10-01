@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.context;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -77,6 +76,9 @@ public interface Contextualizer {
 	 */
 	<V1, V2, R> BiFunction<V1, V2, R> contextualize(BiFunction<V1, V2, R> function);
 
+	/**
+	 * A pass-through contextualizer.
+	 */
 	Contextualizer NONE = new Contextualizer() {
 		@Override
 		public Runnable contextualize(Runnable runner) {
@@ -114,6 +116,12 @@ public interface Contextualizer {
 		}
 	};
 
+	/**
+	 * Creates a contextualizer from the specified context provider.
+	 * @param <C> the context type
+	 * @param provider a supplier of a context
+	 * @return a contextualizer using the specified context provider.
+	 */
 	static <C> Contextualizer withContextProvider(Supplier<Context<C>> provider) {
 		ContextualExecutor executor = ContextualExecutor.withContextProvider(provider);
 		return new Contextualizer() {
@@ -189,7 +197,12 @@ public interface Contextualizer {
 		};
 	}
 
-	static Contextualizer composite(List<Contextualizer> contextualizers) {
+	/**
+	 * Creates a composite contextualizer from multiple contextualizers.
+	 * @param contextualizers a list of contextualizers.
+	 * @return a composite contextualizer
+	 */
+	static Contextualizer composite(Iterable<Contextualizer> contextualizers) {
 		return new Contextualizer() {
 			@Override
 			public Runnable contextualize(Runnable runner) {

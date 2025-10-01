@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-session-spec-servlet-6.1</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Session Management: Specification: Servlet: 6.1</name>
+	<name>${project.prefix.session.spec.servlet}: 6.1</name>
 
 	<dependencies>
 		<dependency>

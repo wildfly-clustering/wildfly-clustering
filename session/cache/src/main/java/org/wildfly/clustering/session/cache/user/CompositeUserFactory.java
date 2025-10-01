@@ -26,6 +26,12 @@ public class CompositeUserFactory<CV, C, T, SV, D, S> implements UserFactory<CV,
 	private final UserSessionsFactory<SV, D, S> sessionsFactory;
 	private final CacheProperties properties;
 
+	/**
+	 * Creates a factory for creating a composite user.
+	 * @param contextFactory a context factory
+	 * @param sessionsFactory a factory for creating user sessions
+	 * @param properties the properties of the associated cache
+	 */
 	public CompositeUserFactory(UserContextFactory<CV, C, T> contextFactory, UserSessionsFactory<SV, D, S> sessionsFactory, CacheProperties properties) {
 		this.contextFactory = contextFactory;
 		this.sessionsFactory = sessionsFactory;

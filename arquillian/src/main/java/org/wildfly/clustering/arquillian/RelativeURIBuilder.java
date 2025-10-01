@@ -6,7 +6,6 @@
 package org.wildfly.clustering.arquillian;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 /**
@@ -54,9 +53,18 @@ public interface RelativeURIBuilder {
 	 */
 	RelativeURIBuilder setFragment(String fragment);
 
+	/**
+	 * Builds a URI.
+	 * @return a URI
+	 */
 	URI build();
 
-	static RelativeURIBuilder relative(URI base) throws URISyntaxException {
+	/**
+	 * Returns a URI builder based on the specified URI.
+	 * @param base the base URI
+	 * @return a URI builder based on the specified URI.
+	 */
+	static RelativeURIBuilder relative(URI base) {
 		return URIBuilder.of().setScheme(base.getScheme()).setUserInfo(base.getUserInfo()).setHost(base.getHost()).setPort(base.getPort()).addPath(base.getPath());
 	}
 }

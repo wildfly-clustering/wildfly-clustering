@@ -15,7 +15,12 @@
 	<artifactId>wildfly-clustering-session-infinispan-remote</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Session Management: Infinispan: Remote</name>
+	<name>${project.prefix.session.infinispan}: Remote</name>
+
+	<properties>
+		<!-- N.B. Container uses IPv4 addresses on host network -->
+		<maven.failsafe.parameters>${java.runtime.parameters} -Djava.net.preferIPv4Stack=true</maven.failsafe.parameters>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -111,26 +116,5 @@
 				</includes>
 			</testResource>
 		</testResources>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>integration-test</id>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-						<configuration>
-							<trimStackTrace>false</trimStackTrace>
-							<!-- N.B. Container uses IPv4 addresses on host network -->
-							<argLine>${jdk.runtime.args} -Djava.net.preferIPv4Stack=true</argLine>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
 </project>

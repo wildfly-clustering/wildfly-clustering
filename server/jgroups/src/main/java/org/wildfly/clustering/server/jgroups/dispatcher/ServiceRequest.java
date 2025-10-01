@@ -8,13 +8,11 @@ package org.wildfly.clustering.server.jgroups.dispatcher;
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jgroups.Address;
-import org.jgroups.Message;
 import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestOptions;
@@ -31,18 +29,16 @@ public class ServiceRequest<T, C> extends UnicastRequest<T> {
 
 	private final C context;
 
+	/**
+	 * Creates a service request.
+	 * @param correlator a request correlator
+	 * @param target the recipient address
+	 * @param options the request options
+	 * @param context the marshalling context.
+	 */
 	public ServiceRequest(RequestCorrelator correlator, Address target, RequestOptions options, C context) {
 		super(correlator, target, options);
 		this.context = context;
-	}
-
-	public CompletionStage<T> send(Message message) throws IOException {
-		try {
-			this.sendRequest(message);
-			return this;
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
 	}
 
 	@SuppressWarnings("unchecked")

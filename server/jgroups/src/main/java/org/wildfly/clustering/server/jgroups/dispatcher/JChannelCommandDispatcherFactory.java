@@ -52,6 +52,10 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 	private final Duration timeout;
 	private final Function<ClassLoader, ByteBufferMarshaller> marshallerFactory;
 
+	/**
+	 * Creates a channel-based command dispatcher factory using the specified configuration.
+	 * @param config the configuration of the command dispatcher factory.
+	 */
 	@SuppressWarnings("resource")
 	public JChannelCommandDispatcherFactory(JChannelCommandDispatcherFactoryConfiguration config) {
 		this.marshaller = config.getMarshaller();
@@ -164,7 +168,47 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 		if (this.contexts.putIfAbsent(id, context) != null) {
 			throw new IllegalArgumentException(id.toString());
 		}
-		CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshaller, id, factory);
-		return new JChannelCommandDispatcher<>(commandContext, this.dispatcher, marshaller, dispatcherMarshaller, this.group, this.timeout, () -> this.contexts.remove(id));
+		CommandMarshaller<C> commandMarshaller = new CommandDispatcherMarshaller<>(this.marshaller, id, factory);
+		MessageDispatcher dispatcher = this.dispatcher;
+		ChannelGroup group = this.group;
+		Duration timeout = this.timeout;
+		Runnable closeTask = () -> this.contexts.remove(id);
+		JChannelCommandDispatcherConfiguration<C, ByteBufferMarshaller> configuration = new JChannelCommandDispatcherConfiguration<>() {
+			@Override
+			public C getCommandExecutionContext() {
+				return commandContext;
+			}
+
+			@Override
+			public MessageDispatcher getMessageDispatcher() {
+				return dispatcher;
+			}
+
+			@Override
+			public CommandMarshaller<C> getCommandMarshaller() {
+				return commandMarshaller;
+			}
+
+			@Override
+			public ByteBufferMarshaller getMarshallingContext() {
+				return dispatcherMarshaller;
+			}
+
+			@Override
+			public ChannelGroup getGroup() {
+				return group;
+			}
+
+			@Override
+			public Duration getCommandExecutionTimeout() {
+				return timeout;
+			}
+
+			@Override
+			public Runnable getCloseTask() {
+				return closeTask;
+			}
+		};
+		return new JChannelCommandDispatcher<>(configuration);
 	}
 }

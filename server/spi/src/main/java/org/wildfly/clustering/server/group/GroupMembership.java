@@ -16,6 +16,10 @@ import org.wildfly.clustering.server.GroupMember;
  */
 public interface GroupMembership<M extends GroupMember> extends org.wildfly.clustering.server.GroupMembership<M> {
 
+	/**
+	 * Returns the index of the group coordinator.
+	 * @return the index of the group coordinator.
+	 */
 	int getCoordinatorIndex();
 
 	@Override
@@ -23,6 +27,12 @@ public interface GroupMembership<M extends GroupMember> extends org.wildfly.clus
 		return this.getMembers().get(this.getCoordinatorIndex());
 	}
 
+	/**
+	 * Returns a singleton group membership.
+	 * @param <M> the member type
+	 * @param member the single group member
+	 * @return a singleton group membership.
+	 */
 	static <M extends GroupMember> GroupMembership<M> singleton(M member) {
 		List<M> members = List.of(member);
 		return new GroupMembership<>() {

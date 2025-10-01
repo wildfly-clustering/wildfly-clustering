@@ -18,6 +18,12 @@ import org.wildfly.clustering.marshalling.protostream.util.MapEntryMarshaller;
 @MetaInfServices(SerializationContextInitializer.class)
 public class UtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+	/**
+	 * Creates a new serialization context initializer.
+	 */
+	public UtilSerializationContextInitializer() {
+	}
+
 	@Override
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(new MapEntryMarshaller<>(MapEntry::of));

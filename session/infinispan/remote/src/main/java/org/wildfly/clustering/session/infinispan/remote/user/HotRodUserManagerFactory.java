@@ -36,6 +36,10 @@ public class HotRodUserManagerFactory<C, D, S> implements UserManagerFactory<C, 
 
 	private final RemoteCacheConfiguration configuration;
 
+	/**
+	 * Creates a user manager factory.
+	 * @param configuration the configuration of the associated cache
+	 */
 	public HotRodUserManagerFactory(RemoteCacheConfiguration configuration) {
 		this.configuration = configuration;
 	}

@@ -18,7 +18,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * Marshals {@link MonthDay} instances.
  * @author Paul Ferraro
  */
-public class MonthDayMarshaller implements ProtoStreamMarshaller<MonthDay> {
+public enum MonthDayMarshaller implements ProtoStreamMarshaller<MonthDay> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final Month[] MONTHS = Month.values();
 	private static final MonthDay DEFAULT = MonthDay.of(Month.JANUARY, 1);

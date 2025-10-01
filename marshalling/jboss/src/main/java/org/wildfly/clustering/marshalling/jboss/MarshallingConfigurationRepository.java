@@ -35,14 +35,33 @@ public interface MarshallingConfigurationRepository {
 	 */
 	MarshallingConfiguration getMarshallingConfiguration(int version) throws IOException;
 
+	/**
+	 * Creates a marshalling configuration repository from on an enumeration of configuration factories.
+	 * @param <C> the marshalling context
+	 * @param <E> the enum type
+	 * @param current the current version
+	 * @param context the marshalling context
+	 * @return a marshalling configuration repository
+	 */
 	static <C, E extends Enum<E> & Function<C, MarshallingConfiguration>> MarshallingConfigurationRepository from(E current, C context) {
 		return from(current.ordinal() + 1, EnumSet.allOf(current.getDeclaringClass()).stream().map(c -> c.apply(context)).toArray(MarshallingConfiguration[]::new));
 	}
 
+	/**
+	 * Creates a marshalling configuration repository from the specified ordered configurations.
+	 * @param configurations a number of configurations
+	 * @return a marshalling configuration repository
+	 */
 	static MarshallingConfigurationRepository from(MarshallingConfiguration... configurations) {
 		return from(configurations.length, configurations);
 	}
 
+	/**
+	 * Creates a marshalling configuration repository from on an enumeration of configuration factories.
+	 * @param currentVersion the current version
+	 * @param configurations a number of marshalling configurations
+	 * @return a marshalling configuration repository
+	 */
 	static MarshallingConfigurationRepository from(int currentVersion, MarshallingConfiguration... configurations) {
 		// First version is 1, not 0
 		MarshallingConfiguration currentConfiguration = configurations[currentVersion - 1];

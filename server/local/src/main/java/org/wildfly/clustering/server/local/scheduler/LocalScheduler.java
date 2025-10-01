@@ -42,6 +42,10 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel;
 	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule;
 
+	/**
+	 * Creates a local scheduler using the specified configuration.
+	 * @param configuration the scheduler configuration
+	 */
 	public LocalScheduler(LocalSchedulerConfiguration<T> configuration) {
 		this.name = configuration.getName();
 		this.entries = configuration.getScheduledEntries();

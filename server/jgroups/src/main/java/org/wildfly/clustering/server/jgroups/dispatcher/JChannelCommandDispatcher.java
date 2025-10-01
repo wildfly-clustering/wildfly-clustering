@@ -6,7 +6,6 @@ package org.wildfly.clustering.server.jgroups.dispatcher;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -52,19 +51,21 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 	private final CommandMarshaller<CC> marshaller;
 	private final MC marshallingContext;
 	private final ChannelGroup group;
-	private final Duration timeout;
 	private final Runnable closeTask;
 	private final RequestOptions options;
 
-	public JChannelCommandDispatcher(CC commandContext, MessageDispatcher dispatcher, CommandMarshaller<CC> marshaller, MC marshallingContext, ChannelGroup group, Duration timeout, Runnable closeTask) {
-		this.commandContext = commandContext;
-		this.dispatcher = dispatcher;
-		this.marshaller = marshaller;
-		this.marshallingContext = marshallingContext;
-		this.group = group;
-		this.timeout = timeout;
-		this.closeTask = closeTask;
-		this.options = new RequestOptions(ResponseMode.GET_ALL, this.timeout.toMillis(), false, FILTER, Message.Flag.DONT_BUNDLE, Message.Flag.OOB);
+	/**
+	 * Creates a command dispatcher using the specified configuration.
+	 * @param configuration the configuration of this command dispatcher
+	 */
+	public JChannelCommandDispatcher(JChannelCommandDispatcherConfiguration<CC, MC> configuration) {
+		this.commandContext = configuration.getCommandExecutionContext();
+		this.dispatcher = configuration.getMessageDispatcher();
+		this.marshaller = configuration.getCommandMarshaller();
+		this.marshallingContext = configuration.getMarshallingContext();
+		this.group = configuration.getGroup();
+		this.closeTask = configuration.getCloseTask();
+		this.options = new RequestOptions(ResponseMode.GET_ALL, configuration.getCommandExecutionTimeout().toMillis(), false, FILTER, Message.Flag.DONT_BUNDLE, Message.Flag.OOB);
 	}
 
 	@Override
@@ -84,10 +85,8 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 			return this.execute(command);
 		}
 		ByteBuffer buffer = this.createBuffer(command);
-		Address address = member.getAddress();
-		Message message = this.createMessage(buffer, address);
-		ServiceRequest<R, MC> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), address, this.options, this.marshallingContext);
-		return request.send(message);
+		Address address = member.getId();
+		return this.send(buffer, address);
 	}
 
 	@Override
@@ -99,11 +98,9 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 				if (this.group.getLocalMember().equals(member)) {
 					results.put(member, this.execute(command));
 				} else {
-					Address address = member.getAddress();
+					Address address = member.getId();
 					try {
-						ServiceRequest<R, MC> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), address, this.options, this.marshallingContext);
-						Message message = this.createMessage(buffer, address);
-						CompletionStage<R> result = request.send(message);
+						CompletionStage<R> result = this.send(buffer, address);
 						// Don't chain - we want returned stage to throw a CancellationException when necessary.
 						result.whenComplete(new PruneCancellationTask<>(results, member));
 						results.put(member, result);
@@ -118,6 +115,17 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 			}
 		}
 		return results;
+	}
+
+	private <R> CompletionStage<R> send(ByteBuffer buffer, Address address) throws IOException {
+		try {
+			Message message = this.createMessage(buffer, address);
+			ServiceRequest<R, MC> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), address, this.options, this.marshallingContext);
+			request.sendRequest(message);
+			return request;
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	private <R, E extends Exception> CompletionStage<R> execute(Command<R, ? super CC, E> command) {
@@ -137,7 +145,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 	}
 
 	private Message createMessage(ByteBuffer buffer, Address destination) {
-		return new BytesMessage().setArray(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset()).src(this.group.getLocalMember().getAddress()).dest(destination);
+		return new BytesMessage().setArray(buffer.array(), buffer.arrayOffset(), buffer.limit() - buffer.arrayOffset()).src(this.group.getLocalMember().getId()).dest(destination);
 	}
 
 	private static class PruneCancellationTask<R> implements BiConsumer<R, Throwable> {

@@ -52,6 +52,13 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		return new WebContainerRegistryImpl(this.registry.get());
 	}
 
+	/**
+	 * Constructs a new resource provider of a deployment container registry.
+	 */
+	public DeploymentContainerRegistryResourceProvider() {
+		// Do nothing
+	}
+
 	static class WebContainerRegistryImpl implements DeploymentContainerRegistry {
 		private final Map<String, DeploymentContainer> containers;
 

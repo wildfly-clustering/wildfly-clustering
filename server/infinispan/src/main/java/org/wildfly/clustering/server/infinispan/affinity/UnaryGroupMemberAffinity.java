@@ -27,11 +27,15 @@ public class UnaryGroupMemberAffinity<I> implements Function<I, CacheContainerGr
 	private final Supplier<KeyDistribution> distribution;
 	private final CacheContainerGroupMemberFactory factory;
 
+	/**
+	 * Creates a group member affinity function returning a single value.
+	 * @param configuration a group member affinity configuration
+	 */
 	public UnaryGroupMemberAffinity(GroupMemberAffinityConfiguration<I> configuration) {
 		this(configuration.getCache(), configuration.getGroup());
 	}
 
-	public UnaryGroupMemberAffinity(Cache<? extends Key<I>, ?> cache, CacheContainerGroup group) {
+	private UnaryGroupMemberAffinity(Cache<? extends Key<I>, ?> cache, CacheContainerGroup group) {
 		this(new Supplier<>() {
 			@Override
 			public KeyDistribution get() {

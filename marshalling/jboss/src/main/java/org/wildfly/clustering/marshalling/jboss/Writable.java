@@ -10,9 +10,16 @@ import java.io.IOException;
 import org.jboss.marshalling.Marshaller;
 
 /**
+ * Encapsulates a writable object.
  * @author Paul Ferraro
- * @param <T> the target type
+ * @param <T> the writable object type
  */
 public interface Writable<T> {
+	/**
+	 * Writes the specified object to the specified marshaller.
+	 * @param marshaller a marshaller
+	 * @param object the object to be written
+	 * @throws IOException if the object could not be written.
+	 */
 	void write(Marshaller marshaller, T object) throws IOException;
 }

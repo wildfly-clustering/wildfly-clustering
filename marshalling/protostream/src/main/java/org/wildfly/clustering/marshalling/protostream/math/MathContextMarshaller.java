@@ -18,7 +18,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * Marshaller for {@link MathContext}.
  * @author Paul Ferraro
  */
-public class MathContextMarshaller implements ProtoStreamMarshaller<MathContext> {
+public enum MathContextMarshaller implements ProtoStreamMarshaller<MathContext> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int PRECISION_INDEX = 1;
 	private static final int ROUNDING_MODE_INDEX = 2;

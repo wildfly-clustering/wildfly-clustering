@@ -24,6 +24,7 @@ import org.wildfly.clustering.server.listener.ListenerRegistrar;
 import org.wildfly.clustering.server.local.listener.LocalListenerRegistrar;
 
 /**
+ * A channel-based group.
  * @author Paul Ferraro
  */
 public class JChannelGroup implements ChannelGroup, Receiver {
@@ -35,6 +36,10 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 	private final ListenerRegistrar<GroupMembershipListener<ChannelGroupMember>> listeners;
 	private final AtomicReference<View> view = new AtomicReference<>();
 
+	/**
+	 * Creates a channel-based group using the specified channel.
+	 * @param channel a channel
+	 */
 	public JChannelGroup(JChannel channel) {
 		this.channel = channel;
 		this.localMember = this.memberFactory.createGroupMember(channel.getAddress());

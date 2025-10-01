@@ -63,6 +63,9 @@ public interface Formatter<T> {
 		};
 	}
 
+	/**
+	 * A formatter specialization for string formatting.
+	 */
 	interface Identity extends Formatter<String> {
 		/**
 		 * Returns a wrapping formatter
@@ -76,6 +79,7 @@ public interface Formatter<T> {
 		}
 	}
 
+	/** An identity formatter */
 	Identity IDENTITY = new Identity() {
 		@Override
 		public Class<String> getType() {
@@ -93,6 +97,12 @@ public interface Formatter<T> {
 		}
 	};
 
+	/**
+	 * Creates a formatter whose {@link #parse(String)} always returns the specified value.
+	 * @param <T> the formatted type
+	 * @param value the fixed value
+	 * @return a formatter whose {@link #parse(String)} always returns the specified value.
+	 */
 	static <T> Formatter<T> of(T value) {
 		return new Formatter<>() {
 			@SuppressWarnings("unchecked")
@@ -113,6 +123,20 @@ public interface Formatter<T> {
 		};
 	}
 
+	/**
+	 * Creates a composite formatter from the specified formatters.
+	 * @param <T> the formatted type
+	 * @param <V1> the former component formatter
+	 * @param <V2> the latter component formatter
+	 * @param type the formatted type
+	 * @param delimiter a delimiter
+	 * @param formatter1 the former formatter
+	 * @param formatter2 the latter formatter
+	 * @param unwrapper1 the unwrapper of the former formatter
+	 * @param unwrapper2 the unwrapper of the latter formatter
+	 * @param wrapper a wrapper of the component formatters
+	 * @return a composite formatter
+	 */
 	static <T, V1, V2> Formatter<T> joining(Class<? extends T> type, String delimiter, Formatter<V1> formatter1, Formatter<V2> formatter2, Function<T, V1> unwrapper1, Function<T, V2> unwrapper2, BiFunction<V1, V2, T> wrapper) {
 		return new Formatter<>() {
 			@Override
@@ -133,6 +157,15 @@ public interface Formatter<T> {
 		};
 	}
 
+	/**
+	 * Creates a composite formatter from the specified formatters.
+	 * @param <T> the formatted type
+	 * @param type the formatted type
+	 * @param delimiter a delimiter
+	 * @param unwrapper the parsing unwrapping function
+	 * @param wrapper the formatter wrapping function
+	 * @return a composite formatter from the specified formatters.
+	 */
 	static <T> Formatter<T> joining(Class<? extends T> type, String delimiter, Function<T, String[]> unwrapper, Function<String[], T> wrapper) {
 		return new Formatter<>() {
 			@Override
@@ -152,9 +185,17 @@ public interface Formatter<T> {
 		};
 	}
 
+	/**
+	 * A formatter decorator.
+	 * @param <T> the formatted type
+	 */
 	class Provided<T> implements Formatter<T> {
 		private final Formatter<T> formatter;
 
+		/**
+		 * Creates a formatter decorator.
+		 * @param formatter the decorated formatter
+		 */
 		public Provided(Formatter<T> formatter) {
 			this.formatter = formatter;
 		}

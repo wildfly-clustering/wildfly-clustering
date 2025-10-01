@@ -10,10 +10,15 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  */
 public interface DoublePredicate extends java.util.function.DoublePredicate {
+	/** A predicate that always returns true */
 	DoublePredicate ALWAYS = value -> true;
+	/** A predicate that always returns false */
 	DoublePredicate NEVER = value -> false;
+	/** A predicate that returns true if its parameter is greater than zero. */
 	DoublePredicate POSITIVE = greaterThan(0d);
+	/** A predicate that returns true if its parameter is zero. */
 	DoublePredicate ZERO = equalTo(0d);
+	/** A predicate that returns true if its parameter is less than zero. */
 	DoublePredicate NEGATIVE = lessThan(0d);
 
 	/**
@@ -103,6 +108,11 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
 		};
 	}
 
+	/**
+	 * Returns a predicate returning the exclusive disjunction of this predicate with the specified predicate.
+	 * @param other another predicate
+	 * @return a predicate returning the exclusive disjunction of this predicate with the specified predicate.
+	 */
 	default DoublePredicate xor(java.util.function.DoublePredicate other) {
 		return new DoublePredicate() {
 			@Override

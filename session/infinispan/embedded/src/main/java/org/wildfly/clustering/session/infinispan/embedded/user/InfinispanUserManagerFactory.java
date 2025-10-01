@@ -37,6 +37,10 @@ public class InfinispanUserManagerFactory<C, D, S> implements UserManagerFactory
 
 	private final EmbeddedCacheConfiguration configuration;
 
+	/**
+	 * Creates a user manager factory.
+	 * @param configuration the configuration for the associated cache
+	 */
 	public InfinispanUserManagerFactory(EmbeddedCacheConfiguration configuration) {
 		this.configuration = configuration;
 	}

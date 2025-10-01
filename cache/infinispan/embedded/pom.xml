@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Cache: Infinispan: Embedded</name>
+	<name>${project.prefix.cache.infinispan}: Embedded</name>
 
 	<dependencies>
 		<dependency>
@@ -56,6 +56,11 @@
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
 			<artifactId>resilience4j-retry</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-component-annotations</artifactId>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.infinispan</groupId>

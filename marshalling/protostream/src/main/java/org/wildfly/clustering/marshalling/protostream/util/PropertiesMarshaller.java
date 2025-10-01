@@ -15,10 +15,13 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for a {@link Properties} object.
+ * ProtoStream arshaller for a {@link Properties} object.
  * @author Paul Ferraro
  */
-public class PropertiesMarshaller implements ProtoStreamMarshaller<Properties> {
+public enum PropertiesMarshaller implements ProtoStreamMarshaller<Properties> {
+	/** Singleton instance */
+	INSTANCE;
+
 	private static final int PROPERTY_INDEX = 1;
 
 	@Override

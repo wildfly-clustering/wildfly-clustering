@@ -15,6 +15,11 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 
+	/**
+	 * Creates a new thread factory for the specified class using the specified context class loader.
+	 * @param targetClass the class from which a thread group will be created.
+	 * @param loader the class loader context
+	 */
 	@SuppressWarnings("removal")
 	public DefaultThreadFactory(Class<?> targetClass, ClassLoader loader) {
 		this(AccessController.doPrivileged(new PrivilegedAction<ThreadGroup>() {
@@ -25,10 +30,20 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 		}), loader);
 	}
 
+	/**
+	 * Creates a new thread factory using the specified thread group and context class loader.
+	 * @param group the thread group for threads created by this factory
+	 * @param loader the class loader context
+	 */
 	public DefaultThreadFactory(ThreadGroup group, ClassLoader loader) {
 		this(new ThreadGroupThreadFactory(group), loader);
 	}
 
+	/**
+	 * Creates a new thread factory using the specified context class loader.
+	 * @param factory the decorated thread factory
+	 * @param loader the class loader context
+	 */
 	public DefaultThreadFactory(ThreadFactory factory, ClassLoader loader) {
 		super(factory, loader, ThreadContextClassLoaderReference.CURRENT);
 	}

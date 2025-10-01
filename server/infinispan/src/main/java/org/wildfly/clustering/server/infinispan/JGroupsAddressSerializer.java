@@ -23,6 +23,7 @@ import org.wildfly.clustering.server.jgroups.AddressSerializer;
  * @author Paul Ferraro
  */
 public enum JGroupsAddressSerializer implements Serializer<JGroupsAddress> {
+	/** Singleton instance */
 	INSTANCE;
 
 	@Override
@@ -35,9 +36,18 @@ public enum JGroupsAddressSerializer implements Serializer<JGroupsAddress> {
 		return new JGroupsAddress(AddressSerializer.INSTANCE.read(input));
 	}
 
+	/**
+	 * Provides an externalizer of an Infinispan address.
+	 */
 	@MetaInfServices(ExternalizerProvider.class)
 	public static class JGroupsAddressExternalizerProvider implements ExternalizerProvider {
 		private final Externalizer externalizer = new SerializerExternalizer(INSTANCE);
+
+		/**
+		 * Creates an externalizer provider for an address.
+		 */
+		public JGroupsAddressExternalizerProvider() {
+		}
 
 		@Override
 		public Class<?> getType() {
@@ -50,8 +60,14 @@ public enum JGroupsAddressSerializer implements Serializer<JGroupsAddress> {
 		}
 	}
 
+	/**
+	 * A formatter of an Infinispan address.
+	 */
 	@MetaInfServices(Formatter.class)
 	public static class JGroupsAddressFormatter extends Formatter.Provided<JGroupsAddress> {
+		/**
+		 * Creates a formatter of an address.
+		 */
 		public JGroupsAddressFormatter() {
 			super(INSTANCE.toFormatter(JGroupsAddress.class));
 		}

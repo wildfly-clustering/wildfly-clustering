@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-cache-infinispan-persistence-remote</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Cache: Infinispan: Persistence: Remote</name>
+	<name>${project.prefix.cache.infinispan.persistence}: Remote</name>
 
 	<dependencies>
 		<dependency>
@@ -31,8 +31,11 @@
 
 		<dependency>
 			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-component-annotations</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-core</artifactId>
 		</dependency>
 	</dependencies>
-
 </project>

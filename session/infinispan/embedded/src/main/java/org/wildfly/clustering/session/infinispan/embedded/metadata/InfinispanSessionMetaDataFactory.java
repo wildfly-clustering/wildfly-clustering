@@ -27,6 +27,7 @@ import org.wildfly.clustering.session.cache.metadata.coarse.MutableSessionMetaDa
 import org.wildfly.clustering.session.cache.metadata.coarse.SessionMetaDataEntryFunction;
 
 /**
+ * A factory for creating session metadata.
  * @param <C> the session context type
  * @author Paul Ferraro
  */
@@ -39,6 +40,10 @@ public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFacto
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionMetaDataKey, MutableSessionMetaDataOffsetValues> mutatorFactory;
 
+	/**
+	 * Creates a session metadata factory.
+	 * @param configuration the configuration of the associated cache
+	 */
 	public InfinispanSessionMetaDataFactory(EmbeddedCacheConfiguration configuration) {
 		this.readForUpdateCache = configuration.getReadForUpdateCache();
 		this.tryReadForUpdateCache = configuration.getTryReadForUpdateCache();

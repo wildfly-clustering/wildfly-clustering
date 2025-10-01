@@ -11,11 +11,18 @@ import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.function.Supplier;
 
 /**
+ * Abstract mutator providing max-idle customization.
  * @author Paul Ferraro
  */
 public abstract class AbstractCacheEntryMutator implements CacheEntryMutator, java.util.function.Supplier<Duration> {
 
 	private volatile java.util.function.Supplier<Duration> maxIdle = Supplier.of(Duration.ZERO);
+
+	/**
+	 * Creates a immortal cache entry mutator.
+	 */
+	protected AbstractCacheEntryMutator() {
+	}
 
 	@Override
 	public CacheEntryMutator withMaxIdle(java.util.function.Supplier<Duration> maxIdle) {

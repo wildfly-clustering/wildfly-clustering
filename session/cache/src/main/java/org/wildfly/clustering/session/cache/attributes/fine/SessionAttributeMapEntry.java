@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache.attributes.fine;
 import java.util.Map;
 
 /**
+ * Encapsulates a session attribute map entry.
  * @param <V> the session attribute value type
  * @author Paul Ferraro
  */
@@ -16,10 +17,19 @@ public class SessionAttributeMapEntry<V> implements Map.Entry<String, V> {
 	private final String name;
 	private final V value;
 
+	/**
+	 * Creates a session attribute map entry.
+	 * @param entry a cache entry
+	 */
 	public SessionAttributeMapEntry(Map.Entry<String, V> entry) {
 		this(entry.getKey(), entry.getValue());
 	}
 
+	/**
+	 * Creates a session attribute map entry.
+	 * @param name an attribute name
+	 * @param value an attribute value
+	 */
 	public SessionAttributeMapEntry(String name, V value) {
 		this.name = name;
 		this.value = value;

@@ -26,6 +26,15 @@ public interface LocalRegistry<K, V> extends Registry<LocalGroupMember, K, V> {
 	@Override
 	LocalGroup getGroup();
 
+	/**
+	 * Creates a local registry with the specified group and registry entry.
+	 * @param <K> the registry key type
+	 * @param <V> the registry value type
+	 * @param group the local group
+	 * @param entry the local registry entry
+	 * @param closeTask a task to run on {@link Registry#close()}.
+	 * @return a local registry with the specified group and registry entry.
+	 */
 	static <K, V> LocalRegistry<K, V> of(LocalGroup group, Map.Entry<K, V> entry, Runnable closeTask) {
 		Map<K, V> entries = Collections.singletonMap(entry.getKey(), entry.getValue());
 		AtomicBoolean closed = new AtomicBoolean(false);

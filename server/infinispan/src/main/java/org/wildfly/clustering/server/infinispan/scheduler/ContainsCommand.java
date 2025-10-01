@@ -12,7 +12,10 @@ package org.wildfly.clustering.server.infinispan.scheduler;
  * @author Paul Ferraro
  */
 public class ContainsCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Boolean> {
-
+	/**
+	 * Creates a contains command for a scheduled entry with the specified identifier
+	 * @param id a scheduler entry identifier
+	 */
 	ContainsCommand(I id) {
 		super(id);
 	}

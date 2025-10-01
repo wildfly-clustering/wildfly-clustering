@@ -19,12 +19,21 @@ public class CacheEventListenerRegistrar<K, V> extends EventListenerRegistrar im
 	private final FilteringListenable<K, V> listenable;
 	private final Object listener;
 
+	/**
+	 * Creates a registrar for a cache event listener
+	 * @param listenable a listener target
+	 */
 	public CacheEventListenerRegistrar(FilteringListenable<K, V> listenable) {
 		super(listenable);
 		this.listenable = listenable;
 		this.listener = this;
 	}
 
+	/**
+	 * Creates a registrar for a cache event listener
+	 * @param listenable a listener target
+	 * @param listener a cache event listener
+	 */
 	public CacheEventListenerRegistrar(FilteringListenable<K, V> listenable, Object listener) {
 		super(listenable, listener);
 		this.listenable = listenable;

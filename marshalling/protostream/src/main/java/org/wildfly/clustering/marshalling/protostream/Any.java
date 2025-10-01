@@ -13,6 +13,7 @@ import java.util.function.Supplier;
  * @author Paul Ferraro
  */
 public class Any implements Supplier<Object> {
+	/** Specifies a null value */
 	public static final Any NULL = new Any(null);
 
 	private final Object value;

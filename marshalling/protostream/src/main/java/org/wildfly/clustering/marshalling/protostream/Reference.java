@@ -14,8 +14,12 @@ import java.util.function.IntSupplier;
 public class Reference implements IntSupplier {
 	private final int id;
 
-	public Reference(int reference) {
-		this.id = reference;
+	/**
+	 * Constructs a new reference with the specified identifier.
+	 * @param id a reference identifier
+	 */
+	public Reference(int id) {
+		this.id = id;
 	}
 
 	@Override

@@ -24,6 +24,11 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<LocalGroupMe
 	private final C context;
 	private volatile boolean closed = false;
 
+	/**
+	 * Creates a local command dispatcher.
+	 * @param member the local group member.
+	 * @param context the command context
+	 */
 	public LocalCommandDispatcher(LocalGroupMember member, C context) {
 		this.member = member;
 		this.context = context;

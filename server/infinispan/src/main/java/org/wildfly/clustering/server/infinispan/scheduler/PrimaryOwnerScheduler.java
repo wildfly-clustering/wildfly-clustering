@@ -19,6 +19,7 @@ import io.github.resilience4j.retry.Retry;
 
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
 import org.wildfly.clustering.server.util.MapEntry;
 
 /**
@@ -37,6 +38,10 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 	private final CheckedFunction<I, CompletionStage<Void>> primaryOwnerCancel;
 	private final CheckedFunction<I, CompletionStage<Boolean>> primaryOwnerContains;
 
+	/**
+	 * Creates a primary owner scheduler from the specified configuration.
+	 * @param configuration the configuration of a primary owner scheduler
+	 */
 	@SuppressWarnings("removal")
 	public PrimaryOwnerScheduler(PrimaryOwnerSchedulerConfiguration<I, M> configuration) {
 		this.name = configuration.getName();
@@ -47,7 +52,7 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 				return scheduler.getClass().getClassLoader();
 			}
 		}));
-		Function<I, CacheContainerGroupMember> affinity = configuration.getAffinity();
+		Function<I, CacheContainerGroupMember> affinity = new UnaryGroupMemberAffinity<>(configuration);
 		Retry retry = Retry.of(configuration.getName(), configuration.getRetryConfig());
 		BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory = configuration.getScheduleCommandFactory();
 		this.primaryOwnerSchedule = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, ScheduleCommand::new));

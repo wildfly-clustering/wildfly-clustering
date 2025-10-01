@@ -7,7 +7,7 @@ package org.wildfly.clustering.session.user;
 import org.wildfly.clustering.server.manager.Manager;
 
 /**
- * A user manager.
+ * Manager of the users of an application.
  * @author Paul Ferraro
  * @param <C> the user context type
  * @param <T> the transient user context type

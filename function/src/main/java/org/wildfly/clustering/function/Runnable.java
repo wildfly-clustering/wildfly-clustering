@@ -13,6 +13,7 @@ import java.util.function.Supplier;
  * @author Paul Ferraro
  */
 public interface Runnable extends java.lang.Runnable {
+	/** A runner that performs no action. */
 	Runnable EMPTY = () -> {};
 
 	/**

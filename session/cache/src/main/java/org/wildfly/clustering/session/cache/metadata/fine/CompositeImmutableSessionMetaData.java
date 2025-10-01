@@ -11,6 +11,7 @@ import java.time.Instant;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
 /**
+ * Immutable session metadata composed of separate creation and access meta data.
  * @author Paul Ferraro
  */
 public class CompositeImmutableSessionMetaData implements ImmutableSessionMetaData {
@@ -18,6 +19,11 @@ public class CompositeImmutableSessionMetaData implements ImmutableSessionMetaDa
 	private final ImmutableSessionCreationMetaData creationMetaData;
 	private final ImmutableSessionAccessMetaData accessMetaData;
 
+	/**
+	 * Creates composite immutable session metadata.
+	 * @param creationMetaData the creation metadata
+	 * @param accessMetaData the access metadata
+	 */
 	public CompositeImmutableSessionMetaData(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData) {
 		this.creationMetaData = creationMetaData;
 		this.accessMetaData = accessMetaData;

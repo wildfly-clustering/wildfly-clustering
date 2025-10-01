@@ -14,9 +14,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * ProtoStream marshaller for {@link DefaultSessionAccessMetaDataEntry}.
  * @author Paul Ferraro
  */
-public class DefaultSessionAccessMetaDataEntryMarshaller implements ProtoStreamMarshaller<DefaultSessionAccessMetaDataEntry> {
+public enum DefaultSessionAccessMetaDataEntryMarshaller implements ProtoStreamMarshaller<DefaultSessionAccessMetaDataEntry> {
+	/** Singleton instance */
+	INSTANCE;
 
 	// Optimize for new sessions
 	private static final Duration DEFAULT_SINCE_CREATION = Duration.ZERO;

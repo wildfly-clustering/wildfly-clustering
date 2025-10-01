@@ -5,12 +5,14 @@
 
 package org.wildfly.clustering.marshalling;
 
+import org.wildfly.clustering.function.Predicate;
+
 /**
  * Factory for creating marshalled values.
  * @param <C> the marshalling context type
  * @author Paul Ferraro
  */
-public interface MarshalledValueFactory<C> extends Marshallability {
+public interface MarshalledValueFactory<C> extends Predicate<Object> {
 	/**
 	 * Creates a new marshalled value from the specified object.
 	 * @param <T> the value type

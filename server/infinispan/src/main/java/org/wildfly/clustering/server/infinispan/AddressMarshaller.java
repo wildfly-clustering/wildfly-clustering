@@ -22,6 +22,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum AddressMarshaller implements FieldSetMarshaller.Simple<Address> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int JGROUPS_ADDRESS_INDEX = 0;

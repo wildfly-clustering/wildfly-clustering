@@ -18,7 +18,7 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.marshalling.Marshallability;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -48,6 +48,12 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	private final CacheEntryMutatorFactory<SessionAttributesKey, V> mutatorFactory;
 	private final BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory;
 
+	/**
+	 * Creates a session attributes factory.
+	 * @param configuration the configuration of this factory
+	 * @param notifierFactory a passivation/activation notifier factory
+	 * @param hotrod the configuration of the associated cache
+	 */
 	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
 		this.readCache = hotrod.getCache();
 		this.writeCache = hotrod.getIgnoreReturnCache();
@@ -103,7 +109,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		try {
 			Runnable mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
 			SessionActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : null;
-			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Marshallability.TRUE, this.immutability, notifier);
+			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Predicate.always(), this.immutability, notifier);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}

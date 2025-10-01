@@ -20,7 +20,9 @@ import org.wildfly.clustering.server.offset.Offset;
  * Protostream marshaller for a {@link DefaultSessionMetaDataEntry}.
  * @author Paul Ferraro
  */
-public class DefaultSessionMetaDataEntryMarshaller implements ProtoStreamMarshaller<DefaultSessionMetaDataEntry<Object>> {
+public enum DefaultSessionMetaDataEntryMarshaller implements ProtoStreamMarshaller<DefaultSessionMetaDataEntry<Object>> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final Instant DEFAULT_CREATION_TIME = Instant.EPOCH;
 	// Optimize for specification default

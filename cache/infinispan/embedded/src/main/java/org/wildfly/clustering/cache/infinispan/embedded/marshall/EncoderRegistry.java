@@ -27,6 +27,10 @@ import org.infinispan.encoding.DataConversion;
  */
 public interface EncoderRegistry extends org.infinispan.marshall.core.EncoderRegistry {
 
+	/**
+	 * Unregisters the transcoding support for the specified media type.
+	 * @param type a media type
+	 */
 	void unregisterTranscoder(MediaType type);
 
 	@Override

@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.wildfly.clustering.server.expiration.Expiration;
 
 /**
+ * An immutable view of the session metadata entry.
  * @author Paul Ferraro
  */
 public interface ImmutableSessionMetaDataEntry extends Expiration {

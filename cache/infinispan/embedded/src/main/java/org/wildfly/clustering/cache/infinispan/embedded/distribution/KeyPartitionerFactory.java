@@ -19,6 +19,11 @@ import org.wildfly.clustering.cache.Key;
  */
 @DefaultFactoryFor(classes = KeyPartitioner.class)
 public class KeyPartitionerFactory extends AbstractNamedCacheComponentFactory implements AutoInstantiableFactory {
+	/**
+	 * Creates a key partitioner factory.
+	 */
+	public KeyPartitionerFactory() {
+	}
 
 	@Override
 	public Object construct(String componentName) {

@@ -23,6 +23,7 @@ import com.github.benmanes.caffeine.cache.Scheduler;
 import com.github.benmanes.caffeine.cache.Weigher;
 
 /**
+ * Encapsulates the configuration of a Caffeine cache.
  * @author Paul Ferraro
  * @param <K> the cache key type
  * @param <V> the cache value type
@@ -65,6 +66,11 @@ public interface CacheConfiguration<K, V> {
 	 */
 	Scheduler getScheduler();
 
+	/**
+	 * A builder of a Caffeine cache configuration.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 */
 	interface Builder<K, V> {
 		/**
 		 * Defines the maximum weight of entries in the cache

@@ -23,6 +23,12 @@ public class DetachedHttpSession<C> extends AbstractHttpSession implements HttpS
 
 	private final Session<C> session;
 
+	/**
+	 * Creates a detached session.
+	 * @param manager the associated session manager
+	 * @param id the identifier of the session
+	 * @param context the servlet context
+	 */
 	public DetachedHttpSession(SessionManager<C> manager, String id, ServletContext context) {
 		this(manager.getDetachedSession(id), context);
 	}

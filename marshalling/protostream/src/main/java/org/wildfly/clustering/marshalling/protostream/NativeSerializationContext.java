@@ -27,6 +27,10 @@ public class NativeSerializationContext implements SerializationContext {
 
 	private final SerializationContext context;
 
+	/**
+	 * Constructs a new native serialization context decorator
+	 * @param context a serialization context
+	 */
 	public NativeSerializationContext(SerializationContext context) {
 		this.context = context;
 	}

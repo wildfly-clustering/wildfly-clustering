@@ -23,12 +23,18 @@ import org.wildfly.clustering.session.cache.metadata.DetachedSessionMetaData;
  */
 public class DetachedSession<C> extends AbstractImmutableSession implements Session<C> {
 
-	private final SessionManager<C> manager;
+	private final Supplier<SessionManager<C>> manager;
 	private final C context;
 	private final SessionMetaData metaData;
 	private final Map<String, Object> attributes;
 
-	public DetachedSession(SessionManager<C> manager, String id, C context) {
+	/**
+	 * Creates a detached session.
+	 * @param manager the session manager
+	 * @param id the identifier of the detached session
+	 * @param context the context of the detached session
+	 */
+	public DetachedSession(Supplier<SessionManager<C>> manager, String id, C context) {
 		super(id);
 		this.manager = manager;
 		this.context = context;
@@ -56,7 +62,7 @@ public class DetachedSession<C> extends AbstractImmutableSession implements Sess
 	@Override
 	public boolean isValid() {
 		try (Batch batch = this.getBatch()) {
-			return this.manager.findImmutableSession(this.getId()) != null;
+			return this.manager.get().findImmutableSession(this.getId()) != null;
 		}
 	}
 
@@ -75,10 +81,10 @@ public class DetachedSession<C> extends AbstractImmutableSession implements Sess
 	}
 
 	private Session<C> getSession() {
-		return Optional.ofNullable(this.manager.findSession(this.getId())).orElseThrow(IllegalStateException::new);
+		return Optional.ofNullable(this.manager.get().findSession(this.getId())).orElseThrow(IllegalStateException::new);
 	}
 
 	private Batch getBatch() {
-		return this.manager.getBatchFactory().get();
+		return this.manager.get().getBatchFactory().get();
 	}
 }

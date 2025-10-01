@@ -19,7 +19,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * Marshaller for an {@link InetSocketAddress}.
  * @author Paul Ferraro
  */
-public class InetSocketAddressMarshaller implements ProtoStreamMarshaller<InetSocketAddress> {
+public enum InetSocketAddressMarshaller implements ProtoStreamMarshaller<InetSocketAddress> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final InetSocketAddress DEFAULT = new InetSocketAddress(InetAddressMarshaller.INSTANCE.createInitialValue(), 0);
 

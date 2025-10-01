@@ -15,7 +15,7 @@ import org.wildfly.clustering.server.GroupMember;
 public interface ServiceProviderRegistrationListener<M extends GroupMember> {
 	/**
 	 * Indicates that the providers of a given service have changed.
-	 * @param event
+	 * @param event a registration event
 	 */
 	void providersChanged(ServiceProviderRegistrationEvent<M> event);
 }

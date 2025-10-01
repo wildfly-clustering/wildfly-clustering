@@ -18,7 +18,10 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
  * @author Paul Ferraro
  */
 public abstract class AbstractCacheEntryScheduler<I, K extends Key<I>, V, M> extends Scheduler.ReferenceScheduler<I, M> implements CacheEntryScheduler<I, K, V, M> {
-
+	/**
+	 * Creates a cache entry scheduler decorator of the specified scheduler.
+	 * @param scheduler the decorated scheduler
+	 */
 	protected AbstractCacheEntryScheduler(Scheduler<I, M> scheduler) {
 		super(Supplier.of(scheduler));
 	}

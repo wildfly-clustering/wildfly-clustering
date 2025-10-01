@@ -6,6 +6,7 @@
 package org.wildfly.clustering.cache.infinispan.batch;
 
 /**
+ * Implemented by contextual batch views.
  * @author Paul Ferraro
  */
 public interface Contextual {

@@ -21,6 +21,10 @@ public class SessionAffinityRegistryGroupMemberMapper<M extends GroupMember> imp
 	private final Registry<M, String, Void> registry;
 	private final String localKey;
 
+	/**
+	 * Creates a affinity function from the specified registry.
+	 * @param registry the registry storing session affinity entries
+	 */
 	public SessionAffinityRegistryGroupMemberMapper(Registry<M, String, Void> registry) {
 		this.registry = registry;
 		this.localKey = registry.getEntry(registry.getGroup().getLocalMember()).getKey();

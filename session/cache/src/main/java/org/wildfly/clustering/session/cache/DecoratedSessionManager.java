@@ -15,7 +15,7 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionStatistics;
 
 /**
- * A session manager that delegates to another session manager.
+ * A session manager decorator.
  * @author Paul Ferraro
  * @param <C> the session context type
  */
@@ -23,10 +23,19 @@ public class DecoratedSessionManager<C> extends DecoratedManager<String> impleme
 
 	private final SessionManager<C> manager;
 
+	/**
+	 * Creates a session manager decorator.
+	 * @param manager the decorated session manager.
+	 */
 	public DecoratedSessionManager(SessionManager<C> manager) {
 		this(manager, manager);
 	}
 
+	/**
+	 * Creates a session manager decorator with an alternate service implementation.
+	 * @param manager the decorated session manager.
+	 * @param service an alternate service
+	 */
 	protected DecoratedSessionManager(SessionManager<C> manager, Service service) {
 		super(manager, service);
 		this.manager = manager;

@@ -12,6 +12,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.descriptors.WireType;
 
 /**
+ * A ProtoStream writer that applies an offset to its fields.
  * @author Paul Ferraro
  */
 public class OffsetProtoStreamWriter implements ProtoStreamWriter {

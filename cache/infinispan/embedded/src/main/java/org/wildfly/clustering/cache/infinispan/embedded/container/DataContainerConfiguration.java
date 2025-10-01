@@ -20,13 +20,14 @@ import org.infinispan.commons.configuration.attributes.Matchable;
  */
 @BuiltBy(DataContainerConfigurationBuilder.class)
 public class DataContainerConfiguration implements Matchable<DataContainerConfiguration> {
-
+	/** Attribute defining a predicate used to determine whether a given cache entry is evictable. */
 	@SuppressWarnings("rawtypes")
 	static final AttributeDefinition<Predicate> EVICTABLE = AttributeDefinition.builder("evictable", org.wildfly.clustering.function.Predicate.always(), Predicate.class)
 			.copier(IdentityAttributeCopier.identityCopier())
 			.immutable()
 			.build();
 
+	/** Attribute defining the period of time after which an idle entry should be evicted. */
 	static final AttributeDefinition<Duration> IDLE_TIMEOUT = AttributeDefinition.builder("idle-timeout", null, Duration.class)
 			.copier(IdentityAttributeCopier.identityCopier())
 			.immutable()
@@ -42,10 +43,19 @@ public class DataContainerConfiguration implements Matchable<DataContainerConfig
 		return this.attributes;
 	}
 
+	/**
+	 * Returns the predicate used to determine which data container entries can be evicted.
+	 * @param <K> the cache key
+	 * @return the predicate used to determine which data container entries can be evicted.
+	 */
 	public <K> Predicate<K> evictable() {
 		return this.attributes.attribute(EVICTABLE).get();
 	}
 
+	/**
+	 * Returns the duration after which evictable idle data container entries should be evicted.
+	 * @return the duration after which evictable idle data container entries should be evicted.
+	 */
 	public Duration idleTimeout() {
 		return this.attributes.attribute(IDLE_TIMEOUT).get();
 	}

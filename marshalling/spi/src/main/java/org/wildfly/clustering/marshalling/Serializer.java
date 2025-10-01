@@ -111,6 +111,12 @@ public interface Serializer<T> {
 		};
 	}
 
+	/**
+	 * Creates a serializer whose {@link #read(DataInput)} always returns the specified object.
+	 * @param <T> the serialized type
+	 * @param value the fixed value
+	 * @return a serializer whose {@link #read(DataInput)} always returns the specified object.
+	 */
 	static <T> Serializer<T> of(T value) {
 		return new Serializer<>() {
 			@Override
@@ -124,9 +130,17 @@ public interface Serializer<T> {
 		};
 	}
 
+	/**
+	 * A serializer decorator.
+	 * @param <T> the serialized type
+	 */
 	class Provided<T> implements Serializer<T> {
 		private final Serializer<T> serializer;
 
+		/**
+		 * Constructs a new serializer decorator.
+		 * @param serializer the decorated serializer.
+		 */
 		public Provided(Serializer<T> serializer) {
 			this.serializer = serializer;
 		}

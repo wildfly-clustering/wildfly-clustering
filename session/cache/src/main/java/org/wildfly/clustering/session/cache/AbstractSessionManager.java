@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.cache;
 
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
@@ -13,6 +14,7 @@ import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.expiration.Expiration;
+import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -28,31 +30,87 @@ import org.wildfly.clustering.session.SessionStatistics;
  * @author Paul Ferraro
  */
 public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
+	/** The logger for this session manager */
 	protected final System.Logger logger = System.getLogger(this.getClass().getName());
 
-	private final Supplier<SessionManager<SC>> manager;
-	private final SessionFactory<C, MV, AV, SC> factory;
+	private final SessionFactory<C, MV, AV, SC> sessionFactory;
+	private final BiFunction<String, SC, Session<SC>> detachedSessionFactory;
 	private final Consumer<ImmutableSession> expirationListener;
 	private final Expiration expiration;
-	private final Supplier<String> identifierFactory;
+	private final IdentifierFactoryService<String> identifierFactory;
 	private final C context;
 	private final Supplier<Batch> batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
 
-	protected AbstractSessionManager(Supplier<SessionManager<SC>> manager, SessionManagerConfiguration<C> configuration, CacheConfiguration cacheConfiguration, SessionFactory<C, MV, AV, SC> factory, Consumer<ImmutableSession> sessionCloseTask) {
-		this.manager = manager;
+	/**
+	 * Configuration of a session manager.
+	 * @param <C> the session manager context type
+	 * @param <MV> the session metadata value type
+	 * @param <AV> the session attribute value type
+	 * @param <SC> the session context type
+	 */
+	protected interface Configuration<C, MV, AV, SC> extends SessionManagerConfiguration<C> {
+		@Override
+		IdentifierFactoryService<String> getIdentifierFactory();
+
+		/**
+		 * Returns the configuration associated with a cache.
+		 * @return the configuration associated with a cache.
+		 */
+		CacheConfiguration getCacheConfiguration();
+
+		/**
+		 * Returns a factory for creating a session.
+		 * @return a factory for creating a session.
+		 */
+		SessionFactory<C, MV, AV, SC> getSessionFactory();
+
+		/**
+		 * Returns a factory for creating a detached session.
+		 * @return a factory for creating a detached session.
+		 */
+		BiFunction<String, SC, Session<SC>> getDetachedSessionFactory();
+
+		/**
+		 * Returns a task to invoke on session close.
+		 * @return a task to invoke on session close.
+		 */
+		Consumer<ImmutableSession> getSessionCloseTask();
+	}
+
+	/**
+	 * Creates a session manager using the specified configuration.
+	 * @param configuration the configuration of the session manager
+	 */
+	protected AbstractSessionManager(Configuration<C, MV, AV, SC> configuration) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
-		this.batchFactory = cacheConfiguration.getBatchFactory();
+		this.batchFactory = configuration.getCacheConfiguration().getBatchFactory();
 		this.expiration = configuration;
 		this.expirationListener = configuration.getExpirationListener();
-		this.factory = factory;
+		this.sessionFactory = configuration.getSessionFactory();
+		this.detachedSessionFactory = configuration.getDetachedSessionFactory();
 		this.wrapper = new UnaryOperator<>() {
 			@Override
 			public Session<SC> apply(Session<SC> session) {
-				return new ManagedSession<>(new AttachedSession<>(session, sessionCloseTask), new DetachedSession<>(manager.get(), session.getId(), session.getContext()));
+				return new ManagedSession<>(new AttachedSession<>(session, configuration.getSessionCloseTask()), configuration.getDetachedSessionFactory().apply(session.getId(), session.getContext()));
 			}
 		};
+	}
+
+	@Override
+	public boolean isStarted() {
+		return this.identifierFactory.isStarted();
+	}
+
+	@Override
+	public void start() {
+		this.identifierFactory.start();
+	}
+
+	@Override
+	public void stop() {
+		this.identifierFactory.stop();
 	}
 
 	@Override
@@ -68,36 +126,36 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 	@Override
 	public CompletionStage<Session<SC>> createSessionAsync(String id) {
 		this.logger.log(System.Logger.Level.TRACE, "Creating session {0}", id);
-		return this.factory.createValueAsync(id, this.expiration.getTimeout()).thenApply(entry -> this.wrapper.apply(this.factory.createSession(id, entry, this.context)));
+		return this.sessionFactory.createValueAsync(id, this.expiration.getTimeout()).thenApply(entry -> this.wrapper.apply(this.sessionFactory.createSession(id, entry, this.context)));
 	}
 
 	@Override
 	public CompletionStage<Session<SC>> findSessionAsync(String id) {
 		this.logger.log(System.Logger.Level.TRACE, "Locating session {0}", id);
-		return this.factory.findValueAsync(id).thenApply(entry -> {
+		return this.sessionFactory.findValueAsync(id).thenApply(entry -> {
 			if (entry == null) {
 				this.logger.log(System.Logger.Level.TRACE, "Session {0} not found", id);
 				return null;
 			}
-			ImmutableSession session = this.factory.createImmutableSession(id, entry);
+			ImmutableSession session = this.sessionFactory.createImmutableSession(id, entry);
 			if (session.getMetaData().isExpired()) {
 				this.logger.log(System.Logger.Level.TRACE, "Session {0} was found, but has expired", id);
 				this.expirationListener.accept(session);
-				this.factory.removeAsync(id);
+				this.sessionFactory.removeAsync(id);
 				return null;
 			}
-			return this.wrapper.apply(this.factory.createSession(id, entry, this.context));
+			return this.wrapper.apply(this.sessionFactory.createSession(id, entry, this.context));
 		});
 	}
 
 	@Override
 	public CompletionStage<ImmutableSession> findImmutableSessionAsync(String id) {
-		return this.factory.findValueAsync(id).thenApply(entry -> (entry != null) ? new SimpleImmutableSession(this.factory.createImmutableSession(id, entry)) : null);
+		return this.sessionFactory.findValueAsync(id).thenApply(entry -> (entry != null) ? new SimpleImmutableSession(this.sessionFactory.createImmutableSession(id, entry)) : null);
 	}
 
 	@Override
 	public Session<SC> getDetachedSession(String id) {
-		return new DetachedSession<>(this.manager.get(), id, this.factory.getContextFactory().get());
+		return this.detachedSessionFactory.apply(id, this.sessionFactory.getContextFactory().get());
 	}
 
 	@Override

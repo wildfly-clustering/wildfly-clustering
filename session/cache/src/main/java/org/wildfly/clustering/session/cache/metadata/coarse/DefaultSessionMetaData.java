@@ -22,6 +22,11 @@ public class DefaultSessionMetaData extends DefaultImmutableSessionMetaData impl
 	private final Runnable mutator;
 	private final AtomicBoolean valid = new AtomicBoolean(true);
 
+	/**
+	 * Session metadata for the specified entry and mutator.
+	 * @param entry a session metadata entry
+	 * @param mutator a runner that mutates the cache entry associated with this session metadata
+	 */
 	public DefaultSessionMetaData(SessionMetaDataEntry entry, Runnable mutator) {
 		super(entry);
 		this.entry = entry;

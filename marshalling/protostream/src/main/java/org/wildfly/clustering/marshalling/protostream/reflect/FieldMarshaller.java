@@ -26,6 +26,11 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 	private final Supplier<? extends T> factory;
 	private final Field[] fields;
 
+	/**
+	 * Creates a marshaller for the specified fields of the specified class.
+	 * @param type a marshalled object type
+	 * @param memberTypes the member types
+	 */
 	public FieldMarshaller(Class<? extends T> type, Class<?>... memberTypes) {
 		this(type, defaultFactory(type), memberTypes);
 	}
@@ -35,6 +40,12 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 		return () -> Reflect.newInstance(constructor);
 	}
 
+	/**
+	 * Creates a field marshaller for the specified fields of the specified class using the specified factory
+	 * @param type a marshalled object type
+	 * @param factory a factory for creating the field
+	 * @param memberTypes the member types
+	 */
 	public FieldMarshaller(Class<? extends T> type, Supplier<? extends T> factory, Class<?>... memberTypes) {
 		this.type = type;
 		this.factory = factory;

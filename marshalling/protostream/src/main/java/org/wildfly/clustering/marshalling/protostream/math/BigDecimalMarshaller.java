@@ -18,7 +18,9 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * Marshaller for {@link BigDecimal}.
  * @author Paul Ferraro
  */
-public class BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
+public enum BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int UNSCALED_VALUE_INDEX = 1;
 	private static final int SCALE_INDEX = 2;

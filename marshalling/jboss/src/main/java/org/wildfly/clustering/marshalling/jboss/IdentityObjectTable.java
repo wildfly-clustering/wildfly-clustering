@@ -19,6 +19,10 @@ public class IdentityObjectTable implements ObjectTable {
 
 	private final IdentityTable<Object> table;
 
+	/**
+	 * Creates an object table for the specified objects.
+	 * @param objects a list of objects.
+	 */
 	public IdentityObjectTable(List<Object> objects) {
 		this.table = IdentityTable.from(objects);
 	}

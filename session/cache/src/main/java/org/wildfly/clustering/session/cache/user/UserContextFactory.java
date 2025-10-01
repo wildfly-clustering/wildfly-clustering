@@ -12,12 +12,17 @@ import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.cache.CacheEntryRemover;
 
 /**
+ * A factory for creating a user context.
  * @param <V> the cache value type
  * @param <PC> the persistent context type
  * @param <TC> the transient context type
  * @author Paul Ferraro
  */
 public interface UserContextFactory<V, PC, TC> extends CacheEntryCreator<String, V, PC>, CacheEntryLocator<String, V>, CacheEntryRemover<String> {
-
+	/**
+	 * Creates a user context from the specified cache value
+	 * @param value the cache value containing the user context
+	 * @return a user context from the specified cache value
+	 */
 	Map.Entry<PC, TC> createUserContext(V value);
 }

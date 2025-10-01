@@ -31,6 +31,10 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Predicate<String>,
 	private final SessionFactory<SC, MV, AV, LC> factory;
 	private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
 
+	/**
+	 * Creates a remover for expired sessions.
+	 * @param factory the associates session factory
+	 */
 	public ExpiredSessionRemover(SessionFactory<SC, MV, AV, LC> factory) {
 		this.factory = factory;
 	}

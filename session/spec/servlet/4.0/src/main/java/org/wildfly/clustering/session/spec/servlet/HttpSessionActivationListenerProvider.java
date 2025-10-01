@@ -14,9 +14,11 @@ import javax.servlet.http.HttpSessionEvent;
 import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 
 /**
+ * The provider of specification facades for session activation listeners.
  * @author Paul Ferraro
  */
 public enum HttpSessionActivationListenerProvider implements SessionEventListenerSpecificationProvider<HttpSession, HttpSessionActivationListener> {
+	/** Singleton instance */
 	INSTANCE;
 
 	@Override

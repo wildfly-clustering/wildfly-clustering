@@ -34,6 +34,10 @@ public class ReadForUpdateRemoteCache<K, V> extends AbstractRemoteCache<K, V> {
 	private final RemoteCache<K, V> forceReturnCache;
 	private final BooleanSupplier currentTransation;
 
+	/**
+	 * Creates a read-for-update remote cache decorator.
+	 * @param cache the decorated remote cache.
+	 */
 	public ReadForUpdateRemoteCache(RemoteCache<K, V> cache) {
 		super(cache);
 		Function<MetadataValue<V>, V> value = MetadataValue::getValue;

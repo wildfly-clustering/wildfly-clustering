@@ -18,6 +18,7 @@ import org.jboss.marshalling.ObjectTable;
  * @author Paul Ferraro
  */
 public enum DefaultObjectTableProvider implements Supplier<ObjectTable> {
+	/** Singleton objects of {@link java.util}. */
 	UTIL(List.of(
 			Collections.emptyList(),
 			Collections.emptyMap(),

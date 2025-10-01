@@ -4,36 +4,26 @@
  */
 package org.wildfly.clustering.server.local;
 
+import org.wildfly.clustering.server.group.AbstractGroupMember;
+
 /**
  * Non-clustered {@link GroupMember} implementation.
  * @author Paul Ferraro
  */
-class DefaultLocalGroupMember implements LocalGroupMember {
+class DefaultLocalGroupMember extends AbstractGroupMember<String> implements LocalGroupMember {
 
 	private final String name;
 
+	/**
+	 * Creates a new local group member with the specified name
+	 * @param name the group member name
+	 */
 	DefaultLocalGroupMember(String name) {
 		this.name = name;
 	}
 
 	@Override
 	public String getName() {
-		return this.name;
-	}
-
-	@Override
-	public boolean equals(Object object) {
-		if (!(object instanceof LocalGroupMember member)) return false;
-		return this.name.equals(member.getName());
-	}
-
-	@Override
-	public int hashCode() {
-		return this.name.hashCode();
-	}
-
-	@Override
-	public String toString() {
 		return this.name;
 	}
 }

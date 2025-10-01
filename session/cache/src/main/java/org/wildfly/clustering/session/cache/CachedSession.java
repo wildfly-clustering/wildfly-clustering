@@ -17,6 +17,11 @@ public class CachedSession<C> extends DecoratedSession<C> implements CacheableSe
 
 	private final Runnable closeTask;
 
+	/**
+	 * Creates a cached session decorator
+	 * @param session a session
+	 * @param closeTask a task to run on {@link Session#close()}.
+	 */
 	public CachedSession(Session<C> session, Runnable closeTask) {
 		super(Supplier.of(session));
 		this.closeTask = closeTask;

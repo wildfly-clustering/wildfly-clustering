@@ -9,6 +9,7 @@ import org.jgroups.Address;
 import org.wildfly.clustering.server.group.GroupMember;
 
 /**
+ * A channel-based group member.
  * @author Paul Ferraro
  */
 public interface ChannelGroupMember extends GroupMember<Address> {

@@ -20,6 +20,11 @@ public class MutableSessionMetaDataEntry implements SessionMetaDataEntry {
 	private final Value<Instant> lastAccessStartTime;
 	private final Value<Instant> lastAccessEndTime;
 
+	/**
+	 * A mutable session meta data entry using the specified offset values.
+	 * @param entry a metadata entry
+	 * @param values a set of offset values
+	 */
 	public MutableSessionMetaDataEntry(ImmutableSessionMetaDataEntry entry, MutableSessionMetaDataOffsetValues values) {
 		this.entry = entry;
 		this.timeout = values.getTimeout();

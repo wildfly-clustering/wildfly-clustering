@@ -5,9 +5,10 @@
 package org.wildfly.clustering.server.jgroups.dispatcher;
 
 /**
- * Simple object that indicates that no service is registered on the group member for which to execute the remote command.
+ * Enumeration of fixed command dispatcher responses.
  * @author Paul Ferraro
  */
 public enum ServiceResponse {
+	/** A response indicating that the recipient could not execute a given command as the associated service is not recognized. */
 	NO_SUCH_SERVICE;
 }

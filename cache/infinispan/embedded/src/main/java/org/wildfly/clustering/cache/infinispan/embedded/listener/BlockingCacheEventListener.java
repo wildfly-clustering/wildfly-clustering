@@ -25,10 +25,20 @@ public class BlockingCacheEventListener<K, V> extends NonBlockingCacheEventListe
 	private final BlockingManager blocking;
 	private final String name;
 
+	/**
+	 * Creates a blocking cache event listener.
+	 * @param cache the target cache
+	 * @param consumer a consumer of a cache key
+	 */
 	public BlockingCacheEventListener(Cache<K, V> cache, java.util.function.Consumer<K> consumer) {
 		this(cache, BiConsumer.of(consumer, Consumer.empty()), consumer.getClass());
 	}
 
+	/**
+	 * Creates a blocking cache event listener.
+	 * @param cache the target cache
+	 * @param consumer a consumer of a cache entry
+	 */
 	public BlockingCacheEventListener(Cache<K, V> cache, java.util.function.BiConsumer<K, V> consumer) {
 		this(cache, consumer, consumer.getClass());
 	}

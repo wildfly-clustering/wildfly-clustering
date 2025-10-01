@@ -17,9 +17,10 @@ import java.util.function.UnaryOperator;
  * @author Paul Ferraro
  */
 public enum MapOperations implements Operations<Map<Object, Object>> {
-
-	TREE(TreeMap::new, TreeMap::new),
+	/** {@link HashMap} */
 	HASH(HashMap::new, HashMap::new),
+	/** {@link TreeMap} */
+	TREE(TreeMap::new, TreeMap::new),
 	;
 
 	static <K, V> Operations<Map<K, V>> forOperandKey(K value) {

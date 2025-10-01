@@ -32,6 +32,13 @@ public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActiv
 	private final Function<L, Consumer<S>> prePassivateFactory;
 	private final Function<L, Consumer<S>> postActivateFactory;
 
+	/**
+	 * Create a activation notifier for an immutable session.
+	 * @param sessionProvider provider of specification views
+	 * @param listenerProvider provider of listener specification views
+	 * @param session an immutable session
+	 * @param context a session context
+	 */
 	public ImmutableSessionActivationNotifier(SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, ImmutableSession session, C context) {
 		this.sessionProvider = sessionProvider;
 		this.listenerProvider = listenerProvider;

@@ -15,7 +15,9 @@ import java.util.Map;
  * @param <R> the function return type
  */
 public interface Function<T, R> extends java.util.function.Function<T, R> {
+	/** An identity function that always returns its parameter */
 	Function<?, ?> IDENTITY = value -> value;
+	/** A function that always returns null. */
 	Function<?, ?> NULL = value -> null;
 
 	@Override

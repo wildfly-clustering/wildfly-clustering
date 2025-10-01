@@ -22,12 +22,16 @@ public class WrappedMessageByteBufferMarshaller implements ByteBufferMarshaller 
 
 	private final ImmutableSerializationContext context;
 
+	/**
+	 * Creates a new marshaller using the specified context.
+	 * @param context a serialization context
+	 */
 	public WrappedMessageByteBufferMarshaller(ImmutableSerializationContext context) {
 		this.context = context;
 	}
 
 	@Override
-	public boolean isMarshallable(Object object) {
+	public boolean test(Object object) {
 		return this.context.canMarshall(object);
 	}
 

@@ -39,6 +39,12 @@ public interface Scheduler<I, V> extends AutoCloseable {
 	@Override
 	void close();
 
+	/**
+	 * Returns scheduler wrapper of this scheduler.
+	 * @param <T> the mapped type
+	 * @param mapper a mapping function
+	 * @return scheduler wrapper of this scheduler.
+	 */
 	default <T> Scheduler<I, T> map(Function<T, Optional<V>> mapper) {
 		return new Scheduler<>() {
 			@Override
@@ -78,17 +84,25 @@ public interface Scheduler<I, V> extends AutoCloseable {
 
 	/**
 	 * Returns a scheduler that delegates to a scheduler reference.
-	 * @param reference a scheduler reference
 	 * @param <I> the scheduled entry identifier type
 	 * @param <V> the scheduled entry value type
+	 * @param reference a scheduler reference
 	 * @return a scheduler that delegates to a scheduler reference.
 	 */
 	static <I, V> Scheduler<I, V> fromReference(Supplier<? extends Scheduler<I, V>> reference) {
 		return new ReferenceScheduler<>(reference);
 	}
 
+	/**
+	 * An inactive scheduler implementation.
+	 * @param <I> the scheduled object identifier type
+	 * @param <V> the scheduled object type
+	 */
 	class InactiveScheduler<I, V> implements Scheduler<I, V> {
-		protected InactiveScheduler() {
+		/**
+		 * Creates a new inactive scheduler.
+		 */
+		public InactiveScheduler() {
 		}
 
 		@Override
@@ -109,10 +123,19 @@ public interface Scheduler<I, V> extends AutoCloseable {
 		}
 	}
 
+	/**
+	 * A scheduler decorator.
+	 * @param <I> the scheduled object identifier type
+	 * @param <V> the scheduled object type
+	 */
 	class ReferenceScheduler<I, V> implements Scheduler<I, V> {
 		private final Supplier<? extends Scheduler<I, V>> reference;
 
-		protected ReferenceScheduler(Supplier<? extends Scheduler<I, V>> reference) {
+		/**
+		 * Creates a new referenced scheduler
+		 * @param reference a reference to the decorated scheduler.
+		 */
+		public ReferenceScheduler(Supplier<? extends Scheduler<I, V>> reference) {
 			this.reference = reference;
 		}
 

@@ -16,9 +16,21 @@ import java.util.function.UnaryOperator;
  */
 public interface Operations<T> {
 
+	/**
+	 * Returns an operator used to copy the operable object (for copy-on-write operations).
+	 * @return an operator used to copy the operable object (for copy-on-write operations).
+	 */
 	UnaryOperator<T> getCopier();
 
+	/**
+	 * Returns a factory for creating the operable object (for set-if-absent operations).
+	 * @return a factory for creating the operable object (for set-if-absent operations).
+	 */
 	Supplier<T> getFactory();
 
+	/**
+	 * Returns the predicate used to determine if the operable object is empty.
+	 * @return the predicate used to determine if the operable object is empty.
+	 */
 	Predicate<T> isEmpty();
 }

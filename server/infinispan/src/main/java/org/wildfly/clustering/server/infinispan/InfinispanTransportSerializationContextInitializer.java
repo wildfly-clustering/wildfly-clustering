@@ -18,7 +18,9 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class InfinispanTransportSerializationContextInitializer extends AbstractSerializationContextInitializer {
-
+	/**
+	 * Creates a serialization context initializer.
+	 */
 	public InfinispanTransportSerializationContextInitializer() {
 		super(LocalModeAddress.class.getPackage());
 	}

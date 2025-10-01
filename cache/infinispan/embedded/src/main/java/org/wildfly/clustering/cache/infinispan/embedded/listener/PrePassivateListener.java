@@ -24,10 +24,19 @@ public class PrePassivateListener<K, V> {
 
 	private final Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener;
 
+	/**
+	 * Creates a non-blocking pre-passivate listener
+	 * @param listener a non-blocking listener function
+	 */
 	public PrePassivateListener(Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener) {
 		this.listener = listener;
 	}
 
+	/**
+	 * Handles cache entry passivation events.
+	 * @param event a cache entry passivation event
+	 * @return a completion stage
+	 */
 	@CacheEntryPassivated
 	public CompletionStage<Void> prePassivate(CacheEntryPassivatedEvent<K, V> event) {
 		return this.listener.apply(event);

@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-cache-infinispan-persistence-jdbc</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Cache: Infinispan: Persistence: JDBC</name>
+	<name>${project.prefix.cache.infinispan.persistence}: JDBC</name>
 
 	<dependencies>
 		<dependency>
@@ -28,6 +28,9 @@
 			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-cachestore-jdbc-common</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-component-annotations</artifactId>
+		</dependency>
 	</dependencies>
-
 </project>
