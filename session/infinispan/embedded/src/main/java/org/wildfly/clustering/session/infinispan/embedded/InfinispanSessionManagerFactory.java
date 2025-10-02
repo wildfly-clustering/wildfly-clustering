@@ -10,11 +10,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import io.github.resilience4j.retry.RetryConfig;
-
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
-import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
@@ -117,11 +114,6 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		CacheContainerGroup group = dispatcherFactory.getGroup();
 		this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<String, ExpirationMetaData>() {
 			@Override
-			public String getName() {
-				return cache.getName();
-			}
-
-			@Override
 			public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
 				return dispatcherFactory;
 			}
@@ -132,18 +124,13 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public Cache<? extends Key<String>, ?> getCache() {
-				return cache;
+			public <K, V> Cache<K, V> getCache() {
+				return infinispan.getCache();
 			}
 
 			@Override
 			public BiFunction<String, ExpirationMetaData, ScheduleCommand<String, ExpirationMetaData>> getScheduleCommandFactory() {
 				return properties.isTransactional() ? ScheduleWithExpirationMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
-			}
-
-			@Override
-			public RetryConfig getRetryConfig() {
-				return infinispan.getRetryConfig();
 			}
 		});
 

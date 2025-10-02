@@ -16,6 +16,7 @@ import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.infinispan.CacheGroupConfiguration;
 import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupContext;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryFactory;
@@ -44,7 +45,7 @@ public class CacheContainerRegistryFactoryContext<K, V> extends AbstractContext<
 		cache.start();
 		this.accept(cache::stop);
 
-		CacheRegistryConfiguration config = new CacheRegistryConfiguration() {
+		CacheGroupConfiguration config = new CacheGroupConfiguration() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public <KK, VV> Cache<KK, VV> getCache() {

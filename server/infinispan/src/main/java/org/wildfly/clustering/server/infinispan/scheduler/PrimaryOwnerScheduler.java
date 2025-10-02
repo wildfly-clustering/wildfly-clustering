@@ -19,7 +19,6 @@ import io.github.resilience4j.retry.Retry;
 
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
 import org.wildfly.clustering.server.util.MapEntry;
 
 /**
@@ -52,7 +51,7 @@ public class PrimaryOwnerScheduler<I, M> implements Scheduler<I, M> {
 				return scheduler.getClass().getClassLoader();
 			}
 		}));
-		Function<I, CacheContainerGroupMember> affinity = new UnaryGroupMemberAffinity<>(configuration);
+		Function<I, CacheContainerGroupMember> affinity = configuration.getAffinity();
 		Retry retry = Retry.of(configuration.getName(), configuration.getRetryConfig());
 		BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory = configuration.getScheduleCommandFactory();
 		this.primaryOwnerSchedule = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, ScheduleCommand::new));

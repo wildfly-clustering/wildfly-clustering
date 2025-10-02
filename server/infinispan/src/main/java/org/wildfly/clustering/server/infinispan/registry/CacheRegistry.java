@@ -49,6 +49,7 @@ import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.infinispan.CacheGroupConfiguration;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryListener;
 import org.wildfly.clustering.server.util.MapEntry;
@@ -84,7 +85,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 	 * @param entry the local group member entry
 	 * @param closeTask a task to run on registry close
 	 */
-	public CacheRegistry(CacheRegistryConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
+	public CacheRegistry(CacheGroupConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
 		this.cache = config.getWriteOnlyCache();
 		this.batchFactory = config.getBatchFactory();
 		this.group = config.getGroup();
