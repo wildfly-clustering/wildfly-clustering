@@ -24,7 +24,7 @@
 	<name>${project.repository.name}: Modules</name>
 
 	<modules>
-		<module>bom/parent</module>
+		<module>parent</module>
 		<module>bom</module>
 		<module>arquillian</module>
 		<module>cache</module>
