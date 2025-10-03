@@ -43,13 +43,13 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
  * @author Paul Ferraro
  */
 @Listener
-public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRegistrar {
-	private static final System.Logger LOGGER = System.getLogger(SchedulerTopologyChangeListener.class.getName());
+public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements ListenerRegistrar {
+	private static final System.Logger LOGGER = System.getLogger(SchedulerTopologyChangeListenerRegistrar.class.getName());
 	@SuppressWarnings("removal")
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class, AccessController.doPrivileged(new PrivilegedAction<>() {
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListenerRegistrar.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
 		public ClassLoader run() {
-			return SchedulerTopologyChangeListener.class.getClassLoader();
+			return SchedulerTopologyChangeListenerRegistrar.class.getClassLoader();
 		}
 	}));
 
@@ -66,7 +66,7 @@ public class SchedulerTopologyChangeListener<K, V, SE, CE> implements ListenerRe
 	 * @param scheduleTask a schedule task
 	 * @param cancelTask a cancel task
 	 */
-	public SchedulerTopologyChangeListener(Cache<K, V> cache, Consumer<CacheStreamFilter<SE>> scheduleTask, Consumer<CacheStreamFilter<CE>> cancelTask) {
+	public SchedulerTopologyChangeListenerRegistrar(Cache<K, V> cache, Consumer<CacheStreamFilter<SE>> scheduleTask, Consumer<CacheStreamFilter<CE>> cancelTask) {
 		this.cache = cache;
 		this.scheduleTask = scheduleTask;
 		this.cancelTask = cancelTask;

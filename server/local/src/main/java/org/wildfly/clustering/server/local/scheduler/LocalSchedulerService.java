@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import org.wildfly.clustering.server.scheduler.Scheduler;
+import org.wildfly.clustering.server.scheduler.SchedulerService;
 import org.wildfly.clustering.server.util.BlockingReference;
 
 /**
@@ -29,8 +29,8 @@ import org.wildfly.clustering.server.util.BlockingReference;
  * @param <T> the scheduled entry identifier type
  * @author Paul Ferraro
  */
-public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
-	private static final System.Logger LOGGER = System.getLogger(LocalScheduler.class.getName());
+public class LocalSchedulerService<T> implements SchedulerService<T, Instant>, Runnable {
+	private static final System.Logger LOGGER = System.getLogger(LocalSchedulerService.class.getName());
 
 	private final String name;
 	private final ScheduledExecutorService executor;
@@ -41,12 +41,13 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	private final Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> scheduleIfAbsent;
 	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel;
 	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule;
+	private volatile boolean started = false;
 
 	/**
 	 * Creates a local scheduler using the specified configuration.
 	 * @param configuration the scheduler configuration
 	 */
-	public LocalScheduler(LocalSchedulerConfiguration<T> configuration) {
+	public LocalSchedulerService(LocalSchedulerServiceConfiguration<T> configuration) {
 		this.name = configuration.getName();
 		this.entries = configuration.getScheduledEntries();
 		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, configuration.getThreadFactory());
@@ -59,11 +60,15 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 		this.closeTimeout = configuration.getCloseTimeout();
 		Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> scheduleFirst = this::scheduleFirst;
 		UnaryOperator<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel = entry -> {
-			entry.getValue().cancel(true);
+			if (entry != null) {
+				entry.getValue().cancel(true);
+			}
 			return null;
 		};
 		UnaryOperator<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule = entry -> {
-			cancel.apply(entry);
+			if (entry != null) {
+				cancel.apply(entry);
+			}
 			return scheduleFirst.get();
 		};
 		BlockingReference<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntry = BlockingReference.of(null);
@@ -106,6 +111,23 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 		return this.entries.contains(id);
 	}
 
+	@Override
+	public boolean isStarted() {
+		return this.started;
+	}
+
+	@Override
+	public void start() {
+		this.started = true;
+		this.schedule.get();
+	}
+
+	@Override
+	public void stop() {
+		this.cancel.get();
+		this.started = false;
+	}
+
 	@SuppressWarnings("removal")
 	@Override
 	public void close() {
@@ -113,12 +135,11 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 		PrivilegedAction<Void> action = new PrivilegedAction<>() {
 			@Override
 			public Void run() {
-				LocalScheduler.this.executor.shutdown();
+				LocalSchedulerService.this.executor.shutdown();
 				return null;
 			}
 		};
 		AccessController.doPrivileged(action);
-		this.executor.shutdown();
 		if (!this.closeTimeout.isNegative() && !this.closeTimeout.isZero()) {
 			try {
 				LOGGER.log(System.Logger.Level.DEBUG, "Waiting for local {0} scheduler tasks to complete", this.name);
@@ -140,7 +161,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 			// If this is a future entry, break out of loop
 			if (entry.getValue().isAfter(Instant.now())) break;
 			T key = entry.getKey();
-			LOGGER.log(System.Logger.Level.TRACE, "Executing task for {1} on local {0} scheduler", this.name, key);
+			LOGGER.log(System.Logger.Level.DEBUG, "Executing task for {1} on local {0} scheduler", this.name, key);
 			// Remove only if task is successful
 			if (this.task.test(key)) {
 				entries.remove();
@@ -156,6 +177,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 	}
 
 	private Map.Entry<Map.Entry<T, Instant>, Future<?>> schedule(Map.Entry<T, Instant> entry) {
+		if (!this.started) return null;
 		Duration delay = Duration.between(Instant.now(), entry.getValue());
 		long millis = !delay.isNegative() ? delay.toMillis() + 1 : 0;
 		try {

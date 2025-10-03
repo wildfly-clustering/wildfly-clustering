@@ -14,7 +14,6 @@ import org.infinispan.Cache;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.function.Function;
 
 /**
  * Invokes a task against cache entries matching a filter.
@@ -38,8 +37,8 @@ public class CacheEntriesTask<K, V> implements Consumer<CacheStreamFilter<Map.En
 	 * @param scheduler the target scheduler
 	 * @return a task that schedules entries matching the specified filter.
 	 */
-	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> schedule(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<I, K, V, M> scheduler) {
-		return new CacheEntriesTask<>(cache, filter, scheduler::schedule);
+	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> schedule(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<K, V> scheduler) {
+		return new CacheEntriesTask<>(cache, filter, scheduler::scheduleEntry);
 	}
 
 	/**
@@ -53,10 +52,9 @@ public class CacheEntriesTask<K, V> implements Consumer<CacheStreamFilter<Map.En
 	 * @param scheduler the target scheduler
 	 * @return a task that cancels entries matching the specified filter.
 	 */
-	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> cancel(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<I, K, V, M> scheduler) {
-		org.wildfly.clustering.function.Consumer<I> cancel = scheduler::cancel;
-		Function<Map.Entry<K, V>, K> key = Map.Entry::getKey;
-		return new CacheEntriesTask<>(cache, filter, cancel.compose(key.andThen(Key::getId)));
+	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> cancel(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<K, V> scheduler) {
+		org.wildfly.clustering.function.Consumer<K> cancel = scheduler::cancelKey;
+		return new CacheEntriesTask<>(cache, filter, cancel.compose(Map.Entry::getKey));
 	}
 
 	CacheEntriesTask(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, Consumer<Map.Entry<K, V>> task) {
