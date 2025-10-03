@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.cache.metadata.fine;
 
 import java.time.Duration;
+import java.util.Map;
 
 import org.wildfly.clustering.server.offset.Value;
 
@@ -49,5 +50,10 @@ public class MutableSessionAccessMetaData implements SessionAccessMetaData {
 	public void setLastAccessDuration(Duration sinceCreation, Duration lastAccess) {
 		this.sinceCreation.set(sinceCreation);
 		this.lastAccess.set(lastAccess);
+	}
+
+	@Override
+	public String toString() {
+		return Map.of("new", this.isNew(), "since-creation", this.getSinceCreationDuration(), "last-access", this.getLastAccessDuration()).toString();
 	}
 }

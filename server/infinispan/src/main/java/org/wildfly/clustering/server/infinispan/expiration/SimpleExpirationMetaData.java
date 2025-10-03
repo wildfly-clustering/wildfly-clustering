@@ -7,6 +7,7 @@ package org.wildfly.clustering.server.infinispan.expiration;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 
@@ -40,5 +41,10 @@ public class SimpleExpirationMetaData implements ExpirationMetaData {
 	@Override
 	public Instant getLastAccessTime() {
 		return this.lastAccessTime;
+	}
+
+	@Override
+	public String toString() {
+		return Map.of("timeout", this.timeout, "last-access-time", this.lastAccessTime).toString();
 	}
 }

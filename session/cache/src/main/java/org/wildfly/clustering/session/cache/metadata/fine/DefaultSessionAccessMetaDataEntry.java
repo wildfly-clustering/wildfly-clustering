@@ -52,7 +52,6 @@ public class DefaultSessionAccessMetaDataEntry implements SessionAccessMetaDataE
 
 	@Override
 	public String toString() {
-		Map.Entry<Duration, Duration> lastAccess = this.lastAccess;
-		return String.format("{ since-creation = %s, last-access = %s }", lastAccess.getKey(), lastAccess.getValue());
+		return Map.of("new", this.isNew(), "since-creation", this.getSinceCreationDuration(), "last-access", this.getLastAccessDuration()).toString();
 	}
 }

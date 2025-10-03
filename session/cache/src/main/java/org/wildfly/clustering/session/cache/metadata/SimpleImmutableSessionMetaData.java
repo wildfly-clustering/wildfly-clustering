@@ -13,9 +13,8 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
  * An immutable "snapshot" of a session's meta-data which can be accessed outside the scope of a transaction.
  * @author Paul Ferraro
  */
-public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData {
+public class SimpleImmutableSessionMetaData extends AbstractImmutableSessionMetaData {
 
-	private final boolean newSession;
 	private final Instant creationTime;
 	private final Instant lastAccessStartTime;
 	private final Instant lastAccessEndTime;
@@ -26,16 +25,10 @@ public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData 
 	 * @param metaData the metadata of a session
 	 */
 	public SimpleImmutableSessionMetaData(ImmutableSessionMetaData metaData) {
-		this.newSession = metaData.isNew();
 		this.creationTime = metaData.getCreationTime();
 		this.lastAccessStartTime = metaData.getLastAccessStartTime();
 		this.lastAccessEndTime = metaData.getLastAccessEndTime();
 		this.timeout = metaData.getTimeout();
-	}
-
-	@Override
-	public boolean isNew() {
-		return this.newSession;
 	}
 
 	@Override
@@ -56,10 +49,5 @@ public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData 
 	@Override
 	public Duration getTimeout() {
 		return this.timeout;
-	}
-
-	@Override
-	public String toString() {
-		return String.format("{ new = %s, creation-time = %s, last-access-start-time = %s, last-access-end-time = %s, timeout = %s }", this.newSession, this.creationTime, this.lastAccessStartTime, this.lastAccessEndTime, this.timeout);
 	}
 }
