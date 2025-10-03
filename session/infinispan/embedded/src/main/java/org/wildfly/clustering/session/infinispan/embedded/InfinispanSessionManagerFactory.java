@@ -35,7 +35,9 @@ import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommand
 import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactoryService;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntriesTask;
+import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntrySchedulerService;
+import org.wildfly.clustering.server.infinispan.scheduler.CacheEntrySchedulerServiceConfiguration;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerService;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerServiceConfiguration;
@@ -153,15 +155,33 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 				return THREAD_FACTORY;
 			}
 		});
-		BiFunction<String, ContextualSessionMetaDataEntry<SC>, ExpirationMetaData> metaData = (id, value) -> Optional.of(metaDataFactory.createImmutableSessionMetaData(id, value)).filter(Predicate.not(ExpirationMetaData::isImmortal)).orElse(null);
-		CacheEntrySchedulerService<String, SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>, ExpirationMetaData> cacheEntryScheduler = new CacheEntrySchedulerService<>(localScheduler.compose(Function.identity(), ExpirationMetaData::getExpirationTime), metaDataFactory::findValue, metaData);
+		CacheEntrySchedulerService<String, SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>, ExpirationMetaData> cacheEntryScheduler = new CacheEntrySchedulerService<>(new CacheEntrySchedulerServiceConfiguration<>() {
+			@Override
+			public org.wildfly.clustering.server.scheduler.SchedulerService<String, ExpirationMetaData> getSchedulerService() {
+				return localScheduler.compose(Function.identity(), ExpirationMetaData::getExpirationTime);
+			}
+
+			@Override
+			public java.util.function.Function<String, ContextualSessionMetaDataEntry<SC>> getLocator() {
+				return metaDataFactory::findValue;
+			}
+
+			@Override
+			public java.util.function.BiFunction<String, ContextualSessionMetaDataEntry<SC>, ExpirationMetaData> getMetaData() {
+				return (id, value) -> Optional.of(metaDataFactory.createImmutableSessionMetaData(id, value)).filter(Predicate.not(ExpirationMetaData::isImmortal)).orElse(null);
+			}
+
+			@Override
+			public java.util.function.Consumer<CacheEntryScheduler<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>>> getStartTask() {
+				return scheduler -> CacheEntriesTask.schedule(cache, SessionCacheEntryFilter.META_DATA.cast(), scheduler).accept(CacheStreamFilter.local(cache));
+			}
+		});
 		CacheContainerCommandDispatcherFactory dispatcherFactory = infinispan.getCommandDispatcherFactory();
 		CacheContainerGroup group = dispatcherFactory.getGroup();
 		Consumer<CacheStreamFilter<Map.Entry<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>>>> scheduleTask = CacheEntriesTask.schedule(cache, SessionCacheEntryFilter.META_DATA.cast(), cacheEntryScheduler);
 		Consumer<CacheStreamFilter<SessionMetaDataKey>> cancelTask = CacheKeysTask.cancel(cache, SessionCacheKeyFilter.META_DATA, cacheEntryScheduler);
-		Runnable startTask = () -> scheduleTask.accept(CacheStreamFilter.local(cache));
-		ListenerRegistrar listenerRegistrar = new SchedulerTopologyChangeListenerRegistrar<>(cache, scheduleTask, cancelTask);
-		this.scheduler = group.isSingleton() ? cacheEntryScheduler : new PrimaryOwnerSchedulerService<>(new PrimaryOwnerSchedulerServiceConfiguration<String, ExpirationMetaData>() {
+		ListenerRegistrar listenerRegistrar = !group.isSingleton() ? new SchedulerTopologyChangeListenerRegistrar<>(cache, scheduleTask, cancelTask) : null;
+		this.scheduler = (listenerRegistrar != null) ? new PrimaryOwnerSchedulerService<>(new PrimaryOwnerSchedulerServiceConfiguration<String, ExpirationMetaData>() {
 			@Override
 			public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
 				return dispatcherFactory;
@@ -186,12 +206,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			public ListenerRegistrar getListenerRegistrar() {
 				return listenerRegistrar;
 			}
-
-			@Override
-			public Runnable getStartTask() {
-				return startTask;
-			}
-		});
+		}) : cacheEntryScheduler;
 	}
 
 	@Override

@@ -7,6 +7,7 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.wildfly.clustering.cache.Key;
@@ -21,20 +22,33 @@ import org.wildfly.clustering.server.scheduler.DecoratedSchedulerService;
  * @param <M> the scheduled item metadata type
  */
 public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends DecoratedSchedulerService<I, M> implements CacheEntryScheduler<K, V>, SchedulerService<I, M> {
-
+	private final Consumer<CacheEntryScheduler<K, V>> startTask;
+	private final Consumer<CacheEntryScheduler<K, V>> stopTask;
 	private final Function<I, V> locator;
 	private final BiFunction<I, V, M> metaData;
 
 	/**
-	 * Creates a cache entry scheduler for the specified scheduler service.
-	 * @param scheduler a scheduler service
-	 * @param locator a cache entry locator
-	 * @param metaData a function returning the scheduled item metadata for a given cache entry
+	 * Creates a cache entry scheduler from the specified configuration.
+	 * @param configuration the scheduler configuration
 	 */
-	public CacheEntrySchedulerService(org.wildfly.clustering.server.scheduler.SchedulerService<I, M> scheduler, Function<I, V> locator, BiFunction<I, V, M> metaData) {
-		super(scheduler);
-		this.locator = locator;
-		this.metaData = metaData;
+	public CacheEntrySchedulerService(CacheEntrySchedulerServiceConfiguration<I, K, V, M> configuration) {
+		super(configuration.getSchedulerService());
+		this.startTask = configuration.getStartTask();
+		this.stopTask = configuration.getStopTask();
+		this.locator = configuration.getLocator();
+		this.metaData = configuration.getMetaData();
+	}
+
+	@Override
+	public void start() {
+		super.start();
+		this.startTask.accept(this);
+	}
+
+	@Override
+	public void stop() {
+		this.stopTask.accept(this);
+		super.stop();
 	}
 
 	@Override

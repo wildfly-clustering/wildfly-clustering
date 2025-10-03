@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
@@ -30,9 +31,16 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doCallRealMethod().when(configuration).getStartTask();
+		doCallRealMethod().when(configuration).getStopTask();
 
 		@SuppressWarnings("resource")
-		Scheduler<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData);
+		Scheduler<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration);
 
 		UUID id = UUID.randomUUID();
 		Object value = mock(Object.class);
@@ -56,9 +64,16 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doCallRealMethod().when(configuration).getStartTask();
+		doCallRealMethod().when(configuration).getStopTask();
 
 		@SuppressWarnings("resource")
-		Scheduler<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData);
+		Scheduler<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration);
 
 		UUID id = UUID.randomUUID();
 		Instant now = Instant.now();
@@ -76,9 +91,16 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doCallRealMethod().when(configuration).getStartTask();
+		doCallRealMethod().when(configuration).getStopTask();
 
 		@SuppressWarnings("resource")
-		CacheEntryScheduler<Key<UUID>, Object> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData);
+		CacheEntryScheduler<Key<UUID>, Object> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration);
 
 		UUID id = UUID.randomUUID();
 		Key<UUID> key = mock(Key.class);
@@ -104,9 +126,16 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doCallRealMethod().when(configuration).getStartTask();
+		doCallRealMethod().when(configuration).getStopTask();
 
 		@SuppressWarnings("resource")
-		CacheEntryScheduler<Key<UUID>, Object> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData);
+		CacheEntryScheduler<Key<UUID>, Object> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration);
 
 		UUID id = UUID.randomUUID();
 		Key<UUID> key = mock(Key.class);
@@ -130,9 +159,16 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doCallRealMethod().when(configuration).getStartTask();
+		doCallRealMethod().when(configuration).getStopTask();
 
 		@SuppressWarnings("resource")
-		Scheduler<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData);
+		Scheduler<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration);
 
 		UUID id = UUID.randomUUID();
 
@@ -149,9 +185,16 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doCallRealMethod().when(configuration).getStartTask();
+		doCallRealMethod().when(configuration).getStopTask();
 
 		@SuppressWarnings("resource")
-		CacheEntryScheduler<Key<UUID>, Object> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData);
+		CacheEntryScheduler<Key<UUID>, Object> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration);
 
 		UUID id = UUID.randomUUID();
 		Key<UUID> key = mock(Key.class);
@@ -171,9 +214,16 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doCallRealMethod().when(configuration).getStartTask();
+		doCallRealMethod().when(configuration).getStopTask();
 
 		@SuppressWarnings("resource")
-		Scheduler<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData);
+		Scheduler<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration);
 
 		UUID id = UUID.randomUUID();
 		boolean expected = this.random.nextBoolean();
@@ -193,9 +243,16 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doCallRealMethod().when(configuration).getStartTask();
+		doCallRealMethod().when(configuration).getStopTask();
 
 		@SuppressWarnings("resource")
-		CacheEntryScheduler<Key<UUID>, Object> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData);
+		CacheEntryScheduler<Key<UUID>, Object> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration);
 
 		UUID id = UUID.randomUUID();
 		Key<UUID> key = mock(Key.class);
@@ -217,10 +274,26 @@ public class CacheEntrySchedulerServiceTestCase {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
 		Function<UUID, Object> locator = mock(Function.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
+		Consumer<CacheEntryScheduler<Key<UUID>, Object>> startTask = mock(Consumer.class);
+		Consumer<CacheEntryScheduler<Key<UUID>, Object>> stopTask = mock(Consumer.class);
 
-		try (SchedulerService<UUID, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(scheduler, locator, metaData)) {
+		CacheEntrySchedulerServiceConfiguration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerServiceConfiguration.class);
+
+		doReturn(scheduler).when(configuration).getSchedulerService();
+		doReturn(locator).when(configuration).getLocator();
+		doReturn(metaData).when(configuration).getMetaData();
+		doReturn(startTask).when(configuration).getStartTask();
+		doReturn(stopTask).when(configuration).getStopTask();
+
+		try (CacheEntrySchedulerService<UUID, Key<UUID>, Object, Instant> cacheEntryScheduler = new CacheEntrySchedulerService<>(configuration)) {
+			verifyNoInteractions(startTask);
+			verifyNoInteractions(stopTask);
+
 			cacheEntryScheduler.start();
 
+			verify(startTask).accept(cacheEntryScheduler);
+			verifyNoMoreInteractions(startTask);
+			verifyNoInteractions(stopTask);
 			verifyNoInteractions(locator);
 			verifyNoInteractions(metaData);
 			verify(scheduler).start();
@@ -228,12 +301,17 @@ public class CacheEntrySchedulerServiceTestCase {
 
 			cacheEntryScheduler.stop();
 
+			verifyNoMoreInteractions(startTask);
+			verify(stopTask).accept(cacheEntryScheduler);
+			verifyNoMoreInteractions(stopTask);
 			verifyNoInteractions(locator);
 			verifyNoInteractions(metaData);
 			verify(scheduler).stop();
 			verifyNoMoreInteractions(scheduler);
 		}
 
+		verifyNoMoreInteractions(startTask);
+		verifyNoMoreInteractions(stopTask);
 		verifyNoInteractions(locator);
 		verifyNoInteractions(metaData);
 		verify(scheduler).close();

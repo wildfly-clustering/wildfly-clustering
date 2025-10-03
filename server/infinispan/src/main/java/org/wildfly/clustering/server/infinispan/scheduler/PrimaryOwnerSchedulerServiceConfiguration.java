@@ -49,10 +49,4 @@ public interface PrimaryOwnerSchedulerServiceConfiguration<I, M> extends CacheCo
 	 * @return the listener registration for this scheduler.
 	 */
 	ListenerRegistrar getListenerRegistrar();
-
-	/**
-	 * Returns a task to invoke on {@link SchedulerService#start()}.
-	 * @return a task to invoke on {@link SchedulerService#start()}.
-	 */
-	Runnable getStartTask();
 }

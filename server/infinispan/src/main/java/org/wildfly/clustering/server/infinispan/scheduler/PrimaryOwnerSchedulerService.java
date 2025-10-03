@@ -43,7 +43,6 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 	private final CheckedFunction<I, CompletionStage<Void>> primaryOwnerCancel;
 	private final CheckedFunction<I, CompletionStage<Boolean>> primaryOwnerContains;
 	private final AtomicReference<ListenerRegistration> listenerRegistration = new AtomicReference<>();
-	private final Runnable startTask;
 
 	/**
 	 * Creates a primary owner scheduler from the specified configuration.
@@ -54,7 +53,6 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		this.name = configuration.getName();
 		this.listenerRegistrar = configuration.getListenerRegistrar();
 		this.scheduler = configuration.getScheduler();
-		this.startTask = configuration.getStartTask();
 		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, this.scheduler, AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
@@ -85,7 +83,6 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		LOGGER.log(System.Logger.Level.DEBUG, "Starting primary-owner scheduler for {0}", this.name);
 		this.scheduler.start();
 		this.listenerRegistration.set(this.listenerRegistrar.register());
-		this.startTask.run();
 		LOGGER.log(System.Logger.Level.DEBUG, "Started primary-owner scheduler for {0}", this.name);
 	}
 
