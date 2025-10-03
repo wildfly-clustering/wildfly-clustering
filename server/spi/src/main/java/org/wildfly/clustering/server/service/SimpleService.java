@@ -5,52 +5,31 @@
 
 package org.wildfly.clustering.server.service;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.function.Supplier;
-import org.wildfly.clustering.function.UnaryOperator;
-
 /**
- * A simple service facade to an AutoCloseable factory.
+ * A simple service with no lifecycle behavior.
  * @author Paul Ferraro
- * @param <T> the operating type
  */
-public class SimpleService<T extends AutoCloseable> implements Service {
-	private final UnaryOperator<T> update;
-	private final AtomicReference<T> reference;
+public class SimpleService implements Service {
+	private volatile boolean started = false;
 
 	/**
-	 * Creates a simple service from the specified value factory.
-	 * @param factory a value factory
+	 * Creates a simple service
 	 */
-	public SimpleService(Supplier<T> factory) {
-		this(factory, new AtomicReference<>());
-	}
-
-	/**
-	 * Creates a simple service from the specified value factory.
-	 * @param factory a value factory
-	 * @param reference a reference to the service value
-	 */
-	public SimpleService(Supplier<T> factory, AtomicReference<T> reference) {
-		this.update = UnaryOperator.<T>identity().orDefault(Objects::nonNull, factory);
-		this.reference = reference;
+	public SimpleService() {
 	}
 
 	@Override
 	public boolean isStarted() {
-		return this.reference.get() != null;
+		return this.started;
 	}
 
 	@Override
 	public void start() {
-		Consumer.close().accept(this.reference.getAndUpdate(this.update));
+		this.started = true;
 	}
 
 	@Override
 	public void stop() {
-		Consumer.close().accept(this.reference.getAndSet(null));
+		this.started = false;
 	}
 }

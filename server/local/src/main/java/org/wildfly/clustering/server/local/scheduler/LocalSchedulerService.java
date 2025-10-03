@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.server.scheduler.SchedulerService;
+import org.wildfly.clustering.server.service.SimpleService;
 import org.wildfly.clustering.server.util.BlockingReference;
 
 /**
@@ -29,7 +30,7 @@ import org.wildfly.clustering.server.util.BlockingReference;
  * @param <T> the scheduled entry identifier type
  * @author Paul Ferraro
  */
-public class LocalSchedulerService<T> implements SchedulerService<T, Instant>, Runnable {
+public class LocalSchedulerService<T> extends SimpleService implements SchedulerService<T, Instant>, Runnable {
 	private static final System.Logger LOGGER = System.getLogger(LocalSchedulerService.class.getName());
 
 	private final String name;
@@ -41,7 +42,6 @@ public class LocalSchedulerService<T> implements SchedulerService<T, Instant>, R
 	private final Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> scheduleIfAbsent;
 	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel;
 	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule;
-	private volatile boolean started = false;
 
 	/**
 	 * Creates a local scheduler using the specified configuration.
@@ -112,20 +112,15 @@ public class LocalSchedulerService<T> implements SchedulerService<T, Instant>, R
 	}
 
 	@Override
-	public boolean isStarted() {
-		return this.started;
-	}
-
-	@Override
 	public void start() {
-		this.started = true;
+		super.start();
 		this.schedule.get();
 	}
 
 	@Override
 	public void stop() {
 		this.cancel.get();
-		this.started = false;
+		super.stop();
 	}
 
 	@SuppressWarnings("removal")
@@ -177,7 +172,7 @@ public class LocalSchedulerService<T> implements SchedulerService<T, Instant>, R
 	}
 
 	private Map.Entry<Map.Entry<T, Instant>, Future<?>> schedule(Map.Entry<T, Instant> entry) {
-		if (!this.started) return null;
+		if (!this.isStarted()) return null;
 		Duration delay = Duration.between(Instant.now(), entry.getValue());
 		long millis = !delay.isNegative() ? delay.toMillis() + 1 : 0;
 		try {

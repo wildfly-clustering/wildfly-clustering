@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.function.Supplier;
 
 /**
- * Unit test for {@link SimpleService}.
+ * Unit test for {@link AtomicReferenceService}.
  * @author Paul Ferraro
  */
 public class SimpleServiceTestCase {
@@ -27,7 +27,7 @@ public class SimpleServiceTestCase {
 
 		doReturn(value1, value2, null).when(factory).get();
 
-		Service service = new SimpleService<>(factory, reference);
+		Service service = new AtomicReferenceService<>(factory, reference);
 
 		verifyNoInteractions(factory);
 

@@ -8,13 +8,14 @@ package org.wildfly.clustering.server.local.manager;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
+import org.wildfly.clustering.server.service.SimpleService;
 
 /**
  * Simple {@link IdentifierFactoryService} that delegates to a supplier.
  * @param <I> the identifier type
  * @author Paul Ferraro
  */
-public class SimpleIdentifierFactoryService<I> implements IdentifierFactoryService<I> {
+public class SimpleIdentifierFactoryService<I> extends SimpleService implements IdentifierFactoryService<I> {
 
 	private final Supplier<I> factory;
 
@@ -29,20 +30,5 @@ public class SimpleIdentifierFactoryService<I> implements IdentifierFactoryServi
 	@Override
 	public I get() {
 		return this.factory.get();
-	}
-
-	@Override
-	public boolean isStarted() {
-		return true;
-	}
-
-	@Override
-	public void start() {
-		// Do nothing
-	}
-
-	@Override
-	public void stop() {
-		// Do nothing
 	}
 }
