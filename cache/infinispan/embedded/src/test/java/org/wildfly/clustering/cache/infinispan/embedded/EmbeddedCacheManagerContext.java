@@ -57,7 +57,7 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 		this.accept(channel::close);
 		try {
 			ClassLoader loader = this.getClass().getClassLoader();
-			Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
+			Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build(), loader));
 			Function<String, JChannel> channelFactory = new ForkChannelFactory(channel.get());
 			JGroupsChannelConfigurator configurator = new JGroupsChannelConfigurator() {
 				@Override
