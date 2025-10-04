@@ -18,4 +18,20 @@ public interface Registration extends AutoCloseable {
 	 */
 	@Override
 	void close();
+
+	/**
+	 * Creates a composite registration.
+	 * @param registrations a collection of registrations
+	 * @return a composite registration.
+	 */
+	static Registration composite(Iterable<? extends Registration> registrations) {
+		return new Registration() {
+			@Override
+			public void close() {
+				for (Registration registration : registrations) {
+					registration.close();
+				}
+			}
+		};
+	}
 }
