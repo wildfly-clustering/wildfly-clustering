@@ -32,7 +32,7 @@ public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
 	public ProtoStreamTesterFactory(SerializationContextInitializer initializer) {
 		ClassLoader loader = ClassLoader.getSystemClassLoader();
 		ImmutableSerializationContext context = SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).register(initializer).build();
-		this.marshaller = new ProtoStreamByteBufferMarshaller(context);
+		this.marshaller = new ProtoStreamByteBufferMarshaller(context, loader);
 	}
 
 	@Override
