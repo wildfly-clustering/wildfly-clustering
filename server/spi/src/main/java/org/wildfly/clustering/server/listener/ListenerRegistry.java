@@ -14,7 +14,7 @@ import org.wildfly.clustering.server.Registrar;
  * @param <T> the listener type
  * @author Paul Ferraro
  */
-public interface ListenerRegistrar<T> extends Registrar<T>, Consumer<Consumer<T>>, AutoCloseable {
+public interface ListenerRegistry<T> extends Registrar<T>, Consumer<Consumer<T>>, AutoCloseable {
 
 	@Override
 	void close();

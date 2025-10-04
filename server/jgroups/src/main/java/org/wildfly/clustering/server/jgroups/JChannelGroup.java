@@ -20,8 +20,8 @@ import org.wildfly.clustering.server.GroupMembershipListener;
 import org.wildfly.clustering.server.GroupMembershipMergeEvent;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.group.GroupMembership;
-import org.wildfly.clustering.server.listener.ListenerRegistrar;
-import org.wildfly.clustering.server.local.listener.LocalListenerRegistrar;
+import org.wildfly.clustering.server.listener.ListenerRegistry;
+import org.wildfly.clustering.server.local.listener.LocalListenerRegistry;
 
 /**
  * A channel-based group.
@@ -33,7 +33,7 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 	private final JChannel channel;
 	private final ChannelGroupMemberFactory memberFactory = JChannelGroupMember::new;
 	private final ChannelGroupMember localMember;
-	private final ListenerRegistrar<GroupMembershipListener<ChannelGroupMember>> listeners;
+	private final ListenerRegistry<GroupMembershipListener<ChannelGroupMember>> listeners;
 	private final AtomicReference<View> view = new AtomicReference<>();
 
 	/**
@@ -43,7 +43,7 @@ public class JChannelGroup implements ChannelGroup, Receiver {
 	public JChannelGroup(JChannel channel) {
 		this.channel = channel;
 		this.localMember = this.memberFactory.createGroupMember(channel.getAddress());
-		this.listeners = new LocalListenerRegistrar<>(Duration.ofMillis(channel.getProtocolStack().getTransport().getWhoHasCacheTimeout()));
+		this.listeners = new LocalListenerRegistry<>(Duration.ofMillis(channel.getProtocolStack().getTransport().getWhoHasCacheTimeout()));
 		channel.setReceiver(this);
 		this.view.compareAndSet(null, channel.getView());
 	}
