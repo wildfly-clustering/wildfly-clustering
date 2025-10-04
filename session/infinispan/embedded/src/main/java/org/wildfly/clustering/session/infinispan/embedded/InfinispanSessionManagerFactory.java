@@ -8,8 +8,10 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,7 +19,6 @@ import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
@@ -25,7 +26,6 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.cache.CacheStrategy;
@@ -45,6 +45,7 @@ import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerService;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListenerRegistrar;
+import org.wildfly.clustering.server.listener.ConsumerRegistry;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerService;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerServiceConfiguration;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
@@ -82,7 +83,6 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
  * @author Paul Ferraro
  */
 public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC> {
-	private static final System.Logger LOGGER = System.getLogger(InfinispanSessionManagerFactory.class.getName());
 	@SuppressWarnings("removal")
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(InfinispanSessionManagerFactory.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -114,7 +114,8 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		@SuppressWarnings("unchecked")
 		SessionAttributesFactory<C, Object> attributesFactory = (SessionAttributesFactory<C, Object>) this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, notifierFactory, infinispan);
 		this.factory = (SessionFactory<C, ContextualSessionMetaDataEntry<SC>, Object, SC>) new CompositeSessionFactory<>(metaDataFactory, attributesFactory, properties, configuration.getSessionContextFactory());
-		ExpiredSessionRemover<C, ?, ?, SC> remover = new ExpiredSessionRemover<>(this.factory);
+		ConsumerRegistry<ImmutableSession> expirationListenerRegistry = ConsumerRegistry.newInstance(CopyOnWriteArrayList::new);
+		Predicate<String> expirationTask = new SessionExpirationTask<>(this.factory, infinispan.getBatchFactory(), expirationListenerRegistry);
 		this.managerRegistrarFactory = new Function<>() {
 			@Override
 			public Registrar<SessionManager<SC>> apply(SessionManagerConfiguration<C> managerConfiguration) {
@@ -122,17 +123,13 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 					@Override
 					public Registration register(SessionManager<SC> manager) {
 						Registration contextRegistration = notifierFactory.register(Map.entry(managerConfiguration.getContext(), manager));
-						Registration expirationRegistration = remover.register(managerConfiguration.getExpirationListener());
-						return () -> {
-							expirationRegistration.close();
-							contextRegistration.close();
-						};
+						Registration expirationRegistration = expirationListenerRegistry.register(managerConfiguration.getExpirationListener());
+						return Registration.composite(List.of(contextRegistration, expirationRegistration));
 					}
 				};
 			}
 		};
 		Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>> cache = infinispan.getCache();
-		Predicate<String> removeTask = new SessionRemoveTask(infinispan.getBatchFactory(), remover);
 		@SuppressWarnings("resource")
 		org.wildfly.clustering.server.scheduler.SchedulerService<String, Instant> localScheduler = new LocalSchedulerService<>(new LocalSchedulerServiceConfiguration<String>() {
 			@Override
@@ -142,7 +139,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 
 			@Override
 			public Predicate<String> getTask() {
-				return removeTask;
+				return expirationTask;
 			}
 
 			@Override
@@ -306,31 +303,5 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 	public void close() {
 		this.scheduler.close();
 		this.factory.close();
-	}
-
-	private static class SessionRemoveTask implements Predicate<String> {
-		private final Supplier<Batch> batchFactory;
-		private final Predicate<String> remover;
-
-		SessionRemoveTask(Supplier<Batch> batchFactory, Predicate<String> remover) {
-			this.batchFactory = batchFactory;
-			this.remover = remover;
-		}
-
-		@Override
-		public boolean test(String id) {
-			LOGGER.log(System.Logger.Level.DEBUG, "Expiring session {0}", id);
-			try (Batch batch = this.batchFactory.get()) {
-				try {
-					return this.remover.test(id);
-				} catch (RuntimeException | Error e) {
-					batch.discard();
-					throw e;
-				}
-			} catch (RuntimeException | Error e) {
-				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-				return false;
-			}
-		}
 	}
 }
