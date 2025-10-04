@@ -8,13 +8,13 @@ package org.wildfly.clustering.session.cache.metadata.coarse;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.wildfly.clustering.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.session.cache.metadata.AbstractImmutableSessionMetaData;
 
 /**
  * Default immutable session metadata implementation that delegates to a cache entry.
  * @author Paul Ferraro
  */
-public class DefaultImmutableSessionMetaData implements ImmutableSessionMetaData {
+public class DefaultImmutableSessionMetaData extends AbstractImmutableSessionMetaData {
 
 	private final ImmutableSessionMetaDataEntry entry;
 
@@ -49,10 +49,5 @@ public class DefaultImmutableSessionMetaData implements ImmutableSessionMetaData
 	@Override
 	public Duration getTimeout() {
 		return this.entry.getTimeout();
-	}
-
-	@Override
-	public String toString() {
-		return String.format("{ new = %s, creation-time = %s, last-access-start-time = %s, last-access-end-time = %s, timeout = %s }", this.isNew(), this.getCreationTime(), this.getLastAccessStartTime(), this.getLastAccessEndTime(), this.getTimeout());
 	}
 }

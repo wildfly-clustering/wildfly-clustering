@@ -11,11 +11,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 
 /**
- * Encapsulates configuration of a {@link LocalScheduler}.
+ * Encapsulates configuration of a {@link LocalSchedulerService}.
  * @param <T> the scheduled entry identifier type
  * @author Paul Ferraro
  */
-public interface LocalSchedulerConfiguration<T> {
+public interface LocalSchedulerServiceConfiguration<T> {
 	/**
 	 * Returns the name of this scheduler.
 	 * @return the name of this scheduler.
@@ -43,8 +43,8 @@ public interface LocalSchedulerConfiguration<T> {
 	ThreadFactory getThreadFactory();
 
 	/**
-	 * Returns the duration of time to wait for scheduled tasks to complete on {@link LocalScheduler#close}.
-	 * @return the duration of time to wait for scheduled tasks to complete on {@link LocalScheduler#close}.
+	 * Returns the duration of time to wait for scheduled tasks to complete on {@link LocalSchedulerService#close}.
+	 * @return the duration of time to wait for scheduled tasks to complete on {@link LocalSchedulerService#close}.
 	 */
 	Duration getCloseTimeout();
 }

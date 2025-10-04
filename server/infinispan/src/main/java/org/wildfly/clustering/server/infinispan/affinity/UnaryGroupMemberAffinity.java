@@ -16,6 +16,7 @@ import org.wildfly.clustering.cache.infinispan.embedded.distribution.KeyDistribu
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMemberFactory;
+import org.wildfly.clustering.server.infinispan.CacheGroupConfiguration;
 
 /**
  * Returns group member that primarily owns cache keys for a given identifier.
@@ -31,7 +32,7 @@ public class UnaryGroupMemberAffinity<I> implements Function<I, CacheContainerGr
 	 * Creates a group member affinity function returning a single value.
 	 * @param configuration a group member affinity configuration
 	 */
-	public UnaryGroupMemberAffinity(GroupMemberAffinityConfiguration<I> configuration) {
+	public UnaryGroupMemberAffinity(CacheGroupConfiguration configuration) {
 		this(configuration.getCache(), configuration.getGroup());
 	}
 

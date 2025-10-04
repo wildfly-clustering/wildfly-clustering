@@ -28,6 +28,7 @@
 		<project.repository.name>WildFly Clustering</project.repository.name>
 		<project.repository.host>github.com</project.repository.host>
 		<project.repository.url>${project.repository.organization.url}/${project.repository.id}</project.repository.url>
+		<project.repository.tag>HEAD</project.repository.tag>
 	</properties>
 
 	<name>${project.repository.name}: Parent</name>
@@ -64,7 +65,7 @@
 		<connection>scm:git:git://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
 		<developerConnection>scm:git:ssh@${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
 		<url>${project.repository.url}</url>
-		<tag>HEAD</tag>
+		<tag>${project.repository.tag}</tag>
 	</scm>
 
 	<build>

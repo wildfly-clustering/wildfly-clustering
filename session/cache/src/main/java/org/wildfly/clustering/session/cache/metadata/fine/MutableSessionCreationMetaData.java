@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.cache.metadata.fine;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 
 import org.wildfly.clustering.server.offset.Value;
 
@@ -42,5 +43,10 @@ public class MutableSessionCreationMetaData implements SessionCreationMetaData {
 	@Override
 	public void setTimeout(Duration timeout) {
 		this.timeout.set(timeout);
+	}
+
+	@Override
+	public String toString() {
+		return Map.of("creation-time", this.metaData.getCreationTime(), "timeout", this.timeout.get()).toString();
 	}
 }

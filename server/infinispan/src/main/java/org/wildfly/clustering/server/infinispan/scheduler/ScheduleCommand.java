@@ -51,4 +51,9 @@ public class ScheduleCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Voi
 		}
 		return null;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%s[%s, %s]", this.getClass().getSimpleName(), this.getId(), this.metaData);
+	}
 }

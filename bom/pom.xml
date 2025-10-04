@@ -10,7 +10,7 @@
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-parent</artifactId>
 		<version>8.0.0.Beta1-SNAPSHOT</version>
-		<relativePath>parent</relativePath>
+		<relativePath>../parent</relativePath>
 	</parent>
 
 	<artifactId>wildfly-clustering-bom</artifactId>

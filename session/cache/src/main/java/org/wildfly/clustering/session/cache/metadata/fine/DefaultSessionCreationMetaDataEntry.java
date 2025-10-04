@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache.metadata.fine;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.offset.Offset;
@@ -70,9 +71,6 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append(" { ");
-		builder.append("created = ").append(this.creationTime);
-		builder.append(", timeout = ").append(this.timeout);
-		return builder.append(" }").toString();
+		return Map.of("creation-time", this.creationTime, "timeout", this.timeout).toString();
 	}
 }
