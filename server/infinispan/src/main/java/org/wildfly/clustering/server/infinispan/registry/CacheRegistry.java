@@ -43,13 +43,13 @@ import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.KeyFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.infinispan.CacheGroupConfiguration;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryListener;
 import org.wildfly.clustering.server.util.MapEntry;
@@ -63,6 +63,33 @@ import org.wildfly.clustering.server.util.MapEntry;
 @Listener(observation = Observation.POST)
 public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 	private static final System.Logger LOGGER = System.getLogger(CacheRegistry.class.getName());
+
+	/**
+	 * The configuration of this registry.
+	 * @param <K> the registry key type
+	 * @param <V> the registry value type
+	 */
+	public interface Configuration<K, V> extends EmbeddedCacheConfiguration {
+		/**
+		 * Returns the group with which this registry is associated.
+		 * @return the group with which this registry is associated.
+		 */
+		CacheContainerGroup getGroup();
+
+		/**
+		 * Returns the entry of the local member.
+		 * @return the entry of the local member.
+		 */
+		Map.Entry<K, V> getEntry();
+
+		/**
+		 * Returns a task to run on {@link CacheContainerRegistry#close()}.
+		 * @return a task to run on {@link CacheContainerRegistry#close()}.
+		 */
+		default Runnable getCloseTask() {
+			return org.wildfly.clustering.function.Runnable.empty();
+		}
+	}
 
 	private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
 	private final Cache<Address, Map.Entry<K, V>> cache;
@@ -80,19 +107,17 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 	};
 
 	/**
-	 * Creates a cache registry using the specified configuration and local entry.
-	 * @param config a registry configuration
-	 * @param entry the local group member entry
-	 * @param closeTask a task to run on registry close
+	 * Creates a cache registry using the specified configuration.
+	 * @param configuration the configuration of this registry.
 	 */
-	public CacheRegistry(CacheGroupConfiguration config, Map.Entry<K, V> entry, Runnable closeTask) {
-		this.cache = config.getWriteOnlyCache();
-		this.batchFactory = config.getBatchFactory();
-		this.group = config.getGroup();
-		this.closeTask = closeTask;
-		this.executor = config.getExecutor();
-		this.entry = MapEntry.of(entry.getKey(), entry.getValue());
-		this.active = config::isActive;
+	public CacheRegistry(Configuration<K, V> configuration) {
+		this.cache = configuration.getWriteOnlyCache();
+		this.batchFactory = configuration.getBatchFactory();
+		this.group = configuration.getGroup();
+		this.closeTask = configuration.getCloseTask();
+		this.executor = configuration.getExecutor();
+		this.entry = MapEntry.of(configuration.getEntry().getKey(), configuration.getEntry().getValue());
+		this.active = configuration::isActive;
 		if (this.active.getAsBoolean()) {
 			Address localAddress = this.cache.getCacheManager().getAddress();
 			try (Batch batch = this.batchFactory.get()) {

@@ -42,6 +42,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 	interface Configuration<C, MV, AV, SC> extends AbstractSessionManager.Configuration<C, MV, AV, SC> {
 		@Override
 		EmbeddedCacheConfiguration getCacheConfiguration();
+
 		@Override
 		default Consumer<ImmutableSession> getSessionCloseTask() {
 			Scheduler<String, ExpirationMetaData> scheduler = this.getExpirationScheduler();
@@ -54,6 +55,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 				}
 			};
 		}
+
 		/**
 		 * Returns the scheduler used to expire sessions.
 		 * @return the scheduler used to expire sessions.

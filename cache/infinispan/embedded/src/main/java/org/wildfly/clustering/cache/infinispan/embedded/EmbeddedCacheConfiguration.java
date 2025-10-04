@@ -149,4 +149,9 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 				.retryExceptions(CacheException.class, IOException.class, UncheckedIOException.class)
 				.build();
 	}
+
+	@Override
+	default Duration getStopTimeout() {
+		return Duration.ofMillis(this.getCache().getCacheConfiguration().transaction().cacheStopTimeout());
+	}
 }

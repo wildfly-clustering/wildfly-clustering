@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.session.infinispan.embedded;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
@@ -32,10 +34,14 @@ import org.wildfly.clustering.server.infinispan.dispatcher.EmbeddedCacheManagerC
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcherFactory;
 import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcherFactoryContext;
+import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.cache.MockSessionSpecificationProvider;
+import org.wildfly.clustering.session.cache.PassivationListener;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * @param <C> the session manager context type
@@ -134,7 +140,9 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 			Cache<?, ?> cache = managerContext.get().getCache(parameters.getDeploymentName());
 			cache.start();
 			this.accept(cache::stop);
-			InfinispanSessionManagerFactoryConfiguration infinispan = new InfinispanSessionManagerFactoryConfiguration() {
+			MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
+			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<C, SC, Map.Entry<ImmutableSession, C>, PassivationListener<C>>() {
+
 				@SuppressWarnings("unchecked")
 				@Override
 				public <K, V> Cache<K, V> getCache() {
@@ -142,12 +150,25 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 				}
 
 				@Override
+				public SessionManagerFactoryConfiguration<SC> getSessionManagerFactoryConfiguration() {
+					return managerFactoryConfiguration;
+				}
+
+				@Override
+				public SessionSpecificationProvider<Entry<ImmutableSession, C>, C> getSessionSpecificationProvider() {
+					return provider;
+				}
+
+				@Override
+				public SessionEventListenerSpecificationProvider<Entry<ImmutableSession, C>, PassivationListener<C>> getSessionEventListenerSpecificationProvider() {
+					return provider;
+				}
+
+				@Override
 				public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
 					return commandDispatcherFactory;
 				}
-			};
-			MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
-			this.factory = new InfinispanSessionManagerFactory<>(managerFactoryConfiguration, provider, provider, infinispan);
+			});
 			this.accept(this.factory::close);
 		} catch (RuntimeException | Error e) {
 			this.close();

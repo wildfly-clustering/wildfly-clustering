@@ -28,7 +28,7 @@ public class ChannelCommandDispatcherFactoryContext extends AbstractContext<Chan
 			Context<JChannel> channel = new JChannelContext(clusterName, memberName);
 			this.accept(channel::close);
 			ByteBufferMarshaller marshaller = new ProtoStreamTesterFactory().getMarshaller();
-			this.factory = new JChannelCommandDispatcherFactory(new JChannelCommandDispatcherFactoryConfiguration() {
+			this.factory = new JChannelCommandDispatcherFactory(new JChannelCommandDispatcherFactory.Configuration() {
 				@Override
 				public Predicate<Message> getUnknownForkPredicate() {
 					return Predicate.not(Message::hasPayload);

@@ -23,8 +23,8 @@ import org.wildfly.clustering.server.scheduler.SchedulerService;
  */
 public class LocalSchedulerServiceTestCase {
 
-	static LocalSchedulerServiceConfiguration<UUID> configuration(ScheduledEntries<UUID, Instant> entries, Predicate<UUID> task) {
-		return new LocalSchedulerServiceConfiguration<>() {
+	static LocalSchedulerService.Configuration<UUID> configuration(ScheduledEntries<UUID, Instant> entries, Predicate<UUID> task) {
+		return new LocalSchedulerService.Configuration<>() {
 			@Override
 			public String getName() {
 				return "test";

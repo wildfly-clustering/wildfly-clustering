@@ -19,6 +19,7 @@
 	<properties>
 		<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
 		<maven.surefire.parameters>${java.runtime.parameters} -javaagent:${project.build.directory}/agent/mockito-core.jar</maven.surefire.parameters>
+		<maven.failsafe.parameters>${maven.surefire.parameters}</maven.failsafe.parameters>
 	</properties>
 
 	<name>${project.repository.name}: Modules</name>
@@ -257,13 +258,6 @@
 						<sourceFileExclude>org/wildfly/clustering/cache/infinispan/embedded/**/WildFlyClustering*Impl.java</sourceFileExclude>
 						<sourceFileExclude>**/*SerializationContextInitializerImpl.java</sourceFileExclude>
 					</sourceFileExcludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<argLine>${maven.surefire.parameters} -javaagent:${project.build.directory}/agent/mockito-core.jar</argLine>
 				</configuration>
 			</plugin>
 		</plugins>

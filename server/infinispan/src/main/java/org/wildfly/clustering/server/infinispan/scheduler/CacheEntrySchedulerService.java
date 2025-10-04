@@ -22,6 +22,49 @@ import org.wildfly.clustering.server.scheduler.DecoratedSchedulerService;
  * @param <M> the scheduled item metadata type
  */
 public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends DecoratedSchedulerService<I, M> implements CacheEntryScheduler<K, V>, SchedulerService<I, M> {
+	/**
+	 * Configuration of a cache entry scheduler.
+	 * @param <I> the scheduled item identifier type
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @param <M> the scheduled item metadata type
+	 */
+	public interface Configuration<I, K extends Key<I>, V, M> {
+		/**
+		 * Returns the decorated scheduler service.
+		 * @return the decorated scheduler service.
+		 */
+		org.wildfly.clustering.server.scheduler.SchedulerService<I, M> getSchedulerService();
+
+		/**
+		 * Returns the locator function.
+		 * @return the locator function.
+		 */
+		Function<I, V> getLocator();
+
+		/**
+		 * Returns the meta data function.
+		 * @return the meta data function.
+		 */
+		BiFunction<I, V, M> getMetaData();
+
+		/**
+		 * Returns the task to invoke on {@link SchedulerService#start()}.
+		 * @return the task to invoke on {@link SchedulerService#start()}.
+		 */
+		default java.util.function.Consumer<CacheEntryScheduler<K, V>> getStartTask() {
+			return org.wildfly.clustering.function.Consumer.empty();
+		}
+
+		/**
+		 * Returns the task to invoke on {@link SchedulerService#stop()}.
+		 * @return the task to invoke on {@link SchedulerService#stop()}.
+		 */
+		default java.util.function.Consumer<CacheEntryScheduler<K, V>> getStopTask() {
+			return org.wildfly.clustering.function.Consumer.empty();
+		}
+	}
+
 	private final Consumer<CacheEntryScheduler<K, V>> startTask;
 	private final Consumer<CacheEntryScheduler<K, V>> stopTask;
 	private final Function<I, V> locator;
@@ -31,7 +74,7 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 	 * Creates a cache entry scheduler from the specified configuration.
 	 * @param configuration the scheduler configuration
 	 */
-	public CacheEntrySchedulerService(CacheEntrySchedulerServiceConfiguration<I, K, V, M> configuration) {
+	public CacheEntrySchedulerService(Configuration<I, K, V, M> configuration) {
 		super(configuration.getSchedulerService());
 		this.startTask = configuration.getStartTask();
 		this.stopTask = configuration.getStopTask();

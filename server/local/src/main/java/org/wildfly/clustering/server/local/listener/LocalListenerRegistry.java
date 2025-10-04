@@ -20,15 +20,15 @@ import java.util.function.Function;
 
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.server.Registration;
-import org.wildfly.clustering.server.listener.ListenerRegistrar;
+import org.wildfly.clustering.server.listener.ListenerRegistry;
 
 /**
- * Local {@link ListenerRegistrar}.
+ * Local {@link ListenerRegistry}.
  * @param <T> the listener type
  * @author Paul Ferraro
  */
-public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
-	private static final System.Logger LOGGER = System.getLogger(LocalListenerRegistrar.class.getName());
+public class LocalListenerRegistry<T> implements ListenerRegistry<T> {
+	private static final System.Logger LOGGER = System.getLogger(LocalListenerRegistry.class.getName());
 
 	private final Map<T, ExecutorService> listeners = new ConcurrentHashMap<>();
 	private final Duration shutdownTimeout;
@@ -43,7 +43,7 @@ public class LocalListenerRegistrar<T> implements ListenerRegistrar<T> {
 	 * Creates a local listener registrar with the specified shutdown timeout.
 	 * @param shutdownTimeout the duration of time to wait for termination of listener tasks on close.
 	 */
-	public LocalListenerRegistrar(Duration shutdownTimeout) {
+	public LocalListenerRegistry(Duration shutdownTimeout) {
 		this.shutdownTimeout = shutdownTimeout;
 	}
 

@@ -36,16 +36,11 @@ public class CacheContainerServiceProviderRegistrarContext<T> extends AbstractCo
 		cache.start();
 		this.accept(cache::stop);
 
-		this.registrar = new CacheServiceProviderRegistrar<>(new CacheServiceProviderRegistrarConfiguration() {
+		this.registrar = new CacheServiceProviderRegistrar<>(new CacheServiceProviderRegistrar.Configuration() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public <K, V> Cache<K, V> getCache() {
 				return (Cache<K, V>) cache;
-			}
-
-			@Override
-			public Object getId() {
-				return CACHE_NAME;
 			}
 
 			@Override

@@ -34,7 +34,7 @@ public class CommandDispatcherRequestCorrelator extends RequestCorrelator {
 	 * @param handler a request handler
 	 * @param config a command dispatcher factory configuration
 	 */
-	public CommandDispatcherRequestCorrelator(JChannel channel, RequestHandler handler, JChannelCommandDispatcherFactoryConfiguration config) {
+	public CommandDispatcherRequestCorrelator(JChannel channel, RequestHandler handler, JChannelCommandDispatcherFactory.Configuration config) {
 		super(channel.getProtocolStack(), handler, channel.getAddress());
 		this.marshaller = config.getMarshaller();
 		this.unknownForkPredicate = config.getUnknownForkPredicate();

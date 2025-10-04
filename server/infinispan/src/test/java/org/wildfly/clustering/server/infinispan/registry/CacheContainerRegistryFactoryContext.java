@@ -16,7 +16,6 @@ import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.infinispan.CacheGroupConfiguration;
 import org.wildfly.clustering.server.infinispan.EmbeddedCacheManagerGroupContext;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.server.registry.RegistryFactory;
@@ -45,22 +44,31 @@ public class CacheContainerRegistryFactoryContext<K, V> extends AbstractContext<
 		cache.start();
 		this.accept(cache::stop);
 
-		CacheGroupConfiguration config = new CacheGroupConfiguration() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public <KK, VV> Cache<KK, VV> getCache() {
-				return (Cache<KK, VV>) cache;
-			}
-
-			@Override
-			public CacheContainerGroup getGroup() {
-				return group;
-			}
-		};
 		this.factory = RegistryFactory.singleton(new BiFunction<>() {
 			@Override
 			public Registry<CacheContainerGroupMember, K, V> apply(Map.Entry<K, V> entry, Runnable closeTask) {
-				return new CacheRegistry<>(config, entry, closeTask);
+				return new CacheRegistry<>(new CacheRegistry.Configuration<K, V>() {
+					@SuppressWarnings("unchecked")
+					@Override
+					public <KK, VV> Cache<KK, VV> getCache() {
+						return (Cache<KK, VV>) cache;
+					}
+
+					@Override
+					public CacheContainerGroup getGroup() {
+						return group;
+					}
+
+					@Override
+					public Map.Entry<K, V> getEntry() {
+						return entry;
+					}
+
+					@Override
+					public Runnable getCloseTask() {
+						return closeTask;
+					}
+				});
 			}
 		});
 	}
