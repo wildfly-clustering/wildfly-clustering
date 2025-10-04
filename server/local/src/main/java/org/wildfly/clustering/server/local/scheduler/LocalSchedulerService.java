@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -33,6 +34,44 @@ import org.wildfly.clustering.server.util.BlockingReference;
 public class LocalSchedulerService<T> extends SimpleService implements SchedulerService<T, Instant>, Runnable {
 	private static final System.Logger LOGGER = System.getLogger(LocalSchedulerService.class.getName());
 
+	/**
+	 * Encapsulates configuration of a {@link LocalSchedulerService}.
+	 * @param <T> the scheduled entry identifier type
+	 */
+	public interface Configuration<T> {
+		/**
+		 * Returns the name of this scheduler.
+		 * @return the name of this scheduler.
+		 */
+		String getName();
+
+		/**
+		 * Returns the scheduled entries collection used by this scheduler.
+		 * @return the scheduled entries collection used by this scheduler.
+		 */
+		default ScheduledEntries<T, Instant> getScheduledEntries() {
+			return ScheduledEntries.sorted();
+		}
+
+		/**
+		 * Returns a scheduled task.
+		 * @return a scheduled task.
+		 */
+		Predicate<T> getTask();
+
+		/**
+		 * Returns a thread factory for use by this scheduler.
+		 * @return a thread factory for use by this scheduler.
+		 */
+		ThreadFactory getThreadFactory();
+
+		/**
+		 * Returns the duration of time to wait for scheduled tasks to complete on {@link SchedulerService#close}.
+		 * @return the duration of time to wait for scheduled tasks to complete on {@link SchedulerService#close}.
+		 */
+		Duration getCloseTimeout();
+	}
+
 	private final String name;
 	private final ScheduledExecutorService executor;
 	private final ScheduledEntries<T, Instant> entries;
@@ -47,7 +86,7 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 	 * Creates a local scheduler using the specified configuration.
 	 * @param configuration the scheduler configuration
 	 */
-	public LocalSchedulerService(LocalSchedulerServiceConfiguration<T> configuration) {
+	public LocalSchedulerService(Configuration<T> configuration) {
 		this.name = configuration.getName();
 		this.entries = configuration.getScheduledEntries();
 		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, configuration.getThreadFactory());

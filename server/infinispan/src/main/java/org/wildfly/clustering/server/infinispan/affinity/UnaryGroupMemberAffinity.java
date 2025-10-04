@@ -6,17 +6,15 @@
 package org.wildfly.clustering.server.infinispan.affinity;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.CacheKey;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.KeyDistribution;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMemberFactory;
-import org.wildfly.clustering.server.infinispan.CacheGroupConfiguration;
 
 /**
  * Returns group member that primarily owns cache keys for a given identifier.
@@ -30,19 +28,11 @@ public class UnaryGroupMemberAffinity<I> implements Function<I, CacheContainerGr
 
 	/**
 	 * Creates a group member affinity function returning a single value.
-	 * @param configuration a group member affinity configuration
+	 * @param cache an embedded cache
+	 * @param group the cache container group
 	 */
-	public UnaryGroupMemberAffinity(CacheGroupConfiguration configuration) {
-		this(configuration.getCache(), configuration.getGroup());
-	}
-
-	private UnaryGroupMemberAffinity(Cache<? extends Key<I>, ?> cache, CacheContainerGroup group) {
-		this(new Supplier<>() {
-			@Override
-			public KeyDistribution get() {
-				return KeyDistribution.forCache(cache);
-			}
-		}, group.getGroupMemberFactory());
+	public UnaryGroupMemberAffinity(Cache<?, ?> cache, CacheContainerGroup group) {
+		this(Supplier.of(cache).thenApply(KeyDistribution::forCache), group.getGroupMemberFactory());
 	}
 
 	UnaryGroupMemberAffinity(Supplier<KeyDistribution> distribution, CacheContainerGroupMemberFactory factory) {

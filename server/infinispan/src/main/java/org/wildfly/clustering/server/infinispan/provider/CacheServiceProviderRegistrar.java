@@ -38,6 +38,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.function.Supplier;
@@ -59,6 +60,17 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListene
 public class CacheServiceProviderRegistrar<T> implements CacheContainerServiceProviderRegistrar<T>, AutoCloseable {
 	private static final System.Logger LOGGER = System.getLogger(CacheServiceProviderRegistrar.class.getName());
 
+	/**
+	 * The configuration of this service provider registrar.
+	 */
+	public interface Configuration extends EmbeddedCacheConfiguration {
+		/**
+		 * Returns the group with which this service provider registrar is associated.
+		 * @return the group with which this service provider registrar is associated.
+		 */
+		CacheContainerGroup getGroup();
+	}
+
 	private final Supplier<Batch> batchFactory;
 	private final ConcurrentMap<T, Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService>> listeners = new ConcurrentHashMap<>();
 	private final Cache<T, Set<Address>> cache;
@@ -68,14 +80,14 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 
 	/**
 	 * Creates a service provider registrar using the specified configuration
-	 * @param config a service provider registrar configuration
+	 * @param configuration a service provider registrar configuration
 	 */
-	public CacheServiceProviderRegistrar(CacheServiceProviderRegistrarConfiguration config) {
-		this.group = config.getGroup();
-		this.cache = config.getWriteOnlyCache();
-		this.batchFactory = config.getBatchFactory();
-		this.executor = config.getExecutor();
-		this.active = config::isActive;
+	public CacheServiceProviderRegistrar(Configuration configuration) {
+		this.group = configuration.getGroup();
+		this.cache = configuration.getWriteOnlyCache();
+		this.batchFactory = configuration.getBatchFactory();
+		this.executor = configuration.getExecutor();
+		this.active = configuration::isActive;
 		this.cache.addListener(this);
 	}
 

@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -57,6 +58,12 @@ public interface BasicCacheConfiguration extends CacheConfiguration, BasicCacheC
 	 * @return and optional transaction manager
 	 */
 	Optional<TransactionManager> getTransactionManager();
+
+	/**
+	 * Returns the duration of time a service should wait for ongoing operations to complete prior to stopping.
+	 * @return the duration of time a service should wait for ongoing operations to complete prior to stopping.
+	 */
+	Duration getStopTimeout();
 
 	@Override
 	default Supplier<Batch> getBatchFactory() {

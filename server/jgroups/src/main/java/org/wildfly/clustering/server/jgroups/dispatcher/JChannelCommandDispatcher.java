@@ -6,6 +6,7 @@ package org.wildfly.clustering.server.jgroups.dispatcher;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -46,6 +47,50 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 		}
 	};
 
+	interface Configuration<CC, MC> {
+		/**
+		 * Returns the command context of this command dispatcher.
+		 * @return the command context of this command dispatcher.
+		 */
+		CC getCommandExecutionContext();
+
+		/**
+		 * Returns the message dispatcher associated with this command dispatcher.
+		 * @return the message dispatcher associated with this command dispatcher.
+		 */
+		MessageDispatcher getMessageDispatcher();
+
+		/**
+		 * Returns the marshaller for dispatched commands.
+		 * @return the marshaller for dispatched commands.
+		 */
+		CommandMarshaller<CC> getCommandMarshaller();
+
+		/**
+		 * Returns the marshalling context of this command dispatcher.
+		 * @return the marshalling context of this command dispatcher.
+		 */
+		MC getMarshallingContext();
+
+		/**
+		 * Returns the group associated with this command dispatcher.
+		 * @return the group associated with this command dispatcher.
+		 */
+		ChannelGroup getGroup();
+
+		/**
+		 * Returns the maximum duration permitted for command execution.
+		 * @return the maximum duration permitted for command execution.
+		 */
+		Duration getCommandExecutionTimeout();
+
+		/**
+		 * Returns the task to execute on {@link JChannelCommandDispatcher#close}
+		 * @return the task to execute on {@link JChannelCommandDispatcher#close}
+		 */
+		Runnable getCloseTask();
+	}
+
 	private final CC commandContext;
 	private final MessageDispatcher dispatcher;
 	private final CommandMarshaller<CC> marshaller;
@@ -58,7 +103,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 	 * Creates a command dispatcher using the specified configuration.
 	 * @param configuration the configuration of this command dispatcher
 	 */
-	public JChannelCommandDispatcher(JChannelCommandDispatcherConfiguration<CC, MC> configuration) {
+	public JChannelCommandDispatcher(Configuration<CC, MC> configuration) {
 		this.commandContext = configuration.getCommandExecutionContext();
 		this.dispatcher = configuration.getMessageDispatcher();
 		this.marshaller = configuration.getCommandMarshaller();

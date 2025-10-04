@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.remote;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -123,5 +124,10 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 	@Override
 	default CacheProperties getCacheProperties() {
 		return new RemoteCacheProperties(this.getCache());
+	}
+
+	@Override
+	default Duration getStopTimeout() {
+		return Duration.ofMillis(this.getCacheContainer().getConfiguration().transactionTimeout());
 	}
 }

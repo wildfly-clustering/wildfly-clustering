@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -44,6 +45,35 @@ import org.wildfly.clustering.server.util.BlockingExecutor;
 public class JChannelCommandDispatcherFactory implements ChannelCommandDispatcherFactory, RequestHandler, Runnable {
 	private static final Callable<Object> NO_SUCH_SERVICE_CALLER = Callable.of(ServiceResponse.NO_SUCH_SERVICE);
 
+	/**
+	 * Configuration for a {@link JChannelCommandDispatcherFactory}.
+	 */
+	public interface Configuration {
+		/**
+		 * Returns a predicate that determines whether a given message is associated with an unknown fork channel.
+		 * @return a predicate that determines whether a given message is associated with an unknown fork channel.
+		 */
+		Predicate<Message> getUnknownForkPredicate();
+
+		/**
+		 * Returns the channel associated with this command dispatcher factory.
+		 * @return the channel associated with this command dispatcher factory.
+		 */
+		JChannel getChannel();
+
+		/**
+		 * Returns the marshaller associated with this command dispatcher factory.
+		 * @return the marshaller associated with this command dispatcher factory.
+		 */
+		ByteBufferMarshaller getMarshaller();
+
+		/**
+		 * Returns a factory for creating command dispatcher specific marshaller.
+		 * @return a factory for creating command dispatcher specific marshaller.
+		 */
+		Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
+	}
+
 	private final JChannelGroup group;
 	private final Map<Object, CommandDispatcherContext<?, ?>> contexts = new ConcurrentHashMap<>();
 	private final BlockingExecutor executor = BlockingExecutor.newInstance(this);
@@ -57,7 +87,7 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 	 * @param config the configuration of the command dispatcher factory.
 	 */
 	@SuppressWarnings("resource")
-	public JChannelCommandDispatcherFactory(JChannelCommandDispatcherFactoryConfiguration config) {
+	public JChannelCommandDispatcherFactory(Configuration config) {
 		this.marshaller = config.getMarshaller();
 		this.marshallerFactory = config.getMarshallerFactory();
 		JChannel channel = config.getChannel();
@@ -173,7 +203,7 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 		ChannelGroup group = this.group;
 		Duration timeout = this.timeout;
 		Runnable closeTask = () -> this.contexts.remove(id);
-		JChannelCommandDispatcherConfiguration<C, ByteBufferMarshaller> configuration = new JChannelCommandDispatcherConfiguration<>() {
+		return new JChannelCommandDispatcher<>(new JChannelCommandDispatcher.Configuration<>() {
 			@Override
 			public C getCommandExecutionContext() {
 				return commandContext;
@@ -208,7 +238,6 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 			public Runnable getCloseTask() {
 				return closeTask;
 			}
-		};
-		return new JChannelCommandDispatcher<>(configuration);
+		});
 	}
 }

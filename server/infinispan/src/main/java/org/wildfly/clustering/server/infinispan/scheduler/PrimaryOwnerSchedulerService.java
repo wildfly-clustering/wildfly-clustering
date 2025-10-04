@@ -18,11 +18,14 @@ import java.util.function.Function;
 import io.github.resilience4j.core.functions.CheckedFunction;
 import io.github.resilience4j.retry.Retry;
 
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
+import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
 import org.wildfly.clustering.server.util.MapEntry;
 
 /**
@@ -33,6 +36,47 @@ import org.wildfly.clustering.server.util.MapEntry;
  */
 public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M> {
 	private static final System.Logger LOGGER = System.getLogger(PrimaryOwnerSchedulerService.class.getName());
+
+	/**
+	 * Encapsulates configuration of a {@link PrimaryOwnerSchedulerService}.
+	 * @param <I> the scheduled entry identifier type
+	 * @param <M> the scheduled entry metadata type
+	 */
+	public interface Configuration<I, M> extends EmbeddedCacheConfiguration {
+		/**
+		 * Returns the delegated scheduler.
+		 * @return the delegated scheduler.
+		 */
+		SchedulerService<I, M> getScheduler();
+
+		/**
+		 * Returns the command dispatcher factory for this scheduler.
+		 * @return the command dispatcher factory for this scheduler.
+		 */
+		CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
+
+		/**
+		 * Returns the function returning the group member for which a given identifier has affinity.
+		 * @return the function returning the group member for which a given identifier has affinity.
+		 */
+		default Function<I, CacheContainerGroupMember> getAffinity() {
+			return new UnaryGroupMemberAffinity<>(this.getCache(), this.getCommandDispatcherFactory().getGroup());
+		}
+
+		/**
+		 * Returns the factory for creating a scheduler command.
+		 * @return the factory for creating a scheduler command.
+		 */
+		default BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory() {
+			return ScheduleWithPersistentMetaDataCommand::new;
+		}
+
+		/**
+		 * Returns the listener registration for this scheduler.
+		 * @return the listener registration for this scheduler.
+		 */
+		ListenerRegistrar getListenerRegistrar();
+	}
 
 	private final String name;
 	private final CommandDispatcher<CacheContainerGroupMember, Scheduler<I, M>> dispatcher;
@@ -49,7 +93,7 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 	 * @param configuration the configuration of a primary owner scheduler
 	 */
 	@SuppressWarnings("removal")
-	public PrimaryOwnerSchedulerService(PrimaryOwnerSchedulerServiceConfiguration<I, M> configuration) {
+	public PrimaryOwnerSchedulerService(Configuration<I, M> configuration) {
 		this.name = configuration.getName();
 		this.listenerRegistrar = configuration.getListenerRegistrar();
 		this.scheduler = configuration.getScheduler();
