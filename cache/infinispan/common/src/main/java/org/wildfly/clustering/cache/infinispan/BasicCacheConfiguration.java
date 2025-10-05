@@ -27,6 +27,11 @@ import org.wildfly.clustering.function.Supplier;
  */
 public interface BasicCacheConfiguration extends CacheConfiguration, BasicCacheContainerConfiguration {
 
+	@Override
+	default String getName() {
+		return this.getCache().getName();
+	}
+
 	/**
 	 * Returns the cache associated with this configuration.
 	 * @param <K> the cache key type
