@@ -69,7 +69,9 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 		 * Returns the duration of time to wait for scheduled tasks to complete on {@link SchedulerService#close}.
 		 * @return the duration of time to wait for scheduled tasks to complete on {@link SchedulerService#close}.
 		 */
-		Duration getCloseTimeout();
+		default Duration getCloseTimeout() {
+			return Duration.ZERO;
+		}
 	}
 
 	private final String name;
