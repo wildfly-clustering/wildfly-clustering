@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.distribution;
 
+import org.infinispan.configuration.cache.Configurations;
 import org.infinispan.configuration.cache.HashConfiguration;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.distribution.ch.impl.SingleSegmentKeyPartitioner;
@@ -27,7 +28,7 @@ public class KeyPartitionerFactory extends AbstractNamedCacheComponentFactory im
 
 	@Override
 	public Object construct(String componentName) {
-		if (!this.configuration.clustering().cacheMode().isClustered() && !this.configuration.persistence().usingSegmentedStore()) {
+		if (!Configurations.needSegments(this.configuration)) {
 			return SingleSegmentKeyPartitioner.getInstance();
 		}
 		HashConfiguration hashConfiguration = this.configuration.clustering().hash();
