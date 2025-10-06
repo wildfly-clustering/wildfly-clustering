@@ -6,7 +6,6 @@
 package org.wildfly.clustering.server.scheduler;
 
 import org.wildfly.clustering.server.service.DecoratedService;
-import org.wildfly.clustering.server.service.Service;
 
 /**
  * A scheduler service decorator.
@@ -20,19 +19,10 @@ public class DecoratedSchedulerService<I, V> extends DecoratedService implements
 
 	/**
 	 * Creates a decorated scheduler service.
-	 * @param service the decorated scheduler service.
-	 */
-	public DecoratedSchedulerService(SchedulerService<I, V> service) {
-		this(service, service);
-	}
-
-	/**
-	 * Creates a decorated scheduler service.
 	 * @param scheduler the decorated scheduler service.
-	 * @param service an alternate service
 	 */
-	protected DecoratedSchedulerService(SchedulerService<I, V> scheduler, Service service) {
-		super(service);
+	public DecoratedSchedulerService(SchedulerService<I, V> scheduler) {
+		super(scheduler);
 		this.scheduler = scheduler;
 	}
 

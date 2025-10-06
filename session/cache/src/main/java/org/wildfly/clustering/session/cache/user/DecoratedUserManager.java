@@ -6,7 +6,6 @@
 package org.wildfly.clustering.session.cache.user;
 
 import org.wildfly.clustering.server.manager.DecoratedManager;
-import org.wildfly.clustering.server.service.Service;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
@@ -27,16 +26,7 @@ public class DecoratedUserManager<C, T, D, S> extends DecoratedManager<String> i
 	 * @param manager the decorated user manager
 	 */
 	public DecoratedUserManager(UserManager<C, T, D, S> manager) {
-		this(manager, manager);
-	}
-
-	/**
-	 * Creates a user manager decorator.
-	 * @param manager the decorated user manager
-	 * @param service an alternate service
-	 */
-	protected DecoratedUserManager(UserManager<C, T, D, S> manager, Service service) {
-		super(manager, service);
+		super(manager);
 		this.manager = manager;
 	}
 

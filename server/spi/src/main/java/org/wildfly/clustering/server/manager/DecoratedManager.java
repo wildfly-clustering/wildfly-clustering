@@ -24,16 +24,7 @@ public class DecoratedManager<I> extends DecoratedService implements Manager<I> 
 	 * @param manager the decorated manager
 	 */
 	public DecoratedManager(Manager<I> manager) {
-		this(manager, manager);
-	}
-
-	/**
-	 * Creates a decorator of the specified manager with an alternate service.
-	 * @param manager the decorated manager
-	 * @param service the alternate decorated service
-	 */
-	protected DecoratedManager(Manager<I> manager, Service service) {
-		super(service);
+		super(manager);
 		this.manager = manager;
 	}
 
