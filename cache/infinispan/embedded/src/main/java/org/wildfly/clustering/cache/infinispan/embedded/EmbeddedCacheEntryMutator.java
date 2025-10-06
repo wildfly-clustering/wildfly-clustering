@@ -11,7 +11,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 import org.wildfly.clustering.cache.infinispan.AbstractCacheEntryMutator;
@@ -51,6 +50,6 @@ public class EmbeddedCacheEntryMutator<K, V> extends AbstractCacheEntryMutator {
 			builder.maxIdle(seconds, TimeUnit.SECONDS);
 		}
 		// Use FAIL_SILENTLY to prevent mutation from failing locally due to remote exceptions
-		return this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).putAsync(this.key, this.value, builder.build()).thenAccept(Consumer.empty());
+		return this.cache.getAdvancedCache().putAsync(this.key, this.value, builder.build()).thenAccept(Consumer.empty());
 	}
 }
