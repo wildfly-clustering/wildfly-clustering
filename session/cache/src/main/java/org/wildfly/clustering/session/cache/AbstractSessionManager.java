@@ -139,7 +139,7 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 			}
 			ImmutableSession session = this.sessionFactory.createImmutableSession(id, entry);
 			if (session.getMetaData().isExpired()) {
-				this.logger.log(System.Logger.Level.TRACE, "Session {0} was found, but has expired", id);
+				this.logger.log(System.Logger.Level.TRACE, "Session {0} was found, but has expired: {1}", id, session.getMetaData());
 				this.expirationListener.accept(session);
 				this.sessionFactory.removeAsync(id);
 				return null;

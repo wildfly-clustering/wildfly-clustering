@@ -72,7 +72,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 			buffer = this.marshaller.write(this.object);
 			// N.B. Refrain from logging wrapped object
 			// If wrapped object contains an EJB proxy, toString() will trigger an EJB invocation!
-			Logger.INSTANCE.log(System.Logger.Level.DEBUG, "Marshalled size of {0} object = {1} bytes", this.object.getClass().getCanonicalName(), buffer.limit() - buffer.arrayOffset());
+			Logger.INSTANCE.log(System.Logger.Level.TRACE, "Marshalled size of {0} object = {1} bytes", this.object.getClass().getCanonicalName(), buffer.limit() - buffer.arrayOffset());
 		}
 		return buffer;
 	}

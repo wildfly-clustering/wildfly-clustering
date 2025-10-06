@@ -34,6 +34,7 @@ import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
  * @param <MC> the marshalling context
  */
 public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<ChannelGroupMember, CC> {
+	private static final System.Logger LOGGER = System.getLogger(JChannelCommandDispatcher.class.getName());
 
 	private static final RspFilter FILTER = new RspFilter() {
 		@Override
@@ -48,6 +49,12 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 	};
 
 	interface Configuration<CC, MC> {
+		/**
+		 * Returns the identifier of this dispatcher.
+		 * @return the identifier of this dispatcher.
+		 */
+		Object getId();
+
 		/**
 		 * Returns the command context of this command dispatcher.
 		 * @return the command context of this command dispatcher.
@@ -91,6 +98,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 		Runnable getCloseTask();
 	}
 
+	private final Object id;
 	private final CC commandContext;
 	private final MessageDispatcher dispatcher;
 	private final CommandMarshaller<CC> marshaller;
@@ -104,6 +112,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 	 * @param configuration the configuration of this command dispatcher
 	 */
 	public JChannelCommandDispatcher(Configuration<CC, MC> configuration) {
+		this.id = configuration.getId();
 		this.commandContext = configuration.getCommandExecutionContext();
 		this.dispatcher = configuration.getMessageDispatcher();
 		this.marshaller = configuration.getCommandMarshaller();
@@ -125,6 +134,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 
 	@Override
 	public <R, E extends Exception> CompletionStage<R> dispatchToMember(Command<R, ? super CC, E> command, ChannelGroupMember member) throws IOException {
+		LOGGER.log(System.Logger.Level.TRACE, "{0} dispatching {1} command to {2}", this.id, command, member);
 		// Bypass MessageDispatcher if target member is local
 		if (this.group.getLocalMember().equals(member)) {
 			return this.execute(command);
@@ -136,6 +146,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 
 	@Override
 	public <R, E extends Exception> Map<ChannelGroupMember, CompletionStage<R>> dispatchToGroup(Command<R, ? super CC, E> command, Set<ChannelGroupMember> excluding) throws IOException {
+		LOGGER.log(System.Logger.Level.TRACE, "{0} dispatching {1} to group, excluding %s", this.id, command, excluding);
 		Map<ChannelGroupMember, CompletionStage<R>> results = new ConcurrentHashMap<>();
 		ByteBuffer buffer = this.createBuffer(command);
 		for (ChannelGroupMember member : this.group.getMembership().getMembers()) {
