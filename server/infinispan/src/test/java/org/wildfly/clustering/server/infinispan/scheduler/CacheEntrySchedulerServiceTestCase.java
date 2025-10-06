@@ -14,9 +14,9 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.cache.Key;
 
 /**
@@ -29,7 +29,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void schedule() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		CacheEntrySchedulerService.Configuration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerService.Configuration.class);
 
@@ -46,12 +46,12 @@ public class CacheEntrySchedulerServiceTestCase {
 		Object value = mock(Object.class);
 		Instant now = Instant.now();
 
-		doReturn(value).when(locator).apply(id);
+		doReturn(value).when(locator).findValue(id);
 		doReturn(now).when(metaData).apply(id, value);
 
 		cacheEntryScheduler.schedule(id);
 
-		verify(locator).apply(id);
+		verify(locator).findValue(id);
 		verifyNoMoreInteractions(locator);
 		verify(metaData).apply(id, value);
 		verifyNoMoreInteractions(metaData);
@@ -62,7 +62,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void scheduleWithMetaData() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		CacheEntrySchedulerService.Configuration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerService.Configuration.class);
 
@@ -89,7 +89,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void scheduleKey() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		CacheEntrySchedulerService.Configuration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerService.Configuration.class);
 
@@ -108,12 +108,12 @@ public class CacheEntrySchedulerServiceTestCase {
 		Instant now = Instant.now();
 
 		doReturn(id).when(key).getId();
-		doReturn(value).when(locator).apply(id);
+		doReturn(value).when(locator).findValue(id);
 		doReturn(now).when(metaData).apply(id, value);
 
 		cacheEntryScheduler.scheduleKey(key);
 
-		verify(locator).apply(id);
+		verify(locator).findValue(id);
 		verifyNoMoreInteractions(locator);
 		verify(metaData).apply(id, value);
 		verifyNoMoreInteractions(metaData);
@@ -124,7 +124,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void scheduleEntry() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		CacheEntrySchedulerService.Configuration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerService.Configuration.class);
 
@@ -157,7 +157,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void cancel() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		CacheEntrySchedulerService.Configuration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerService.Configuration.class);
 
@@ -183,7 +183,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void cancelKey() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		CacheEntrySchedulerService.Configuration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerService.Configuration.class);
 
@@ -212,7 +212,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void contains() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		CacheEntrySchedulerService.Configuration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerService.Configuration.class);
 
@@ -241,7 +241,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void containsKey() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		CacheEntrySchedulerService.Configuration<UUID, Key<UUID>, Object, Instant> configuration = mock(CacheEntrySchedulerService.Configuration.class);
 
@@ -272,7 +272,7 @@ public class CacheEntrySchedulerServiceTestCase {
 	@Test
 	public void lifecycle() {
 		org.wildfly.clustering.server.scheduler.SchedulerService<UUID, Instant> scheduler = mock(org.wildfly.clustering.server.scheduler.SchedulerService.class);
-		Function<UUID, Object> locator = mock(Function.class);
+		CacheEntryLocator<UUID, Object> locator = mock(CacheEntryLocator.class);
 		BiFunction<UUID, Object, Instant> metaData = mock(BiFunction.class);
 		Consumer<CacheEntryScheduler<Key<UUID>, Object>> startTask = mock(Consumer.class);
 		Consumer<CacheEntryScheduler<Key<UUID>, Object>> stopTask = mock(Consumer.class);

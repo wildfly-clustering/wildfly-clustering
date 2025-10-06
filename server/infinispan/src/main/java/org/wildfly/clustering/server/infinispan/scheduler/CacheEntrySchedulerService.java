@@ -8,8 +8,8 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
+import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.server.scheduler.DecoratedSchedulerService;
 
@@ -40,7 +40,7 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 		 * Returns the locator function.
 		 * @return the locator function.
 		 */
-		Function<I, V> getLocator();
+		CacheEntryLocator<I, V> getLocator();
 
 		/**
 		 * Returns the meta data function.
@@ -67,7 +67,7 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 
 	private final Consumer<CacheEntryScheduler<K, V>> startTask;
 	private final Consumer<CacheEntryScheduler<K, V>> stopTask;
-	private final Function<I, V> locator;
+	private final CacheEntryLocator<I, V> locator;
 	private final BiFunction<I, V, M> metaData;
 
 	/**
@@ -96,7 +96,7 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 
 	@Override
 	public void schedule(I id) {
-		V value = this.locator.apply(id);
+		V value = this.locator.findValue(id);
 		if (value != null) {
 			this.schedule(id, this.metaData.apply(id, value));
 		}

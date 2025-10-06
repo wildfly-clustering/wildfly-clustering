@@ -17,6 +17,7 @@ import java.util.function.Function;
 
 import io.github.resilience4j.core.functions.CheckedFunction;
 import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
@@ -42,7 +43,13 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 	 * @param <I> the scheduled entry identifier type
 	 * @param <M> the scheduled entry metadata type
 	 */
-	public interface Configuration<I, M> extends EmbeddedCacheConfiguration {
+	public interface Configuration<I, M> {
+		/**
+		 * Returns the name of this scheduler.
+		 * @return the name of this scheduler.
+		 */
+		String getName();
+
 		/**
 		 * Returns the delegated scheduler.
 		 * @return the delegated scheduler.
@@ -59,6 +66,48 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		 * Returns the function returning the group member for which a given identifier has affinity.
 		 * @return the function returning the group member for which a given identifier has affinity.
 		 */
+		Function<I, CacheContainerGroupMember> getAffinity();
+
+		/**
+		 * Returns the factory for creating a scheduler command.
+		 * @return the factory for creating a scheduler command.
+		 */
+		BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory();
+
+		/**
+		 * Returns the listener registration for this scheduler.
+		 * @return the listener registration for this scheduler.
+		 */
+		ListenerRegistrar getListenerRegistrar();
+
+		/**
+		 * Returns the listener registration for this scheduler.
+		 * @return the listener registration for this scheduler.
+		 */
+		RetryConfig getRetryConfig();
+	}
+
+	/**
+	 * Encapsulates configuration of a {@link PrimaryOwnerSchedulerService} referencing a cache.
+	 * @param <I> the scheduled entry identifier type
+	 * @param <M> the scheduled entry metadata type
+	 */
+	public interface CacheConfiguration<I, M> extends Configuration<I, M>, EmbeddedCacheConfiguration {
+		@Override
+		default String getName() {
+			return EmbeddedCacheConfiguration.super.getName();
+		}
+
+		@Override
+		default RetryConfig getRetryConfig() {
+			return EmbeddedCacheConfiguration.super.getRetryConfig();
+		}
+
+		/**
+		 * Returns the function returning the group member for which a given identifier has affinity.
+		 * @return the function returning the group member for which a given identifier has affinity.
+		 */
+		@Override
 		default Function<I, CacheContainerGroupMember> getAffinity() {
 			return new UnaryGroupMemberAffinity<>(this.getCache(), this.getCommandDispatcherFactory().getGroup());
 		}
@@ -67,15 +116,16 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		 * Returns the factory for creating a scheduler command.
 		 * @return the factory for creating a scheduler command.
 		 */
+		@Override
 		default BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory() {
-			return ScheduleWithPersistentMetaDataCommand::new;
+			return this.getCacheProperties().isLockOnRead() ? ScheduleWithTransientMetaDataCommand::new : this.getScheduleWithPersistentMetaDataCommandFactory();
 		}
 
 		/**
-		 * Returns the listener registration for this scheduler.
-		 * @return the listener registration for this scheduler.
+		 * Returns the factory for creating a scheduler command using persistent metadata.
+		 * @return the factory for creating a scheduler command using persistent metadata.
 		 */
-		ListenerRegistrar getListenerRegistrar();
+		BiFunction<I, M, ScheduleCommand<I, M>> getScheduleWithPersistentMetaDataCommandFactory();
 	}
 
 	private final String name;
