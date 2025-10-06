@@ -6,6 +6,8 @@
 package org.wildfly.clustering.server.expiration;
 
 import java.time.Duration;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Describes the expiration criteria for a managed object.
@@ -24,7 +26,6 @@ public interface Expiration {
 	 * @return true, if this object is immortal, false otherwise
 	 */
 	default boolean isImmortal() {
-		Duration timeout = this.getTimeout();
-		return (timeout == null) || timeout.isZero() || timeout.isNegative();
+		return Optional.ofNullable(this.getTimeout()).filter(Predicate.not(Duration::isZero).and(Predicate.not(Duration::isNegative))).isEmpty();
 	}
 }

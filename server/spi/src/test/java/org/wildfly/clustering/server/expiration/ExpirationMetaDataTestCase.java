@@ -86,8 +86,8 @@ public class ExpirationMetaDataTestCase {
 				return Instant.now().minus(Duration.ofHours(1));
 			}
 		};
-		assertThat(metaData.isExpired()).isTrue();
 		assertThat(metaData.isImmortal()).isFalse();
+		assertThat(metaData.isExpired()).isTrue();
 	}
 
 	@Test
@@ -104,7 +104,7 @@ public class ExpirationMetaDataTestCase {
 				return Instant.now();
 			}
 		};
-		assertThat(metaData.isExpired()).isFalse();
 		assertThat(metaData.isImmortal()).isFalse();
+		assertThat(metaData.isExpired()).isFalse();
 	}
 }

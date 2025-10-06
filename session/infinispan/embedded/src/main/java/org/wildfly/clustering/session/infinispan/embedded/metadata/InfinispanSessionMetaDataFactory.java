@@ -91,9 +91,9 @@ public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFacto
 
 	@Override
 	public InvalidatableSessionMetaData createSessionMetaData(String id, ContextualSessionMetaDataEntry<C> entry) {
-		MutableSessionMetaDataOffsetValues delta = this.properties.isTransactional() && entry.isNew() ? null : MutableSessionMetaDataOffsetValues.from(entry);
-		Runnable mutator = (delta != null) ? this.mutatorFactory.createMutator(new SessionMetaDataKey(id), delta) : CacheEntryMutator.EMPTY;
-		return new DefaultSessionMetaData((delta != null) ? new MutableSessionMetaDataEntry(entry, delta) : entry, mutator);
+		MutableSessionMetaDataOffsetValues offsetValues = !this.properties.isTransactional() || !entry.isNew() ? MutableSessionMetaDataOffsetValues.from(entry) : null;
+		Runnable mutator = (offsetValues != null) ? this.mutatorFactory.createMutator(new SessionMetaDataKey(id), offsetValues) : CacheEntryMutator.EMPTY;
+		return new DefaultSessionMetaData((offsetValues != null) ? new MutableSessionMetaDataEntry(entry, offsetValues) : entry, mutator);
 	}
 
 	@Override

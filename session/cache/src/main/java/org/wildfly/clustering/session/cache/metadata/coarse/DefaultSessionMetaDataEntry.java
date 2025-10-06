@@ -18,7 +18,7 @@ import org.wildfly.clustering.server.util.Supplied;
  * @param <C> the session context type
  * @author Paul Ferraro
  */
-public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaDataEntry<C> {
+public class DefaultSessionMetaDataEntry<C> extends AbstractSessionMetaDataEntry implements ContextualSessionMetaDataEntry<C> {
 
 	private volatile Duration timeout = Duration.ZERO;
 	// The start time of the last access, expressed as an offset from the creation time
@@ -82,15 +82,5 @@ public class DefaultSessionMetaDataEntry<C> implements ContextualSessionMetaData
 		result.getLastAccessEndTime().set(offsets.getLastAccessEndTimeOffset().apply(this.lastAccessEndTime.get()));
 		result.getContext().get(Supplier.of(this.context.get(Supplier.empty())));
 		return result;
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append(" { ");
-		builder.append("created = ").append(this.lastAccessStartTime.getBasis());
-		builder.append(", timeout = ").append(this.timeout);
-		builder.append(", last-access-start = ").append(this.lastAccessStartTime.get());
-		builder.append(", last-access-end = ").append(this.lastAccessEndTime.get());
-		return builder.append(" }").toString();
 	}
 }

@@ -14,17 +14,19 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryLocator;
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.context.DefaultThreadFactory;
-import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.cache.CacheStrategy;
@@ -188,7 +190,12 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public java.util.function.BiFunction<String, ContextualSessionMetaDataEntry<SC>, ExpirationMetaData> getMetaData() {
+			public Supplier<Batch> getBatchFactory() {
+				return configuration.getBatchFactory();
+			}
+
+			@Override
+			public BiFunction<String, ContextualSessionMetaDataEntry<SC>, ExpirationMetaData> getMetaData() {
 				return metaDataFactory::createImmutableSessionMetaData;
 			}
 
@@ -218,7 +225,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public java.util.function.BiFunction<String, ExpirationMetaData, ScheduleCommand<String, ExpirationMetaData>> getScheduleWithPersistentMetaDataCommandFactory() {
+			public java.util.function.BiFunction<String, ExpirationMetaData, ScheduleCommand<String, ExpirationMetaData>> getScheduleCommandFactory() {
 				return ScheduleWithExpirationMetaDataCommand::new;
 			}
 

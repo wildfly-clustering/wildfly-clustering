@@ -117,15 +117,7 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		 * @return the factory for creating a scheduler command.
 		 */
 		@Override
-		default BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory() {
-			return this.getCacheProperties().isLockOnRead() ? ScheduleWithTransientMetaDataCommand::new : this.getScheduleWithPersistentMetaDataCommandFactory();
-		}
-
-		/**
-		 * Returns the factory for creating a scheduler command using persistent metadata.
-		 * @return the factory for creating a scheduler command using persistent metadata.
-		 */
-		BiFunction<I, M, ScheduleCommand<I, M>> getScheduleWithPersistentMetaDataCommandFactory();
+		BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory();
 	}
 
 	private final String name;
@@ -256,7 +248,6 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		public CompletionStage<R> apply(T value) throws IOException {
 			PrimaryOwnerCommand<I, M, R> command = this.commandFactory.apply(value);
 			CacheContainerGroupMember primaryOwner = this.affinity.apply(command.getId());
-			LOGGER.log(System.Logger.Level.TRACE, "Executing command {0} on {1}", command, primaryOwner);
 			// This should only go remote following a failover
 			return this.dispatcher.dispatchToMember(command, primaryOwner);
 		}
