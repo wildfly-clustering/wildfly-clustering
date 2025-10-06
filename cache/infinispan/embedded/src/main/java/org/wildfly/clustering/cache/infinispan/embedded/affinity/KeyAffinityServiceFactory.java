@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.configuration.cache.Configurations;
 import org.infinispan.remoting.transport.Address;
 
 /**
@@ -43,7 +42,7 @@ public interface KeyAffinityServiceFactory {
 	KeyAffinityServiceFactory INSTANCE = new KeyAffinityServiceFactory() {
 		@Override
 		public <K> KeyAffinityService<K> createService(Cache<? extends K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
-			return Configurations.needSegments(cache.getCacheConfiguration()) ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
+			return (cache.getAdvancedCache().getDistributionManager() != null) ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
 		}
 	};
 }
