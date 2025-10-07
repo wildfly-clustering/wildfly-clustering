@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import io.github.resilience4j.core.functions.CheckedFunction;
@@ -27,23 +26,25 @@ import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
-import org.wildfly.clustering.server.util.MapEntry;
+import org.wildfly.clustering.server.scheduler.DecoratedSchedulerService;
+import org.wildfly.clustering.server.scheduler.Scheduler;
+import org.wildfly.clustering.server.scheduler.SchedulerService;
 
 /**
  * Scheduler decorator that schedules/cancels a given object on the primary owner.
- * @param <I> the scheduled entry identifier type
- * @param <M> the scheduled entry metadata type
+ * @param <K> the scheduled entry key type
+ * @param <V> the scheduled entry value type
  * @author Paul Ferraro
  */
-public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M> {
+public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerService<K, V> {
 	private static final System.Logger LOGGER = System.getLogger(PrimaryOwnerSchedulerService.class.getName());
 
 	/**
 	 * Encapsulates configuration of a {@link PrimaryOwnerSchedulerService}.
-	 * @param <I> the scheduled entry identifier type
-	 * @param <M> the scheduled entry metadata type
+	 * @param <K> the scheduled entry key type
+	 * @param <V> the scheduled entry value type
 	 */
-	public interface Configuration<I, M> {
+	public interface Configuration<K, V> {
 		/**
 		 * Returns the name of this scheduler.
 		 * @return the name of this scheduler.
@@ -54,7 +55,7 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		 * Returns the delegated scheduler.
 		 * @return the delegated scheduler.
 		 */
-		SchedulerService<I, M> getScheduler();
+		SchedulerService<K, V> getScheduler();
 
 		/**
 		 * Returns the command dispatcher factory for this scheduler.
@@ -63,16 +64,18 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
 
 		/**
+		 * Returns the factory for creating a schedule command.
+		 * @return the factory for creating a schedule command.
+		 */
+		default java.util.function.Function<Map.Entry<K, V>, PrimaryOwnerCommand<K, V, Void>> getScheduleCommandFactory() {
+			return ScheduleCommand::new;
+		}
+
+		/**
 		 * Returns the function returning the group member for which a given identifier has affinity.
 		 * @return the function returning the group member for which a given identifier has affinity.
 		 */
-		Function<I, CacheContainerGroupMember> getAffinity();
-
-		/**
-		 * Returns the factory for creating a scheduler command.
-		 * @return the factory for creating a scheduler command.
-		 */
-		BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory();
+		Function<K, CacheContainerGroupMember> getAffinity();
 
 		/**
 		 * Returns the listener registration for this scheduler.
@@ -89,10 +92,10 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 
 	/**
 	 * Encapsulates configuration of a {@link PrimaryOwnerSchedulerService} referencing a cache.
-	 * @param <I> the scheduled entry identifier type
-	 * @param <M> the scheduled entry metadata type
+	 * @param <K> the scheduled entry key type
+	 * @param <V> the scheduled entry value type
 	 */
-	public interface CacheConfiguration<I, M> extends Configuration<I, M>, EmbeddedCacheConfiguration {
+	public interface CacheConfiguration<K, V> extends Configuration<K, V>, EmbeddedCacheConfiguration {
 		@Override
 		default String getName() {
 			return EmbeddedCacheConfiguration.super.getName();
@@ -108,26 +111,17 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		 * @return the function returning the group member for which a given identifier has affinity.
 		 */
 		@Override
-		default Function<I, CacheContainerGroupMember> getAffinity() {
+		default Function<K, CacheContainerGroupMember> getAffinity() {
 			return new UnaryGroupMemberAffinity<>(this.getCache(), this.getCommandDispatcherFactory().getGroup());
 		}
-
-		/**
-		 * Returns the factory for creating a scheduler command.
-		 * @return the factory for creating a scheduler command.
-		 */
-		@Override
-		BiFunction<I, M, ScheduleCommand<I, M>> getScheduleCommandFactory();
 	}
 
 	private final String name;
-	private final CommandDispatcher<CacheContainerGroupMember, Scheduler<I, M>> dispatcher;
-	private final SchedulerService<I, M> scheduler;
+	private final CommandDispatcher<CacheContainerGroupMember, Scheduler<K, V>> dispatcher;
 	private final ListenerRegistrar listenerRegistrar;
-	private final CheckedFunction<I, CompletionStage<Void>> primaryOwnerSchedule;
-	private final CheckedFunction<Map.Entry<I, M>, CompletionStage<Void>> primaryOwnerScheduleWithMetaData;
-	private final CheckedFunction<I, CompletionStage<Void>> primaryOwnerCancel;
-	private final CheckedFunction<I, CompletionStage<Boolean>> primaryOwnerContains;
+	private final CheckedFunction<Map.Entry<K, V>, CompletionStage<Void>> primaryOwnerSchedule;
+	private final CheckedFunction<K, CompletionStage<Void>> primaryOwnerCancel;
+	private final CheckedFunction<K, CompletionStage<Boolean>> primaryOwnerContains;
 	private final AtomicReference<ListenerRegistration> listenerRegistration = new AtomicReference<>();
 
 	/**
@@ -135,63 +129,45 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 	 * @param configuration the configuration of a primary owner scheduler
 	 */
 	@SuppressWarnings("removal")
-	public PrimaryOwnerSchedulerService(Configuration<I, M> configuration) {
+	public PrimaryOwnerSchedulerService(Configuration<K, V> configuration) {
+		super(configuration.getScheduler());
 		this.name = configuration.getName();
 		this.listenerRegistrar = configuration.getListenerRegistrar();
-		this.scheduler = configuration.getScheduler();
-		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, this.scheduler, AccessController.doPrivileged(new PrivilegedAction<>() {
+		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, configuration.getScheduler(), AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
 				return PrimaryOwnerSchedulerService.class.getClassLoader();
 			}
 		}));
-		Function<I, CacheContainerGroupMember> affinity = configuration.getAffinity();
+		Function<K, CacheContainerGroupMember> affinity = configuration.getAffinity();
 		Retry retry = Retry.of(configuration.getName(), configuration.getRetryConfig());
-		BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory = configuration.getScheduleCommandFactory();
-		this.primaryOwnerSchedule = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, ScheduleCommand::new));
-		this.primaryOwnerScheduleWithMetaData = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, new Function<>() {
-			@Override
-			public PrimaryOwnerCommand<I, M, Void> apply(Map.Entry<I, M> entry) {
-				return scheduleCommandFactory.apply(entry.getKey(), entry.getValue());
-			}
-		}));
+		this.primaryOwnerSchedule = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, configuration.getScheduleCommandFactory()));
 		this.primaryOwnerCancel = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, CancelCommand::new));
 		this.primaryOwnerContains = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, ContainsCommand::new));
 	}
 
 	@Override
-	public boolean isStarted() {
-		return this.scheduler.isStarted();
-	}
-
-	@Override
 	public void start() {
-		LOGGER.log(System.Logger.Level.DEBUG, "Starting primary-owner scheduler for {0}", this.name);
-		this.scheduler.start();
+		super.start();
 		this.listenerRegistration.set(this.listenerRegistrar.register());
-		LOGGER.log(System.Logger.Level.DEBUG, "Started primary-owner scheduler for {0}", this.name);
 	}
 
 	@Override
 	public void stop() {
-		LOGGER.log(System.Logger.Level.DEBUG, "Stopping primary-owner scheduler for {0}", this.name);
 		Consumer.close().accept(this.listenerRegistration.getAndSet(null));
-		this.scheduler.stop();
-		LOGGER.log(System.Logger.Level.DEBUG, "Stopped primary-owner scheduler for {0}", this.name);
+		super.stop();
 	}
 
 	@Override
 	public void close() {
-		LOGGER.log(System.Logger.Level.DEBUG, "Closing primary-owner scheduler for {0}", this.name);
 		this.dispatcher.close();
-		this.scheduler.close();
-		LOGGER.log(System.Logger.Level.DEBUG, "Closed primary-owner scheduler for {0}", this.name);
+		super.close();
 	}
 
 	@Override
-	public void schedule(I id) {
+	public void schedule(K id, V metaData) {
 		try {
-			this.primaryOwnerSchedule.apply(id).toCompletableFuture().join();
+			this.primaryOwnerSchedule.apply(Map.entry(id, metaData)).toCompletableFuture().join();
 		} catch (CancellationException e) {
 			// Ignore
 		} catch (Throwable e) {
@@ -200,18 +176,7 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 	}
 
 	@Override
-	public void schedule(I id, M metaData) {
-		try {
-			this.primaryOwnerScheduleWithMetaData.apply(MapEntry.of(id, metaData)).toCompletableFuture().join();
-		} catch (CancellationException e) {
-			// Ignore
-		} catch (Throwable e) {
-			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-		}
-	}
-
-	@Override
-	public void cancel(I id) {
+	public void cancel(K id) {
 		try {
 			this.primaryOwnerCancel.apply(id).toCompletableFuture().join();
 		} catch (CancellationException e) {
@@ -222,7 +187,7 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 	}
 
 	@Override
-	public boolean contains(I id) {
+	public boolean contains(K id) {
 		try {
 			return this.primaryOwnerContains.apply(id).toCompletableFuture().join();
 		} catch (CancellationException e) {
@@ -233,12 +198,12 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 		}
 	}
 
-	private static class PrimaryOwnerCommandExecutionFunction<I, M, T, R> implements CheckedFunction<T, CompletionStage<R>> {
-		private final CommandDispatcher<CacheContainerGroupMember, Scheduler<I, M>> dispatcher;
-		private final Function<I, CacheContainerGroupMember> affinity;
-		private final Function<T, PrimaryOwnerCommand<I, M, R>> commandFactory;
+	private static class PrimaryOwnerCommandExecutionFunction<K, V, T, R> implements CheckedFunction<T, CompletionStage<R>> {
+		private final CommandDispatcher<CacheContainerGroupMember, Scheduler<K, V>> dispatcher;
+		private final Function<K, CacheContainerGroupMember> affinity;
+		private final Function<T, PrimaryOwnerCommand<K, V, R>> commandFactory;
 
-		PrimaryOwnerCommandExecutionFunction(CommandDispatcher<CacheContainerGroupMember, Scheduler<I, M>> dispatcher, Function<I, CacheContainerGroupMember> affinity, Function<T, PrimaryOwnerCommand<I, M, R>> commandFactory) {
+		PrimaryOwnerCommandExecutionFunction(CommandDispatcher<CacheContainerGroupMember, Scheduler<K, V>> dispatcher, Function<K, CacheContainerGroupMember> affinity, Function<T, PrimaryOwnerCommand<K, V, R>> commandFactory) {
 			this.dispatcher = dispatcher;
 			this.affinity = affinity;
 			this.commandFactory = commandFactory;
@@ -246,8 +211,8 @@ public class PrimaryOwnerSchedulerService<I, M> implements SchedulerService<I, M
 
 		@Override
 		public CompletionStage<R> apply(T value) throws IOException {
-			PrimaryOwnerCommand<I, M, R> command = this.commandFactory.apply(value);
-			CacheContainerGroupMember primaryOwner = this.affinity.apply(command.getId());
+			PrimaryOwnerCommand<K, V, R> command = this.commandFactory.apply(value);
+			CacheContainerGroupMember primaryOwner = this.affinity.apply(command.getKey());
 			// This should only go remote following a failover
 			return this.dispatcher.dispatchToMember(command, primaryOwner);
 		}

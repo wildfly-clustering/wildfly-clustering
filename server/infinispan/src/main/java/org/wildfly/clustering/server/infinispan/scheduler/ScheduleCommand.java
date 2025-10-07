@@ -5,55 +5,54 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
+import java.util.Map;
+
+import org.wildfly.clustering.server.scheduler.Scheduler;
+
 /**
  * Command that scheduled an entry.
- * @param <I> the scheduled entry identifier type
- * @param <M> the scheduled entry metadata type
+ * @param <K> the scheduled entry key type
+ * @param <V> the scheduled entry value type
  * @author Paul Ferraro
  */
-public class ScheduleCommand<I, M> extends AbstractPrimaryOwnerCommand<I, M, Void> {
+public class ScheduleCommand<K, V> extends AbstractPrimaryOwnerCommand<K, V, Void> {
 
-	private final M metaData;
+	private final V value;
 
 	/**
-	 * Creates a schedule command for a scheduled entry with the specified identifier
-	 * @param id a scheduler entry identifier
+	 * Creates a schedule command for the specified entry.
+	 * @param entry an entry to be scheduled
 	 */
-	ScheduleCommand(I id) {
-		this(id, null);
+	public ScheduleCommand(Map.Entry<K, V> entry) {
+		this(entry.getKey(), entry.getValue());
 	}
 
 	/**
-	 * Creates a schedule command for a scheduled entry with the specified identifier with the specified metadata
-	 * @param id a scheduler entry identifier
-	 * @param metaData the schedule entry metadata
+	 * Creates a schedule command for the specified key and value.
+	 * @param key the scheduled entry key
+	 * @param value the scheduled entry value
 	 */
-	ScheduleCommand(I id, M metaData) {
-		super(id);
-		this.metaData = metaData;
+	ScheduleCommand(K key, V value) {
+		super(key);
+		this.value = value;
 	}
 
 	/**
-	 * Returns the metadata associated with this metadata.
-	 * @return the metadata associated with this metadata.
+	 * Returns the value to be scheduled.
+	 * @return the value to be scheduled.
 	 */
-	protected M getMetaData() {
-		return this.metaData;
+	protected V getValue() {
+		return this.value;
 	}
 
 	@Override
-	public Void execute(Scheduler<I, M> scheduler) {
-		I id = this.getId();
-		if (this.metaData != null) {
-			scheduler.schedule(id, this.metaData);
-		} else {
-			scheduler.schedule(id);
-		}
+	Map.Entry<K, V> getParameter() {
+		return Map.entry(this.getKey(), this.getValue());
+	}
+
+	@Override
+	public Void execute(Scheduler<K, V> scheduler) {
+		scheduler.schedule(this.getKey(), this.value);
 		return null;
-	}
-
-	@Override
-	public String toString() {
-		return String.format("%s[%s, %s]", this.getClass().getSimpleName(), this.getId(), this.metaData);
 	}
 }

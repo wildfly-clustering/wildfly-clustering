@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
+import "java.util.proto";
 import "org.wildfly.clustering.marshalling.protostream.proto";
 
 // IDs: 180 - 187
@@ -10,15 +11,14 @@ import "org.wildfly.clustering.marshalling.protostream.proto";
  * @TypeId(180)
  */
 message CancelCommand {
-	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
 }
 
 /**
  * @TypeId(181)
  */
 message ScheduleCommand {
-	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
-	org.wildfly.clustering.marshalling.protostream.Any	metaData	 = 2;
+	java.util.SimpleEntry	entry	= 1;
 }
 
 /**
@@ -31,5 +31,5 @@ message EntriesCommand {
  * @TypeId(183)
  */
 message ContainsCommand {
-	org.wildfly.clustering.marshalling.protostream.Any	id	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;
 }

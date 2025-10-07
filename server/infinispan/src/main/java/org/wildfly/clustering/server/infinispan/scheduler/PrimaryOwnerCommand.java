@@ -6,18 +6,19 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import org.wildfly.clustering.server.dispatcher.Command;
+import org.wildfly.clustering.server.scheduler.Scheduler;
 
 /**
  * A command intended to be sent to the primary owner of a given cache entry.
  * @author Paul Ferraro
- * @param <I> the scheduled object identifier type
- * @param <M> the scheduled object metadata type
+ * @param <K> the scheduled entry key type
+ * @param <V> the scheduled entry value type
  * @param <R> the command return type
  */
-public interface PrimaryOwnerCommand<I, M, R> extends Command<R, Scheduler<I, M>, RuntimeException> {
+public interface PrimaryOwnerCommand<K, V, R> extends Command<R, Scheduler<K, V>, RuntimeException> {
 	/**
-	 * Returns the identifier of a scheduled item.
-	 * @return the identifier of a scheduled item.
+	 * Returns the key of a scheduled item.
+	 * @return the key of a scheduled item.
 	 */
-	I getId();
+	K getKey();
 }

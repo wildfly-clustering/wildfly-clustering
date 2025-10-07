@@ -9,11 +9,9 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.cache.Key;
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.scheduler.DecoratedSchedulerService;
+import org.wildfly.clustering.server.scheduler.SchedulerService;
 
 /**
  * A cache entry scheduler facade for a scheduler.
@@ -21,9 +19,9 @@ import org.wildfly.clustering.server.scheduler.DecoratedSchedulerService;
  * @param <I> the scheduled item identifier type
  * @param <K> the cache key type
  * @param <V> the cache value type
- * @param <M> the scheduled item metadata type
+ * @param <T> the scheduled item metadata type
  */
-public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends DecoratedSchedulerService<I, M> implements CacheEntryScheduler<K, V>, SchedulerService<I, M> {
+public class CacheEntrySchedulerService<I, K extends Key<I>, V, T> extends DecoratedSchedulerService<I, T> implements CacheEntryScheduler<K, V>, SchedulerService<I, T> {
 	/**
 	 * Configuration of a cache entry scheduler.
 	 * @param <I> the scheduled item identifier type
@@ -37,18 +35,6 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 		 * @return the decorated scheduler service.
 		 */
 		org.wildfly.clustering.server.scheduler.SchedulerService<I, M> getSchedulerService();
-
-		/**
-		 * Returns the batch factory of the associated cache.
-		 * @return the batch factory of the associated cache.
-		 */
-		Supplier<Batch> getBatchFactory();
-
-		/**
-		 * Returns the locator function.
-		 * @return the locator function.
-		 */
-		CacheEntryLocator<I, V> getLocator();
 
 		/**
 		 * Returns the meta data function.
@@ -73,9 +59,7 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 		}
 	}
 
-	private final CacheEntryLocator<I, V> locator;
-	private final BiFunction<I, V, M> metaData;
-	private final Supplier<Batch> batchFactory;
+	private final BiFunction<I, V, T> metaData;
 	private final Consumer<CacheEntryScheduler<K, V>> startTask;
 	private final Consumer<CacheEntryScheduler<K, V>> stopTask;
 
@@ -83,10 +67,8 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 	 * Creates a cache entry scheduler from the specified configuration.
 	 * @param configuration the scheduler configuration
 	 */
-	public CacheEntrySchedulerService(Configuration<I, K, V, M> configuration) {
+	public CacheEntrySchedulerService(Configuration<I, K, V, T> configuration) {
 		super(configuration.getSchedulerService());
-		this.locator = configuration.getLocator();
-		this.batchFactory = configuration.getBatchFactory();
 		this.metaData = configuration.getMetaData();
 		this.startTask = configuration.getStartTask();
 		this.stopTask = configuration.getStopTask();
@@ -102,21 +84,6 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 	public void stop() {
 		this.stopTask.accept(this);
 		super.stop();
-	}
-
-	@Override
-	public void schedule(I id) {
-		try (Batch batch = this.batchFactory.get()) {
-			V value = this.locator.findValue(id);
-			if (value != null) {
-				this.schedule(id, this.metaData.apply(id, value));
-			}
-		}
-	}
-
-	@Override
-	public void scheduleKey(K key) {
-		this.schedule(key.getId());
 	}
 
 	@Override

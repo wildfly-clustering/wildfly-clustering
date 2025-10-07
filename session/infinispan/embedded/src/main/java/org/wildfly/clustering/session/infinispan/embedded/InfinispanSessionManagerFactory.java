@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,34 +19,31 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import org.infinispan.Cache;
-import org.wildfly.clustering.cache.CacheEntryLocator;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.cache.CacheStrategy;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
-import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommand;
+import org.wildfly.clustering.server.infinispan.expiration.ScheduleExpirationCommand;
 import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactoryService;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntriesTask;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntrySchedulerService;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheKeysTask;
+import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerService;
-import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
-import org.wildfly.clustering.server.infinispan.scheduler.SchedulerService;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListenerRegistrar;
 import org.wildfly.clustering.server.listener.ConsumerRegistry;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerService;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.server.scheduler.Scheduler;
+import org.wildfly.clustering.server.scheduler.SchedulerService;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -157,7 +155,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		};
 		Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>> cache = configuration.getCache();
 		@SuppressWarnings("resource")
-		org.wildfly.clustering.server.scheduler.SchedulerService<String, Instant> localScheduler = new LocalSchedulerService<>(new LocalSchedulerService.Configuration<String>() {
+		SchedulerService<String, Instant> localScheduler = new LocalSchedulerService<>(new LocalSchedulerService.Configuration<String>() {
 			@Override
 			public String getName() {
 				return configuration.getName();
@@ -182,16 +180,6 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			@Override
 			public org.wildfly.clustering.server.scheduler.SchedulerService<String, ExpirationMetaData> getSchedulerService() {
 				return localScheduler.compose(Function.identity(), ExpirationMetaData::getExpirationTime);
-			}
-
-			@Override
-			public CacheEntryLocator<String, ContextualSessionMetaDataEntry<SC>> getLocator() {
-				return metaDataFactory;
-			}
-
-			@Override
-			public Supplier<Batch> getBatchFactory() {
-				return configuration.getBatchFactory();
 			}
 
 			@Override
@@ -225,8 +213,8 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public java.util.function.BiFunction<String, ExpirationMetaData, ScheduleCommand<String, ExpirationMetaData>> getScheduleCommandFactory() {
-				return ScheduleWithExpirationMetaDataCommand::new;
+			public Function<Entry<String, ExpirationMetaData>, PrimaryOwnerCommand<String, ExpirationMetaData, Void>> getScheduleCommandFactory() {
+				return ScheduleExpirationCommand::new;
 			}
 
 			@Override
