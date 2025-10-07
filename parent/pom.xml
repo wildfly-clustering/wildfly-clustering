@@ -306,6 +306,31 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-URL>${project.url}</Implementation-URL>
+							<Scm-Connection>${project.scm.connection}</Scm-Connection>
+							<Scm-Revision>${project.scm.revision}</Scm-Revision>
+						</manifestEntries>
+					</archive>
+					<skipIfEmpty>true</skipIfEmpty>
+				</configuration>
+				<executions>
+					<execution>
+						<id>default-test-jar</id>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<header>${project.name} ${project.version}</header>
@@ -340,31 +365,6 @@
 							<doclint>all,-missing</doclint>
 							<failOnWarnings>true</failOnWarnings>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-						<manifestEntries>
-							<Implementation-URL>${project.url}</Implementation-URL>
-							<Scm-Connection>${project.scm.connection}</Scm-Connection>
-							<Scm-Revision>${project.scm.revision}</Scm-Revision>
-						</manifestEntries>
-					</archive>
-					<skipIfEmpty>true</skipIfEmpty>
-				</configuration>
-				<executions>
-					<execution>
-						<id>default-test-jar</id>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -501,25 +501,6 @@
 								<id>default-sign</id>
 								<goals>
 									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>javadoc-jar</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>aggregate-javadoc-jar</id>
-								<inherited>false</inherited>
-								<goals>
-									<goal>aggregate-jar</goal>
 								</goals>
 							</execution>
 						</executions>
