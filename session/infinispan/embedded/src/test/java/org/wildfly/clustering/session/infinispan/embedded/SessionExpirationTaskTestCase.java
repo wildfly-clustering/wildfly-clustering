@@ -68,7 +68,7 @@ public class SessionExpirationTaskTestCase {
 
 		assertThat(task.test(missingSessionId)).isTrue();
 		assertThat(task.test(expiredSessionId)).isTrue();
-		assertThat(task.test(validSessionId)).isTrue();
+		assertThat(task.test(validSessionId)).isFalse();
 
 		verify(sessionFactory).remove(expiredSessionId);
 		verify(sessionFactory, never()).remove(missingSessionId);

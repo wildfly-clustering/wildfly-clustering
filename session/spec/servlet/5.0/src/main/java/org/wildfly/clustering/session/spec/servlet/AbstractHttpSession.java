@@ -55,7 +55,7 @@ public abstract class AbstractHttpSession implements HttpSession {
 
 	@Override
 	public long getLastAccessedTime() {
-		return this.session.getMetaData().getLastAccessTime().toEpochMilli();
+		return this.session.getMetaData().getLastAccessStartTime().toEpochMilli();
 	}
 
 	@Override

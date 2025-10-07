@@ -10,21 +10,23 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import org.infinispan.Cache;
+import org.wildfly.clustering.cache.CacheEntryLocator;
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.context.DefaultThreadFactory;
-import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.cache.CacheStrategy;
@@ -38,7 +40,6 @@ import org.wildfly.clustering.server.infinispan.scheduler.CacheEntrySchedulerSer
 import org.wildfly.clustering.server.infinispan.scheduler.CacheKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerService;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
-import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerService;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListenerRegistrar;
 import org.wildfly.clustering.server.listener.ConsumerRegistry;
@@ -80,10 +81,10 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC> {
 
 	@SuppressWarnings({ "removal" })
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(InfinispanSessionManagerFactory.class, AccessController.doPrivileged(new PrivilegedAction<>() {
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationTask.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
 		public ClassLoader run() {
-			return InfinispanSessionManagerFactory.class.getClassLoader();
+			return SessionExpirationTask.class.getClassLoader();
 		}
 	}));
 
@@ -184,13 +185,18 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public java.util.function.Function<String, ContextualSessionMetaDataEntry<SC>> getLocator() {
-				return metaDataFactory::findValue;
+			public CacheEntryLocator<String, ContextualSessionMetaDataEntry<SC>> getLocator() {
+				return metaDataFactory;
 			}
 
 			@Override
-			public java.util.function.BiFunction<String, ContextualSessionMetaDataEntry<SC>, ExpirationMetaData> getMetaData() {
-				return (id, value) -> Optional.of(metaDataFactory.createImmutableSessionMetaData(id, value)).filter(Predicate.not(ExpirationMetaData::isImmortal)).orElse(null);
+			public Supplier<Batch> getBatchFactory() {
+				return configuration.getBatchFactory();
+			}
+
+			@Override
+			public BiFunction<String, ContextualSessionMetaDataEntry<SC>, ExpirationMetaData> getMetaData() {
+				return metaDataFactory::createImmutableSessionMetaData;
 			}
 
 			@Override
@@ -202,7 +208,7 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		Consumer<CacheStreamFilter<Map.Entry<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>>>> scheduleTask = CacheEntriesTask.schedule(cache, SessionCacheEntryFilter.META_DATA.cast(), cacheEntryScheduler);
 		Consumer<CacheStreamFilter<SessionMetaDataKey>> cancelTask = CacheKeysTask.cancel(cache, SessionCacheKeyFilter.META_DATA, cacheEntryScheduler);
 		ListenerRegistrar listenerRegistrar = !dispatcherFactory.getGroup().isSingleton() ? new SchedulerTopologyChangeListenerRegistrar<>(cache, scheduleTask, cancelTask) : null;
-		this.scheduler = (listenerRegistrar != null) ? new PrimaryOwnerSchedulerService<>(new PrimaryOwnerSchedulerService.Configuration<String, ExpirationMetaData>() {
+		this.scheduler = (listenerRegistrar != null) ? new PrimaryOwnerSchedulerService<>(new PrimaryOwnerSchedulerService.CacheConfiguration<String, ExpirationMetaData>() {
 			@Override
 			public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
 				return dispatcherFactory;
@@ -219,8 +225,8 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 			}
 
 			@Override
-			public BiFunction<String, ExpirationMetaData, ScheduleCommand<String, ExpirationMetaData>> getScheduleCommandFactory() {
-				return configuration.getTransactionManager().isPresent() ? ScheduleWithExpirationMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
+			public java.util.function.BiFunction<String, ExpirationMetaData, ScheduleCommand<String, ExpirationMetaData>> getScheduleCommandFactory() {
+				return ScheduleWithExpirationMetaDataCommand::new;
 			}
 
 			@Override

@@ -43,6 +43,7 @@ import org.wildfly.clustering.server.util.BlockingExecutor;
  * @author Paul Ferraro
  */
 public class JChannelCommandDispatcherFactory implements ChannelCommandDispatcherFactory, RequestHandler, Runnable {
+	private static final System.Logger LOGGER = System.getLogger(JChannelCommandDispatcherFactory.class.getName());
 	private static final Callable<Object> NO_SUCH_SERVICE_CALLER = Callable.of(ServiceResponse.NO_SUCH_SERVICE);
 
 	/**
@@ -147,13 +148,14 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 		ByteBuffer buffer = ByteBuffer.wrap(message.getArray(), message.getOffset(), message.getLength());
 		@SuppressWarnings("unchecked")
 		Map.Entry<Object, MarshalledValue<Command<Object, Object, Exception>, Object>> entry = (Map.Entry<Object, MarshalledValue<Command<Object, Object, Exception>, Object>>) this.marshaller.read(buffer);
-		Object clientId = entry.getKey();
-		CommandDispatcherContext<?, ?> context = this.contexts.get(clientId);
+		Object id = entry.getKey();
+		CommandDispatcherContext<?, ?> context = this.contexts.get(id);
 		if (context == null) return NO_SUCH_SERVICE_CALLER;
 		Object commandContext = context.getCommandContext();
 		Contextualizer contextualizer = context.getContextualizer();
 		MarshalledValue<Command<Object, Object, Exception>, Object> value = entry.getValue();
 		Command<Object, Object, Exception> command = value.get(context.getMarshalledValueFactory().getMarshallingContext());
+		LOGGER.log(System.Logger.Level.TRACE, "{0} received {1} command on {2}", id, command, this.group.getLocalMember());
 		Callable<Object> commandExecutionTask = new Callable<>() {
 			@Override
 			public Object call() throws Exception {
@@ -204,6 +206,11 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 		Duration timeout = this.timeout;
 		Runnable closeTask = () -> this.contexts.remove(id);
 		return new JChannelCommandDispatcher<>(new JChannelCommandDispatcher.Configuration<>() {
+			@Override
+			public Object getId() {
+				return id;
+			}
+
 			@Override
 			public C getCommandExecutionContext() {
 				return commandContext;

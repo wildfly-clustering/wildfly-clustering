@@ -6,7 +6,6 @@
 package org.wildfly.clustering.server.scheduler;
 
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.wildfly.clustering.server.service.Service;
@@ -24,26 +23,14 @@ public interface SchedulerService<K, V> extends Scheduler<K, V>, Service, AutoCl
 	 * @param <KK> the mapped identifier type
 	 * @param <VV> the mapped value type
 	 * @param identifierMapper the identifier mapping function
-	 * @param valueMapper the entry mapping function
-	 * @return a mapped scheduler.
-	 */
-	default <KK, VV> SchedulerService<KK, VV> compose(Function<KK, K> identifierMapper, Function<VV, Optional<V>> valueMapper) {
-		return this.compose(identifierMapper, org.wildfly.clustering.function.BiFunction.applyLatter(valueMapper));
-	}
-
-	/**
-	 * Returns a mapped scheduler.
-	 * @param <KK> the mapped identifier type
-	 * @param <VV> the mapped value type
-	 * @param identifierMapper the identifier mapping function
 	 * @param entryMapper the entry mapping function
 	 * @return a mapped scheduler.
 	 */
-	default <KK, VV> SchedulerService<KK, VV> compose(Function<KK, K> identifierMapper, BiFunction<KK, VV, Optional<V>> entryMapper) {
+	default <KK, VV> SchedulerService<KK, VV> compose(Function<KK, K> identifierMapper, Function<VV, Optional<V>> entryMapper) {
 		return new SchedulerService<>() {
 			@Override
 			public void schedule(KK id, VV value) {
-				Optional<V> mapped = entryMapper.apply(id, value);
+				Optional<V> mapped = entryMapper.apply(value);
 				if (mapped.isPresent()) {
 					SchedulerService.this.schedule(identifierMapper.apply(id), mapped.get());
 				}

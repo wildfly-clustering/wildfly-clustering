@@ -41,7 +41,7 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 					case jakarta.transaction.Status.STATUS_ACTIVE:
 						if (status.isActive()) {
 							try {
-								LOGGER.log(System.Logger.Level.DEBUG, "Committing batch {0}", tx);
+								LOGGER.log(System.Logger.Level.TRACE, "Committing batch {0}", tx);
 								tx.commit();
 								LOGGER.log(System.Logger.Level.DEBUG, "Committed batch {0}", tx);
 								break;
@@ -53,7 +53,7 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 						}
 						// Otherwise fall through
 					case jakarta.transaction.Status.STATUS_MARKED_ROLLBACK:
-						LOGGER.log(System.Logger.Level.DEBUG, "Rolling back batch {0}", tx);
+						LOGGER.log(System.Logger.Level.TRACE, "Rolling back batch {0}", tx);
 						tx.rollback();
 						LOGGER.log(System.Logger.Level.DEBUG, "Rolled back batch {0}", tx);
 						break;
@@ -135,7 +135,7 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 
 	@Override
 	public TransactionalSuspendedBatch suspend() {
-		LOGGER.log(System.Logger.Level.DEBUG, "Suspending batch {0}", this);
+		LOGGER.log(System.Logger.Level.TRACE, "Suspending batch {0}", this);
 		try {
 			Transaction suspendedTx = this.tm.suspend();
 			if (suspendedTx != this.tx) {
@@ -150,7 +150,7 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 	@Override
 	public TransactionalBatch resume() {
 		try {
-			LOGGER.log(System.Logger.Level.DEBUG, "Resuming batch {0}", this);
+			LOGGER.log(System.Logger.Level.TRACE, "Resuming batch {0}", this);
 			this.tm.resume(this.tx);
 			return this;
 		} catch (SystemException | InvalidTransactionException e) {

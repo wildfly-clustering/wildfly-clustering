@@ -37,7 +37,7 @@ public abstract class AbstractContextualBatch implements ContextualBatch {
 	@Override
 	public ContextualBatch get() {
 		int count = this.count.incrementAndGet();
-		LOGGER.log(System.Logger.Level.DEBUG, "Created child context {0}[{1}]", this, count);
+		LOGGER.log(System.Logger.Level.TRACE, "Created child context {0}[{1}]", this, count);
 		return this;
 	}
 
@@ -59,7 +59,7 @@ public abstract class AbstractContextualBatch implements ContextualBatch {
 		if (count == 0) {
 			this.closeTask.accept(this.getStatus());
 		} else {
-			LOGGER.log(System.Logger.Level.DEBUG, "Closed child context {0}[{1}]", this, count);
+			LOGGER.log(System.Logger.Level.TRACE, "Closed child context {0}[{1}]", this, count);
 		}
 	}
 }

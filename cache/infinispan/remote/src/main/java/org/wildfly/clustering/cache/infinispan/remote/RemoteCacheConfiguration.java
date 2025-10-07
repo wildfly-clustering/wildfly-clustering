@@ -6,7 +6,6 @@
 package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
@@ -34,13 +33,13 @@ public interface RemoteCacheConfiguration extends RemoteCacheContainerConfigurat
 	<K, V> RemoteCache<K, V> getCache();
 
 	@Override
-	default boolean isActive() {
-		return this.getCache().getRemoteCacheContainer().isStarted();
+	default String getName() {
+		return BasicCacheConfiguration.super.getName();
 	}
 
 	@Override
-	default String getName() {
-		return Map.of("container", RemoteCacheContainerConfiguration.super.getName(), "cache", this.getCache().getName()).toString();
+	default boolean isActive() {
+		return this.getCache().getRemoteCacheContainer().isStarted();
 	}
 
 	@Override

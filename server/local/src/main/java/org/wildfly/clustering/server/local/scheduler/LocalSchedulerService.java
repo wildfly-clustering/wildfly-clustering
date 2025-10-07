@@ -214,10 +214,11 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 
 	private Map.Entry<Map.Entry<T, Instant>, Future<?>> schedule(Map.Entry<T, Instant> entry) {
 		if (!this.isStarted()) return null;
-		Duration delay = Duration.between(Instant.now(), entry.getValue());
-		long millis = !delay.isNegative() ? delay.toMillis() + 1 : 0;
+		Instant now = Instant.now();
+		Instant target = entry.getValue();
+		Duration delay = now.isBefore(target) ? Duration.between(now, target) : Duration.ZERO;
 		try {
-			Future<?> future = this.executor.schedule(this, millis, TimeUnit.MILLISECONDS);
+			Future<?> future = this.executor.schedule(this, delay.toNanos(), TimeUnit.NANOSECONDS);
 			return Map.entry(entry, future);
 		} catch (RejectedExecutionException e) {
 			return null;

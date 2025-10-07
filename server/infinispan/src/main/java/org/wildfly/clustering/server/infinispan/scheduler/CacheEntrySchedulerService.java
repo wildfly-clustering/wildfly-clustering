@@ -8,9 +8,11 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
+import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.cache.Key;
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.scheduler.DecoratedSchedulerService;
 
 /**
@@ -37,10 +39,16 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 		org.wildfly.clustering.server.scheduler.SchedulerService<I, M> getSchedulerService();
 
 		/**
+		 * Returns the batch factory of the associated cache.
+		 * @return the batch factory of the associated cache.
+		 */
+		Supplier<Batch> getBatchFactory();
+
+		/**
 		 * Returns the locator function.
 		 * @return the locator function.
 		 */
-		Function<I, V> getLocator();
+		CacheEntryLocator<I, V> getLocator();
 
 		/**
 		 * Returns the meta data function.
@@ -65,10 +73,11 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 		}
 	}
 
+	private final CacheEntryLocator<I, V> locator;
+	private final BiFunction<I, V, M> metaData;
+	private final Supplier<Batch> batchFactory;
 	private final Consumer<CacheEntryScheduler<K, V>> startTask;
 	private final Consumer<CacheEntryScheduler<K, V>> stopTask;
-	private final Function<I, V> locator;
-	private final BiFunction<I, V, M> metaData;
 
 	/**
 	 * Creates a cache entry scheduler from the specified configuration.
@@ -76,10 +85,11 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 	 */
 	public CacheEntrySchedulerService(Configuration<I, K, V, M> configuration) {
 		super(configuration.getSchedulerService());
+		this.locator = configuration.getLocator();
+		this.batchFactory = configuration.getBatchFactory();
+		this.metaData = configuration.getMetaData();
 		this.startTask = configuration.getStartTask();
 		this.stopTask = configuration.getStopTask();
-		this.locator = configuration.getLocator();
-		this.metaData = configuration.getMetaData();
 	}
 
 	@Override
@@ -96,9 +106,11 @@ public class CacheEntrySchedulerService<I, K extends Key<I>, V, M> extends Decor
 
 	@Override
 	public void schedule(I id) {
-		V value = this.locator.apply(id);
-		if (value != null) {
-			this.schedule(id, this.metaData.apply(id, value));
+		try (Batch batch = this.batchFactory.get()) {
+			V value = this.locator.findValue(id);
+			if (value != null) {
+				this.schedule(id, this.metaData.apply(id, value));
+			}
 		}
 	}
 

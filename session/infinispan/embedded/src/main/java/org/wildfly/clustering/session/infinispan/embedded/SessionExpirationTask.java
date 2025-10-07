@@ -44,7 +44,7 @@ public class SessionExpirationTask<SC, MV, AV, LC> implements Predicate<String> 
 
 	@Override
 	public boolean test(String id) {
-		LOGGER.log(System.Logger.Level.DEBUG, "Initiating session expiration of {0}", id);
+		LOGGER.log(System.Logger.Level.DEBUG, "Initiating expiration of session {0}", id);
 		try (Batch batch = this.batchFactory.get()) {
 			try {
 				MV metaDataValue = this.sessionFactory.getMetaDataFactory().tryValue(id);
@@ -60,14 +60,17 @@ public class SessionExpirationTask<SC, MV, AV, LC> implements Predicate<String> 
 						}
 						try {
 							this.sessionFactory.remove(id);
+							return true;
 						} catch (CancellationException e) {
+							LOGGER.log(System.Logger.Level.TRACE, "Removal of session {0} was cancelled.", id);
 							return false;
 						}
+					} else {
+						LOGGER.log(System.Logger.Level.TRACE, "Session {0} does not expire until {1}", id, metaData.getExpirationTime().orElse(null));
+						return false;
 					}
-					LOGGER.log(System.Logger.Level.TRACE, "Session {0} is not yet expired.", id);
-				} else {
-					LOGGER.log(System.Logger.Level.TRACE, "Session {0} was not found or is currently in use.", id);
 				}
+				LOGGER.log(System.Logger.Level.TRACE, "Session {0} was not found or is currently in use.", id);
 				return true;
 			} catch (RuntimeException | Error e) {
 				batch.discard();

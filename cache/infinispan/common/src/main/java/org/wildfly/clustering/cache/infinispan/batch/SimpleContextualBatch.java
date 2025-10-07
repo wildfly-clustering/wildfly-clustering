@@ -27,7 +27,7 @@ public class SimpleContextualBatch extends AbstractContextualBatch implements Co
 	private SimpleContextualBatch(String name, long id, AtomicBoolean active) {
 		super(name, status -> {
 			active.set(false);
-			LOGGER.log(System.Logger.Level.DEBUG, "Closed batch {0}", id);
+			LOGGER.log(System.Logger.Level.TRACE, "Closed batch {0}", id);
 		});
 		this.id = id;
 		this.status = new Status() {
@@ -46,7 +46,7 @@ public class SimpleContextualBatch extends AbstractContextualBatch implements Co
 				return !active.get();
 			}
 		};
-		LOGGER.log(System.Logger.Level.DEBUG, "Created batch {0}", id);
+		LOGGER.log(System.Logger.Level.TRACE, "Created batch {0}", id);
 	}
 
 	@Override
