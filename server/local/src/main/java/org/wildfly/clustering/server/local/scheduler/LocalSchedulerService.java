@@ -28,17 +28,17 @@ import org.wildfly.clustering.server.util.BlockingReference;
 
 /**
  * Scheduler that uses a single scheduled task in concert with a {@link ScheduledEntries}.
- * @param <T> the scheduled entry identifier type
+ * @param <K> the scheduled entry key type
  * @author Paul Ferraro
  */
-public class LocalSchedulerService<T> extends SimpleService implements SchedulerService<T, Instant>, Runnable {
+public class LocalSchedulerService<K> extends SimpleService implements SchedulerService<K, Instant>, Runnable {
 	private static final System.Logger LOGGER = System.getLogger(LocalSchedulerService.class.getName());
 
 	/**
 	 * Encapsulates configuration of a {@link LocalSchedulerService}.
-	 * @param <T> the scheduled entry identifier type
+	 * @param <K> the scheduled entry key type
 	 */
-	public interface Configuration<T> {
+	public interface Configuration<K> {
 		/**
 		 * Returns the name of this scheduler.
 		 * @return the name of this scheduler.
@@ -49,15 +49,15 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 		 * Returns the scheduled entries collection used by this scheduler.
 		 * @return the scheduled entries collection used by this scheduler.
 		 */
-		default ScheduledEntries<T, Instant> getScheduledEntries() {
+		default ScheduledEntries<K, Instant> getScheduledEntries() {
 			return ScheduledEntries.sorted();
 		}
 
 		/**
-		 * Returns a scheduled task.
-		 * @return a scheduled task.
+		 * Returns the scheduled task.
+		 * @return the scheduled task.
 		 */
-		Predicate<T> getTask();
+		Predicate<K> getTask();
 
 		/**
 		 * Returns a thread factory for use by this scheduler.
@@ -76,19 +76,19 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 
 	private final String name;
 	private final ScheduledExecutorService executor;
-	private final ScheduledEntries<T, Instant> entries;
-	private final Predicate<T> task;
+	private final ScheduledEntries<K, Instant> entries;
+	private final Predicate<K> task;
 	private final Duration closeTimeout;
-	private final Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> schedule;
-	private final Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> scheduleIfAbsent;
-	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel;
-	private final BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule;
+	private final Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> schedule;
+	private final Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> scheduleIfAbsent;
+	private final BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel;
+	private final BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule;
 
 	/**
 	 * Creates a local scheduler using the specified configuration.
 	 * @param configuration the scheduler configuration
 	 */
-	public LocalSchedulerService(Configuration<T> configuration) {
+	public LocalSchedulerService(Configuration<K> configuration) {
 		this.name = configuration.getName();
 		this.entries = configuration.getScheduledEntries();
 		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, configuration.getThreadFactory());
@@ -99,21 +99,21 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 		this.executor = executor;
 		this.task = configuration.getTask();
 		this.closeTimeout = configuration.getCloseTimeout();
-		Supplier<Map.Entry<Map.Entry<T, Instant>, Future<?>>> scheduleFirst = this::scheduleFirst;
-		UnaryOperator<Map.Entry<Map.Entry<T, Instant>, Future<?>>> cancel = entry -> {
+		Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> scheduleFirst = this::scheduleFirst;
+		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel = entry -> {
 			if (entry != null) {
 				entry.getValue().cancel(true);
 			}
 			return null;
 		};
-		UnaryOperator<Map.Entry<Map.Entry<T, Instant>, Future<?>>> reschedule = entry -> {
+		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule = entry -> {
 			if (entry != null) {
 				cancel.apply(entry);
 			}
 			return scheduleFirst.get();
 		};
-		BlockingReference<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntry = BlockingReference.of(null);
-		BlockingReference.Writer<Map.Entry<Map.Entry<T, Instant>, Future<?>>> futureEntryWriter = futureEntry.writer(scheduleFirst);
+		BlockingReference<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntry = BlockingReference.of(null);
+		BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntryWriter = futureEntry.writer(scheduleFirst);
 		this.schedule = futureEntryWriter;
 		this.scheduleIfAbsent = futureEntryWriter.when(Objects::isNull);
 		this.cancel = futureEntry.writer(cancel);
@@ -121,9 +121,9 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 	}
 
 	@Override
-	public void schedule(T id, Instant instant) {
-		LOGGER.log(System.Logger.Level.TRACE, "Scheduling {1} on local {0} scheduler for {2}", this.name, id, instant);
-		this.entries.add(id, instant);
+	public void schedule(K key, Instant instant) {
+		LOGGER.log(System.Logger.Level.TRACE, "Scheduling {1} on local {0} scheduler for {2}", this.name, key, instant);
+		this.entries.add(key, instant);
 		// Reschedule next task if this item is now the earliest task
 		// This can only be the case if the ScheduledEntries is sorted
 		if (this.entries.isSorted()) {
@@ -134,13 +134,13 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 	}
 
 	@Override
-	public void cancel(T id) {
-		LOGGER.log(System.Logger.Level.TRACE, "Canceling {1} on local {0} scheduler", this.name, id);
+	public void cancel(K key) {
+		LOGGER.log(System.Logger.Level.TRACE, "Canceling {1} on local {0} scheduler", this.name, key);
 		// Cancel scheduled task if this item was currently scheduled
 		if (this.entries.isSorted()) {
-			this.cancelIfPresent(id);
+			this.cancelIfPresent(key);
 		}
-		this.entries.remove(id);
+		this.entries.remove(key);
 		// Ensure a new item is scheduled
 		if (this.entries.isSorted()) {
 			this.scheduleIfAbsent();
@@ -148,8 +148,8 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 	}
 
 	@Override
-	public boolean contains(T id) {
-		return this.entries.contains(id);
+	public boolean contains(K key) {
+		return this.entries.contains(key);
 	}
 
 	@Override
@@ -190,13 +190,13 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 	@Override
 	public void run() {
 		// Iterate over ScheduledEntries until we encounter a future entry
-		Iterator<Map.Entry<T, Instant>> entries = this.entries.iterator();
+		Iterator<Map.Entry<K, Instant>> entries = this.entries.iterator();
 		while (entries.hasNext()) {
 			if (Thread.currentThread().isInterrupted() || this.executor.isShutdown()) return;
-			Map.Entry<T, Instant> entry = entries.next();
+			Map.Entry<K, Instant> entry = entries.next();
 			// If this is a future entry, break out of loop
 			if (entry.getValue().isAfter(Instant.now())) break;
-			T key = entry.getKey();
+			K key = entry.getKey();
 			LOGGER.log(System.Logger.Level.DEBUG, "Executing task for {1} on local {0} scheduler", this.name, key);
 			// Remove only if task is successful
 			if (this.task.test(key)) {
@@ -207,12 +207,12 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 		this.schedule.get();
 	}
 
-	private Map.Entry<Map.Entry<T, Instant>, Future<?>> scheduleFirst() {
-		Map.Entry<T, Instant> entry = this.entries.peek();
-		return (entry != null) ? this.schedule(entry) : null;
+	private Map.Entry<Map.Entry<K, Instant>, Future<?>> scheduleFirst() {
+		Map.Entry<K, Instant> entry = this.entries.peek();
+		return (entry != null) ? this.scheduleEntry(entry) : null;
 	}
 
-	private Map.Entry<Map.Entry<T, Instant>, Future<?>> schedule(Map.Entry<T, Instant> entry) {
+	private Map.Entry<Map.Entry<K, Instant>, Future<?>> scheduleEntry(Map.Entry<K, Instant> entry) {
 		if (!this.isStarted()) return null;
 		Instant now = Instant.now();
 		Instant target = entry.getValue();
@@ -233,7 +233,7 @@ public class LocalSchedulerService<T> extends SimpleService implements Scheduler
 		this.reschedule.when(entry -> (entry != null) && instant.isBefore(entry.getKey().getValue())).get();
 	}
 
-	private void cancelIfPresent(T id) {
+	private void cancelIfPresent(K id) {
 		this.cancel.when(entry -> (entry != null) && entry.getKey().getKey().equals(id)).get();
 	}
 

@@ -15,12 +15,6 @@ import java.util.Map;
  */
 public interface CacheEntryScheduler<K, V> {
 	/**
-	 * Schedules the entry with the specified cache key.
-	 * @param key a cache key
-	 */
-	void scheduleKey(K key);
-
-	/**
 	 * Schedules the specified cache entry.
 	 * @param entry a cache entry
 	 */

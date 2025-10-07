@@ -9,36 +9,36 @@ import org.wildfly.clustering.server.service.DecoratedService;
 
 /**
  * A scheduler service decorator.
- * @param <I> the scheduled entry identifier type
+ * @param <K> the scheduled entry key type
  * @param <V> the scheduled entry value type
  * @author Paul Ferraro
  */
-public class DecoratedSchedulerService<I, V> extends DecoratedService implements SchedulerService<I, V> {
+public class DecoratedSchedulerService<K, V> extends DecoratedService implements SchedulerService<K, V> {
 
-	private final SchedulerService<I, V> scheduler;
+	private final SchedulerService<K, V> scheduler;
 
 	/**
 	 * Creates a decorated scheduler service.
 	 * @param scheduler the decorated scheduler service.
 	 */
-	public DecoratedSchedulerService(SchedulerService<I, V> scheduler) {
+	public DecoratedSchedulerService(SchedulerService<K, V> scheduler) {
 		super(scheduler);
 		this.scheduler = scheduler;
 	}
 
 	@Override
-	public void schedule(I id, V value) {
-		this.scheduler.schedule(id, value);
+	public void schedule(K key, V value) {
+		this.scheduler.schedule(key, value);
 	}
 
 	@Override
-	public void cancel(I id) {
-		this.scheduler.cancel(id);
+	public void cancel(K key) {
+		this.scheduler.cancel(key);
 	}
 
 	@Override
-	public boolean contains(I id) {
-		return this.scheduler.contains(id);
+	public boolean contains(K key) {
+		return this.scheduler.contains(key);
 	}
 
 	@Override

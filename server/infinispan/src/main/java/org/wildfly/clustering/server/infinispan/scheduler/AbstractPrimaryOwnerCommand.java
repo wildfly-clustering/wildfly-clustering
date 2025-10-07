@@ -8,25 +8,29 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 /**
  * An abstract primary owner command.
  * @author Paul Ferraro
- * @param <I> the scheduled entry identifier type
- * @param <M> the scheduled entry metadata type
+ * @param <K> the scheduled entry key type
+ * @param <V> the scheduled entry value type
  * @param <R> the command return type
  */
-public abstract class AbstractPrimaryOwnerCommand<I, M, R> implements PrimaryOwnerCommand<I, M, R> {
+public abstract class AbstractPrimaryOwnerCommand<K, V, R> implements PrimaryOwnerCommand<K, V, R> {
 
-	private final I id;
+	private final K key;
 
-	AbstractPrimaryOwnerCommand(I id) {
-		this.id = id;
+	AbstractPrimaryOwnerCommand(K key) {
+		this.key = key;
 	}
 
 	@Override
-	public I getId() {
-		return this.id;
+	public K getKey() {
+		return this.key;
+	}
+
+	Object getParameter() {
+		return this.key;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s[%s]", this.getClass().getSimpleName(), this.id);
+		return String.format("%s(%s)", this.getClass().getSimpleName(), this.getParameter());
 	}
 }

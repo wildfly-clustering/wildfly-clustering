@@ -33,19 +33,6 @@ public class CacheKeysTask<K, V> implements Consumer<CacheStreamFilter<K>> {
 	 * @param scheduler a scheduler
 	 * @return a schedule task for keys matching the specified filter.
 	 */
-	public static <K, V> Consumer<CacheStreamFilter<K>> schedule(Cache<K, V> cache, Predicate<? super K> filter, CacheEntryScheduler<K, V> scheduler) {
-		return new CacheKeysTask<>(cache, filter, scheduler::scheduleKey);
-	}
-
-	/**
-	 * Creates a schedule task for keys matching the specified filter.
-	 * @param <K> the cache entry key type
-	 * @param <V> the cache entry value type
-	 * @param cache an embedded cache
-	 * @param filter a cache key filter
-	 * @param scheduler a scheduler
-	 * @return a schedule task for keys matching the specified filter.
-	 */
 	public static <K, V> Consumer<CacheStreamFilter<K>> cancel(Cache<K, V> cache, Predicate<? super K> filter, CacheEntryScheduler<K, V> scheduler) {
 		return new CacheKeysTask<>(cache, filter, scheduler::cancelKey);
 	}

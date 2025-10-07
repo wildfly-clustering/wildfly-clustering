@@ -6,7 +6,10 @@
 package org.wildfly.clustering.marshalling;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.context.Context;
@@ -39,6 +42,28 @@ public abstract class AbstractByteBufferMarshaller implements ByteBufferMarshall
 	public ByteBuffer write(Object object) throws IOException {
 		try (Context<ClassLoader> context = this.contextProvider.get()) {
 			return ByteBufferMarshaller.super.write(object);
+		}
+	}
+
+	@Override
+	public OptionalInt size(Object object) {
+		AtomicInteger size = new AtomicInteger();
+		OutputStream output = new OutputStream() {
+			@Override
+			public void write(int b) throws IOException {
+				size.setPlain(size.getPlain() + 1);
+			}
+
+			@Override
+			public void write(byte[] bytes, int offset, int length) throws IOException {
+				size.setPlain(size.getPlain() + length);
+			}
+		};
+		try {
+			this.writeTo(output, object);
+			return OptionalInt.of(size.getPlain());
+		} catch (IOException e) {
+			return OptionalInt.empty();
 		}
 	}
 }

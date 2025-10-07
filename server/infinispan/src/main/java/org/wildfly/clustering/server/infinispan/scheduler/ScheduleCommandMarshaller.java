@@ -20,8 +20,8 @@ public enum ScheduleCommandMarshaller implements ProtoStreamMarshaller<ScheduleC
 	/** Singleton instance */
 	INSTANCE;
 
-	private static final byte ID_INDEX = 1;
-	private static final byte META_DATA_INDEX = 2;
+	private static final byte KEY_INDEX = 1;
+	private static final byte VALUE_INDEX = 2;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -31,32 +31,32 @@ public enum ScheduleCommandMarshaller implements ProtoStreamMarshaller<ScheduleC
 
 	@Override
 	public ScheduleCommand<Object, Object> readFrom(ProtoStreamReader reader) throws IOException {
-		Object id = null;
-		Object metaData = null;
+		Object key = null;
+		Object value = null;
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ID_INDEX -> {
-					id = reader.readAny();
+				case KEY_INDEX -> {
+					key = reader.readAny();
 				}
-				case META_DATA_INDEX -> {
-					metaData = reader.readAny();
+				case VALUE_INDEX -> {
+					value = reader.readAny();
 				}
 				default -> reader.skipField(tag);
 			}
 		}
-		return new ScheduleCommand<>(id, metaData);
+		return new ScheduleCommand<>(key, value);
 	}
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, ScheduleCommand<Object, Object> command) throws IOException {
-		Object id = command.getId();
-		if (id != null) {
-			writer.writeAny(ID_INDEX, id);
+		Object key = command.getKey();
+		if (key != null) {
+			writer.writeAny(KEY_INDEX, key);
 		}
-		Object metaData = command.getMetaData();
-		if (metaData != null) {
-			writer.writeAny(META_DATA_INDEX, metaData);
+		Object value = command.getValue();
+		if (value != null) {
+			writer.writeAny(VALUE_INDEX, value);
 		}
 	}
 }
