@@ -55,9 +55,28 @@ public class HotRodSessionManagerFactory<DC, SC> implements SessionManagerFactor
 	 * @param <L> the session event listener specification type
 	 */
 	public interface Configuration<S, DC, SC, L> {
+		/**
+		 * Returns the configuration of the session manager factory.
+		 * @return the configuration of the session manager factory.
+		 */
 		SessionManagerFactoryConfiguration<SC> getSessionManagerFactoryConfiguration();
+
+		/**
+		 * Returns the session specification provider.
+		 * @return the session specification provider.
+		 */
 		SessionSpecificationProvider<S, DC> getSessionSpecificationProvider();
+
+		/**
+		 * Returns the session event listener specification provider.
+		 * @return the session event listener specification provider.
+		 */
 		SessionEventListenerSpecificationProvider<S, L> getSessionEventListenerSpecificationProvider();
+
+		/**
+		 * Returns the configuration for the associated cache.
+		 * @return the configuration for the associated cache.
+		 */
 		RemoteCacheConfiguration getCacheConfiguration();
 	}
 

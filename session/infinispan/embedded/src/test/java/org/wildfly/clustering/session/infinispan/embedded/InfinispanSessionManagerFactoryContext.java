@@ -21,6 +21,7 @@ import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.wildfly.clustering.cache.CacheProperties;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheManagerContext;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheProperties;
 import org.wildfly.clustering.context.AbstractContext;
@@ -141,12 +142,18 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 			cache.start();
 			this.accept(cache::stop);
 			MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
-			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<Map.Entry<ImmutableSession, C>, C, SC, PassivationListener<C>>() {
-
+			EmbeddedCacheConfiguration cacheConfiguration = new EmbeddedCacheConfiguration() {
 				@SuppressWarnings("unchecked")
 				@Override
 				public <K, V> Cache<K, V> getCache() {
 					return (Cache<K, V>) cache;
+				}
+			};
+			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<Map.Entry<ImmutableSession, C>, C, SC, PassivationListener<C>>() {
+
+				@Override
+				public EmbeddedCacheConfiguration getCacheConfiguration() {
+					return cacheConfiguration;
 				}
 
 				@Override

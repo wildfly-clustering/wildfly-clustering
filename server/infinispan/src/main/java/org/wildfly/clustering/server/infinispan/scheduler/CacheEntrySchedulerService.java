@@ -7,7 +7,6 @@ package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.server.scheduler.DecoratedSchedulerService;
@@ -21,75 +20,24 @@ import org.wildfly.clustering.server.scheduler.SchedulerService;
  * @param <V> the cache value type
  * @param <T> the scheduled item metadata type
  */
-public class CacheEntrySchedulerService<I, K extends Key<I>, V, T> extends DecoratedSchedulerService<I, T> implements CacheEntryScheduler<K, V>, SchedulerService<I, T> {
-	/**
-	 * Configuration of a cache entry scheduler.
-	 * @param <I> the scheduled item identifier type
-	 * @param <K> the cache key type
-	 * @param <V> the cache value type
-	 * @param <M> the scheduled item metadata type
-	 */
-	public interface Configuration<I, K extends Key<I>, V, M> {
-		/**
-		 * Returns the decorated scheduler service.
-		 * @return the decorated scheduler service.
-		 */
-		org.wildfly.clustering.server.scheduler.SchedulerService<I, M> getSchedulerService();
+public class CacheEntrySchedulerService<I, K extends Key<I>, V, T> extends DecoratedSchedulerService<I, T> implements CacheEntryScheduler<K, V> {
 
-		/**
-		 * Returns the meta data function.
-		 * @return the meta data function.
-		 */
-		BiFunction<I, V, M> getMetaData();
-
-		/**
-		 * Returns the task to invoke on {@link SchedulerService#start()}.
-		 * @return the task to invoke on {@link SchedulerService#start()}.
-		 */
-		default java.util.function.Consumer<CacheEntryScheduler<K, V>> getStartTask() {
-			return org.wildfly.clustering.function.Consumer.empty();
-		}
-
-		/**
-		 * Returns the task to invoke on {@link SchedulerService#stop()}.
-		 * @return the task to invoke on {@link SchedulerService#stop()}.
-		 */
-		default java.util.function.Consumer<CacheEntryScheduler<K, V>> getStopTask() {
-			return org.wildfly.clustering.function.Consumer.empty();
-		}
-	}
-
-	private final BiFunction<I, V, T> metaData;
-	private final Consumer<CacheEntryScheduler<K, V>> startTask;
-	private final Consumer<CacheEntryScheduler<K, V>> stopTask;
+	private final BiFunction<I, V, T> mapper;
 
 	/**
-	 * Creates a cache entry scheduler from the specified configuration.
-	 * @param configuration the scheduler configuration
+	 * Creates a cache entry scheduler from the specified scheduler and mapper.
+	 * @param scheduler the decorated scheduler
+	 * @param mapper the function mapping a cache entry to the scheduled value.
 	 */
-	public CacheEntrySchedulerService(Configuration<I, K, V, T> configuration) {
-		super(configuration.getSchedulerService());
-		this.metaData = configuration.getMetaData();
-		this.startTask = configuration.getStartTask();
-		this.stopTask = configuration.getStopTask();
-	}
-
-	@Override
-	public void start() {
-		super.start();
-		this.startTask.accept(this);
-	}
-
-	@Override
-	public void stop() {
-		this.stopTask.accept(this);
-		super.stop();
+	public CacheEntrySchedulerService(SchedulerService<I, T> scheduler, BiFunction<I, V, T> mapper) {
+		super(scheduler);
+		this.mapper = mapper;
 	}
 
 	@Override
 	public void scheduleEntry(Map.Entry<K, V> entry) {
 		I id = entry.getKey().getId();
-		this.schedule(id, this.metaData.apply(id, entry.getValue()));
+		this.schedule(id, this.mapper.apply(id, entry.getValue()));
 	}
 
 	@Override
