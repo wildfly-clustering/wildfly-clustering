@@ -10,7 +10,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,7 +22,6 @@ import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
@@ -39,7 +37,6 @@ import org.wildfly.clustering.server.infinispan.scheduler.CacheEntrySchedulerSer
 import org.wildfly.clustering.server.infinispan.scheduler.CacheKeysTask;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerService;
-import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListenerRegistrar;
 import org.wildfly.clustering.server.listener.ConsumerRegistry;
 import org.wildfly.clustering.server.local.scheduler.LocalSchedulerService;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
@@ -214,30 +211,37 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 			}
 		};
 		CacheContainerCommandDispatcherFactory dispatcherFactory = configuration.getCommandDispatcherFactory();
-		this.scheduler = !dispatcherFactory.getGroup().isSingleton() ? new PrimaryOwnerSchedulerService<>(new PrimaryOwnerSchedulerService.CacheConfiguration<String, ExpirationMetaData>() {
-			@Override
-			public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
-				return dispatcherFactory;
-			}
-
+		Consumer<CacheStreamFilter<Map.Entry<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>>>> scheduleTask = CacheEntriesTask.schedule(cache, SessionCacheEntryFilter.META_DATA.cast(), cacheEntryScheduler);
+		Consumer<CacheStreamFilter<SessionMetaDataKey>> cancelTask = CacheKeysTask.cancel(cache, SessionCacheKeyFilter.META_DATA, cacheEntryScheduler);
+		this.scheduler = !dispatcherFactory.getGroup().isSingleton() ? new PrimaryOwnerSchedulerService<>(new PrimaryOwnerSchedulerService.Configuration<String, ExpirationMetaData, Map.Entry<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>>, SessionMetaDataKey>() {
 			@Override
 			public SchedulerService<String, ExpirationMetaData> getScheduler() {
 				return cacheEntryScheduler;
 			}
 
 			@Override
-			public <K, V> Cache<K, V> getCache() {
-				return cacheConfiguration.getCache();
+			public EmbeddedCacheConfiguration getCacheConfiguration() {
+				return cacheConfiguration;
 			}
 
 			@Override
-			public Function<Entry<String, ExpirationMetaData>, PrimaryOwnerCommand<String, ExpirationMetaData, Void>> getScheduleCommandFactory() {
+			public CacheContainerCommandDispatcherFactory getCommandDispatcherFactory() {
+				return dispatcherFactory;
+			}
+
+			@Override
+			public Function<Map.Entry<String, ExpirationMetaData>, PrimaryOwnerCommand<String, ExpirationMetaData, Void>> getScheduleCommandFactory() {
 				return ScheduleExpirationCommand::new;
 			}
 
 			@Override
-			public ListenerRegistrar getListenerRegistrar() {
-				return new SchedulerTopologyChangeListenerRegistrar<>(cache, CacheEntriesTask.schedule(cache, SessionCacheEntryFilter.META_DATA.cast(), cacheEntryScheduler), CacheKeysTask.cancel(cache, SessionCacheKeyFilter.META_DATA, cacheEntryScheduler));
+			public Consumer<CacheStreamFilter<Map.Entry<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>>>> getScheduleTask() {
+				return scheduleTask;
+			}
+
+			@Override
+			public Consumer<CacheStreamFilter<SessionMetaDataKey>> getCancelTask() {
+				return cancelTask;
 			}
 		}) : cacheEntryScheduler;
 	}

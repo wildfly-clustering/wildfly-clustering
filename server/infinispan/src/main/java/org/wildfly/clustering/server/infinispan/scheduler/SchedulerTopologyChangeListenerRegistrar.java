@@ -5,17 +5,13 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -23,16 +19,13 @@ import org.infinispan.Cache;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.commons.util.IntSets;
 import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.util.concurrent.BlockingManager;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
-import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.cache.infinispan.embedded.listener.EventListenerRegistrar;
 
 /**
  * Handles cache topology events for a distributed scheduler.
@@ -43,51 +36,50 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
  * @author Paul Ferraro
  */
 @Listener
-public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements ListenerRegistrar {
+public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> extends EventListenerRegistrar {
 	private static final System.Logger LOGGER = System.getLogger(SchedulerTopologyChangeListenerRegistrar.class.getName());
-	@SuppressWarnings("removal")
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListenerRegistrar.class, AccessController.doPrivileged(new PrivilegedAction<>() {
-		@Override
-		public ClassLoader run() {
-			return SchedulerTopologyChangeListenerRegistrar.class.getClassLoader();
-		}
-	}));
 
-	private final Cache<K, V> cache;
-	private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY);
+	/**
+	 * The configuration of the topology change listener registrar for a scheduler.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @param <SE> the schedule task entry type
+	 * @param <CE> the cancel task entry type
+	 */
+	interface Configuration<K, V, SE, CE> {
+		/**
+		 * Returns the configuration for the associated cache.
+		 * @return the configuration for the associated cache.
+		 */
+		EmbeddedCacheConfiguration getCacheConfiguration();
+
+		/**
+		 * Returns the task that schedule entries matching a given filter.
+		 * @return the task that schedule entries matching a given filter.
+		 */
+		Consumer<CacheStreamFilter<SE>> getScheduleTask();
+
+		/**
+		 * Returns the task that cancels entries matching a given filter.
+		 * @return the task that cancels entries matching a given filter.
+		 */
+		Consumer<CacheStreamFilter<CE>> getCancelTask();
+	}
+
 	private final AtomicReference<Future<?>> scheduleTaskFuture = new AtomicReference<>();
 	private final Consumer<CacheStreamFilter<SE>> scheduleTask;
 	private final Consumer<CacheStreamFilter<CE>> cancelTask;
-	private final BlockingManager blocking;
+	private final Executor executor;
 
 	/**
 	 * Creates the topology change listener for a scheduler.
-	 * @param cache an embedded cache
-	 * @param scheduleTask a schedule task
-	 * @param cancelTask a cancel task
+	 * @param configuration the listener configuration
 	 */
-	public SchedulerTopologyChangeListenerRegistrar(Cache<K, V> cache, Consumer<CacheStreamFilter<SE>> scheduleTask, Consumer<CacheStreamFilter<CE>> cancelTask) {
-		this.cache = cache;
-		this.scheduleTask = scheduleTask;
-		this.cancelTask = cancelTask;
-		this.blocking = GlobalComponentRegistry.componentOf(this.cache.getCacheManager(), BlockingManager.class);
-	}
-
-	@Override
-	public ListenerRegistration register() {
-		this.cache.addListener(this);
-		return () -> {
-			this.cache.removeListener(this);
-			LOGGER.log(System.Logger.Level.DEBUG, "Shutting down thread pool for {0} scheduler topology change listener", this.cache.getName());
-			this.executor.shutdownNow();
-			try {
-				LOGGER.log(System.Logger.Level.DEBUG, "Awaiting task termination for {0} scheduler topology change listener", this.cache.getName());
-				this.executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-			LOGGER.log(System.Logger.Level.DEBUG, "{0} scheduler topology change listener shutdown complete", this.cache.getName());
-		};
+	public SchedulerTopologyChangeListenerRegistrar(Configuration<K, V, SE, CE> configuration) {
+		super(configuration.getCacheConfiguration().getCache());
+		this.scheduleTask = configuration.getScheduleTask();
+		this.cancelTask = configuration.getCancelTask();
+		this.executor = configuration.getCacheConfiguration().getExecutor();
 	}
 
 	/**
@@ -114,7 +106,7 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 					if (future != null) {
 						future.cancel(true);
 					}
-					return this.blocking.runBlocking(() -> this.cancelTask.accept(CacheStreamFilter.segments(formerlyOwnedSegments)), this.getClass().getName());
+					return CompletableFuture.runAsync(() -> this.cancelTask.accept(CacheStreamFilter.segments(formerlyOwnedSegments)), this.executor);
 				}
 			}
 		} else if (!newSegments.isEmpty()) {
@@ -122,7 +114,9 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 			newlyOwnedSegments.removeAll(IntSets.from(oldSegments));
 			// If we have newly owned segments, then run schedule task
 			if (!newlyOwnedSegments.isEmpty()) {
-				Future<?> future = this.scheduleTaskFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(CacheStreamFilter.segments(newlyOwnedSegments)), this.getClass().getName()));
+				FutureTask<Void> task = new FutureTask<>(() -> this.scheduleTask.accept(CacheStreamFilter.segments(newlyOwnedSegments)), null);
+				this.executor.execute(task);
+				Future<?> future = this.scheduleTaskFuture.getAndSet(task);
 				if (future != null) {
 					future.cancel(true);
 				}
