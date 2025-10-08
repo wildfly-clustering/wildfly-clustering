@@ -10,6 +10,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.server.cache.CacheStrategy;
@@ -40,14 +41,47 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * Factory for creating session managers.
- * @param <C> the session manager context type
+ * @param <DC> the deployment context type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory<C, SC> {
+public class HotRodSessionManagerFactory<DC, SC> implements SessionManagerFactory<DC, SC> {
+
+	/**
+	 * The configuration of this session manager factory.
+	 * @param <S> the session specification type
+	 * @param <DC> the deployment context type
+	 * @param <SC> the session context type
+	 * @param <L> the session event listener specification type
+	 */
+	public interface Configuration<S, DC, SC, L> {
+		/**
+		 * Returns the configuration of the session manager factory.
+		 * @return the configuration of the session manager factory.
+		 */
+		SessionManagerFactoryConfiguration<SC> getSessionManagerFactoryConfiguration();
+
+		/**
+		 * Returns the session specification provider.
+		 * @return the session specification provider.
+		 */
+		SessionSpecificationProvider<S, DC> getSessionSpecificationProvider();
+
+		/**
+		 * Returns the session event listener specification provider.
+		 * @return the session event listener specification provider.
+		 */
+		SessionEventListenerSpecificationProvider<S, L> getSessionEventListenerSpecificationProvider();
+
+		/**
+		 * Returns the configuration for the associated cache.
+		 * @return the configuration for the associated cache.
+		 */
+		RemoteCacheConfiguration getCacheConfiguration();
+	}
 
 	private final RemoteCacheConfiguration configuration;
-	private final SessionFactory<C, SessionMetaDataEntry<SC>, Object, SC> sessionFactory;
+	private final SessionFactory<DC, SessionMetaDataEntry<SC>, Object, SC> sessionFactory;
 	private final Collection<Consumer<ImmutableSession>> expirationListeners = new CopyOnWriteArraySet<>();
 
 	/**
@@ -55,35 +89,58 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 	 * @param <S> the session specification type
 	 * @param <L> the session event listener specification type
 	 * @param configuration the configuration of this session manager factory
-	 * @param sessionProvider the session specification type
-	 * @param listenerProvider the session event listener specification type
-	 * @param hotrod the configuration of the associated cache
 	 */
-	public <S, L> HotRodSessionManagerFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, RemoteCacheConfiguration hotrod) {
-		this.configuration = hotrod;
-		SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(hotrod);
+	public <S, L> HotRodSessionManagerFactory(Configuration<S, DC, SC, L> configuration) {
+		this.configuration = configuration.getCacheConfiguration();
+		SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(this.configuration);
 		@SuppressWarnings("unchecked")
-		SessionAttributesFactory<C, Object> attributesFactory = (SessionAttributesFactory<C, Object>) this.createSessionAttributesFactory(configuration, sessionProvider, listenerProvider, hotrod);
-		this.sessionFactory = new HotRodSessionFactory<>(hotrod, metaDataFactory, attributesFactory, configuration.getSessionContextFactory(), org.wildfly.clustering.function.Consumer.acceptAll(this.expirationListeners));
+		SessionAttributesFactory<DC, Object> attributesFactory = (SessionAttributesFactory<DC, Object>) this.createSessionAttributesFactory(configuration);
+		Consumer<ImmutableSession> listeners = org.wildfly.clustering.function.Consumer.acceptAll(this.expirationListeners);
+		this.sessionFactory = new HotRodSessionFactory<>(new HotRodSessionFactory.Configuration<DC, Object, SC>() {
+			@Override
+			public SessionMetaDataFactory<SessionMetaDataEntry<SC>> getSessionMetaDataFactory() {
+				return metaDataFactory;
+			}
+
+			@Override
+			public SessionAttributesFactory<DC, Object> getSessionAttributesFactory() {
+				return attributesFactory;
+			}
+
+			@Override
+			public Supplier<SC> getSessionContextFactory() {
+				return configuration.getSessionManagerFactoryConfiguration().getSessionContextFactory();
+			}
+
+			@Override
+			public RemoteCacheConfiguration getCacheConfiguration() {
+				return configuration.getCacheConfiguration();
+			}
+
+			@Override
+			public Consumer<ImmutableSession> getSessionExpirationListener() {
+				return listeners;
+			}
+		});
 	}
 
 	@Override
-	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<C> configuration) {
+	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<DC> configuration) {
 		RemoteCacheConfiguration cacheConfiguration = this.configuration;
-		SessionFactory<C, SessionMetaDataEntry<SC>, Object, SC> sessionFactory = this.sessionFactory;
+		SessionFactory<DC, SessionMetaDataEntry<SC>, Object, SC> sessionFactory = this.sessionFactory;
 		IdentifierFactoryService<String> identifierFactory = new SimpleIdentifierFactoryService<>(configuration.getIdentifierFactory());
 		Collection<Consumer<ImmutableSession>> expirationListeners = this.expirationListeners;
 		Consumer<ImmutableSession> expirationListener = configuration.getExpirationListener();
 		AtomicReference<SessionManager<SC>> reference = new AtomicReference<>();
 		BiFunction<String, SC, Session<SC>> detachedSessionFactory = (id, context) -> new DetachedSession<>(reference::getPlain, id, context);
-		SessionManager<SC> manager = new CachedSessionManager<>(new HotRodSessionManager<>(new HotRodSessionManager.Configuration<C, SessionMetaDataEntry<SC>, Object, SC>() {
+		SessionManager<SC> manager = new CachedSessionManager<>(new HotRodSessionManager<>(new HotRodSessionManager.Configuration<DC, SessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public IdentifierFactoryService<String> getIdentifierFactory() {
 				return identifierFactory;
 			}
 
 			@Override
-			public SessionFactory<C, SessionMetaDataEntry<SC>, Object, SC> getSessionFactory() {
+			public SessionFactory<DC, SessionMetaDataEntry<SC>, Object, SC> getSessionFactory() {
 				return sessionFactory;
 			}
 
@@ -93,7 +150,7 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 			}
 
 			@Override
-			public C getContext() {
+			public DC getContext() {
 				return configuration.getContext();
 			}
 
@@ -136,15 +193,15 @@ public class HotRodSessionManagerFactory<C, SC> implements SessionManagerFactory
 		this.sessionFactory.close();
 	}
 
-	private <S, L> SessionAttributesFactory<C, ?> createSessionAttributesFactory(SessionManagerFactoryConfiguration<SC> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, RemoteCacheConfiguration hotrod) {
-		switch (configuration.getAttributePersistenceStrategy()) {
+	private <S, L> SessionAttributesFactory<DC, ?> createSessionAttributesFactory(Configuration<S, DC, SC, L> configuration) {
+		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
 			case FINE -> {
-				BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionAttributeActivationNotifier<>(sessionProvider, listenerProvider, session, context);
-				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), passivationNotifierFactory, hotrod);
+				BiFunction<ImmutableSession, DC, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionAttributeActivationNotifier<>(configuration.getSessionSpecificationProvider(), configuration.getSessionEventListenerSpecificationProvider(), session, context);
+				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, configuration.getCacheConfiguration());
 			}
 			case COARSE -> {
-				BiFunction<ImmutableSession, C, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionActivationNotifier<>(sessionProvider, listenerProvider, session, context);
-				return new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration), passivationNotifierFactory, hotrod);
+				BiFunction<ImmutableSession, DC, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionActivationNotifier<>(configuration.getSessionSpecificationProvider(), configuration.getSessionEventListenerSpecificationProvider(), session, context);
+				return new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, configuration.getCacheConfiguration());
 			}
 			default -> throw new IllegalStateException();
 		}

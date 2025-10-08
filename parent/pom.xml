@@ -14,7 +14,7 @@
 	<properties>
 		<jacoco.skip>true</jacoco.skip>
 		<java.util.logging.manager>java.util.logging.LogManager</java.util.logging.manager>
-		<java.runtime.parameters>-Djava.util.logging.manager=${java.util.logging.manager} --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</java.runtime.parameters>
+		<java.runtime.parameters>-Djava.util.logging.manager=${java.util.logging.manager} --enable-native-access=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</java.runtime.parameters>
 		<java.compiler.version>17</java.compiler.version>
 		<maven.surefire.parameters>${java.runtime.parameters}</maven.surefire.parameters>
 		<maven.failsafe.parameters>${java.runtime.parameters}</maven.failsafe.parameters>
@@ -25,8 +25,8 @@
 		<project.repository.organization.host>github.com</project.repository.organization.host>
 		<project.repository.organization.name>WildFly Clustering</project.repository.organization.name>
 		<project.repository.organization.url>https://${project.repository.organization.host}/${project.repository.organization.id}</project.repository.organization.url>
-		<project.repository.id>wildfly-clustering</project.repository.id>
-		<project.repository.name>WildFly Clustering</project.repository.name>
+		<project.repository.id>${project.repository.organization.id}</project.repository.id>
+		<project.repository.name>${project.repository.organization.name}</project.repository.name>
 		<project.repository.host>${project.repository.organization.host}</project.repository.host>
 		<project.repository.url>${project.repository.organization.url}/${project.repository.id}</project.repository.url>
 		<project.issues.url>${project.repository.url}/issues</project.issues.url>
@@ -66,8 +66,7 @@
 		<connection>scm:git:https://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
 		<developerConnection>scm:git:git@${project.repository.host}:${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
 		<url>${project.repository.url}</url>
-	  <tag>8.0.0.Beta2</tag>
-  </scm>
+	</scm>
 
 	<build>
 		<pluginManagement>
@@ -531,18 +530,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-source-plugin</artifactId>
-						<configuration>
-							<archive>
-								<manifest>
-									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-								</manifest>
-								<manifestEntries>
-									<Implementation-URL>${project.url}</Implementation-URL>
-									<Scm-Connection>${project.scm.connection}</Scm-Connection>
-									<Scm-Revision>${project.scm.revision}</Scm-Revision>
-								</manifestEntries>
-							</archive>
-						</configuration>
 						<executions>
 							<execution>
 								<id>package-sources</id>

@@ -8,47 +8,34 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.BiCacheEntryCreator;
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
-import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 
 /**
  * Factory for creating sessions. Encapsulates the cache mapping strategy for sessions.
- * @param <C> the session manager context type
+ * @param <DC> the deployment context type
  * @param <MV> the meta-data value type
  * @param <AV> the attributes value type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public interface SessionFactory<C, MV, AV, SC> extends ImmutableSessionFactory<MV, AV>, BiCacheEntryCreator<String, MV, AV, Duration>, CacheEntryRemover<String>, AutoCloseable {
-	@Override
-	SessionMetaDataFactory<MV> getMetaDataFactory();
-	@Override
-	SessionAttributesFactory<C, AV> getAttributesFactory();
-
-	/**
-	 * Returns a session context factory.
-	 * @return a session context factory.
-	 */
-	Supplier<SC> getContextFactory();
+public interface SessionFactory<DC, MV, AV, SC> extends ImmutableSessionFactory<MV, AV>, SessionFactoryConfiguration<DC, MV, AV, SC>, BiCacheEntryCreator<String, MV, AV, Duration>, CacheEntryRemover<String>, AutoCloseable {
 
 	@Override
 	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> createEntry(String id, Duration context) {
-		return Map.entry(this.getMetaDataFactory().createValueAsync(id, context), this.getAttributesFactory().createValueAsync(id, null));
+		return Map.entry(this.getSessionMetaDataFactory().createValueAsync(id, context), this.getSessionAttributesFactory().createValueAsync(id, null));
 	}
 
 	@Override
 	default CompletionStage<Void> removeAsync(String id) {
-		return CompletableFuture.allOf(this.getMetaDataFactory().removeAsync(id).toCompletableFuture(), this.getAttributesFactory().removeAsync(id).toCompletableFuture());
+		return CompletableFuture.allOf(this.getSessionMetaDataFactory().removeAsync(id).toCompletableFuture(), this.getSessionAttributesFactory().removeAsync(id).toCompletableFuture());
 	}
 
 	@Override
 	default CompletionStage<Void> purgeAsync(String id) {
-		return CompletableFuture.allOf(this.getMetaDataFactory().purgeAsync(id).toCompletableFuture(), this.getAttributesFactory().purgeAsync(id).toCompletableFuture());
+		return CompletableFuture.allOf(this.getSessionMetaDataFactory().purgeAsync(id).toCompletableFuture(), this.getSessionAttributesFactory().purgeAsync(id).toCompletableFuture());
 	}
 
 	/**
@@ -58,11 +45,11 @@ public interface SessionFactory<C, MV, AV, SC> extends ImmutableSessionFactory<M
 	 * @param context the session context
 	 * @return a session from the specified identifier, metadata, attributes, and context.
 	 */
-	Session<SC> createSession(String id, Map.Entry<MV, AV> entry, C context);
+	Session<SC> createSession(String id, Map.Entry<MV, AV> entry, DC context);
 
 	@Override
 	default void close() {
-		this.getMetaDataFactory().close();
-		this.getAttributesFactory().close();
+		this.getSessionMetaDataFactory().close();
+		this.getSessionAttributesFactory().close();
 	}
 }

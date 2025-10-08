@@ -11,17 +11,12 @@ import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import io.github.resilience4j.core.functions.CheckedFunction;
 import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryConfig;
 
-import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistrar;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
-import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
@@ -43,13 +38,17 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 	 * Encapsulates configuration of a {@link PrimaryOwnerSchedulerService}.
 	 * @param <K> the scheduled entry key type
 	 * @param <V> the scheduled entry value type
+	 * @param <SE> the schedule task entry type
+	 * @param <CE> the cancel task entry type
 	 */
-	public interface Configuration<K, V> {
+	public interface Configuration<K, V, SE, CE> extends SchedulerTopologyChangeListenerRegistrar.Configuration<K, V, SE, CE> {
 		/**
 		 * Returns the name of this scheduler.
 		 * @return the name of this scheduler.
 		 */
-		String getName();
+		default String getName() {
+			return this.getCacheConfiguration().getName();
+		}
 
 		/**
 		 * Returns the delegated scheduler.
@@ -75,64 +74,28 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 		 * Returns the function returning the group member for which a given identifier has affinity.
 		 * @return the function returning the group member for which a given identifier has affinity.
 		 */
-		Function<K, CacheContainerGroupMember> getAffinity();
-
-		/**
-		 * Returns the listener registration for this scheduler.
-		 * @return the listener registration for this scheduler.
-		 */
-		ListenerRegistrar getListenerRegistrar();
-
-		/**
-		 * Returns the listener registration for this scheduler.
-		 * @return the listener registration for this scheduler.
-		 */
-		RetryConfig getRetryConfig();
-	}
-
-	/**
-	 * Encapsulates configuration of a {@link PrimaryOwnerSchedulerService} referencing a cache.
-	 * @param <K> the scheduled entry key type
-	 * @param <V> the scheduled entry value type
-	 */
-	public interface CacheConfiguration<K, V> extends Configuration<K, V>, EmbeddedCacheConfiguration {
-		@Override
-		default String getName() {
-			return EmbeddedCacheConfiguration.super.getName();
-		}
-
-		@Override
-		default RetryConfig getRetryConfig() {
-			return EmbeddedCacheConfiguration.super.getRetryConfig();
-		}
-
-		/**
-		 * Returns the function returning the group member for which a given identifier has affinity.
-		 * @return the function returning the group member for which a given identifier has affinity.
-		 */
-		@Override
 		default Function<K, CacheContainerGroupMember> getAffinity() {
-			return new UnaryGroupMemberAffinity<>(this.getCache(), this.getCommandDispatcherFactory().getGroup());
+			return new UnaryGroupMemberAffinity<>(this.getCacheConfiguration().getCache(), this.getCommandDispatcherFactory().getGroup());
 		}
 	}
 
 	private final String name;
 	private final CommandDispatcher<CacheContainerGroupMember, Scheduler<K, V>> dispatcher;
-	private final ListenerRegistrar listenerRegistrar;
 	private final CheckedFunction<Map.Entry<K, V>, CompletionStage<Void>> primaryOwnerSchedule;
 	private final CheckedFunction<K, CompletionStage<Void>> primaryOwnerCancel;
 	private final CheckedFunction<K, CompletionStage<Boolean>> primaryOwnerContains;
-	private final AtomicReference<ListenerRegistration> listenerRegistration = new AtomicReference<>();
+	private final ListenerRegistration listenerRegistration;
 
 	/**
 	 * Creates a primary owner scheduler from the specified configuration.
+	 * @param <SE> the schedule task entry type
+	 * @param <CE> the cancel task entry type
 	 * @param configuration the configuration of a primary owner scheduler
 	 */
 	@SuppressWarnings("removal")
-	public PrimaryOwnerSchedulerService(Configuration<K, V> configuration) {
+	public <SE, CE> PrimaryOwnerSchedulerService(Configuration<K, V, SE, CE> configuration) {
 		super(configuration.getScheduler());
 		this.name = configuration.getName();
-		this.listenerRegistrar = configuration.getListenerRegistrar();
 		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, configuration.getScheduler(), AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
@@ -140,26 +103,16 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 			}
 		}));
 		Function<K, CacheContainerGroupMember> affinity = configuration.getAffinity();
-		Retry retry = Retry.of(configuration.getName(), configuration.getRetryConfig());
+		Retry retry = Retry.of(this.name, configuration.getCacheConfiguration().getRetryConfig());
 		this.primaryOwnerSchedule = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, configuration.getScheduleCommandFactory()));
 		this.primaryOwnerCancel = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, CancelCommand::new));
 		this.primaryOwnerContains = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, ContainsCommand::new));
-	}
-
-	@Override
-	public void start() {
-		super.start();
-		this.listenerRegistration.set(this.listenerRegistrar.register());
-	}
-
-	@Override
-	public void stop() {
-		Consumer.close().accept(this.listenerRegistration.getAndSet(null));
-		super.stop();
+		this.listenerRegistration = new SchedulerTopologyChangeListenerRegistrar<>(configuration).register();
 	}
 
 	@Override
 	public void close() {
+		this.listenerRegistration.close();
 		this.dispatcher.close();
 		super.close();
 	}

@@ -27,19 +27,19 @@ import org.wildfly.clustering.session.cache.AbstractSessionManager;
 
 /**
  * A session manager implementation backed by an embedded Infinispan cache.
- * @param <C> the session manager context type
+ * @param <DC> the deployment context type
  * @param <MV> the meta-data value type
  * @param <AV> the attributes value type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
+public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionManager<DC, MV, AV, SC> {
 
 	private final Cache<Key<String>, ?> cache;
 	private final CacheProperties properties;
 	private final Scheduler<String, ExpirationMetaData> scheduler;
 
-	interface Configuration<C, MV, AV, SC> extends AbstractSessionManager.Configuration<C, MV, AV, SC> {
+	interface Configuration<DC, MV, AV, SC> extends AbstractSessionManager.Configuration<DC, MV, AV, SC> {
 		@Override
 		EmbeddedCacheConfiguration getCacheConfiguration();
 
@@ -67,7 +67,7 @@ public class InfinispanSessionManager<C, MV, AV, SC> extends AbstractSessionMana
 	 * Creates a session manager using the specified configuration.
 	 * @param configuration the configuration of this session manager
 	 */
-	public InfinispanSessionManager(Configuration<C, MV, AV, SC> configuration) {
+	public InfinispanSessionManager(Configuration<DC, MV, AV, SC> configuration) {
 		super(configuration);
 		this.cache = configuration.getCacheConfiguration().getCache();
 		this.properties = configuration.getCacheConfiguration().getCacheProperties();

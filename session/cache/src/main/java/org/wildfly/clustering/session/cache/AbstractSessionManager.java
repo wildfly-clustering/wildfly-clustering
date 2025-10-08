@@ -23,33 +23,33 @@ import org.wildfly.clustering.session.SessionStatistics;
 
 /**
  * An abstract {@link SessionManager} implementation that delegates most implementation details to a {@link SessionFactory}.
- * @param <C> the session manager context type
+ * @param <DC> the deployment context type
  * @param <MV> the session metadata value type
  * @param <AV> the session attribute value type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
+public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
 	/** The logger for this session manager */
 	protected final System.Logger logger = System.getLogger(this.getClass().getName());
 
-	private final SessionFactory<C, MV, AV, SC> sessionFactory;
+	private final SessionFactory<DC, MV, AV, SC> sessionFactory;
 	private final BiFunction<String, SC, Session<SC>> detachedSessionFactory;
 	private final Consumer<ImmutableSession> expirationListener;
 	private final Expiration expiration;
 	private final IdentifierFactoryService<String> identifierFactory;
-	private final C context;
+	private final DC context;
 	private final Supplier<Batch> batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
 
 	/**
 	 * Configuration of a session manager.
-	 * @param <C> the session manager context type
+	 * @param <DC> the deployment context type
 	 * @param <MV> the session metadata value type
 	 * @param <AV> the session attribute value type
 	 * @param <SC> the session context type
 	 */
-	protected interface Configuration<C, MV, AV, SC> extends SessionManagerConfiguration<C> {
+	protected interface Configuration<DC, MV, AV, SC> extends SessionManagerConfiguration<DC> {
 		@Override
 		IdentifierFactoryService<String> getIdentifierFactory();
 
@@ -63,7 +63,7 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 		 * Returns a factory for creating a session.
 		 * @return a factory for creating a session.
 		 */
-		SessionFactory<C, MV, AV, SC> getSessionFactory();
+		SessionFactory<DC, MV, AV, SC> getSessionFactory();
 
 		/**
 		 * Returns a factory for creating a detached session.
@@ -82,7 +82,7 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 	 * Creates a session manager using the specified configuration.
 	 * @param configuration the configuration of the session manager
 	 */
-	protected AbstractSessionManager(Configuration<C, MV, AV, SC> configuration) {
+	protected AbstractSessionManager(Configuration<DC, MV, AV, SC> configuration) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
 		this.batchFactory = configuration.getCacheConfiguration().getBatchFactory();
@@ -155,7 +155,7 @@ public abstract class AbstractSessionManager<C, MV, AV, SC> implements SessionMa
 
 	@Override
 	public Session<SC> getDetachedSession(String id) {
-		return this.detachedSessionFactory.apply(id, this.sessionFactory.getContextFactory().get());
+		return this.detachedSessionFactory.apply(id, this.sessionFactory.getSessionContextFactory().get());
 	}
 
 	@Override
