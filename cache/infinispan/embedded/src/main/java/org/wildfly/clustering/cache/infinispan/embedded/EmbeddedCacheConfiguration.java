@@ -8,6 +8,8 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -70,6 +72,14 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	}
 
 	/**
+	 * Indicates whether write operations should tolerate remote failures.
+	 * @return true, if a remote exception should not prevent a cache operation from succeeding, false otherwise.
+	 */
+	default boolean isFaultTolerant() {
+		return false;
+	}
+
+	/**
 	 * Returns a cache for use with write operations, e.g. put/compute/replace.
 	 * @param <K> the cache key type
 	 * @param <V> the cache value type
@@ -116,7 +126,12 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 * @return a cache for use with write-only operations.
 	 */
 	default <K, V> Cache<K, V> getWriteOnlyCache() {
-		return this.<K, V>getWriteCache().getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
+		List<Flag> flags = new ArrayList<>(2);
+		flags.add(Flag.IGNORE_RETURN_VALUES);
+		if (this.isFaultTolerant()) {
+			flags.add(Flag.FAIL_SILENTLY);
+		}
+		return this.<K, V>getWriteCache().getAdvancedCache().withFlags(flags);
 	}
 
 	/**
@@ -126,7 +141,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 * @return a cache whose write operations do not trigger cache listeners.
 	 */
 	default <K, V> Cache<K, V> getSilentWriteCache() {
-		return this.<K, V>getWriteCache().getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LISTENER_NOTIFICATION);
+		return this.<K, V>getWriteOnlyCache().getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
 	}
 
 	/**

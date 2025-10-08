@@ -117,6 +117,11 @@ public class InfinispanSessionManagerFactory<C, SC> implements SessionManagerFac
 		 * @return a command dispatcher factory.
 		 */
 		CacheContainerCommandDispatcherFactory getCommandDispatcherFactory();
+
+		@Override
+		default boolean isFaultTolerant() {
+			return true;
+		}
 	}
 
 	private final SchedulerService<String, ExpirationMetaData> scheduler;
