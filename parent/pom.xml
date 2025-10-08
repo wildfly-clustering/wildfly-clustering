@@ -22,13 +22,14 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<project.repository.organization.id>wildfly-clustering</project.repository.organization.id>
+		<project.repository.organization.host>github.com</project.repository.organization.host>
 		<project.repository.organization.name>WildFly Clustering</project.repository.organization.name>
-		<project.repository.organization.url>https://github.com/${project.repository.organization.id}</project.repository.organization.url>
+		<project.repository.organization.url>https://${project.repository.organization.host}/${project.repository.organization.id}</project.repository.organization.url>
 		<project.repository.id>wildfly-clustering</project.repository.id>
 		<project.repository.name>WildFly Clustering</project.repository.name>
-		<project.repository.host>github.com</project.repository.host>
+		<project.repository.host>${project.repository.organization.host}</project.repository.host>
 		<project.repository.url>${project.repository.organization.url}/${project.repository.id}</project.repository.url>
-		<project.repository.tag>HEAD</project.repository.tag>
+		<project.issues.url>${project.repository.url}/issues</project.issues.url>
 	</properties>
 
 	<name>${project.repository.name}: Parent</name>
@@ -45,7 +46,7 @@
 
 	<issueManagement>
 		<system>GitHub</system>
-		<url>${project.url}/issues</url>
+		<url>${project.issues.url}</url>
 	</issueManagement>
 
 	<licenses>
@@ -65,7 +66,6 @@
 		<connection>scm:git:https://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
 		<developerConnection>scm:git:git@${project.repository.host}:${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
 		<url>${project.repository.url}</url>
-		<tag>${project.repository.tag}</tag>
 	</scm>
 
 	<build>
