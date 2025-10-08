@@ -34,7 +34,27 @@ public class CompositeSessionFactoryTestCase {
 	private final CacheProperties properties = mock(CacheProperties.class);
 	private final Object transientContext = new Object();
 
-	private final SessionFactory<Object, Contextual<Object>, Object, Object> factory = new CompositeSessionFactory<>(this.metaDataFactory, this.attributesFactory, this.properties, Supplier.of(this.transientContext));
+	private final SessionFactory<Object, Contextual<Object>, Object, Object> factory = new CompositeSessionFactory<>(new SessionFactoryConfiguration<>() {
+		@Override
+		public CacheProperties getCacheProperties() {
+			return CompositeSessionFactoryTestCase.this.properties;
+		}
+
+		@Override
+		public SessionMetaDataFactory<Contextual<Object>> getSessionMetaDataFactory() {
+			return CompositeSessionFactoryTestCase.this.metaDataFactory;
+		}
+
+		@Override
+		public SessionAttributesFactory<Object, Object> getSessionAttributesFactory() {
+			return CompositeSessionFactoryTestCase.this.attributesFactory;
+		}
+
+		@Override
+		public java.util.function.Supplier<Object> getSessionContextFactory() {
+			return Supplier.of(CompositeSessionFactoryTestCase.this.transientContext);
+		}
+	});
 
 	@Test
 	public void createValue() {
@@ -93,7 +113,7 @@ public class CompositeSessionFactoryTestCase {
 
 	@Test
 	public void getMetaDataFactory() {
-		assertThat(this.factory.getMetaDataFactory()).isSameAs(this.metaDataFactory);
+		assertThat(this.factory.getSessionMetaDataFactory()).isSameAs(this.metaDataFactory);
 	}
 
 	@Test

@@ -141,7 +141,7 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 			cache.start();
 			this.accept(cache::stop);
 			MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
-			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<C, SC, Map.Entry<ImmutableSession, C>, PassivationListener<C>>() {
+			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<Map.Entry<ImmutableSession, C>, C, SC, PassivationListener<C>>() {
 
 				@SuppressWarnings("unchecked")
 				@Override

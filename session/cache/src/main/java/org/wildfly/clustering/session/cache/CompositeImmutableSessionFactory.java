@@ -20,29 +20,28 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  * @param <AV> the session attributes type
  */
 public class CompositeImmutableSessionFactory<MV, AV> implements ImmutableSessionFactory<MV, AV> {
+
 	private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
 	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
 	private final CacheProperties properties;
 
 	/**
-	 * Creates an immutable session factory.
-	 * @param metaDataFactory a metadata factory
-	 * @param attributesFactory an attributes factory
-	 * @param properties the properties of the associated cache
+	 * Creates an immutable session factory from the specified configuration.
+	 * @param configuration a session factory configuration
 	 */
-	public CompositeImmutableSessionFactory(ImmutableSessionMetaDataFactory<MV> metaDataFactory, ImmutableSessionAttributesFactory<AV> attributesFactory, CacheProperties properties) {
-		this.metaDataFactory = metaDataFactory;
-		this.attributesFactory = attributesFactory;
-		this.properties = properties;
+	public CompositeImmutableSessionFactory(ImmutableSessionFactoryConfiguration<MV, AV> configuration) {
+		this.metaDataFactory = configuration.getSessionMetaDataFactory();
+		this.attributesFactory = configuration.getSessionAttributesFactory();
+		this.properties = configuration.getCacheProperties();
 	}
 
 	@Override
-	public ImmutableSessionMetaDataFactory<MV> getMetaDataFactory() {
+	public ImmutableSessionMetaDataFactory<MV> getSessionMetaDataFactory() {
 		return this.metaDataFactory;
 	}
 
 	@Override
-	public ImmutableSessionAttributesFactory<AV> getAttributesFactory() {
+	public ImmutableSessionAttributesFactory<AV> getSessionAttributesFactory() {
 		return this.attributesFactory;
 	}
 

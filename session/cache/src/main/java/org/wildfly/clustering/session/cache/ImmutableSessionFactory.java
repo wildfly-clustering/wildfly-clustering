@@ -10,11 +10,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.cache.BiCacheEntryLocator;
-import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.attributes.ImmutableSessionAttributesFactory;
-import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
 
 /**
  * Factory for creating an {@link ImmutableSession}.
@@ -22,38 +20,23 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  * @param <AV> the session attribute value type
  * @author Paul Ferraro
  */
-public interface ImmutableSessionFactory<MV, AV> extends BiCacheEntryLocator<String, MV, AV> {
-	/**
-	 * Returns the immutable session meta data factory.
-	 * @return the immutable session meta data factory.
-	 */
-	ImmutableSessionMetaDataFactory<MV> getMetaDataFactory();
-
-	/**
-	 * Returns the immutable session attributes factory.
-	 * @return the immutable session attributes factory.
-	 */
-	ImmutableSessionAttributesFactory<AV> getAttributesFactory();
-
-	/**
-	 * Returns the properties of the associated cache.
-	 * @return the properties of the associated cache.
-	 */
-	CacheProperties getCacheProperties();
+public interface ImmutableSessionFactory<MV, AV> extends ImmutableSessionFactoryConfiguration<MV, AV>, BiCacheEntryLocator<String, MV, AV> {
 
 	@Override
 	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> findEntry(String id) {
-		CompletionStage<MV> metaDataStage = this.getMetaDataFactory().findValueAsync(id);
+		CompletionStage<MV> metaDataStage = this.getSessionMetaDataFactory().findValueAsync(id);
+		ImmutableSessionAttributesFactory<AV> attributesFactory = this.getSessionAttributesFactory();
 		// If cache locks on read, find meta data first
-		CompletionStage<AV> attributesStage = this.getCacheProperties().isLockOnRead() ? metaDataStage.thenCompose(metaData -> (metaData != null) ? this.getAttributesFactory().findValueAsync(id) : CompletableFuture.completedStage(null)) : this.getAttributesFactory().findValueAsync(id);
+		CompletionStage<AV> attributesStage = this.getCacheProperties().isLockOnRead() ? metaDataStage.thenCompose(metaData -> (metaData != null) ? attributesFactory.findValueAsync(id) : CompletableFuture.completedStage(null)) : attributesFactory.findValueAsync(id);
 		return Map.entry(metaDataStage, attributesStage);
 	}
 
 	@Override
 	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> tryEntry(String id) {
-		CompletionStage<MV> metaDataStage = this.getMetaDataFactory().tryValueAsync(id);
+		CompletionStage<MV> metaDataStage = this.getSessionMetaDataFactory().tryValueAsync(id);
+		ImmutableSessionAttributesFactory<AV> attributesFactory = this.getSessionAttributesFactory();
 		// If cache locks on read, find meta data first
-		CompletionStage<AV> attributesStage = this.getCacheProperties().isLockOnRead() ? metaDataStage.thenCompose(metaData -> (metaData != null) ? this.getAttributesFactory().findValueAsync(id) : CompletableFuture.completedStage(null)) : this.getAttributesFactory().tryValueAsync(id);
+		CompletionStage<AV> attributesStage = this.getCacheProperties().isLockOnRead() ? metaDataStage.thenCompose(metaData -> (metaData != null) ? attributesFactory.findValueAsync(id) : CompletableFuture.completedStage(null)) : attributesFactory.tryValueAsync(id);
 		return Map.entry(metaDataStage, attributesStage);
 	}
 
@@ -67,8 +50,8 @@ public interface ImmutableSessionFactory<MV, AV> extends BiCacheEntryLocator<Str
 		MV metaDataValue = entry.getKey();
 		AV attributesValue = entry.getValue();
 		if ((metaDataValue == null) || (attributesValue == null)) return null;
-		ImmutableSessionMetaData metaData = this.getMetaDataFactory().createImmutableSessionMetaData(id, metaDataValue);
-		Map<String, Object> attributes = this.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
+		ImmutableSessionMetaData metaData = this.getSessionMetaDataFactory().createImmutableSessionMetaData(id, metaDataValue);
+		Map<String, Object> attributes = this.getSessionAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
 		return this.createImmutableSession(id, metaData, attributes);
 	}
 

@@ -50,8 +50,8 @@ public class SessionExpirationTaskTestCase {
 
 		Predicate<String> task = new SessionExpirationTask<>(sessionFactory, batchFactory, listener);
 
-		when(sessionFactory.getMetaDataFactory()).thenReturn(metaDataFactory);
-		when(sessionFactory.getAttributesFactory()).thenReturn(attributesFactory);
+		when(sessionFactory.getSessionMetaDataFactory()).thenReturn(metaDataFactory);
+		when(sessionFactory.getSessionAttributesFactory()).thenReturn(attributesFactory);
 		when(metaDataFactory.tryValue(missingSessionId)).thenReturn(null);
 		when(metaDataFactory.tryValue(expiredSessionId)).thenReturn(expiredMetaDataValue);
 		when(metaDataFactory.tryValue(validSessionId)).thenReturn(validMetaDataValue);

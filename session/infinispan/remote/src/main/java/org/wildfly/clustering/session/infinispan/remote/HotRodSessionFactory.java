@@ -10,21 +10,19 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
 import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
-import org.wildfly.clustering.cache.CacheEntryRemover;
+import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeSessionFactory;
-import org.wildfly.clustering.session.cache.attributes.ImmutableSessionAttributesFactory;
+import org.wildfly.clustering.session.cache.SessionFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFactory;
-import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 import org.wildfly.clustering.session.cache.metadata.fine.DefaultSessionAccessMetaDataEntry;
 import org.wildfly.clustering.session.cache.metadata.fine.DefaultSessionMetaDataEntry;
 import org.wildfly.clustering.session.cache.metadata.fine.SessionAccessMetaDataEntry;
@@ -36,37 +34,42 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreation
 /**
  * Factory for creating a {@link org.wildfly.clustering.session.Session} backed by a set of {@link RemoteCache} entries.
  * @author Paul Ferraro
- * @param <MC> the marshalling context type
+ * @param <DC> the deployment context type
  * @param <AV> the session attribute entry type
  * @param <SC> the local context type
  */
 @ClientListener
-public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC, SessionMetaDataEntry<SC>, AV, SC> {
+public class HotRodSessionFactory<DC, AV, SC> extends CompositeSessionFactory<DC, SessionMetaDataEntry<SC>, AV, SC> {
 	private static final System.Logger LOGGER = System.getLogger(HotRodSessionFactory.class.getName());
+
+	interface Configuration<DC, AV, SC> extends SessionFactoryConfiguration<DC, SessionMetaDataEntry<SC>, AV, SC> {
+		RemoteCacheConfiguration getCacheConfiguration();
+
+		@Override
+		default CacheProperties getCacheProperties() {
+			return this.getCacheConfiguration().getCacheProperties();
+		}
+
+		Consumer<ImmutableSession> getSessionExpirationListener();
+	}
 
 	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache;
 	private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory;
-	private final ImmutableSessionAttributesFactory<AV> attributesFactory;
-	private final CacheEntryRemover<String> attributesRemover;
+	private final SessionAttributesFactory<DC, AV> attributesFactory;
 	private final Consumer<ImmutableSession> expirationListener;
 	private final Executor executor;
 
 	/**
 	 * Constructs a new session factory.
-	 * @param config the configuration of the associated cache
-	 * @param metaDataFactory a session metadata factory
-	 * @param attributesFactory a session attributes factory
-	 * @param contextFactory a session context factory
-	 * @param expirationListener the consumer invoked on session expiration
+	 * @param configuration the configuration of this session factory
 	 */
-	public HotRodSessionFactory(RemoteCacheConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<SC> contextFactory, Consumer<ImmutableSession> expirationListener) {
-		super(metaDataFactory, attributesFactory, config.getCacheProperties(), contextFactory);
-		this.metaDataFactory = metaDataFactory;
-		this.attributesFactory = attributesFactory;
-		this.attributesRemover = attributesFactory;
-		this.expirationListener = expirationListener;
-		this.creationMetaDataCache = config.getForceReturnCache();
-		this.executor = config.getExecutor();
+	public HotRodSessionFactory(Configuration<DC, AV, SC> configuration) {
+		super(configuration);
+		this.metaDataFactory = configuration.getSessionMetaDataFactory();
+		this.attributesFactory = configuration.getSessionAttributesFactory();
+		this.expirationListener = configuration.getSessionExpirationListener();
+		this.creationMetaDataCache = configuration.getCacheConfiguration().getForceReturnCache();
+		this.executor = configuration.getCacheConfiguration().getExecutor();
 		this.creationMetaDataCache.addClientListener(this);
 	}
 
@@ -84,8 +87,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 	public void expired(ClientCacheEntryExpiredEvent<SessionAccessMetaDataKey> event) {
 		RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<SC>> creationMetaDataCache = this.creationMetaDataCache;
 		ImmutableSessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = this.metaDataFactory;
-		ImmutableSessionAttributesFactory<AV> attributesFactory = this.attributesFactory;
-		CacheEntryRemover<String> attributesRemover = this.attributesRemover;
+		SessionAttributesFactory<DC, AV> attributesFactory = this.attributesFactory;
 		Consumer<ImmutableSession> expirationListener = this.expirationListener;
 		String id = event.getKey().getId();
 		Runnable task = new Runnable() {
@@ -107,7 +109,7 @@ public class HotRodSessionFactory<MC, AV, SC> extends CompositeSessionFactory<MC
 						ImmutableSession session = HotRodSessionFactory.this.createImmutableSession(id, metaData, attributes);
 						LOGGER.log(System.Logger.Level.TRACE, "Session {0} has expired.", id);
 						expirationListener.accept(session);
-						attributesRemover.remove(id);
+						attributesFactory.remove(id);
 					}
 				}
 			}

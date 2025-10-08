@@ -8,7 +8,6 @@ package org.wildfly.clustering.session.cache;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
@@ -17,48 +16,46 @@ import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 
 /**
  * A session factory composed of metadata, attribute, and context factories.
- * @param <C> the session manager context type
+ * @param <DC> the deployment context type
  * @param <MV> the session metadata type
  * @param <AV> the session attributes type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class CompositeSessionFactory<C, MV extends Contextual<SC>, AV, SC> extends CompositeImmutableSessionFactory<MV, AV> implements SessionFactory<C, MV, AV, SC> {
+public class CompositeSessionFactory<DC, MV extends Contextual<SC>, AV, SC> extends CompositeImmutableSessionFactory<MV, AV> implements SessionFactory<DC, MV, AV, SC> {
+
 	private final SessionMetaDataFactory<MV> metaDataFactory;
-	private final SessionAttributesFactory<C, AV> attributesFactory;
+	private final SessionAttributesFactory<DC, AV> attributesFactory;
 	private final Supplier<SC> contextFactory;
 
 	/**
 	 * Creates a session factory composed from metadata, attribute, and context factories.
-	 * @param metaDataFactory the session metadata factory
-	 * @param attributesFactory the session atttributes factory
-	 * @param properties the cache properties
-	 * @param contextFactory the session context factory
+	 * @param configuration the configuration of this session factory
 	 */
-	public CompositeSessionFactory(SessionMetaDataFactory<MV> metaDataFactory, SessionAttributesFactory<C, AV> attributesFactory, CacheProperties properties, Supplier<SC> contextFactory) {
-		super(metaDataFactory, attributesFactory, properties);
-		this.metaDataFactory = metaDataFactory;
-		this.attributesFactory = attributesFactory;
-		this.contextFactory = contextFactory;
+	public CompositeSessionFactory(SessionFactoryConfiguration<DC, MV, AV, SC> configuration) {
+		super(configuration);
+		this.metaDataFactory = configuration.getSessionMetaDataFactory();
+		this.attributesFactory = configuration.getSessionAttributesFactory();
+		this.contextFactory = configuration.getSessionContextFactory();
 	}
 
 	@Override
-	public SessionMetaDataFactory<MV> getMetaDataFactory() {
+	public SessionMetaDataFactory<MV> getSessionMetaDataFactory() {
 		return this.metaDataFactory;
 	}
 
 	@Override
-	public SessionAttributesFactory<C, AV> getAttributesFactory() {
+	public SessionAttributesFactory<DC, AV> getSessionAttributesFactory() {
 		return this.attributesFactory;
 	}
 
 	@Override
-	public Supplier<SC> getContextFactory() {
+	public Supplier<SC> getSessionContextFactory() {
 		return this.contextFactory;
 	}
 
 	@Override
-	public Session<SC> createSession(String id, Map.Entry<MV, AV> entry, C context) {
+	public Session<SC> createSession(String id, Map.Entry<MV, AV> entry, DC context) {
 		MV metaDataValue = entry.getKey();
 		AV attributesValue = entry.getValue();
 		if ((metaDataValue == null) || (attributesValue == null)) return null;

@@ -47,14 +47,14 @@ public class SessionExpirationTask<SC, MV, AV, LC> implements Predicate<String> 
 		LOGGER.log(System.Logger.Level.DEBUG, "Initiating expiration of session {0}", id);
 		try (Batch batch = this.batchFactory.get()) {
 			try {
-				MV metaDataValue = this.sessionFactory.getMetaDataFactory().tryValue(id);
+				MV metaDataValue = this.sessionFactory.getSessionMetaDataFactory().tryValue(id);
 				if (metaDataValue != null) {
-					ImmutableSessionMetaData metaData = this.sessionFactory.getMetaDataFactory().createImmutableSessionMetaData(id, metaDataValue);
+					ImmutableSessionMetaData metaData = this.sessionFactory.getSessionMetaDataFactory().createImmutableSessionMetaData(id, metaDataValue);
 					if (metaData.isExpired()) {
 						LOGGER.log(System.Logger.Level.TRACE, "Removing expired session {0}.", id);
-						AV attributesValue = this.sessionFactory.getAttributesFactory().findValue(id);
+						AV attributesValue = this.sessionFactory.getSessionAttributesFactory().findValue(id);
 						if (attributesValue != null) {
-							Map<String, Object> attributes = this.sessionFactory.getAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
+							Map<String, Object> attributes = this.sessionFactory.getSessionAttributesFactory().createImmutableSessionAttributes(id, attributesValue);
 							ImmutableSession session = this.sessionFactory.createImmutableSession(id, metaData, attributes);
 							this.expirationListener.accept(session);
 						}
