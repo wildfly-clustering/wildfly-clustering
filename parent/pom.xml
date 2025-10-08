@@ -14,7 +14,7 @@
 	<properties>
 		<jacoco.skip>true</jacoco.skip>
 		<java.util.logging.manager>java.util.logging.LogManager</java.util.logging.manager>
-		<java.runtime.parameters>-Djava.util.logging.manager=${java.util.logging.manager} --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</java.runtime.parameters>
+		<java.runtime.parameters>-Djava.util.logging.manager=${java.util.logging.manager} --enable-native-access=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</java.runtime.parameters>
 		<java.compiler.version>17</java.compiler.version>
 		<maven.surefire.parameters>${java.runtime.parameters}</maven.surefire.parameters>
 		<maven.failsafe.parameters>${java.runtime.parameters}</maven.failsafe.parameters>
