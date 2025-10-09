@@ -66,7 +66,7 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> extends Even
 		Consumer<CacheStreamFilter<CE>> getCancelTask();
 	}
 
-	private final AtomicReference<Future<?>> scheduleTaskFuture = new AtomicReference<>();
+	private final AtomicReference<Future<Void>> currentFuture = new AtomicReference<>();
 	private final Consumer<CacheStreamFilter<SE>> scheduleTask;
 	private final Consumer<CacheStreamFilter<CE>> cancelTask;
 	private final Executor executor;
@@ -102,7 +102,7 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> extends Even
 				formerlyOwnedSegments.removeAll(IntSets.from(newSegments));
 				// If there are segments that we no longer own, then run cancellation task
 				if (!formerlyOwnedSegments.isEmpty()) {
-					Future<?> future = this.scheduleTaskFuture.getAndSet(null);
+					Future<Void> future = this.currentFuture.getAndSet(null);
 					if (future != null) {
 						future.cancel(true);
 					}
@@ -115,11 +115,11 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> extends Even
 			// If we have newly owned segments, then run schedule task
 			if (!newlyOwnedSegments.isEmpty()) {
 				FutureTask<Void> task = new FutureTask<>(() -> this.scheduleTask.accept(CacheStreamFilter.segments(newlyOwnedSegments)), null);
-				this.executor.execute(task);
-				Future<?> future = this.scheduleTaskFuture.getAndSet(task);
+				Future<Void> future = this.currentFuture.getAndSet(task);
 				if (future != null) {
 					future.cancel(true);
 				}
+				this.executor.execute(task);
 			}
 		}
 		return CompletableFuture.completedStage(null);
