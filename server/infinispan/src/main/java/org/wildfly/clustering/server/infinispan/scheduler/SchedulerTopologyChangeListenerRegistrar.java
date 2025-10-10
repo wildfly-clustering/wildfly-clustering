@@ -14,12 +14,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.util.IntSet;
@@ -105,7 +102,6 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 	@Listener
 	static class TopologyChangedListener<K, V, SE, CE> implements AutoCloseable {
 		private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY);
-		private final AtomicReference<Future<Void>> currentFuture = new AtomicReference<>();
 		private final java.util.function.Consumer<CacheStreamFilter<SE>> scheduleTask;
 		private final java.util.function.Consumer<CacheStreamFilter<CE>> cancelTask;
 		private final Duration stopTimeout;
@@ -136,11 +132,6 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 					formerlyOwnedSegments.removeAll(IntSets.from(newSegments));
 					// If there are segments that we no longer own, then run cancellation task
 					if (!formerlyOwnedSegments.isEmpty()) {
-						Future<Void> future = this.currentFuture.getAndSet(null);
-						// Cancel any existing schedule task
-						if (future != null) {
-							future.cancel(true);
-						}
 						try {
 							LOGGER.log(System.Logger.Level.DEBUG, "{0} cancelling scheduled entries for formerly owned segments: {1}", cache.getName(), formerlyOwnedSegments);
 							this.executor.execute(() -> this.cancelTask.accept(CacheStreamFilter.segments(formerlyOwnedSegments)));
@@ -154,16 +145,9 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 				newlyOwnedSegments.removeAll(IntSets.from(oldSegments));
 				// If we have newly owned segments, then run schedule task
 				if (!newlyOwnedSegments.isEmpty()) {
-					FutureTask<Void> task = new FutureTask<>(() -> this.scheduleTask.accept(CacheStreamFilter.segments(newlyOwnedSegments)), null);
-					Future<Void> future = this.currentFuture.getAndSet(task);
-					// Cancel any existing schedule task
-					if (future != null) {
-						future.cancel(true);
-					}
-					// This will be queued until previous cancel task completes
 					try {
 						LOGGER.log(System.Logger.Level.DEBUG, "{0} scheduling entries for newly owned segments: {1}", cache.getName(), newlyOwnedSegments);
-						this.executor.execute(task);
+						this.executor.execute(() -> this.scheduleTask.accept(CacheStreamFilter.segments(newlyOwnedSegments)));
 					} catch (RejectedExecutionException e) {
 						// Ignore
 					}
