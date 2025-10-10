@@ -17,24 +17,22 @@ import org.infinispan.protostream.ProtobufTagMarshaller.ReadContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
 import org.infinispan.protostream.impl.TagReaderImpl;
 import org.infinispan.protostream.impl.TagWriterImpl;
-import org.wildfly.clustering.marshalling.AbstractByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
  * A ProtoStream byte buffer marshaller.
  * @author Paul Ferraro
  */
-public class ProtoStreamByteBufferMarshaller extends AbstractByteBufferMarshaller {
+public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
 	private final ImmutableSerializationContext context;
 
 	/**
 	 * Constructs a new ProtoStream marshaller using the specified context
 	 * @param context a serialization context
-	 * @param loader the class loader context for read/write operations
 	 */
-	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context, ClassLoader loader) {
+	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context) {
 		// N.B. Marshallers in WildFly require TCCL to resolve org.jboss.weld.Container
-		super(loader);
 		this.context = context;
 	}
 
