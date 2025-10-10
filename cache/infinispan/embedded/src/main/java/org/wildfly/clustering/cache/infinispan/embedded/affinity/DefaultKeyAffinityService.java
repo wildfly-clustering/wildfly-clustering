@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.affinity;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +17,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
@@ -30,14 +33,13 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.Listener.Observation;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.util.concurrent.BlockingManager;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.KeyDistribution;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 
 /**
  * A custom key affinity service implementation with the following distinct characteristics (as compared to {@link org.infinispan.affinity.impl.KeyAffinityServiceImpl}):
@@ -53,6 +55,13 @@ import org.wildfly.clustering.cache.infinispan.embedded.distribution.KeyDistribu
  */
 @Listener(observation = Observation.POST)
 public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supplier<BlockingQueue<K>> {
+	@SuppressWarnings("removal")
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(DefaultKeyAffinityService.class, AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+		@Override
+		public ClassLoader run() {
+			return DefaultKeyAffinityService.class.getClassLoader();
+		}
+	}));
 	private static final Function<Cache<?, ?>, ConsistentHash> CURRENT_CONSISTENT_HASH = cache -> cache.getAdvancedCache().getDistributionManager().getCacheTopology().getWriteConsistentHash();
 	private static final BiFunction<Cache<?, ?>, ConsistentHash, KeyDistribution> KEY_DISTRIBUTION_FACTORY = KeyDistribution::forConsistentHash;
 
@@ -63,7 +72,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 	private final KeyGenerator<? extends K> generator;
 	private final AtomicReference<KeyAffinityState<K>> currentState = new AtomicReference<>();
 	private final Predicate<Address> filter;
-	private final Executor executor;
+	private final AtomicReference<ExecutorService> executor = new AtomicReference<>();
 	private final BiFunction<Cache<?, ?>, ConsistentHash, KeyDistribution> distributionFactory;
 	private final Function<Cache<?, ?>, ConsistentHash> currentConsistentHash;
 
@@ -82,14 +91,13 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 	 * @param generator a key generator
 	 */
 	DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyGenerator<? extends K> generator, Predicate<Address> filter) {
-		this(cache, generator, filter, GlobalComponentRegistry.componentOf(cache.getCacheManager(), BlockingManager.class).asExecutor(DefaultKeyAffinityService.class.getSimpleName()), CURRENT_CONSISTENT_HASH, KEY_DISTRIBUTION_FACTORY);
+		this(cache, generator, filter, CURRENT_CONSISTENT_HASH, KEY_DISTRIBUTION_FACTORY);
 	}
 
-	DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyGenerator<? extends K> generator, Predicate<Address> filter, Executor executor, Function<Cache<?, ?>, ConsistentHash> currentConsistentHash, BiFunction<Cache<?, ?>, ConsistentHash, KeyDistribution> distributionFactory) {
+	DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyGenerator<? extends K> generator, Predicate<Address> filter, Function<Cache<?, ?>, ConsistentHash> currentConsistentHash, BiFunction<Cache<?, ?>, ConsistentHash, KeyDistribution> distributionFactory) {
 		this.cache = cache;
 		this.generator = generator;
 		this.filter = filter;
-		this.executor = executor;
 		this.currentConsistentHash = currentConsistentHash;
 		this.distributionFactory = distributionFactory;
 	}
@@ -123,14 +131,21 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
 	@Override
 	public void start() {
+		this.executor.set(Executors.newCachedThreadPool(THREAD_FACTORY));
 		this.accept(this.currentConsistentHash.apply(this.cache));
 		this.cache.addListener(this);
 	}
 
+	@SuppressWarnings("removal")
 	@Override
 	public void stop() {
 		this.cache.removeListener(this);
-		this.currentState.set(null);
+		for (Future<?> future : this.currentState.getAndSet(null).getFutures()) {
+			future.cancel(true);
+		}
+		ExecutorService executor = this.executor.getAndSet(null);
+		PrivilegedAction<List<Runnable>> shutdownAction = executor::shutdownNow;
+		AccessController.doPrivileged(shutdownAction);
 	}
 
 	@Override
@@ -224,9 +239,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 		try {
 			for (Address address : addresses) {
 				BlockingQueue<K> keys = registry.getKeys(address);
-				FutureTask<Void> task = new FutureTask<>(new GenerateKeysTask<>(this.generator, distribution, address, keys), null);
-				futures.add(task);
-				this.executor.execute(task);
+				futures.add(this.executor.get().submit(new GenerateKeysTask<>(this.generator, distribution, address, keys)));
 			}
 			KeyAffinityState<K> previousState = this.currentState.getAndSet(new KeyAffinityState<K>() {
 				@Override

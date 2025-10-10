@@ -12,8 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
@@ -39,85 +37,80 @@ public class DefaultKeyAffinityServiceTestCase {
 
 	@Test
 	public void test() {
-		ExecutorService executor = Executors.newCachedThreadPool();
+		KeyGenerator<UUID> generator = mock(KeyGenerator.class);
+		AdvancedCache<UUID, Object> cache = mock(AdvancedCache.class);
+		KeyDistribution distribution = mock(KeyDistribution.class);
+		ConsistentHash hash = mock(ConsistentHash.class);
+		Address local = mock(Address.class);
+		Address remote = mock(Address.class);
+		Address standby = mock(Address.class);
+		Address ignored = mock(Address.class);
+		UUID random = UUID.randomUUID();
+		KeyAffinityService<UUID> service = new DefaultKeyAffinityService<>(cache, generator, address -> (address != ignored), c -> hash, (c, h) -> distribution);
+
+		doReturn(random).when(generator).getKey();
+
+		// Validate that service returns random key when not started
+		assertThat(service.getKeyForAddress(local)).isSameAs(random);
+		assertThat(service.getKeyForAddress(remote)).isSameAs(random);
+		assertThat(service.getKeyForAddress(standby)).isSameAs(random);
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> service.getKeyForAddress(ignored));
+
+		List<Address> members = List.of(local, remote, ignored, standby);
+
+		when(hash.getMembers()).thenReturn(members);
+		when(hash.getPrimarySegmentsForOwner(local)).thenReturn(Set.of(LOCAL_SEGMENT));
+		when(hash.getPrimarySegmentsForOwner(remote)).thenReturn(Set.of(REMOTE_SEGMENT));
+		when(hash.getPrimarySegmentsForOwner(standby)).thenReturn(Set.of());
+		when(hash.getPrimarySegmentsForOwner(ignored)).thenReturn(Set.of(FILTERED_SEGMENT));
+
+		// Mock a sufficient number of keys
+		int[] keysPerSegment = new int[3];
+		Arrays.fill(keysPerSegment, 0);
+		int minKeysPerSegment = DefaultKeyAffinityService.DEFAULT_QUEUE_SIZE * SEGMENTS;
+		IntPredicate needMoreKeys = keys -> (keys < minKeysPerSegment);
+		OngoingStubbing<UUID> stub = when(generator.getKey());
+		while (IntStream.of(keysPerSegment).anyMatch(needMoreKeys)) {
+			UUID key = UUID.randomUUID();
+			int segment = getSegment(key);
+			keysPerSegment[segment] += 1;
+
+			stub = stub.thenReturn(key);
+
+			when(distribution.getPrimaryOwner(key)).thenReturn(members.get(segment));
+		}
+
+		// This should throw IAE, since address does not pass filter
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> service.getKeyForAddress(ignored));
+
+		service.start();
+
 		try {
-			KeyGenerator<UUID> generator = mock(KeyGenerator.class);
-			AdvancedCache<UUID, Object> cache = mock(AdvancedCache.class);
-			KeyDistribution distribution = mock(KeyDistribution.class);
-			ConsistentHash hash = mock(ConsistentHash.class);
-			Address local = mock(Address.class);
-			Address remote = mock(Address.class);
-			Address standby = mock(Address.class);
-			Address ignored = mock(Address.class);
-			UUID random = UUID.randomUUID();
-			KeyAffinityService<UUID> service = new DefaultKeyAffinityService<>(cache, generator, address -> (address != ignored), executor, c -> hash, (c, h) -> distribution);
-
-			doReturn(random).when(generator).getKey();
-
-			// Validate that service returns random key when not started
-			assertThat(service.getKeyForAddress(local)).isSameAs(random);
-			assertThat(service.getKeyForAddress(remote)).isSameAs(random);
-			assertThat(service.getKeyForAddress(standby)).isSameAs(random);
-			assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> service.getKeyForAddress(ignored));
-
-			List<Address> members = List.of(local, remote, ignored, standby);
-
-			when(hash.getMembers()).thenReturn(members);
-			when(hash.getPrimarySegmentsForOwner(local)).thenReturn(Set.of(LOCAL_SEGMENT));
-			when(hash.getPrimarySegmentsForOwner(remote)).thenReturn(Set.of(REMOTE_SEGMENT));
-			when(hash.getPrimarySegmentsForOwner(standby)).thenReturn(Set.of());
-			when(hash.getPrimarySegmentsForOwner(ignored)).thenReturn(Set.of(FILTERED_SEGMENT));
-
-			// Mock a sufficient number of keys
-			int[] keysPerSegment = new int[3];
-			Arrays.fill(keysPerSegment, 0);
-			int minKeysPerSegment = DefaultKeyAffinityService.DEFAULT_QUEUE_SIZE * SEGMENTS;
-			IntPredicate needMoreKeys = keys -> (keys < minKeysPerSegment);
-			OngoingStubbing<UUID> stub = when(generator.getKey());
-			while (IntStream.of(keysPerSegment).anyMatch(needMoreKeys)) {
-				UUID key = UUID.randomUUID();
+			int iterations = DefaultKeyAffinityService.DEFAULT_QUEUE_SIZE / 2;
+			for (int i = 0; i < iterations; ++i) {
+				UUID key = service.getKeyForAddress(local);
 				int segment = getSegment(key);
-				keysPerSegment[segment] += 1;
+				assertThat(segment).isEqualTo(LOCAL_SEGMENT);
 
-				stub = stub.thenReturn(key);
+				key = service.getCollocatedKey(key);
+				segment = getSegment(key);
+				assertThat(segment).isEqualTo(LOCAL_SEGMENT);
 
-				when(distribution.getPrimaryOwner(key)).thenReturn(members.get(segment));
+				key = service.getKeyForAddress(remote);
+				segment = getSegment(key);
+				assertThat(segment).isEqualTo(REMOTE_SEGMENT);
+
+				key = service.getCollocatedKey(key);
+				segment = getSegment(key);
+				assertThat(segment).isEqualTo(REMOTE_SEGMENT);
 			}
 
+			// This should return a random key
+			assertThat(service.getKeyForAddress(standby)).isNotNull();
 			// This should throw IAE, since address does not pass filter
 			assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> service.getKeyForAddress(ignored));
-
-			service.start();
-
-			try {
-				int iterations = DefaultKeyAffinityService.DEFAULT_QUEUE_SIZE / 2;
-				for (int i = 0; i < iterations; ++i) {
-					UUID key = service.getKeyForAddress(local);
-					int segment = getSegment(key);
-					assertThat(segment).isEqualTo(LOCAL_SEGMENT);
-
-					key = service.getCollocatedKey(key);
-					segment = getSegment(key);
-					assertThat(segment).isEqualTo(LOCAL_SEGMENT);
-
-					key = service.getKeyForAddress(remote);
-					segment = getSegment(key);
-					assertThat(segment).isEqualTo(REMOTE_SEGMENT);
-
-					key = service.getCollocatedKey(key);
-					segment = getSegment(key);
-					assertThat(segment).isEqualTo(REMOTE_SEGMENT);
-				}
-
-				// This should return a random key
-				assertThat(service.getKeyForAddress(standby)).isNotNull();
-				// This should throw IAE, since address does not pass filter
-				assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> service.getKeyForAddress(ignored));
-			} finally {
-				service.stop();
-			}
 		} finally {
-			executor.shutdown();
+			service.stop();
 		}
 	}
 
