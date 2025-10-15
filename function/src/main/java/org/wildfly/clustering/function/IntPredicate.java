@@ -11,9 +11,9 @@ package org.wildfly.clustering.function;
  */
 public interface IntPredicate extends java.util.function.IntPredicate {
 	/** A predicate that always returns true */
-	IntPredicate ALWAYS = value -> true;
+	IntPredicate ALWAYS = of(IntConsumer.EMPTY, BooleanSupplier.TRUE);
 	/** A predicate that always returns false */
-	IntPredicate NEVER = value -> false;
+	IntPredicate NEVER = of(IntConsumer.EMPTY, BooleanSupplier.FALSE);
 	/** A predicate that returns true if the parameter is greater than zero. */
 	IntPredicate POSITIVE = greaterThan(0);
 	/** A predicate that returns true if the parameter is zero. */
@@ -129,6 +129,22 @@ public interface IntPredicate extends java.util.function.IntPredicate {
 	 */
 	static IntPredicate of(boolean result) {
 		return result ? IntPredicate.ALWAYS : IntPredicate.NEVER;
+	}
+
+	/**
+	 * Returns a predicate that accepts its parameter via the specified consumer and returns the result of the specified supplier.
+	 * @param consumer the predicate parameter consumer
+	 * @param supplier the predicate result supplier
+	 * @return a predicate that accepts its parameter via the specified consumer and returns the result of the specified supplier.
+	 */
+	static IntPredicate of(java.util.function.IntConsumer consumer, java.util.function.BooleanSupplier supplier) {
+		return new IntPredicate() {
+			@Override
+			public boolean test(int value) {
+				consumer.accept(value);
+				return supplier.getAsBoolean();
+			}
+		};
 	}
 
 	/**

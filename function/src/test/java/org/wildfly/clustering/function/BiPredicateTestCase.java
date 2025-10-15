@@ -8,6 +8,8 @@ package org.wildfly.clustering.function;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Random;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
@@ -17,68 +19,92 @@ import org.junit.jupiter.api.Test;
  * @author Paul Ferraro
  */
 public class BiPredicateTestCase {
-	private Object value1 = new Object();
-	private Object value2 = new Object();
+	private final UUID value1 = UUID.randomUUID();
+	private final UUID value2 = UUID.randomUUID();
+	private final Random random = new Random();
 
 	@Test
 	public void former() {
-		Predicate<Object> predicate1 = mock(Predicate.class);
-		doReturn(false, true).when(predicate1).test(this.value1);
+		Predicate<UUID> predicate1 = mock(Predicate.class);
+		boolean expected = this.random.nextBoolean();
 
-		BiPredicate<Object, Object> predicate = BiPredicate.testFormer(predicate1);
+		doReturn(expected).when(predicate1).test(this.value1);
 
-		assertThat(predicate.test(this.value1, this.value2)).isFalse();
-		assertThat(predicate.test(this.value1, this.value2)).isTrue();
+		BiPredicate<UUID, UUID> predicate = BiPredicate.testFormer(predicate1);
+
+		assertThat(predicate.test(this.value1, this.value2)).isEqualTo(expected);
+
+		verify(predicate1, only()).test(this.value1);
 	}
 
 	@Test
 	public void latter() {
-		Predicate<Object> predicate2 = mock(Predicate.class);
-		doReturn(false, true).when(predicate2).test(this.value2);
+		Predicate<UUID> predicate2 = mock(Predicate.class);
+		boolean expected = this.random.nextBoolean();
 
-		BiPredicate<Object, Object> predicate = BiPredicate.testLatter(predicate2);
+		doReturn(expected).when(predicate2).test(this.value2);
 
-		assertThat(predicate.test(this.value1, this.value2)).isFalse();
-		assertThat(predicate.test(this.value1, this.value2)).isTrue();
+		BiPredicate<UUID, UUID> predicate = BiPredicate.testLatter(predicate2);
+
+		assertThat(predicate.test(this.value1, this.value2)).isEqualTo(expected);
+
+		verify(predicate2, only()).test(this.value2);
 	}
 
 	@Test
 	public void negate() {
-		BiPredicate<Object, Object> predicate = mock(BiPredicate.class);
+		BiPredicate<UUID, UUID> predicate = mock(BiPredicate.class);
+		boolean expected = this.random.nextBoolean();
+
 		doCallRealMethod().when(predicate).negate();
-		doReturn(false, true).when(predicate).test(this.value1, this.value2);
-		BiPredicate<Object, Object> negative = predicate.negate();
-		assertThat(negative.test(this.value1, this.value2)).isTrue();
-		assertThat(negative.test(this.value1, this.value2)).isFalse();
+		doReturn(expected).when(predicate).test(this.value1, this.value2);
+
+		BiPredicate<UUID, UUID> negative = predicate.negate();
+
+		assertThat(negative.test(this.value1, this.value2)).isNotEqualTo(expected);
+
+		verify(predicate).test(this.value1, this.value2);
 	}
 
 	@Test
 	public void and() {
-		Predicate<Object> predicate1 = mock(Predicate.class);
-		Predicate<Object> predicate2 = mock(Predicate.class);
-		doReturn(false, false, true, true).when(predicate1).test(this.value1);
-		doReturn(false, true, false, true).when(predicate2).test(this.value2);
+		Predicate<UUID> predicate1 = mock(Predicate.class);
+		Predicate<UUID> predicate2 = mock(Predicate.class);
 
-		BiPredicate<Object, Object> predicate = BiPredicate.and(predicate1, predicate2);
+		boolean expected1 = this.random.nextBoolean();
+		boolean expected2 = this.random.nextBoolean();
 
-		assertThat(predicate.test(this.value1, this.value2)).isFalse();
-		assertThat(predicate.test(this.value1, this.value2)).isFalse();
-		assertThat(predicate.test(this.value1, this.value2)).isFalse();
-		assertThat(predicate.test(this.value1, this.value2)).isTrue();
+		doReturn(expected1).when(predicate1).test(this.value1);
+		doReturn(expected2).when(predicate2).test(this.value2);
+
+		BiPredicate<UUID, UUID> predicate = BiPredicate.and(predicate1, predicate2);
+
+		assertThat(predicate.test(this.value1, this.value2)).isEqualTo(expected1 && expected2);
+
+		verify(predicate1, only()).test(this.value1);
+		if (expected1) {
+			verify(predicate2, only()).test(this.value2);
+		}
 	}
 
 	@Test
 	public void or() {
-		Predicate<Object> predicate1 = mock(Predicate.class);
-		Predicate<Object> predicate2 = mock(Predicate.class);
-		doReturn(false, false, true, true).when(predicate1).test(this.value1);
-		doReturn(false, true, false, true).when(predicate2).test(this.value2);
+		Predicate<UUID> predicate1 = mock(Predicate.class);
+		Predicate<UUID> predicate2 = mock(Predicate.class);
 
-		BiPredicate<Object, Object> predicate = BiPredicate.or(predicate1, predicate2);
+		boolean expected1 = this.random.nextBoolean();
+		boolean expected2 = this.random.nextBoolean();
 
-		assertThat(predicate.test(this.value1, this.value2)).isFalse();
-		assertThat(predicate.test(this.value1, this.value2)).isTrue();
-		assertThat(predicate.test(this.value1, this.value2)).isTrue();
-		assertThat(predicate.test(this.value1, this.value2)).isTrue();
+		doReturn(expected1).when(predicate1).test(this.value1);
+		doReturn(expected2).when(predicate2).test(this.value2);
+
+		BiPredicate<UUID, UUID> predicate = BiPredicate.or(predicate1, predicate2);
+
+		assertThat(predicate.test(this.value1, this.value2)).isEqualTo(expected1 || expected2);
+
+		verify(predicate1, only()).test(this.value1);
+		if (!expected1) {
+			verify(predicate2, only()).test(this.value2);
+		}
 	}
 }

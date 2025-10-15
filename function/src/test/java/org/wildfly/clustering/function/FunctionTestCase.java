@@ -60,18 +60,21 @@ public class FunctionTestCase {
 
 	@Test
 	public void of() {
+		UUID parameter = UUID.randomUUID();
 		UUID expected = UUID.randomUUID();
-		assertThat(Function.of(expected).apply(UUID.randomUUID())).isSameAs(expected);
-		assertThat(Function.of(null).apply(UUID.randomUUID())).isNull();
-	}
 
-	@Test
-	public void get() {
-		UUID expected = UUID.randomUUID();
+		assertThat(Function.of(expected).apply(parameter)).isSameAs(expected);
+		assertThat(Function.of(null).apply(parameter)).isNull();
+
+		Consumer<UUID> consumer = mock(Consumer.class);
 		Supplier<UUID> supplier = mock(Supplier.class);
+
 		doReturn(expected).when(supplier).get();
-		assertThat(Function.get(supplier).apply(UUID.randomUUID())).isSameAs(expected);
-		assertThat(Function.get(null).apply(UUID.randomUUID())).isNull();
+
+		assertThat(Function.of(consumer, supplier).apply(parameter)).isSameAs(expected);
+
+		verify(consumer, only()).accept(parameter);
+		verify(supplier, only()).get();
 	}
 
 	@Test

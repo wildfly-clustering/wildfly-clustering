@@ -19,9 +19,9 @@ import java.util.function.LongFunction;
  */
 public interface Predicate<T> extends java.util.function.Predicate<T> {
 	/** A predicate that always returns true */
-	Predicate<?> ALWAYS = value -> true;
+	Predicate<?> ALWAYS = of(Consumer.EMPTY, BooleanSupplier.TRUE);
 	/** A predicate that always returns false */
-	Predicate<?> NEVER = value -> false;
+	Predicate<?> NEVER = of(Consumer.EMPTY, BooleanSupplier.FALSE);
 
 	/**
 	 * Returns a new predicate that delegates to this predicate using the specified exception handler.
@@ -166,6 +166,23 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 */
 	static <T> Predicate<T> of(boolean result) {
 		return result ? Predicate.always() : Predicate.never();
+	}
+
+	/**
+	 * Returns a predicate that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
+	 * @param <T> the predicate type
+	 * @param consumer the consumer of the predicate parameter
+	 * @param supplier the supplier of the predicate result
+	 * @return a predicate that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
+	 */
+	static <T> Predicate<T> of(java.util.function.Consumer<T> consumer, java.util.function.BooleanSupplier supplier) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				consumer.accept(value);
+				return supplier.getAsBoolean();
+			}
+		};
 	}
 
 	/**

@@ -378,7 +378,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 
 	@Override
 	public CompletionStage<Void> prepareWithModifications(Transaction transaction, int publisherCount, Publisher<SegmentedPublisher<Object>> removePublisher, Publisher<SegmentedPublisher<MarshallableEntry<K, V>>> writePublisher) {
-		SuspendedBatch suspended = this.transactions.computeIfAbsent(transaction, org.wildfly.clustering.function.Function.get(this.batchFactory.thenApply(Batch::suspend)));
+		SuspendedBatch suspended = this.transactions.computeIfAbsent(transaction, org.wildfly.clustering.function.Function.of(Consumer.empty(), this.batchFactory.thenApply(Batch::suspend)));
 		CompletableTransformer batcher = upstream -> observer -> {
 			try (Context<Batch> context = suspended.resumeWithContext()) {
 				upstream.subscribe(observer);

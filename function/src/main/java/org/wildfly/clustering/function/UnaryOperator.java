@@ -17,7 +17,7 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	/** An identity operator that always returns its parameter */
 	UnaryOperator<?> IDENTITY = value -> value;
 	/** An operator that always returns null */
-	UnaryOperator<?> NULL = value -> null;
+	UnaryOperator<?> NULL = of(Consumer.empty(), Supplier.empty());
 
 	/**
 	 * Returns an operator that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
@@ -125,27 +125,24 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @return an operator that always returns the specified value, ignoring its parameter.
 	 */
 	static <T> UnaryOperator<T> of(T value) {
-		return (value != null) ? new UnaryOperator<>() {
-			@Override
-			public T apply(T ignore) {
-				return value;
-			}
-		} : empty();
+		return (value != null) ? of(Consumer.empty(), Supplier.of(value)) : empty();
 	}
 
 	/**
-	 * Returns an operator that returns the result of the specified supplier, ignoring its parameter.
-	 * @param <T> the operating type
+	 * Returns an operator that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
+	 * @param <T> the operator type
+	 * @param consumer a consumer of the operator parameter
 	 * @param supplier the supplier of the operator result
-	 * @return an operator that returns the result of the specified supplier, ignoring its parameter.
+	 * @return an operator that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
 	 */
-	static <T> UnaryOperator<T> get(java.util.function.Supplier<T> supplier) {
-		return (supplier != null) && (supplier != Supplier.NULL) ? new UnaryOperator<>() {
+	static <T> UnaryOperator<T> of(java.util.function.Consumer<T> consumer, java.util.function.Supplier<T> supplier) {
+		return new UnaryOperator<>() {
 			@Override
-			public T apply(T ignore) {
+			public T apply(T value) {
+				consumer.accept(value);
 				return supplier.get();
 			}
-		} : empty();
+		};
 	}
 
 	/**

@@ -35,19 +35,18 @@ public class BiFunctionTestCase {
 	}
 
 	@Test
-	public void get() {
+	public void of() {
+		BiConsumer<UUID, UUID> consumer = mock(BiConsumer.class);
 		Supplier<UUID> supplier = mock(Supplier.class);
 		doReturn(this.result).when(supplier).get();
 
-		BiFunction<UUID, UUID, UUID> function = BiFunction.get(supplier);
+		BiFunction<UUID, UUID, UUID> function = BiFunction.of(consumer, supplier);
 		UUID result = function.apply(this.value1, this.value2);
 
 		assertThat(result).isSameAs(this.result);
 
-		function = BiFunction.get(null);
-		result = function.apply(this.value1, this.value2);
-
-		assertThat(result).isNull();
+		verify(consumer, only()).accept(this.value1, this.value2);
+		verify(supplier, only()).get();
 	}
 
 	@Test

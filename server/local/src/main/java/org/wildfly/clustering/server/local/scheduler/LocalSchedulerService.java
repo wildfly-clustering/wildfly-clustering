@@ -19,9 +19,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.scheduler.SchedulerService;
 import org.wildfly.clustering.server.service.SimpleService;
 import org.wildfly.clustering.server.util.BlockingReference;
@@ -100,18 +101,10 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 		this.task = configuration.getTask();
 		this.closeTimeout = configuration.getCloseTimeout();
 		Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> scheduleFirst = this::scheduleFirst;
-		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel = entry -> {
-			if (entry != null) {
-				entry.getValue().cancel(true);
-			}
-			return null;
-		};
-		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule = entry -> {
-			if (entry != null) {
-				cancel.apply(entry);
-			}
-			return scheduleFirst.get();
-		};
+		Consumer<Future<?>> cancelFuture = future -> future.cancel(true);
+		Consumer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancelEntry = cancelFuture.<Map.Entry<Map.Entry<K, Instant>, Future<?>>>compose(Map.Entry::getValue).when(Objects::nonNull);
+		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel = UnaryOperator.of(cancelEntry, Supplier.of(null));
+		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule = UnaryOperator.of(cancelEntry, scheduleFirst);
 		BlockingReference<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntry = BlockingReference.of(null);
 		BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntryWriter = futureEntry.writer(scheduleFirst);
 		this.schedule = futureEntryWriter;

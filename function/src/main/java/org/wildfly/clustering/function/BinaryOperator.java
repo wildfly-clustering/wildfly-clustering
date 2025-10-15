@@ -132,22 +132,24 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
 	static <T> BinaryOperator<T> of(T result) {
-		return (result != null) ? get(Supplier.of(result)) : empty();
+		return (result != null) ? of(BiConsumer.empty(), Supplier.of(result)) : empty();
 	}
 
 	/**
-	 * Returns a function that returns the value returned by the specified supplier, ignoring its parameter.
-	 * @param <T> the operating type
-	 * @param supplier the function result supplier
-	 * @return a function that returns the value returned by the specified supplier, ignoring its parameter.
+	 * Returns an operator that accepts its parameters via the specified consumer and returns the value returned by the specified supplier.
+	 * @param <T> the operator type
+	 * @param consumer the consumer of the function parameter
+	 * @param supplier the supplier of the function result
+	 * @return an operator that accepts its parameters via the specified consumer and returns the value returned by the specified supplier.
 	 */
-	static <T> BinaryOperator<T> get(java.util.function.Supplier<T> supplier) {
-		return (supplier != null) && (supplier != Supplier.NULL) ? new BinaryOperator<>() {
+	static <T> BinaryOperator<T> of(java.util.function.BiConsumer<T, T> consumer, java.util.function.Supplier<T> supplier) {
+		return new BinaryOperator<>() {
 			@Override
-			public T apply(T ignore1, T ignore2) {
+			public T apply(T value1, T value2) {
+				consumer.accept(value1, value2);
 				return supplier.get();
 			}
-		} : empty();
+		};
 	}
 
 	/**
