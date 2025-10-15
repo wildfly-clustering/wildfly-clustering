@@ -8,9 +8,10 @@ package org.wildfly.clustering.server.util;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.locks.StampedLock;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 
 /**
  * Encapsulates thread-safe references to map entries.
@@ -35,12 +36,12 @@ public interface BlockingReferenceMap<K, V> extends Reference<Map<K, V>> {
 	 */
 	static <K, V> BlockingReferenceMap<K, V> of(Map<K, V> map) {
 		StampedLock lock = new StampedLock();
-		Supplier<Map<K, V>> reader = () -> Collections.unmodifiableMap(map);
+		Supplier<Map<K, V>> reader = Supplier.of(map).thenApply(Collections::unmodifiableMap);
 		UnaryOperator<Map<K, V>> mapper = UnaryOperator.identity();
 		return new BlockingReferenceMap<>() {
 			@Override
 			public BlockingReference<V> reference(K key) {
-				Supplier<V> reader = () -> map.get(key);
+				Supplier<V> reader = Supplier.of(key).thenApply(map::get);
 				Consumer<V> writer = value -> map.put(key, value);
 				UnaryOperator<V> mapper = UnaryOperator.identity();
 				return new BlockingReference<>() {

@@ -11,9 +11,9 @@ package org.wildfly.clustering.function;
  */
 public interface LongPredicate extends java.util.function.LongPredicate {
 	/** A predicate that always returns true */
-	LongPredicate ALWAYS = value -> true;
+	LongPredicate ALWAYS = of(LongConsumer.EMPTY, BooleanSupplier.TRUE);
 	/** A predicate that always returns false */
-	LongPredicate NEVER = value -> false;
+	LongPredicate NEVER = of(LongConsumer.EMPTY, BooleanSupplier.FALSE);
 	/** A predicate that returns true if its parameter is greater than zero. */
 	LongPredicate POSITIVE = greaterThan(0L);
 	/** A predicate that returns true if its parameter is zero. */
@@ -129,6 +129,22 @@ public interface LongPredicate extends java.util.function.LongPredicate {
 	 */
 	static LongPredicate of(boolean result) {
 		return result ? LongPredicate.ALWAYS : LongPredicate.NEVER;
+	}
+
+	/**
+	 * Returns a predicate that accepts its parameter via the specified consumer and returns the result of the specified supplier.
+	 * @param consumer the predicate parameter consumer
+	 * @param supplier the predicate result supplier
+	 * @return a predicate that accepts its parameter via the specified consumer and returns the result of the specified supplier.
+	 */
+	static LongPredicate of(java.util.function.LongConsumer consumer, java.util.function.BooleanSupplier supplier) {
+		return new LongPredicate() {
+			@Override
+			public boolean test(long value) {
+				consumer.accept(value);
+				return supplier.getAsBoolean();
+			}
+		};
 	}
 
 	/**

@@ -8,14 +8,14 @@ package org.wildfly.clustering.function;
 /**
  * An enhanced binary predicate.
  * @author Paul Ferraro
- * @param <T> the first parameter type
- * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
  */
 public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
 	/** A predicate that always returns true */
-	BiPredicate<?, ?> ALWAYS = (value1, value2) -> true;
+	BiPredicate<?, ?> ALWAYS = of(BiConsumer.EMPTY, BooleanSupplier.TRUE);
 	/** A predicate that always returns false */
-	BiPredicate<?, ?> NEVER = (value1, value2) -> false;
+	BiPredicate<?, ?> NEVER = of(BiConsumer.EMPTY, BooleanSupplier.FALSE);
 
 	@Override
 	default BiPredicate<T, U> and(java.util.function.BiPredicate<? super T, ? super U> other) {
@@ -76,8 +76,8 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 
 	/**
 	 * Returns a predicate that always accepts its arguments.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @return a predicate that always accepts its arguments.
 	 */
 	@SuppressWarnings("unchecked")
@@ -87,8 +87,8 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 
 	/**
 	 * Returns a predicate that never accepts its arguments.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @return a predicate that never accepts its arguments.
 	 */
 	@SuppressWarnings("unchecked")
@@ -97,9 +97,38 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 	}
 
 	/**
+	 * Returns a predicate that always returns the specified value.
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
+	 * @param value the value to be returned by this predicate
+	 * @return a predicate that always returns the specified value.
+	 */
+	static <T, U> BiPredicate<T, U> of(boolean value) {
+		return value ? always() : never();
+	}
+
+	/**
+	 * Returns a predicate that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
+	 * @param consumer the consumer of the predicate parameter
+	 * @param supplier the supplier of the predicate result
+	 * @return a predicate that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
+	 */
+	static <T, U> BiPredicate<T, U> of(java.util.function.BiConsumer<T, U> consumer, java.util.function.BooleanSupplier supplier) {
+		return new BiPredicate<>() {
+			@Override
+			public boolean test(T value1, U value2) {
+				consumer.accept(value1, value2);
+				return supplier.getAsBoolean();
+			}
+		};
+	}
+
+	/**
 	 * Returns a binary predicate from a predicate that tests the first parameter only.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @param predicate the predicate for the first parameter
 	 * @return a binary predicate from a predicate that tests the first parameter only.
 	 */
@@ -109,8 +138,8 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 
 	/**
 	 * Returns a binary predicate from a predicate that tests the second parameter only.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @param predicate the predicate for the first parameter
 	 * @return a binary predicate from a predicate that tests the first parameter only.
 	 */
@@ -120,8 +149,8 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 
 	/**
 	 * Returns a binary predicate composed using the conjunction of two unary predicates.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @param predicate1 the predicate for the first parameter
 	 * @param predicate2 the predicate for the second parameter
 	 * @return a binary predicate composed using the conjunction of two unary predicates.
@@ -137,8 +166,8 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 
 	/**
 	 * Returns a binary predicate composed using the disjunction of two unary predicates.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @param predicate1 the predicate for the first parameter
 	 * @param predicate2 the predicate for the second parameter
 	 * @return a binary predicate composed using the disjunction of two unary predicates.
@@ -154,8 +183,8 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 
 	/**
 	 * Returns a binary predicate composed using the exclusive disjunction of two unary predicates.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @param predicate1 the predicate for the first parameter
 	 * @param predicate2 the predicate for the second parameter
 	 * @return a binary predicate composed using the exclusive disjunction of two unary predicates.

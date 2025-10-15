@@ -35,19 +35,18 @@ public class BinaryOperatorTestCase {
 	}
 
 	@Test
-	public void get() {
+	public void of() {
+		BiConsumer<UUID, UUID> consumer = mock(BiConsumer.class);
 		Supplier<UUID> supplier = mock(Supplier.class);
 		doReturn(this.result).when(supplier).get();
 
-		BinaryOperator<UUID> function = BinaryOperator.get(supplier);
+		BinaryOperator<UUID> function = BinaryOperator.of(consumer, supplier);
 		UUID result = function.apply(this.value1, this.value2);
 
 		assertThat(result).isSameAs(this.result);
 
-		function = BinaryOperator.get(null);
-		result = function.apply(this.value1, this.value2);
-
-		assertThat(result).isNull();
+		verify(consumer, only()).accept(this.value1, this.value2);
+		verify(supplier, only()).get();
 	}
 
 	@Test

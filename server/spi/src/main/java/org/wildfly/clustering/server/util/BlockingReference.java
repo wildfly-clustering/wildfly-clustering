@@ -7,10 +7,10 @@ package org.wildfly.clustering.server.util;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.StampedLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 
@@ -37,7 +37,7 @@ public interface BlockingReference<T> extends Reference<T> {
 	 * @return a thread-safe reader of this reference.
 	 */
 	default Writer<T> writer(java.util.function.Supplier<T> supplier) {
-		return this.writer(UnaryOperator.get(supplier));
+		return this.writer(UnaryOperator.of(Consumer.empty(), supplier));
 	}
 
 	/**
@@ -45,13 +45,13 @@ public interface BlockingReference<T> extends Reference<T> {
 	 * @param updater operator returning the target value of this reference based on the current value
 	 * @return a thread-safe reader of this reference.
 	 */
-	Writer<T> writer(java.util.function.UnaryOperator<T> updater);
+	Writer<T> writer(UnaryOperator<T> updater);
 
 	/**
 	 * Describes the writer of a reference.
 	 * @param <T> the referenced type
 	 */
-	interface Writer<T> extends java.util.function.Supplier<T> {
+	interface Writer<T> extends Supplier<T> {
 		/**
 		 * Returns a mapped writer, whose mapping function is invoked while holding a lock.
 		 * @param <R> the type of the mapped writer
@@ -65,7 +65,7 @@ public interface BlockingReference<T> extends Reference<T> {
 		 * @param condition a condition for which this reference should be updated
 		 * @return a supplier for updating this reference.
 		 */
-		java.util.function.Supplier<T> when(Predicate<T> condition);
+		Supplier<T> when(Predicate<T> condition);
 	}
 
 	/**
@@ -86,7 +86,7 @@ public interface BlockingReference<T> extends Reference<T> {
 			}
 
 			@Override
-			public Writer<T> writer(java.util.function.UnaryOperator<T> updater) {
+			public Writer<T> writer(UnaryOperator<T> updater) {
 				return new ReferenceWriter<>(lock, reader, writer, Function.identity(), updater);
 			}
 		};
@@ -99,12 +99,12 @@ public interface BlockingReference<T> extends Reference<T> {
 	 */
 	class ReferenceWriter<T, V> implements Writer<V> {
 		private final StampedLock lock;
-		private final java.util.function.Supplier<T> reader;
+		private final Supplier<T> reader;
 		private final Consumer<T> writer;
 		private final Function<T, V> mapper;
-		private final java.util.function.UnaryOperator<T> updater;
+		private final UnaryOperator<T> updater;
 
-		ReferenceWriter(StampedLock lock, java.util.function.Supplier<T> reader, Consumer<T> writer, Function<T, V> mapper, java.util.function.UnaryOperator<T> updater) {
+		ReferenceWriter(StampedLock lock, Supplier<T> reader, Consumer<T> writer, Function<T, V> mapper, UnaryOperator<T> updater) {
 			this.lock = lock;
 			this.reader = reader;
 			this.writer = writer;
@@ -130,7 +130,7 @@ public interface BlockingReference<T> extends Reference<T> {
 		}
 
 		@Override
-		public java.util.function.Supplier<V> when(Predicate<V> condition) {
+		public Supplier<V> when(Predicate<V> condition) {
 			return new ConditionalReferenceWriter<>(this.lock, this.reader, this.writer, this.mapper, condition, this.updater);
 		}
 	}
@@ -140,15 +140,15 @@ public interface BlockingReference<T> extends Reference<T> {
 	 * @param <T> the referenced object type
 	 * @param <V> the mapped type
 	 */
-	class ConditionalReferenceWriter<T, V> implements java.util.function.Supplier<V> {
+	class ConditionalReferenceWriter<T, V> implements Supplier<V> {
 		private final StampedLock lock;
-		private final java.util.function.Supplier<T> reader;
+		private final Supplier<T> reader;
 		private final Consumer<T> writer;
 		private final Function<T, V> mapper;
 		private final Predicate<V> condition;
-		private final java.util.function.UnaryOperator<T> updater;
+		private final UnaryOperator<T> updater;
 
-		ConditionalReferenceWriter(StampedLock lock, java.util.function.Supplier<T> reader, Consumer<T> writer, Function<T, V> mapper, Predicate<V> condition, java.util.function.UnaryOperator<T> updater) {
+		ConditionalReferenceWriter(StampedLock lock, Supplier<T> reader, Consumer<T> writer, Function<T, V> mapper, Predicate<V> condition, UnaryOperator<T> updater) {
 			this.lock = lock;
 			this.reader = reader;
 			this.writer = writer;

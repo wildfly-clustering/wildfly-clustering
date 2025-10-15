@@ -8,8 +8,8 @@ package org.wildfly.clustering.function;
 /**
  * An enhanced binary function.
  * @author Paul Ferraro
- * @param <T> the first parameter type
- * @param <U> the second parameter type
+ * @param <T> the former parameter type
+ * @param <U> the latter parameter type
  * @param <R> the result type
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
@@ -137,30 +137,32 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
 	static <T, U, R> BiFunction<T, U, R> of(R result) {
-		return (result != null) ? get(Supplier.of(result)) : empty();
+		return (result != null) ? of(BiConsumer.empty(), Supplier.of(result)) : empty();
 	}
 
 	/**
-	 * Returns a function that returns the value returned by the specified supplier, ignoring its parameter.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * Returns a function that accepts its parameters via the specified consumer and returns the value returned by the specified supplier.
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @param <R> the function return type
-	 * @param supplier the function result supplier
-	 * @return a function that returns the value returned by the specified supplier, ignoring its parameter.
+	 * @param consumer the consumer of the function parameter
+	 * @param supplier the supplier of the function result
+	 * @return a function that accepts its parameters via the specified consumer and returns the value returned by the specified supplier.
 	 */
-	static <T, U, R> BiFunction<T, U, R> get(java.util.function.Supplier<R> supplier) {
-		return (supplier != null) && (supplier != Supplier.NULL) ? new BiFunction<>() {
+	static <T, U, R> BiFunction<T, U, R> of(java.util.function.BiConsumer<T, U> consumer, java.util.function.Supplier<R> supplier) {
+		return new BiFunction<>() {
 			@Override
-			public R apply(T ignore1, U ignore2) {
+			public R apply(T value1, U value2) {
+				consumer.accept(value1, value2);
 				return supplier.get();
 			}
-		} : empty();
+		};
 	}
 
 	/**
 	 * Returns a function that applies the former parameter to the specified function.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @param <R> the function return type
 	 * @param function the function applied to the former parameter
 	 * @return a function that applies the former parameter to the specified function.
@@ -176,8 +178,8 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 
 	/**
 	 * Returns a function that applies the latter parameter to the specified function.
-	 * @param <T> the first parameter type
-	 * @param <U> the second parameter type
+	 * @param <T> the former parameter type
+	 * @param <U> the latter parameter type
 	 * @param <R> the function return type
 	 * @param function the function applied to the latter parameter
 	 * @return a function that applies the latter parameter to the specified function.

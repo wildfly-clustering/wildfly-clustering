@@ -18,7 +18,7 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	/** An identity function that always returns its parameter */
 	Function<?, ?> IDENTITY = value -> value;
 	/** A function that always returns null. */
-	Function<?, ?> NULL = value -> null;
+	Function<?, ?> NULL = of(Consumer.EMPTY, Supplier.NULL);
 
 	@Override
 	default <V> Function<V, R> compose(java.util.function.Function<? super V, ? extends T> before) {
@@ -134,28 +134,25 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
 	static <T, R> Function<T, R> of(R result) {
-		return (result != null) ? new Function<>() {
-			@Override
-			public R apply(T ignore) {
-				return result;
-			}
-		} : empty();
+		return (result != null) ? of(Consumer.empty(), Supplier.of(result)) : empty();
 	}
 
 	/**
-	 * Returns a function that returns the value returned by the specified supplier, ignoring its parameter.
+	 * Returns a function that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
 	 * @param <T> the function parameter type
 	 * @param <R> the function return type
-	 * @param supplier the function result supplier
-	 * @return a function that returns the value returned by the specified supplier, ignoring its parameter.
+	 * @param consumer the consumer of the function parameter
+	 * @param supplier the supplier of the function result
+	 * @return a function that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
 	 */
-	static <T, R> Function<T, R> get(java.util.function.Supplier<R> supplier) {
-		return (supplier != null) && (supplier != Supplier.NULL) ? new Function<>() {
+	static <T, R> Function<T, R> of(java.util.function.Consumer<T> consumer, java.util.function.Supplier<R> supplier) {
+		return new Function<>() {
 			@Override
-			public R apply(T ignore) {
+			public R apply(T value) {
+				consumer.accept(value);
 				return supplier.get();
 			}
-		} : empty();
+		};
 	}
 
 	/**

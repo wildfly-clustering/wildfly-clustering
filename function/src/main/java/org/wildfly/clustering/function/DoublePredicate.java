@@ -11,9 +11,9 @@ package org.wildfly.clustering.function;
  */
 public interface DoublePredicate extends java.util.function.DoublePredicate {
 	/** A predicate that always returns true */
-	DoublePredicate ALWAYS = value -> true;
+	DoublePredicate ALWAYS = of(DoubleConsumer.EMPTY, BooleanSupplier.TRUE);
 	/** A predicate that always returns false */
-	DoublePredicate NEVER = value -> false;
+	DoublePredicate NEVER = of(DoubleConsumer.EMPTY, BooleanSupplier.FALSE);
 	/** A predicate that returns true if its parameter is greater than zero. */
 	DoublePredicate POSITIVE = greaterThan(0d);
 	/** A predicate that returns true if its parameter is zero. */
@@ -129,6 +129,22 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
 	 */
 	static DoublePredicate of(boolean result) {
 		return result ? DoublePredicate.ALWAYS : DoublePredicate.NEVER;
+	}
+
+	/**
+	 * Returns a predicate that accepts its parameter via the specified consumer and returns the result of the specified supplier.
+	 * @param consumer the predicate parameter consumer
+	 * @param supplier the predicate result supplier
+	 * @return a predicate that accepts its parameter via the specified consumer and returns the result of the specified supplier.
+	 */
+	static DoublePredicate of(java.util.function.DoubleConsumer consumer, java.util.function.BooleanSupplier supplier) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				consumer.accept(value);
+				return supplier.getAsBoolean();
+			}
+		};
 	}
 
 	/**
