@@ -6,6 +6,7 @@
 package org.wildfly.clustering.function;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Random;
@@ -106,5 +107,45 @@ public class BiPredicateTestCase {
 		if (!expected1) {
 			verify(predicate2, only()).test(this.value2);
 		}
+	}
+
+	@Test
+	public void compose() {
+		BiPredicate<UUID, UUID> after = mock(BiPredicate.class);
+		UnaryOperator<UUID> before1 = mock(UnaryOperator.class);
+		UnaryOperator<UUID> before2 = mock(UnaryOperator.class);
+		doCallRealMethod().when(after).compose(any(), any());
+
+		BiPredicate<UUID, UUID> predicate = after.compose(before1, before2);
+
+		UUID interrimValue1 = UUID.randomUUID();
+		UUID interrimValue2 = UUID.randomUUID();
+		boolean expected = this.random.nextBoolean();
+
+		doReturn(interrimValue1).when(before1).apply(this.value1);
+		doReturn(interrimValue2).when(before2).apply(this.value2);
+		doReturn(expected).when(after).test(interrimValue1, interrimValue2);
+
+		assertThat(predicate.test(this.value1, this.value2)).isEqualTo(expected);
+	}
+
+	@Test
+	public void composeUnary() {
+		BiPredicate<UUID, UUID> after = mock(BiPredicate.class);
+		UnaryOperator<UUID> before1 = mock(UnaryOperator.class);
+		UnaryOperator<UUID> before2 = mock(UnaryOperator.class);
+		doCallRealMethod().when(after).composeUnary(any(), any());
+
+		Predicate<UUID> predicate = after.composeUnary(before1, before2);
+
+		UUID interrimValue1 = UUID.randomUUID();
+		UUID interrimValue2 = UUID.randomUUID();
+		boolean expected = this.random.nextBoolean();
+
+		doReturn(interrimValue1).when(before1).apply(this.value1);
+		doReturn(interrimValue2).when(before2).apply(this.value1);
+		doReturn(expected).when(after).test(interrimValue1, interrimValue2);
+
+		assertThat(predicate.test(this.value1)).isEqualTo(expected);
 	}
 }

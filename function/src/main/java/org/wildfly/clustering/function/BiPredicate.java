@@ -75,6 +75,39 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 	}
 
 	/**
+	 * Composes a predicate that applies the specified functions to each parameter as inputs to this predicate.
+	 * @param <V1> the first parameter function type
+	 * @param <V2> the second parameter function type
+	 * @param before1 the function applied to the first parameter
+	 * @param before2 the function applied to the second parameter
+	 * @return a predicate that applies the specified functions to each parameter as inputs to this predicate.
+	 */
+	default <V1, V2> BiPredicate<V1, V2> compose(java.util.function.Function<? super V1, ? extends T> before1, java.util.function.Function<? super V2, ? extends U> before2) {
+		return new BiPredicate<>() {
+			@Override
+			public boolean test(V1 value1, V2 value2) {
+				return BiPredicate.this.test(before1.apply(value1), before2.apply(value2));
+			}
+		};
+	}
+
+	/**
+	 * Composes a unary predicate that applies the specified functions to its parameter as inputs to this predicate.
+	 * @param <V> the parameter function type
+	 * @param before1 the function applied to the first parameter
+	 * @param before2 the function applied to the second parameter
+	 * @return a unary predicate that applies the specified functions to its parameter as inputs to this predicate.
+	 */
+	default <V> Predicate<V> composeUnary(java.util.function.Function<? super V, ? extends T> before1, java.util.function.Function<? super V, ? extends U> before2) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(V value) {
+				return BiPredicate.this.test(before1.apply(value), before2.apply(value));
+			}
+		};
+	}
+
+	/**
 	 * Returns a predicate that always accepts its arguments.
 	 * @param <T> the former parameter type
 	 * @param <U> the latter parameter type
