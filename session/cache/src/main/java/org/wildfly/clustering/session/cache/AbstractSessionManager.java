@@ -16,6 +16,7 @@ import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.expiration.Expiration;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
@@ -35,7 +36,7 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionM
 
 	private final SessionFactory<DC, MV, AV, SC> sessionFactory;
 	private final BiFunction<String, SC, Session<SC>> detachedSessionFactory;
-	private final Consumer<ImmutableSession> expirationListener;
+	private final Consumer<ImmutableSession> expiredSessionHandler;
 	private final Expiration expiration;
 	private final IdentifierFactoryService<String> identifierFactory;
 	private final DC context;
@@ -75,6 +76,12 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionM
 		 * Returns a task to invoke on session close.
 		 * @return a task to invoke on session close.
 		 */
+		Consumer<ImmutableSession> getExpiredSessionHandler();
+
+		/**
+		 * Returns a task to invoke on session close.
+		 * @return a task to invoke on session close.
+		 */
 		Consumer<ImmutableSession> getSessionCloseTask();
 	}
 
@@ -87,7 +94,7 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionM
 		this.context = configuration.getContext();
 		this.batchFactory = configuration.getCacheConfiguration().getBatchFactory();
 		this.expiration = configuration;
-		this.expirationListener = configuration.getExpirationListener();
+		this.expiredSessionHandler = configuration.getExpiredSessionHandler();
 		this.sessionFactory = configuration.getSessionFactory();
 		this.detachedSessionFactory = configuration.getDetachedSessionFactory();
 		this.wrapper = new UnaryOperator<>() {
@@ -137,11 +144,10 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionM
 				this.logger.log(System.Logger.Level.TRACE, "Session {0} not found", id);
 				return null;
 			}
-			ImmutableSession session = this.sessionFactory.createImmutableSession(id, entry);
-			if (session.getMetaData().isExpired()) {
-				this.logger.log(System.Logger.Level.TRACE, "Session {0} was found, but has expired: {1}", id, session.getMetaData());
-				this.expirationListener.accept(session);
-				this.sessionFactory.removeAsync(id);
+			ImmutableSessionMetaData metaData = this.sessionFactory.getSessionMetaDataFactory().createImmutableSessionMetaData(id, entry.getKey());
+			if (metaData.isExpired()) {
+				this.logger.log(System.Logger.Level.TRACE, "Session {0} was found, but has expired: {1}", id, metaData);
+				this.expiredSessionHandler.accept(this.sessionFactory.createImmutableSession(id, metaData, this.sessionFactory.getSessionAttributesFactory().createImmutableSessionAttributes(id, entry.getValue())));
 				return null;
 			}
 			return this.wrapper.apply(this.sessionFactory.createSession(id, entry, this.context));

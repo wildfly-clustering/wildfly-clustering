@@ -33,6 +33,12 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 		RemoteCacheConfiguration getCacheConfiguration();
 
 		@Override
+		default java.util.function.Consumer<ImmutableSession> getExpiredSessionHandler() {
+			Consumer<String> remover = this.getSessionFactory()::removeAsync;
+			return this.getExpirationListener().andThen(remover.compose(ImmutableSession::getId));
+		}
+
+		@Override
 		default java.util.function.Consumer<ImmutableSession> getSessionCloseTask() {
 			return Consumer.empty();
 		}

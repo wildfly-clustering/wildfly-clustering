@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
@@ -62,7 +61,7 @@ public class BiConsumerTestCase {
 	@Test
 	public void compose() {
 		BiConsumer<Object, Object> consumer = Mockito.mock(BiConsumer.class);
-		Mockito.doCallRealMethod().when(consumer).compose(ArgumentMatchers.any(), ArgumentMatchers.any());
+		Mockito.doCallRealMethod().when(consumer).compose(any(), any());
 		Function<Object, Object> mapper1 = Mockito.mock(Function.class);
 		Function<Object, Object> mapper2 = Mockito.mock(Function.class);
 		Object value1 = new Object();
@@ -78,10 +77,27 @@ public class BiConsumerTestCase {
 	}
 
 	@Test
+	public void composeUnary() {
+		BiConsumer<Object, Object> consumer = Mockito.mock(BiConsumer.class);
+		Mockito.doCallRealMethod().when(consumer).composeUnary(any(), any());
+		Function<Object, Object> mapper1 = Mockito.mock(Function.class);
+		Function<Object, Object> mapper2 = Mockito.mock(Function.class);
+		Object value = new Object();
+		Object mapped1 = new Object();
+		Object mapped2 = new Object();
+		Mockito.doReturn(mapped1).when(mapper1).apply(value);
+		Mockito.doReturn(mapped2).when(mapper2).apply(value);
+
+		consumer.composeUnary(mapper1, mapper2).accept(value);
+
+		Mockito.verify(consumer).accept(mapped1, mapped2);
+	}
+
+	@Test
 	public void andThen() {
 		BiConsumer<Object, Object> before = Mockito.mock(BiConsumer.class);
 		BiConsumer<Object, Object> after = Mockito.mock(BiConsumer.class);
-		Mockito.doCallRealMethod().when(before).andThen(ArgumentMatchers.any());
+		Mockito.doCallRealMethod().when(before).andThen(any());
 		InOrder order = Mockito.inOrder(before, after);
 
 		before.andThen(after).accept(this.value1, this.value2);
@@ -104,7 +120,7 @@ public class BiConsumerTestCase {
 	public void handle() {
 		BiConsumer<Object, Object> consumer = Mockito.mock(BiConsumer.class);
 		Consumer<RuntimeException> handler = Mockito.mock(Consumer.class);
-		Mockito.doCallRealMethod().when(consumer).handle(ArgumentMatchers.any());
+		Mockito.doCallRealMethod().when(consumer).handle(any());
 		RuntimeException exception = new RuntimeException();
 
 		consumer.handle(handler).accept(this.value1, this.value2);
