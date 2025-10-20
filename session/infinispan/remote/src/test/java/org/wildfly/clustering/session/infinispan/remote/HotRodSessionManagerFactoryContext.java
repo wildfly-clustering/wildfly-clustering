@@ -141,13 +141,7 @@ public class HotRodSessionManagerFactoryContext<DC, SC> extends AbstractContext<
 		RemoteCache<?, ?> cache = container.getCache(parameters.getDeploymentName());
 		cache.start();
 		this.accept(cache::stop);
-		RemoteCacheConfiguration cacheConfiguration = new RemoteCacheConfiguration() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public <CK, CV> RemoteCache<CK, CV> getCache() {
-				return (RemoteCache<CK, CV>) cache.withDataFormat(format);
-			}
-		};
+
 		MockSessionSpecificationProvider<DC> provider = new MockSessionSpecificationProvider<>();
 		this.factory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactory.Configuration<Map.Entry<ImmutableSession, DC>, DC, SC, PassivationListener<DC>>() {
 			@Override
@@ -167,7 +161,7 @@ public class HotRodSessionManagerFactoryContext<DC, SC> extends AbstractContext<
 
 			@Override
 			public RemoteCacheConfiguration getCacheConfiguration() {
-				return cacheConfiguration;
+				return RemoteCacheConfiguration.of(cache.withDataFormat(format));
 			}
 		});
 		this.accept(this.factory::close);
