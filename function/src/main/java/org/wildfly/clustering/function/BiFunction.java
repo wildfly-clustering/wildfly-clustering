@@ -21,7 +21,7 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	BiFunction<?, ?, ?> NULL = (value1, value2) -> null;
 
 	/**
-	 * Returns a composed function that applies the specified functions to each parameter as inputs to this function.
+	 * Composes a function that applies the specified functions to each parameter as inputs to this function.
 	 * @param <V1> the first parameter function type
 	 * @param <V2> the second parameter function type
 	 * @param before1 the function applied to the first parameter
@@ -33,6 +33,22 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 			@Override
 			public R apply(V1 value1, V2 value2) {
 				return BiFunction.this.apply(before1.apply(value1), before2.apply(value2));
+			}
+		};
+	}
+
+	/**
+	 * Composes a unary function that applies the specified functions to its parameter as inputs to this function.
+	 * @param <V> the parameter function type
+	 * @param before1 the function applied to the first parameter
+	 * @param before2 the function applied to the second parameter
+	 * @return a composed function that applies the specified functions to its parameter as inputs to this function.
+	 */
+	default <V> Function<V, R> composeUnary(java.util.function.Function<? super V, ? extends T> before1, java.util.function.Function<? super V, ? extends U> before2) {
+		return new Function<>() {
+			@Override
+			public R apply(V value) {
+				return BiFunction.this.apply(before1.apply(value), before2.apply(value));
 			}
 		};
 	}

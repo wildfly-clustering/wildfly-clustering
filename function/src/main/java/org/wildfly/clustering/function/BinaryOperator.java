@@ -34,6 +34,21 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	}
 
 	/**
+	 * Returns a composed operator that applies the specified operators to each parameter as inputs to this operator.
+	 * @param before1 the operator applied to the first parameter
+	 * @param before2 the operator applied to the second parameter
+	 * @return a composed operator that applies the specified operators to each parameter as inputs to this operator.
+	 */
+	default UnaryOperator<T> composeUnary(java.util.function.UnaryOperator<T> before1, java.util.function.UnaryOperator<T> before2) {
+		return new UnaryOperator<>() {
+			@Override
+			public T apply(T value) {
+				return BinaryOperator.this.apply(before1.apply(value), before2.apply(value));
+			}
+		};
+	}
+
+	/**
 	 * An operator variant of {@link BiFunction#andThen(java.util.function.Function)}.
 	 * @param after the operator to invoke using the result of this operator.
 	 * @return a binary operator that invokes the specified operator using the result of this operator.

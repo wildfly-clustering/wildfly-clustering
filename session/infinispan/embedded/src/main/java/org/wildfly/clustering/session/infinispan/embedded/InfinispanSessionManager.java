@@ -18,9 +18,11 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
+import org.wildfly.clustering.function.BiConsumer;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionStatistics;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
@@ -54,6 +56,13 @@ public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionMan
 					}
 				}
 			};
+		}
+
+		@Override
+		default Consumer<ImmutableSession> getExpiredSessionHandler() {
+			// If we encounter an expired session, remove it via the scheduler
+			BiConsumer<String, ImmutableSessionMetaData> schedule = this.getExpirationScheduler()::schedule;
+			return schedule.composeUnary(ImmutableSession::getId, ImmutableSession::getMetaData);
 		}
 
 		/**

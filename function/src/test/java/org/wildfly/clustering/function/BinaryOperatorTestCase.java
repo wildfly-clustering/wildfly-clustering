@@ -81,6 +81,23 @@ public class BinaryOperatorTestCase {
 	}
 
 	@Test
+	public void composeUnary() {
+		UUID interrimResult1 = UUID.randomUUID();
+		UUID interrimResult2 = UUID.randomUUID();
+		BinaryOperator<UUID> after = mock(BinaryOperator.class);
+		UnaryOperator<UUID> before1 = mock(UnaryOperator.class);
+		UnaryOperator<UUID> before2 = mock(UnaryOperator.class);
+		doCallRealMethod().when(after).composeUnary(any(), any());
+		doReturn(interrimResult1).when(before1).apply(this.value1);
+		doReturn(interrimResult2).when(before2).apply(this.value1);
+		doReturn(this.result).when(after).apply(interrimResult1, interrimResult2);
+
+		UUID result = after.composeUnary(before1, before2).apply(this.value1);
+
+		assertThat(result).isSameAs(this.result);
+	}
+
+	@Test
 	public void reverse() {
 		BinaryOperator<UUID> function = mock(BinaryOperator.class);
 		doReturn(this.result).when(function).apply(this.value1, this.value2);

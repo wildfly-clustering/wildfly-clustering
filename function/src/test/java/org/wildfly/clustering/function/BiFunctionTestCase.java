@@ -81,6 +81,23 @@ public class BiFunctionTestCase {
 	}
 
 	@Test
+	public void composeUnary() {
+		UUID interrimResult1 = UUID.randomUUID();
+		UUID interrimResult2 = UUID.randomUUID();
+		BiFunction<UUID, UUID, UUID> after = mock(BiFunction.class);
+		Function<UUID, UUID> before1 = mock(Function.class);
+		Function<UUID, UUID> before2 = mock(Function.class);
+		doCallRealMethod().when(after).composeUnary(any(), any());
+		doReturn(interrimResult1).when(before1).apply(this.value1);
+		doReturn(interrimResult2).when(before2).apply(this.value1);
+		doReturn(this.result).when(after).apply(interrimResult1, interrimResult2);
+
+		UUID result = after.composeUnary(before1, before2).apply(this.value1);
+
+		assertThat(result).isSameAs(this.result);
+	}
+
+	@Test
 	public void reverse() {
 		BiFunction<UUID, UUID, UUID> function = mock(BiFunction.class);
 		doReturn(this.result).when(function).apply(this.value1, this.value2);

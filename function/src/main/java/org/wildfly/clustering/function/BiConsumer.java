@@ -23,7 +23,7 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	}
 
 	/**
-	 * Composes a consumer this consumer using result of the specified mapping functions.
+	 * Composes a binary consumer using the specified parameter mapping functions.
 	 * @param <V1> the former mapped type
 	 * @param <V2> the latter mapped type
 	 * @param mapper1 a mapping function for the former parameter
@@ -35,6 +35,22 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 			@Override
 			public void accept(V1 value1, V2 value2) {
 				BiConsumer.this.accept(mapper1.apply(value1), mapper2.apply(value2));
+			}
+		};
+	}
+
+	/**
+	 * Composes a unary consumer using the specified parameter mapping functions.
+	 * @param <V> the mapped type
+	 * @param mapper1 a mapping function for the former parameter
+	 * @param mapper2 a mapping function for the latter parameter
+	 * @return a mapped consumer
+	 */
+	default <V> Consumer<V> composeUnary(java.util.function.Function<? super V, T> mapper1, java.util.function.Function<? super V, U> mapper2) {
+		return new Consumer<>() {
+			@Override
+			public void accept(V value) {
+				BiConsumer.this.accept(mapper1.apply(value), mapper2.apply(value));
 			}
 		};
 	}
