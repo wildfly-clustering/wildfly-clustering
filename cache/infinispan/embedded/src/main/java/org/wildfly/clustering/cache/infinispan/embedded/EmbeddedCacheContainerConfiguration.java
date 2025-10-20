@@ -19,6 +19,19 @@ import org.wildfly.clustering.cache.infinispan.BasicCacheContainerConfiguration;
  * @author Paul Ferraro
  */
 public interface EmbeddedCacheContainerConfiguration extends BasicCacheContainerConfiguration {
+	/**
+	 * Creates a configuration for the specified container.
+	 * @param container a cache container
+	 * @return a configuration for the specified container.
+	 */
+	static EmbeddedCacheContainerConfiguration of(EmbeddedCacheManager container) {
+		return new EmbeddedCacheContainerConfiguration() {
+			@Override
+			public EmbeddedCacheManager getCacheContainer() {
+				return container;
+			}
+		};
+	}
 
 	@Override
 	EmbeddedCacheManager getCacheContainer();

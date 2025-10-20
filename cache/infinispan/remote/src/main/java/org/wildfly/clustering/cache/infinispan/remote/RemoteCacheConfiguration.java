@@ -28,6 +28,35 @@ import org.wildfly.clustering.cache.infinispan.BasicCacheConfiguration;
  * @author Paul Ferraro
  */
 public interface RemoteCacheConfiguration extends RemoteCacheContainerConfiguration, BasicCacheConfiguration {
+	/**
+	 * Creates a cache configuration using the specified cache of the specified manager.
+	 * @param container a cache container
+	 * @param cacheName a cache name
+	 * @return a cache configuration
+	 */
+	static RemoteCacheConfiguration of(RemoteCacheContainer container, String cacheName) {
+		return new RemoteCacheConfiguration() {
+			@Override
+			public <K, V> RemoteCache<K, V> getCache() {
+				return container.getCache(cacheName);
+			}
+		};
+	}
+
+	/**
+	 * Creates a cache configuration for the specified cache.
+	 * @param cache a cache
+	 * @return a cache configuration
+	 */
+	static RemoteCacheConfiguration of(RemoteCache<?, ?> cache) {
+		return new RemoteCacheConfiguration() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public <K, V> RemoteCache<K, V> getCache() {
+				return (RemoteCache<K, V>) cache;
+			}
+		};
+	}
 
 	@Override
 	<K, V> RemoteCache<K, V> getCache();

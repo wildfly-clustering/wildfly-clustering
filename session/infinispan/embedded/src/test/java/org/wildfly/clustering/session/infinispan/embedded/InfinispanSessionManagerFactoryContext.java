@@ -142,18 +142,10 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 			cache.start();
 			this.accept(cache::stop);
 			MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
-			EmbeddedCacheConfiguration cacheConfiguration = new EmbeddedCacheConfiguration() {
-				@SuppressWarnings("unchecked")
-				@Override
-				public <K, V> Cache<K, V> getCache() {
-					return (Cache<K, V>) cache;
-				}
-			};
 			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<Map.Entry<ImmutableSession, C>, C, SC, PassivationListener<C>>() {
-
 				@Override
 				public EmbeddedCacheConfiguration getCacheConfiguration() {
-					return cacheConfiguration;
+					return EmbeddedCacheConfiguration.of(cache);
 				}
 
 				@Override
