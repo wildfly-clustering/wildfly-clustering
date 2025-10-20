@@ -23,6 +23,7 @@ import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerConfigurator;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.cache.SessionManagerITCase;
 
@@ -36,6 +37,7 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();
 
 	static class HotRodSessionManagerArgumentsProvider implements ArgumentsProvider {
+		Class<? extends MarshallingTesterFactory> marshallerClass = MarshallingTesterFactory.class;
 		Set<NearCacheMode> nearCacheModes = EnumSet.of(NearCacheMode.DISABLED);
 		// Currently fails with: java.lang.UnsupportedOperationException: Decorated caches should not delegate wrapping operations
 		// See https://github.com/infinispan/infinispan/issues/14926
@@ -44,7 +46,7 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 			Stream.Builder<Arguments> builder = Stream.builder();
-			for (MarshallingTesterFactory factory : ServiceLoader.load(MarshallingTesterFactory.class, MarshallingTesterFactory.class.getClassLoader())) {
+			for (MarshallingTesterFactory factory : ServiceLoader.load(this.marshallerClass, this.marshallerClass.getClassLoader())) {
 				ByteBufferMarshaller marshaller = factory.getMarshaller();
 				for (TransactionMode transactionMode : this.transactionModes) {
 					for (NearCacheMode nearCacheMode : this.nearCacheModes) {
@@ -88,6 +90,18 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 		}
 	}
 
+	static class ConcurrentHotRodSessionManagerArgumentsProvider extends HotRodSessionManagerArgumentsProvider {
+		ConcurrentHotRodSessionManagerArgumentsProvider() {
+			this.marshallerClass = ProtoStreamTesterFactory.class;
+		}
+	}
+
+	static class ExpirationHotRodSessionManagerArgumentsProvider extends HotRodSessionManagerArgumentsProvider {
+		ExpirationHotRodSessionManagerArgumentsProvider() {
+			this.marshallerClass = ProtoStreamTesterFactory.class;
+		}
+	}
+
 	HotRodSessionManagerITCase() {
 		super(HotRodSessionManagerFactoryContext::new);
 	}
@@ -101,14 +115,14 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 
 	@Override
 	@ParameterizedTest
-	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
+	@ArgumentsSource(ConcurrentHotRodSessionManagerArgumentsProvider.class)
 	public void concurrent(HotRodSessionManagerParameters parameters) throws Exception {
 		super.concurrent(parameters);
 	}
 
 	@Override
 	@ParameterizedTest
-	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
+	@ArgumentsSource(ExpirationHotRodSessionManagerArgumentsProvider.class)
 	public void expiration(HotRodSessionManagerParameters parameters) throws Exception {
 		super.expiration(parameters);
 	}

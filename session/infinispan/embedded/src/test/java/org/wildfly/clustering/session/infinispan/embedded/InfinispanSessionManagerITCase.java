@@ -48,6 +48,7 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 			this.types.put(CacheType.REPLICATION, EnumSet.allOf(TransactionMode.class));
 			this.types.put(CacheType.INVALIDATION, EnumSet.allOf(TransactionMode.class));
 		}
+
 		@Override
 		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 			Stream.Builder<Arguments> builder = Stream.builder();
