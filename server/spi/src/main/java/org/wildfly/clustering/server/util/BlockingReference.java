@@ -191,11 +191,12 @@ public interface BlockingReference<T> extends Reference<T> {
 							this.lock.unlockRead(stamp);
 						}
 						stamp = this.lock.writeLock();
+						// Re-read with write lock
+						value = this.reader.get();
+						result = this.mapper.apply(value);
+						update = this.condition.test(result);
 					}
-					// Re-read with write lock
-					value = this.reader.get();
-					result = this.mapper.apply(value);
-					if (this.condition.test(result)) {
+					if (update) {
 						this.writer.accept(this.updater.apply(value));
 					}
 				}
