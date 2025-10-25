@@ -17,11 +17,6 @@
 
 	<name>${project.prefix.session.infinispan}: Remote</name>
 
-	<properties>
-		<!-- N.B. Container uses IPv4 addresses on host network -->
-		<maven.failsafe.parameters>${java.runtime.parameters} -Djava.net.preferIPv4Stack=true</maven.failsafe.parameters>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.kohsuke.metainf-services</groupId>
@@ -116,5 +111,15 @@
 				</includes>
 			</testResource>
 		</testResources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<!-- N.B. Container uses IPv4 addresses on host network -->
+					<argLine>@{argLine} -Djava.net.preferIPv4Stack=true</argLine>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 </project>
