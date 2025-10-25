@@ -307,6 +307,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<argLine>@{argLine}</argLine>
+				</configuration>
 				<executions>
 					<execution>
 						<id>default-integration-test</id>
@@ -317,9 +320,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<argLine>@{argLine}</argLine>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
