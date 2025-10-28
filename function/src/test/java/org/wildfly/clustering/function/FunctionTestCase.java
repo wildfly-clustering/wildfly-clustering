@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -158,5 +159,26 @@ public class FunctionTestCase {
 
 		assertThat(result.getKey()).isSameAs(resultKey);
 		assertThat(result.getValue()).isSameAs(resultValue);
+	}
+
+	@Test
+	public void optional() {
+		Function<UUID, UUID> function = mock(Function.class);
+		UUID parameter = UUID.randomUUID();
+		UUID expected = UUID.randomUUID();
+
+		doCallRealMethod().when(function).optional();
+		doReturn(expected).when(function).apply(parameter);
+
+		Function<Optional<UUID>, Optional<UUID>> optional = function.optional();
+
+		assertThat(optional.apply(Optional.empty())).isEmpty();
+		verify(function).optional();
+		verifyNoMoreInteractions(function);
+
+		assertThat(optional.apply(Optional.of(parameter))).get().isEqualTo(expected);
+
+		verify(function).apply(parameter);
+		verifyNoMoreInteractions(function);
 	}
 }
