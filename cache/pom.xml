@@ -16,10 +16,10 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<project.prefix.cache>${project.repository.name}: Cache</project.prefix.cache>
+		<project.cache>${project.repository.name}: Cache</project.cache>
 	</properties>
 
-	<name>${project.prefix.cache}: Modules</name>
+	<name>${project.cache}: Modules</name>
 
 	<modules>
 		<module>caffeine</module>

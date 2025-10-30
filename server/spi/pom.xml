@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-server-spi</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.server}: SPI</name>
+	<name>${project.server}: SPI</name>
 
 	<dependencies>
 		<dependency>

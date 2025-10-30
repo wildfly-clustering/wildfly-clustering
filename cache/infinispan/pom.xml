@@ -16,10 +16,10 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<project.prefix.cache.infinispan>${project.prefix.cache}: Infinispan</project.prefix.cache.infinispan>
+		<project.cache.infinispan>${project.cache}: Infinispan</project.cache.infinispan>
 	</properties>
 
-	<name>${project.prefix.cache.infinispan}: Modules</name>
+	<name>${project.cache.infinispan}: Modules</name>
 
 	<modules>
 		<module>common</module>

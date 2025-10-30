@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-session-infinispan-embedded</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.session.infinispan}: Embedded</name>
+	<name>${project.session.infinispan}: Embedded</name>
 
 	<dependencies>
 		<dependency>

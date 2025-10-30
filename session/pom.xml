@@ -16,15 +16,15 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<project.prefix.session>${project.repository.name}: Session</project.prefix.session>
+		<project.session>${project.repository.name}: Session</project.session>
 	</properties>
 
-	<name>${project.prefix.session}: Modules</name>
+	<name>${project.session}: Modules</name>
 
 	<modules>
 		<module>cache</module>
+		<module>container</module>
 		<module>infinispan</module>
-		<module>spec</module>
 		<module>spi</module>
 	</modules>
 </project>

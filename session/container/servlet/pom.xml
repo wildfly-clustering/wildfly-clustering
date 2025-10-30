@@ -8,18 +8,18 @@
 
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
-		<artifactId>wildfly-clustering-session-spec</artifactId>
+		<artifactId>wildfly-clustering-session-container</artifactId>
 		<version>8.0.4.Final-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>wildfly-clustering-session-spec-servlet</artifactId>
+	<artifactId>wildfly-clustering-session-container-servlet</artifactId>
 	<packaging>pom</packaging>
 
 	<properties>
-		<project.prefix.session.spec.servlet>${project.prefix.session.spec}: Servlet</project.prefix.session.spec.servlet>
+		<project.session.container.servlet>${project.session.container}: Servlet</project.session.container.servlet>
 	</properties>
 
-	<name>${project.prefix.session.spec.servlet}: Modules</name>
+	<name>${project.session.container.servlet}: Modules</name>
 
 	<modules>
 		<module>4.0</module>

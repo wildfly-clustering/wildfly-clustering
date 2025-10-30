@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-server-infinispan</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.server}: Infinispan implementation</name>
+	<name>${project.server}: Infinispan implementation</name>
 
 	<dependencies>
 		<dependency>

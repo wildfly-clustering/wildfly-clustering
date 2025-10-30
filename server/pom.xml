@@ -17,10 +17,10 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<project.prefix.server>${project.repository.name}: Server</project.prefix.server>
+		<project.server>${project.repository.name}: Server</project.server>
 	</properties>
 
-	<name>${project.prefix.server}: Modules</name>
+	<name>${project.server}: Modules</name>
 
 	<modules>
 		<module>api</module>

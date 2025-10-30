@@ -8,14 +8,14 @@
 
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
-		<artifactId>wildfly-clustering-session-spec-servlet</artifactId>
+		<artifactId>wildfly-clustering-session-container-servlet</artifactId>
 		<version>8.0.4.Final-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>wildfly-clustering-session-spec-servlet-6.1</artifactId>
+	<artifactId>wildfly-clustering-session-container-servlet-6.1</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.session.spec.servlet}: 6.1</name>
+	<name>${project.session.container.servlet}: 6.1</name>
 
 	<dependencies>
 		<dependency>
@@ -27,7 +27,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-session-spec-spi</artifactId>
+			<artifactId>wildfly-clustering-session-container-spi</artifactId>
 		</dependency>
 
 		<dependency>

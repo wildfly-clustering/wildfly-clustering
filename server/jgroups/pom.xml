@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-server-jgroups</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.server}: JGroups implementation</name>
+	<name>${project.server}: JGroups implementation</name>
 
 	<dependencies>
 		<dependency>
