@@ -47,6 +47,7 @@ import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfigurati
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.Locality;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.KeyFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.server.Registration;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -87,7 +88,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		 * @return a task to run on {@link CacheContainerRegistry#close()}.
 		 */
 		default Runnable getCloseTask() {
-			return org.wildfly.clustering.function.Runnable.empty();
+			return Runner.empty();
 		}
 	}
 

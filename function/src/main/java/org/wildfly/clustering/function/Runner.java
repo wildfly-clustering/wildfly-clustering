@@ -12,16 +12,16 @@ import java.util.function.Supplier;
  * An enhanced runnable.
  * @author Paul Ferraro
  */
-public interface Runnable extends java.lang.Runnable {
+public interface Runner extends java.lang.Runnable {
 	/** A runner that performs no action. */
-	Runnable EMPTY = () -> {};
+	Runner EMPTY = () -> {};
 
 	/**
 	 * Returns a task that runs the specified task after running this task.
 	 * @param task a task to run after this task
 	 * @return a task that runs the specified task after running this task.
 	 */
-	default Runnable andThen(java.lang.Runnable task) {
+	default Runner andThen(java.lang.Runnable task) {
 		return runAll(List.of(this, task));
 	}
 
@@ -30,12 +30,12 @@ public interface Runnable extends java.lang.Runnable {
 	 * @param handler a runtime exception handler
 	 * @return a new runnable that delegates to the specified handler in the event of an exception.
 	 */
-	default Runnable handle(Consumer<RuntimeException> handler) {
-		return new Runnable() {
+	default Runner handle(Consumer<RuntimeException> handler) {
+		return new Runner() {
 			@Override
 			public void run() {
 				try {
-					Runnable.this.run();
+					Runner.this.run();
 				} catch (RuntimeException e) {
 					handler.accept(e);
 				}
@@ -47,7 +47,7 @@ public interface Runnable extends java.lang.Runnable {
 	 * Returns an empty task.
 	 * @return an empty task.
 	 */
-	static Runnable empty() {
+	static Runner empty() {
 		return EMPTY;
 	}
 
@@ -58,8 +58,8 @@ public interface Runnable extends java.lang.Runnable {
 	 * @param supplier a supplier of the consumed value
 	 * @return a task that consumes a value from the specified supplier.
 	 */
-	static <T> Runnable accept(java.util.function.Consumer<? super T> consumer, Supplier<? extends T> supplier) {
-		return new Runnable() {
+	static <T> Runner accept(java.util.function.Consumer<? super T> consumer, Supplier<? extends T> supplier) {
+		return new Runner() {
 			@Override
 			public void run() {
 				consumer.accept(supplier.get());
@@ -72,8 +72,8 @@ public interface Runnable extends java.lang.Runnable {
 	 * @param runners zero or more runners
 	 * @return a composite runner that runs the specified runners, logging any exceptions
 	 */
-	static Runnable runAll(Iterable<? extends java.lang.Runnable> runners) {
-		return new Runnable() {
+	static Runner runAll(Iterable<? extends java.lang.Runnable> runners) {
+		return new Runner() {
 			@Override
 			public void run() {
 				runners.forEach(java.lang.Runnable::run);

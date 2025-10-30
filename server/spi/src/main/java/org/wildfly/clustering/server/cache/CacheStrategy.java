@@ -16,7 +16,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 
@@ -35,7 +35,7 @@ public enum CacheStrategy implements CacheFactory {
 		public <K, V> Cache<K, V> createCache(Consumer<V> startTask, Consumer<V> stopTask) {
 			return new Cache<>() {
 				@Override
-				public V computeIfAbsent(K key, BiFunction<K, java.lang.Runnable, V> factory) {
+				public V computeIfAbsent(K key, BiFunction<K, Runnable, V> factory) {
 					AtomicReference<V> reference = new AtomicReference<>();
 					V value = factory.apply(key, () -> Optional.ofNullable(reference.getPlain()).ifPresent(stopTask::accept));
 					if (value != null) {
@@ -66,7 +66,7 @@ public enum CacheStrategy implements CacheFactory {
 				private final Map<K, Map.Entry<Integer, AtomicReference<V>>> references = new ConcurrentHashMap<>();
 
 				@Override
-				public V computeIfAbsent(K key, BiFunction<K, java.lang.Runnable, V> factory) {
+				public V computeIfAbsent(K key, BiFunction<K, Runnable, V> factory) {
 					V result = null;
 					// Create lock (or increment usage) first
 					StampedLock lock = this.locks.compute(key, addLockFunction).getValue();
@@ -136,12 +136,12 @@ public enum CacheStrategy implements CacheFactory {
 						}
 						// If factory returned null, remove map entries (or decrement usage)
 						if (result == null) {
-							this.remove(key, Runnable.empty());
+							this.remove(key, Runner.empty());
 						}
 					}
 				}
 
-				private void remove(K key, java.lang.Runnable stopTask) {
+				private void remove(K key, Runnable stopTask) {
 					// Invoke stop task if we were the last thread to close the shared object
 					if (this.references.compute(key, removeReferenceFunction) == null) {
 						stopTask.run();

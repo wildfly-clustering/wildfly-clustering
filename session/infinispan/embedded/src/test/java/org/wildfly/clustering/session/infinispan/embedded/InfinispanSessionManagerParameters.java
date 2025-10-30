@@ -9,7 +9,7 @@ import org.infinispan.configuration.cache.CacheType;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.transaction.TransactionMode;
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.session.cache.SessionManagerParameters;
 
 /**
@@ -25,6 +25,6 @@ public interface InfinispanSessionManagerParameters extends SessionManagerParame
 	}
 
 	default Runnable persistence(GlobalConfiguration global, PersistenceConfigurationBuilder builder) {
-		return org.wildfly.clustering.function.Runnable.empty();
+		return Runner.empty();
 	}
 }

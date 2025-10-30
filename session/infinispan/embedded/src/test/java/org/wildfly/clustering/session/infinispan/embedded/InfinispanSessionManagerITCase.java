@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.cache.infinispan.persistence.jdbc.DataSourceConnectionFactoryConfigurationBuilder;
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
@@ -93,7 +93,7 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 												.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).withDataSource(dataSource)
 												;
 									}
-									return Runnable.empty();
+									return Runner.empty();
 								}
 
 								@Override

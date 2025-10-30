@@ -24,7 +24,6 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.cache.infinispan.persistence.remote.RemoteCacheStoreConfigurationBuilder;
 import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
-import org.wildfly.clustering.function.Runnable;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;

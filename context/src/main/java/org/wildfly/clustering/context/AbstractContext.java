@@ -9,6 +9,8 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.function.Consumer;
 
+import org.wildfly.clustering.function.Runner;
+
 /**
  * An abstract context that can accumulate actions to run on close.
  * @author Paul Ferraro
@@ -32,6 +34,6 @@ public abstract class AbstractContext<T> implements Context<T>, Consumer<Runnabl
 
 	@Override
 	public void close() {
-		org.wildfly.clustering.function.Runnable.runAll(this.tasks::descendingIterator).run();
+		Runner.runAll(this.tasks::descendingIterator).run();
 	}
 }

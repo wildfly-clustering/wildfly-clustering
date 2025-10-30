@@ -16,11 +16,11 @@ import org.mockito.InOrder;
  * Unit test for {@link Runnable}.
  * @author Paul Ferraro
  */
-public class RunnableTestCase {
+public class RunnerTestCase {
 
 	@Test
 	public void andThen() {
-		Runnable runner1 = mock(Runnable.class);
+		Runner runner1 = mock(Runner.class);
 		Runnable runner2 = mock(Runnable.class);
 		InOrder order = inOrder(runner1, runner2);
 		doCallRealMethod().when(runner1).andThen(any());
@@ -33,7 +33,7 @@ public class RunnableTestCase {
 
 	@Test
 	public void handle() {
-		Runnable runner = mock(Runnable.class);
+		Runner runner = mock(Runner.class);
 		Consumer<RuntimeException> handler = mock(Consumer.class);
 		RuntimeException exception = new RuntimeException();
 
@@ -52,13 +52,13 @@ public class RunnableTestCase {
 	}
 
 	@Test
-	public void composite() {
+	public void runAll() {
 		Runnable runner1 = mock(Runnable.class);
 		Runnable runner2 = mock(Runnable.class);
 		Runnable runner3 = mock(Runnable.class);
 		InOrder order = inOrder(runner1, runner2, runner3);
 
-		Runnable.runAll(List.of(runner1, runner2, runner3)).run();
+		Runner.runAll(List.of(runner1, runner2, runner3)).run();
 
 		order.verify(runner1).run();
 		order.verify(runner2).run();
@@ -70,7 +70,7 @@ public class RunnableTestCase {
 		Object value = new Object();
 		Consumer<Object> consumer = mock(Consumer.class);
 
-		Runnable.accept(consumer, Supplier.of(value)).run();
+		Runner.accept(consumer, Supplier.of(value)).run();
 
 		verify(consumer).accept(value);
 	}
