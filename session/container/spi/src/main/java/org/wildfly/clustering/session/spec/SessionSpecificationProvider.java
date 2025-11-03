@@ -13,7 +13,9 @@ import org.wildfly.clustering.session.ImmutableSession;
  * @param <S> the specification type for a session
  * @param <C> the specification type for a deployment context
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.clustering.session.container.ContainerProvider}.
  */
+@Deprecated(forRemoval = true)
 public interface SessionSpecificationProvider<S, C> {
 
 	/**

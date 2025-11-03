@@ -6,12 +6,12 @@
 package org.wildfly.clustering.session.cache;
 
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.expiration.Expiration;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
@@ -24,33 +24,33 @@ import org.wildfly.clustering.session.SessionStatistics;
 
 /**
  * An abstract {@link SessionManager} implementation that delegates most implementation details to a {@link SessionFactory}.
- * @param <DC> the deployment context type
+ * @param <CC> the container context type
  * @param <MV> the session metadata value type
  * @param <AV> the session attribute value type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
+public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionManager<SC>, SessionStatistics {
 	/** The logger for this session manager */
 	protected final System.Logger logger = System.getLogger(this.getClass().getName());
 
-	private final SessionFactory<DC, MV, AV, SC> sessionFactory;
+	private final SessionFactory<CC, MV, AV, SC> sessionFactory;
 	private final BiFunction<String, SC, Session<SC>> detachedSessionFactory;
 	private final Consumer<ImmutableSession> expiredSessionHandler;
 	private final Expiration expiration;
 	private final IdentifierFactoryService<String> identifierFactory;
-	private final DC context;
+	private final CC context;
 	private final Supplier<Batch> batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
 
 	/**
 	 * Configuration of a session manager.
-	 * @param <DC> the deployment context type
+	 * @param <CC> the deployment context type
 	 * @param <MV> the session metadata value type
 	 * @param <AV> the session attribute value type
 	 * @param <SC> the session context type
 	 */
-	protected interface Configuration<DC, MV, AV, SC> extends SessionManagerConfiguration<DC> {
+	protected interface Configuration<CC, MV, AV, SC> extends SessionManagerConfiguration<CC> {
 		@Override
 		IdentifierFactoryService<String> getIdentifierFactory();
 
@@ -64,7 +64,7 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionM
 		 * Returns a factory for creating a session.
 		 * @return a factory for creating a session.
 		 */
-		SessionFactory<DC, MV, AV, SC> getSessionFactory();
+		SessionFactory<CC, MV, AV, SC> getSessionFactory();
 
 		/**
 		 * Returns a factory for creating a detached session.
@@ -89,7 +89,7 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionM
 	 * Creates a session manager using the specified configuration.
 	 * @param configuration the configuration of the session manager
 	 */
-	protected AbstractSessionManager(Configuration<DC, MV, AV, SC> configuration) {
+	protected AbstractSessionManager(Configuration<CC, MV, AV, SC> configuration) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
 		this.batchFactory = configuration.getCacheConfiguration().getBatchFactory();
@@ -97,10 +97,12 @@ public abstract class AbstractSessionManager<DC, MV, AV, SC> implements SessionM
 		this.expiredSessionHandler = configuration.getExpiredSessionHandler();
 		this.sessionFactory = configuration.getSessionFactory();
 		this.detachedSessionFactory = configuration.getDetachedSessionFactory();
+		Consumer<ImmutableSession> sessionCloseTask = configuration.getSessionCloseTask();
+		BiFunction<String, SC, Session<SC>> detachedSessionFactory = this.detachedSessionFactory;
 		this.wrapper = new UnaryOperator<>() {
 			@Override
 			public Session<SC> apply(Session<SC> session) {
-				return new ManagedSession<>(new AttachedSession<>(session, configuration.getSessionCloseTask()), configuration.getDetachedSessionFactory().apply(session.getId(), session.getContext()));
+				return new ManagedSession<>(new AttachedSession<>(session, sessionCloseTask), detachedSessionFactory.apply(session.getId(), session.getContext()));
 			}
 		};
 	}

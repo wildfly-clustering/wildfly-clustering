@@ -13,7 +13,9 @@ import java.util.function.Consumer;
  * @author Paul Ferraro
  * @param <S> the specification type for a session
  * @param <L> the specification type for a session passivation listener
+ * @deprecated Superseded by {@link org.wildfly.clustering.session.container.ContainerProvider}.
  */
+@Deprecated(forRemoval = true)
 public interface SessionEventListenerSpecificationProvider<S, L> {
 
 	/**

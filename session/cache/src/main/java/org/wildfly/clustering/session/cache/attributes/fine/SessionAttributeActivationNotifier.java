@@ -9,7 +9,7 @@ package org.wildfly.clustering.session.cache.attributes.fine;
  * A notifier of passivation/activation events.
  * @author Paul Ferraro
  */
-public interface SessionAttributeActivationNotifier extends AutoCloseable {
+public interface SessionAttributeActivationNotifier {
 
 	/**
 	 * Notifies the specified attribute that it will be passivated, if interested.
@@ -22,7 +22,4 @@ public interface SessionAttributeActivationNotifier extends AutoCloseable {
 	 * @param value an attribute value
 	 */
 	void postActivate(Object value);
-
-	@Override
-	void close();
 }

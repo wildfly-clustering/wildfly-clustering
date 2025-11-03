@@ -1,0 +1,87 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.wildfly.clustering.session.container.servlet;
+
+import java.util.Optional;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionActivationListener;
+import javax.servlet.http.HttpSessionEvent;
+
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.container.ContainerProvider;
+
+/**
+ * Jakarta Servlet 4.0 container provider.
+ * @author Paul Ferraro
+ * @param <C> the session context type
+ */
+@MetaInfServices(ContainerProvider.class)
+public class ServletContainerProvider<C> implements ContainerProvider.SessionAttributeEventListener<ServletContext, HttpSession, HttpSessionActivationListener, C> {
+	/**
+	 * Creates a new container provider.
+	 */
+	public ServletContainerProvider() {
+	}
+
+	@Override
+	public String getId(ServletContext context) {
+		return context.getVirtualServerName() + context.getContextPath();
+	}
+
+	@Override
+	public HttpSession getDetachableSession(SessionManager<C> manager, ImmutableSession session, ServletContext context) {
+		return new DetachableHttpSession(new ImmutableHttpSession(session, context), new MutableHttpSession(manager.getDetachedSession(session.getId()), context));
+	}
+
+	@Override
+	public HttpSession getDetachedSession(SessionManager<C> manager, String id, ServletContext context) {
+		return new MutableHttpSession(manager.getDetachedSession(id), context);
+	}
+
+	@Override
+	public Class<HttpSessionActivationListener> getSessionEventListenerClass() {
+		return HttpSessionActivationListener.class;
+	}
+
+	@Override
+	public Consumer<HttpSession> getPrePassivateEventNotifier(HttpSessionActivationListener listener) {
+		return compose(listener::sessionWillPassivate);
+	}
+
+	@Override
+	public Consumer<HttpSession> getPostActivateEventNotifier(HttpSessionActivationListener listener) {
+		return compose(listener::sessionDidActivate);
+	}
+
+	private static Consumer<HttpSession> compose(Consumer<HttpSessionEvent> eventNotifier) {
+		return eventNotifier.compose(HttpSessionEvent::new);
+	}
+
+	@Override
+	public Optional<HttpSessionActivationListener> getSessionEventListener(Consumer<HttpSession> prePassivateEventNotifier, Consumer<HttpSession> postActivateEventNotifier) {
+		return Optional.of(new HttpSessionActivationListener() {
+			@Override
+			public void sessionWillPassivate(HttpSessionEvent event) {
+				prePassivateEventNotifier.accept(event.getSession());
+			}
+
+			@Override
+			public void sessionDidActivate(HttpSessionEvent event) {
+				postActivateEventNotifier.accept(event.getSession());
+			}
+		});
+	}
+
+	@Override
+	public String toString() {
+		return "Jakarta Servlet 4.0";
+	}
+}
