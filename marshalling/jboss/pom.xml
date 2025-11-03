@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.marshalling}: JBoss Marshalling</name>
+	<name>${project.marshalling}: JBoss Marshalling</name>
 
 	<dependencies>
 		<dependency>

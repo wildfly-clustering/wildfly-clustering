@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-session-spi</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.session}: SPI</name>
+	<name>${project.session}: SPI</name>
 
 	<dependencies>
 		<dependency>

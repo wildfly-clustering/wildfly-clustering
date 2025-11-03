@@ -7,9 +7,9 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionMetaData;
@@ -23,7 +23,7 @@ import org.wildfly.clustering.session.cache.metadata.DetachedSessionMetaData;
  */
 public class DetachedSession<C> extends AbstractImmutableSession implements Session<C> {
 
-	private final Supplier<SessionManager<C>> manager;
+	private final SessionManager<C> manager;
 	private final C context;
 	private final SessionMetaData metaData;
 	private final Map<String, Object> attributes;
@@ -34,11 +34,11 @@ public class DetachedSession<C> extends AbstractImmutableSession implements Sess
 	 * @param id the identifier of the detached session
 	 * @param context the context of the detached session
 	 */
-	public DetachedSession(Supplier<SessionManager<C>> manager, String id, C context) {
+	public DetachedSession(SessionManager<C> manager, String id, C context) {
 		super(id);
 		this.manager = manager;
 		this.context = context;
-		Supplier<Batch> batchFactory = this::getBatch;
+		Supplier<Batch> batchFactory = this.manager.getBatchFactory();
 		Supplier<Session<C>> sessionFactory = this::getSession;
 		this.metaData = new DetachedSessionMetaData<>(batchFactory, sessionFactory);
 		this.attributes = new DetachedSessionAttributes<>(batchFactory, sessionFactory);
@@ -61,14 +61,14 @@ public class DetachedSession<C> extends AbstractImmutableSession implements Sess
 
 	@Override
 	public boolean isValid() {
-		try (Batch batch = this.getBatch()) {
-			return this.manager.get().findImmutableSession(this.getId()) != null;
+		try (Batch batch = this.manager.getBatchFactory().get()) {
+			return this.manager.findImmutableSession(this.getId()) != null;
 		}
 	}
 
 	@Override
 	public void invalidate() {
-		try (Batch batch = this.getBatch()) {
+		try (Batch batch = this.manager.getBatchFactory().get()) {
 			try (Session<C> session = this.getSession()) {
 				session.invalidate();
 			}
@@ -81,10 +81,6 @@ public class DetachedSession<C> extends AbstractImmutableSession implements Sess
 	}
 
 	private Session<C> getSession() {
-		return Optional.ofNullable(this.manager.get().findSession(this.getId())).orElseThrow(IllegalStateException::new);
-	}
-
-	private Batch getBatch() {
-		return this.manager.get().getBatchFactory().get();
+		return Optional.ofNullable(this.manager.findSession(this.getId())).orElseThrow(IllegalStateException::new);
 	}
 }

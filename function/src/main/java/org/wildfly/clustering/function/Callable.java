@@ -46,7 +46,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @return a callable that runs the specified runner and returns <code>null</code>.
 	 */
 	static <T> Callable<T> run(java.lang.Runnable runner) {
-		return (runner != null) && (runner != Runnable.EMPTY) ? new Callable<>() {
+		return (runner != null) && (runner != Runner.EMPTY) ? new Callable<>() {
 			@Override
 			public T call() {
 				runner.run();

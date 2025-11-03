@@ -29,7 +29,7 @@ import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
 import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.context.Context;
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
@@ -50,7 +50,7 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 	}
 
 	public EmbeddedCacheManagerContext(JChannel channel) {
-		this(Context.of(channel, Runnable.empty()));
+		this(Context.of(channel, Runner.empty()));
 	}
 
 	private EmbeddedCacheManagerContext(Context<JChannel> channel) {

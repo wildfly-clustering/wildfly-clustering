@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-cache-infinispan-persistence-remote</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.cache.infinispan.persistence}: Remote</name>
+	<name>${project.cache.infinispan.persistence}: Remote</name>
 
 	<dependencies>
 		<dependency>

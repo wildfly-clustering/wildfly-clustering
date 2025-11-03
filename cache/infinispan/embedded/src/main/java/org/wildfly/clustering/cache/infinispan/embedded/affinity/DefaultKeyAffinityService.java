@@ -143,7 +143,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 		for (Future<?> future : this.currentState.getAndSet(null).getFutures()) {
 			future.cancel(true);
 		}
-		ExecutorService executor = this.executor.getAndSet(null);
+		ExecutorService executor = this.executor.get();
 		PrivilegedAction<List<Runnable>> shutdownAction = executor::shutdownNow;
 		AccessController.doPrivileged(shutdownAction);
 	}

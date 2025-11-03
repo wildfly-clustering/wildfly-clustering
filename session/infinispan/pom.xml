@@ -16,10 +16,10 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<project.prefix.session.infinispan>${project.prefix.session}: Infinispan</project.prefix.session.infinispan>
+		<project.session.infinispan>${project.session}: Infinispan</project.session.infinispan>
 	</properties>
 
-	<name>${project.prefix.session.infinispan}: Modules</name>
+	<name>${project.session.infinispan}: Modules</name>
 
 	<modules>
 		<module>embedded</module>

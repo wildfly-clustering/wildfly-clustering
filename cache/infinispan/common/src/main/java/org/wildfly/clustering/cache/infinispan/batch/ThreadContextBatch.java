@@ -11,7 +11,7 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.context.ContextReference;
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 
 /**
  * A batch referenced via {@link ThreadLocal}.
@@ -71,7 +71,7 @@ enum ThreadContextBatch implements Batch, ContextReference<ContextualBatch> {
 				// Auto-suspend any active tx, and auto-resume on context close
 				SuspendedBatch suspended = ThreadContextBatch.this.suspend();
 				Batch resumed = this.resume();
-				return Context.of(resumed, Runnable.runAll(List.of(resumed::suspend, suspended::resume)));
+				return Context.of(resumed, Runner.runAll(List.of(resumed::suspend, suspended::resume)));
 			}
 
 			@Override

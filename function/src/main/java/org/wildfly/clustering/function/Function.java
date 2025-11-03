@@ -7,6 +7,7 @@ package org.wildfly.clustering.function;
 
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * An enhanced function.
@@ -100,6 +101,19 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 				} catch (RuntimeException e) {
 					return handler.apply(value, e);
 				}
+			}
+		};
+	}
+
+	/**
+	 * Returns an optional function that applies this function to an optional value.
+	 * @return an optional function that applies this function to an optional value.
+	 */
+	default Function<Optional<T>, Optional<R>> optional() {
+		return new Function<>() {
+			@Override
+			public Optional<R> apply(Optional<T> value) {
+				return value.map(Function.this);
 			}
 		};
 	}

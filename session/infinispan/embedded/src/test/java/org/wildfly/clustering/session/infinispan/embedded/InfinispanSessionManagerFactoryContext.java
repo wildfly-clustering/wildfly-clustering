@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.embedded;
 
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
@@ -35,26 +33,21 @@ import org.wildfly.clustering.server.infinispan.dispatcher.EmbeddedCacheManagerC
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcherFactory;
 import org.wildfly.clustering.server.jgroups.dispatcher.ChannelCommandDispatcherFactoryContext;
-import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.cache.MockSessionSpecificationProvider;
-import org.wildfly.clustering.session.cache.PassivationListener;
-import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
- * @param <C> the session manager context type
- * @param <SC> the referenced session context type
  * @author Paul Ferraro
+ * @param <CC> the container context type
+ * @param <SC> the session context type
  */
-public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractContext<SessionManagerFactory<C, SC>> {
+public class InfinispanSessionManagerFactoryContext<CC, SC> extends AbstractContext<SessionManagerFactory<CC, SC>> {
 	private static final String SERVER_NAME = "server";
 
-	private final SessionManagerFactory<C, SC> factory;
+	private final SessionManagerFactory<CC, SC> factory;
 
-	public InfinispanSessionManagerFactoryContext(InfinispanSessionManagerParameters parameters, String memberName, Supplier<SC> contextFactory) {
+	InfinispanSessionManagerFactoryContext(InfinispanSessionManagerParameters parameters, String memberName, Supplier<SC> contextFactory) {
 		try {
 			Context<ChannelCommandDispatcherFactory> dispatcherFactoryContext = new ChannelCommandDispatcherFactoryContext(parameters.getClusterName(), memberName);
 			this.accept(dispatcherFactoryContext::close);
@@ -141,8 +134,7 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 			Cache<?, ?> cache = managerContext.get().getCache(parameters.getDeploymentName());
 			cache.start();
 			this.accept(cache::stop);
-			MockSessionSpecificationProvider<C> provider = new MockSessionSpecificationProvider<>();
-			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<Map.Entry<ImmutableSession, C>, C, SC, PassivationListener<C>>() {
+			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<SC>() {
 				@Override
 				public EmbeddedCacheConfiguration getCacheConfiguration() {
 					return EmbeddedCacheConfiguration.of(cache);
@@ -151,16 +143,6 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 				@Override
 				public SessionManagerFactoryConfiguration<SC> getSessionManagerFactoryConfiguration() {
 					return managerFactoryConfiguration;
-				}
-
-				@Override
-				public SessionSpecificationProvider<Entry<ImmutableSession, C>, C> getSessionSpecificationProvider() {
-					return provider;
-				}
-
-				@Override
-				public SessionEventListenerSpecificationProvider<Entry<ImmutableSession, C>, PassivationListener<C>> getSessionEventListenerSpecificationProvider() {
-					return provider;
 				}
 
 				@Override
@@ -176,7 +158,7 @@ public class InfinispanSessionManagerFactoryContext<C, SC> extends AbstractConte
 	}
 
 	@Override
-	public SessionManagerFactory<C, SC> get() {
+	public SessionManagerFactory<CC, SC> get() {
 		return this.factory;
 	}
 }

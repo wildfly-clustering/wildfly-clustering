@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.remote;
 
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -29,25 +27,20 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarsh
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 import org.wildfly.clustering.server.immutable.Immutability;
-import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.cache.MockSessionSpecificationProvider;
-import org.wildfly.clustering.session.cache.PassivationListener;
-import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * A context for a HotRod session manager factory.
- * @param <DC> the deployment context type
+ * @param <CC> the container context type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerFactoryContext<DC, SC> extends AbstractContext<SessionManagerFactory<DC, SC>> {
+public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<SessionManagerFactory<CC, SC>> {
 	private static final String SERVER_NAME = "server";
 
-	private final SessionManagerFactory<DC, SC> factory;
+	private final SessionManagerFactory<CC, SC> factory;
 
 	public HotRodSessionManagerFactoryContext(HotRodSessionManagerParameters parameters, String memberName, Supplier<SC> contextFactory) {
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();
@@ -142,21 +135,10 @@ public class HotRodSessionManagerFactoryContext<DC, SC> extends AbstractContext<
 		cache.start();
 		this.accept(cache::stop);
 
-		MockSessionSpecificationProvider<DC> provider = new MockSessionSpecificationProvider<>();
-		this.factory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactory.Configuration<Map.Entry<ImmutableSession, DC>, DC, SC, PassivationListener<DC>>() {
+		this.factory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactory.Configuration<SC>() {
 			@Override
 			public SessionManagerFactoryConfiguration<SC> getSessionManagerFactoryConfiguration() {
 				return managerFactoryConfiguration;
-			}
-
-			@Override
-			public SessionSpecificationProvider<Map.Entry<ImmutableSession, DC>, DC> getSessionSpecificationProvider() {
-				return provider;
-			}
-
-			@Override
-			public SessionEventListenerSpecificationProvider<Entry<ImmutableSession, DC>, PassivationListener<DC>> getSessionEventListenerSpecificationProvider() {
-				return provider;
 			}
 
 			@Override
@@ -168,7 +150,7 @@ public class HotRodSessionManagerFactoryContext<DC, SC> extends AbstractContext<
 	}
 
 	@Override
-	public SessionManagerFactory<DC, SC> get() {
+	public SessionManagerFactory<CC, SC> get() {
 		return this.factory;
 	}
 }

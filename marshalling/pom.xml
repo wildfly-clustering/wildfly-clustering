@@ -16,10 +16,10 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<project.prefix.marshalling>${project.repository.name}: Marshalling</project.prefix.marshalling>
+		<project.marshalling>${project.repository.name}: Marshalling</project.marshalling>
 	</properties>
 
-	<name>${project.prefix.marshalling}: Modules</name>
+	<name>${project.marshalling}: Modules</name>
 
 	<modules>
 		<module>java</module>

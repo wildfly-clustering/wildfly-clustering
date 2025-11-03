@@ -7,7 +7,7 @@ package org.wildfly.clustering.context;
 
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 
 /**
  * Encapsulates some context that is applicable until {@link #close()}.
@@ -16,7 +16,7 @@ import org.wildfly.clustering.function.Runnable;
  */
 public interface Context<T> extends Supplier<T>, AutoCloseable {
 	/** An empty context */
-	Context<?> EMPTY = of(null, Runnable.empty());
+	Context<?> EMPTY = of(null, Runner.empty());
 
 	@Override
 	void close();

@@ -10,11 +10,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -23,6 +23,7 @@ import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.Registrar;
@@ -62,21 +63,21 @@ import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttr
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 import org.wildfly.clustering.session.cache.metadata.coarse.ContextualSessionMetaDataEntry;
+import org.wildfly.clustering.session.container.ContainerProvider;
 import org.wildfly.clustering.session.infinispan.embedded.attributes.CoarseSessionAttributesFactory;
 import org.wildfly.clustering.session.infinispan.embedded.attributes.FineSessionAttributesFactory;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.InfinispanSessionMetaDataFactory;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
-import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 
 /**
  * Factory for creating session managers.
- * @param <DC> the deployment context type
+ * @param <CC> the deployment context type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFactory<DC, SC> {
+public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFactory<CC, SC> {
 
+	private static final System.Logger LOGGER = System.getLogger(InfinispanSessionManagerFactory.class.getName());
 	@SuppressWarnings({ "removal" })
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationTask.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
@@ -87,29 +88,14 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 
 	/**
 	 * The configuration of this session manager factory.
-	 * @param <S> the session specification type
-	 * @param <DC> the session manager context type
 	 * @param <SC> the session context type
-	 * @param <L> the session event listener specification type
 	 */
-	public interface Configuration<S, DC, SC, L> {
+	public interface Configuration<SC> {
 		/**
 		 * Returns the configuration of this session manager factory.
 		 * @return the configuration of this session manager factory.
 		 */
 		SessionManagerFactoryConfiguration<SC> getSessionManagerFactoryConfiguration();
-
-		/**
-		 * Returns the session specification provider.
-		 * @return the session specification provider.
-		 */
-		SessionSpecificationProvider<S, DC> getSessionSpecificationProvider();
-
-		/**
-		 * Returns the session event listener specification provider.
-		 * @return the session event listener specification provider.
-		 */
-		SessionEventListenerSpecificationProvider<S, L> getSessionEventListenerSpecificationProvider();
 
 		/**
 		 * Returns a command dispatcher factory.
@@ -125,25 +111,30 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 	}
 
 	private final SchedulerService<String, ExpirationMetaData> scheduler;
-	private final SessionFactory<DC, ContextualSessionMetaDataEntry<SC>, Object, SC> factory;
+	private final SessionFactory<CC, ContextualSessionMetaDataEntry<SC>, Object, SC> factory;
 	private final EmbeddedCacheConfiguration configuration;
-	private final Function<SessionManagerConfiguration<DC>, Registrar<SessionManager<SC>>> managerRegistrarFactory;
-	private final AtomicInteger managers = new AtomicInteger();
+	private final Function<SessionManagerConfiguration<CC>, Registrar<SessionManager<SC>>> managerRegistrarFactory;
+	private final Function<CC, String> contextIdentifier;
+	private final AtomicInteger counter = new AtomicInteger();
+	private final Map<String, Map.Entry<CC, SessionManager<SC>>> managers = new ConcurrentHashMap<>();
 
 	/**
 	 * Creates a session manager factory.
-	 * @param <S> the session specification type
-	 * @param <L> the session event listener specification type
+	 * @param <S> the container session type
+	 * @param <L> the container session event listener  type
 	 * @param configuration the configuration of this factory
 	 */
-	public <S, L> InfinispanSessionManagerFactory(Configuration<S, DC, SC, L> configuration) {
+	public <S, L> InfinispanSessionManagerFactory(Configuration<SC> configuration) {
+		ContainerProvider<CC, S, L, SC> provider = ServiceLoader.load(ContainerProvider.class, ContainerProvider.class.getClassLoader()).findFirst().orElseThrow();
+		LOGGER.log(System.Logger.Level.DEBUG, "%s configured for %s container", this.getClass().getSimpleName(), provider);
+		this.contextIdentifier = provider::getId;
 		EmbeddedCacheConfiguration cacheConfiguration = configuration.getCacheConfiguration();
 		this.configuration = cacheConfiguration;
-		SessionAttributeActivationNotifierFactory<S, DC, L, SC> notifierFactory = new SessionAttributeActivationNotifierFactory<>(configuration.getSessionSpecificationProvider(), configuration.getSessionEventListenerSpecificationProvider());
+		Function<String, SessionAttributeActivationNotifier> notifierFactory = new SessionAttributeActivationNotifierFactory<>(provider, this.managers.values());
 		SessionMetaDataFactory<ContextualSessionMetaDataEntry<SC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.configuration);
 		@SuppressWarnings("unchecked")
-		SessionAttributesFactory<DC, Object> attributesFactory = (SessionAttributesFactory<DC, Object>) this.createSessionAttributesFactory(configuration, notifierFactory);
-		this.factory = (SessionFactory<DC, ContextualSessionMetaDataEntry<SC>, Object, SC>) new CompositeSessionFactory<>(new SessionFactoryConfiguration<DC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
+		SessionAttributesFactory<CC, Object> attributesFactory = (SessionAttributesFactory<CC, Object>) this.createSessionAttributesFactory(configuration, provider, notifierFactory);
+		this.factory = (SessionFactory<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>) new CompositeSessionFactory<>(new SessionFactoryConfiguration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public CacheProperties getCacheProperties() {
 				return cacheConfiguration.getCacheProperties();
@@ -155,7 +146,7 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 			}
 
 			@Override
-			public SessionAttributesFactory<DC, Object> getSessionAttributesFactory() {
+			public SessionAttributesFactory<CC, Object> getSessionAttributesFactory() {
 				return attributesFactory;
 			}
 
@@ -164,17 +155,20 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 				return configuration.getSessionManagerFactoryConfiguration().getSessionContextFactory();
 			}
 		});
-		ConsumerRegistry<ImmutableSession> expirationListenerRegistry = ConsumerRegistry.newInstance(CopyOnWriteArrayList::new);
+		ConsumerRegistry<ImmutableSession> expirationListenerRegistry = ConsumerRegistry.newInstance();
 		Predicate<String> expirationTask = new SessionExpirationTask<>(this.factory, cacheConfiguration.getBatchFactory(), expirationListenerRegistry);
 		this.managerRegistrarFactory = new Function<>() {
 			@Override
-			public Registrar<SessionManager<SC>> apply(SessionManagerConfiguration<DC> managerConfiguration) {
+			public Registrar<SessionManager<SC>> apply(SessionManagerConfiguration<CC> managerConfiguration) {
 				return new Registrar<>() {
 					@Override
 					public Registration register(SessionManager<SC> manager) {
-						Registration contextRegistration = notifierFactory.register(Map.entry(managerConfiguration.getContext(), manager));
+						CC context = managerConfiguration.getContext();
+						String contextId = provider.getId(context);
+						InfinispanSessionManagerFactory.this.managers.put(contextId, Map.entry(context, manager));
+						Registration managerRegistration = () -> InfinispanSessionManagerFactory.this.managers.remove(contextId);
 						Registration expirationRegistration = expirationListenerRegistry.register(managerConfiguration.getExpirationListener());
-						return Registration.composite(List.of(contextRegistration, expirationRegistration));
+						return Registration.composite(List.of(expirationRegistration, managerRegistration));
 					}
 				};
 			}
@@ -247,23 +241,22 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 	}
 
 	@Override
-	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<DC> configuration) {
+	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<CC> configuration) {
 		EmbeddedCacheConfiguration cacheConfiguration = this.configuration;
-		SessionFactory<DC, ContextualSessionMetaDataEntry<SC>, Object, SC> sessionFactory = this.factory;
+		SessionFactory<CC, ContextualSessionMetaDataEntry<SC>, Object, SC> sessionFactory = this.factory;
 		IdentifierFactoryService<String> identifierFactory = new AffinityIdentifierFactoryService<>(configuration.getIdentifierFactory(), cacheConfiguration.getCache());
 		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
 		SchedulerService<String, ExpirationMetaData> scheduler = this.scheduler;
-		AtomicReference<SessionManager<SC>> reference = new AtomicReference<>();
-		BiFunction<String, SC, Session<SC>> detachedSessionFactory = (id, context) -> new DetachedSession<>(reference::getPlain, id, context);
-		AtomicInteger managers = this.managers;
-		SessionManager<SC> manager = new CachedSessionManager<>(new InfinispanSessionManager<>(new InfinispanSessionManager.Configuration<DC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
+		String containerKey = this.contextIdentifier.apply(configuration.getContext());
+		BiFunction<String, SC, Session<SC>> detachedSessionFactory = (id, context) -> new DetachedSession<>(this.managers.get(containerKey).getValue(), id, context);
+		SessionManager<SC> manager = new CachedSessionManager<>(new InfinispanSessionManager<>(new InfinispanSessionManager.Configuration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public IdentifierFactoryService<String> getIdentifierFactory() {
 				return identifierFactory;
 			}
 
 			@Override
-			public SessionFactory<DC, ContextualSessionMetaDataEntry<SC>, Object, SC> getSessionFactory() {
+			public SessionFactory<CC, ContextualSessionMetaDataEntry<SC>, Object, SC> getSessionFactory() {
 				return sessionFactory;
 			}
 
@@ -273,7 +266,7 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 			}
 
 			@Override
-			public DC getContext() {
+			public CC getContext() {
 				return configuration.getContext();
 			}
 
@@ -305,7 +298,7 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 				super.start();
 				// Scheduler is shared between all managers created by this factory
 				// Only start the first one
-				if (managers.getAndIncrement() == 0) {
+				if (InfinispanSessionManagerFactory.this.counter.getAndIncrement() == 0) {
 					scheduler.start();
 				}
 			}
@@ -313,26 +306,28 @@ public class InfinispanSessionManagerFactory<DC, SC> implements SessionManagerFa
 			@Override
 			public void stop() {
 				// Only stop scheduler when last manager stops
-				if (managers.decrementAndGet() == 0) {
+				if (InfinispanSessionManagerFactory.this.counter.decrementAndGet() == 0) {
 					scheduler.stop();
 				}
-				super.stop();
-				Consumer.close().accept(this.registration.getAndSet(null));
+				try {
+					super.stop();
+				} finally {
+					Consumer.close().accept(this.registration.getAndSet(null));
+				}
 			}
 		};
-		reference.setPlain(manager);
 		return manager;
 	}
 
-	private <S, L> SessionAttributesFactory<DC, ?> createSessionAttributesFactory(Configuration<S, DC, SC, L> configuration, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory) {
+	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory) {
 		boolean marshalling = configuration.getCacheConfiguration().getCacheProperties().isMarshalling();
 		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
 			case FINE -> {
-				BiFunction<ImmutableSession, DC, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionAttributeActivationNotifier<>(configuration.getSessionSpecificationProvider(), configuration.getSessionEventListenerSpecificationProvider(), session, context);
+				BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(InfinispanSessionManagerFactory.this.managers.get(provider.getId(context)).getValue(), session, context));
 				return marshalling ? new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, detachedPassivationNotifierFactory, configuration.getCacheConfiguration()) : new FineSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, detachedPassivationNotifierFactory, configuration.getCacheConfiguration());
 			}
 			case COARSE -> {
-				BiFunction<ImmutableSession, DC, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionActivationNotifier<>(configuration.getSessionSpecificationProvider(), configuration.getSessionEventListenerSpecificationProvider(), session, context);
+				BiFunction<ImmutableSession, CC, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionActivationNotifier<>(provider, provider.getDetachableSession(InfinispanSessionManagerFactory.this.managers.get(provider.getId(context)).getValue(), session, context), session.getAttributes().values());
 				return marshalling ? new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, detachedPassivationNotifierFactory, configuration.getCacheConfiguration()) : new CoarseSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, detachedPassivationNotifierFactory, configuration.getCacheConfiguration());
 			}
 			default -> throw new IllegalStateException();

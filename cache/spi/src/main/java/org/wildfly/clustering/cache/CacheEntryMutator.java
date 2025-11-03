@@ -11,13 +11,13 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 
 /**
  * Updates a cache entry within the cache.
  * @author Paul Ferraro
  */
-public interface CacheEntryMutator extends java.lang.Runnable {
+public interface CacheEntryMutator extends Runner {
 	/** The mutator logger */
 	System.Logger LOGGER = System.getLogger(CacheEntryMutator.class.getName());
 
@@ -72,7 +72,7 @@ public interface CacheEntryMutator extends java.lang.Runnable {
 			public CompletionStage<Void> runAsync() {
 				CompletionStage<Void> result = CompletableFuture.completedStage(null);
 				for (CacheEntryMutator mutator : mutators) {
-					result = result.runAfterBoth(mutator.runAsync(), Runnable.empty());
+					result = result.runAfterBoth(mutator.runAsync(), Runner.empty());
 				}
 				return result;
 			}

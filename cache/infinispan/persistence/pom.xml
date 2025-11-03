@@ -16,10 +16,10 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<project.prefix.cache.infinispan.persistence>${project.prefix.cache.infinispan}: Persistence</project.prefix.cache.infinispan.persistence>
+		<project.cache.infinispan.persistence>${project.cache.infinispan}: Persistence</project.cache.infinispan.persistence>
 	</properties>
 
-	<name>${project.prefix.cache.infinispan.persistence}: Modules</name>
+	<name>${project.cache.infinispan.persistence}: Modules</name>
 
 	<modules>
 		<module>jdbc</module>

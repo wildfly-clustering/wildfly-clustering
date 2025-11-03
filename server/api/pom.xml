@@ -15,6 +15,6 @@
 	<artifactId>wildfly-clustering-server-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.prefix.server}: API</name>
+	<name>${project.server}: API</name>
 
 </project>

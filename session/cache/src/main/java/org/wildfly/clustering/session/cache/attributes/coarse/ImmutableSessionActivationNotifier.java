@@ -5,69 +5,61 @@
 
 package org.wildfly.clustering.session.cache.attributes.coarse;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.session.container.ContainerProvider;
 
 /**
  * Triggers activation/passivation events for all attributes of a session.
- * @param <S> the HttpSession specification type
- * @param <C> the ServletContext specification type
- * @param <L> the HttpSessionActivationListener specification type
  * @author Paul Ferraro
+ * @param <CC> the container context type
+ * @param <S> the container session type
+ * @param <L> the container listener type
+ * @param <SC> the session context type
  */
-public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActivationNotifier {
+public class ImmutableSessionActivationNotifier<CC, S, L, SC> implements SessionActivationNotifier {
 
-	private final SessionSpecificationProvider<S, C> sessionProvider;
-	private final SessionEventListenerSpecificationProvider<S, L> listenerProvider;
-	private final ImmutableSession session;
-	private final C context;
+	private final ContainerProvider<CC, S, L, SC> provider;
+	private final S session;
+	private final Collection<Object> attributes;
 	private final AtomicBoolean active = new AtomicBoolean(false);
-	private final Function<L, Consumer<S>> prePassivateFactory;
-	private final Function<L, Consumer<S>> postActivateFactory;
 
 	/**
 	 * Create a activation notifier for an immutable session.
-	 * @param sessionProvider provider of specification views
-	 * @param listenerProvider provider of listener specification views
+	 * @param provider the container provider
 	 * @param session an immutable session
-	 * @param context a session context
+	 * @param attributes the attributes of this session
 	 */
-	public ImmutableSessionActivationNotifier(SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, ImmutableSession session, C context) {
-		this.sessionProvider = sessionProvider;
-		this.listenerProvider = listenerProvider;
+	public ImmutableSessionActivationNotifier(ContainerProvider<CC, S, L, SC> provider, S session, Collection<Object> attributes) {
+		this.provider = provider;
 		this.session = session;
-		this.context = context;
-		this.prePassivateFactory = listenerProvider::preEvent;
-		this.postActivateFactory = listenerProvider::postEvent;
+		this.attributes = attributes;
 	}
 
 	@Override
 	public void prePassivate() {
 		if (this.active.compareAndSet(true, false)) {
-			this.notify(this.prePassivateFactory);
+			this.notify(this.provider::getPrePassivateEventNotifier);
 		}
 	}
 
 	@Override
 	public void postActivate() {
 		if (this.active.compareAndSet(false, true)) {
-			this.notify(this.postActivateFactory);
+			this.notify(this.provider::getPostActivateEventNotifier);
 		}
 	}
 
 	private void notify(Function<L, Consumer<S>> factory) {
-		List<L> listeners = this.session.getAttributes().values().stream().map(this.listenerProvider::asEventListener).filter(Optional::isPresent).map(Optional::get).toList();
+		List<L> listeners = this.attributes.stream().map(attribute -> this.provider.getSessionEventListener(this.session, attribute)).filter(Optional::isPresent).map(Optional::get).toList();
 		if (!listeners.isEmpty()) {
-			S session = this.sessionProvider.asSession(this.session, this.context);
 			for (L listener : listeners) {
-				factory.apply(listener).accept(session);
+				factory.apply(listener).accept(this.session);
 			}
 		}
 	}

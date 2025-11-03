@@ -18,18 +18,6 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	Supplier<?> NULL = () -> null;
 
 	/**
-	 * Returns a supplier that returns the value this supplier mapped via the specified function.
-	 * @param <V> the mapped value type
-	 * @param mapper a mapping function
-	 * @return a supplier that returns the value this supplier mapped via the specified function.
-	 * @deprecated Superseded by {@link #thenApply(java.util.function.Function)}
-	 */
-	@Deprecated(forRemoval = true)
-	default <V> Supplier<V> map(java.util.function.Function<T, V> mapper) {
-		return this.thenApply(mapper);
-	}
-
-	/**
 	 * Returns a {@link Runnable} that consumes the supplied value.
 	 * @param consumer a consumer of the supplied value
 	 * @return a {@link Runnable} that consumes the supplied value.
