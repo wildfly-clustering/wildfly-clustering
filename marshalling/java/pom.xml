@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-marshalling-java</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.marshalling}: Java serialization</name>
+	<name>${project.marshalling}: Java Object Serialization</name>
 
 	<dependencies>
 		<dependency>

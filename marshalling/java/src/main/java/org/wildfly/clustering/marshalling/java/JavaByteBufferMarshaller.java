@@ -73,6 +73,6 @@ public class JavaByteBufferMarshaller extends AbstractByteBufferMarshaller {
 
 	@Override
 	public String toString() {
-		return "JavaSerialization";
+		return "Java Object Serialization";
 	}
 }

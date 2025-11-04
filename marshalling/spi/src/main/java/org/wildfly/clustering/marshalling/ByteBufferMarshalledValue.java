@@ -42,9 +42,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	 * @param buffer a byte buffer
 	 */
 	public ByteBufferMarshalledValue(ByteBuffer buffer) {
-		// Normally, we would create a defensive ByteBuffer.asReadOnlyBuffer()
-		// but this would preclude the use of operations on the backing array.
-		this.buffer = buffer;
+		this.buffer = (buffer != null) ? buffer.duplicate() : null;
 	}
 
 	// Used for testing purposes only
@@ -72,7 +70,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 			buffer = this.marshaller.write(this.object);
 			// N.B. Refrain from logging wrapped object
 			// If wrapped object contains an EJB proxy, toString() will trigger an EJB invocation!
-			Logger.INSTANCE.log(System.Logger.Level.TRACE, "Marshalled size of {0} object = {1} bytes", this.object.getClass().getCanonicalName(), buffer.limit() - buffer.arrayOffset());
+			Logger.INSTANCE.log(System.Logger.Level.TRACE, "Marshalled size of {0} object = {1} bytes", this.object.getClass().getCanonicalName(), buffer.remaining());
 		}
 		return buffer;
 	}
@@ -115,9 +113,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 			return ourObject.equals(theirObject);
 		}
 		try {
-			ByteBuffer us = this.getBuffer();
-			ByteBuffer them = value.getBuffer();
-			return ((us != null) && (them != null)) ? us.equals(them) : (us == them);
+			return Objects.equals(this.getBuffer(), value.getBuffer());
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -138,10 +134,20 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	private void writeObject(ObjectOutputStream output) throws IOException {
 		output.defaultWriteObject();
 		ByteBuffer buffer = this.getBuffer();
-		int length = (buffer != null) ? buffer.limit() - buffer.arrayOffset() : 0;
+		int length = (buffer != null) ? buffer.remaining() : 0;
 		IndexSerializer.VARIABLE.writeInt(output, length);
 		if (length > 0) {
-			output.write(buffer.array(), buffer.arrayOffset(), length);
+			if (buffer.hasArray()) {
+				output.write(buffer.array(), buffer.arrayOffset() + buffer.position(), length);
+			} else {
+				ByteBuffer duplicate = buffer.duplicate();
+				byte[] chunk = new byte[Math.min(length, Byte.MAX_VALUE + 1)];
+				while (duplicate.hasRemaining()) {
+					int bytes = Math.min(duplicate.remaining(), chunk.length);
+					duplicate.get(chunk, 0, bytes);
+					output.write(chunk, 0, bytes);
+				}
+			}
 		}
 	}
 

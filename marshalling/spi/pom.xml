@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-marshalling-spi</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.marshalling}: Marshalling: SPI</name>
+	<name>${project.marshalling}: SPI</name>
 
 	<dependencies>
 		<dependency>

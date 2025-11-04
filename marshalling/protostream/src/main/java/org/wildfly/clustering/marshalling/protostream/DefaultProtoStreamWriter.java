@@ -61,8 +61,8 @@ public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter implemen
 				marshaller.writeTo(new DefaultProtoStreamWriter(writer, this.context), value);
 				// Byte buffer is array backed
 				ByteBuffer buffer = output.getBuffer();
-				int offset = buffer.arrayOffset();
-				int length = buffer.limit() - offset;
+				int offset = buffer.arrayOffset() + buffer.position();
+				int length = buffer.remaining();
 				this.writeVarint32(length);
 				if (length > 0) {
 					this.writeRawBytes(buffer.array(), offset, length);

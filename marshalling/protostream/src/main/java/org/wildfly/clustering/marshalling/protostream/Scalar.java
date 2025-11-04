@@ -248,18 +248,20 @@ public enum Scalar implements ScalarMarshaller<Object> {
 
 		@Override
 		public void writeTo(ProtoStreamWriter writer, ByteBuffer buffer) throws IOException {
-			if (buffer.hasArray()) {
-				int length = buffer.remaining();
-				writer.writeVarint32(length);
-				writer.writeRawBytes(buffer.array(), buffer.arrayOffset(), length);
-			} else {
-				// Don't mess with existing position
-				ByteBuffer copy = buffer.asReadOnlyBuffer();
-				int length = copy.remaining();
-				writer.writeVarint32(length);
-				byte[] bytes = new byte[length];
-				copy.get(bytes, copy.position(), length);
-				writer.writeRawBytes(bytes, 0, length);
+			int length = buffer.remaining();
+			writer.writeVarint32(length);
+			if (length > 0) {
+				if (buffer.hasArray()) {
+					writer.writeRawBytes(buffer.array(), buffer.arrayOffset() + buffer.position(), length);
+				} else {
+					ByteBuffer duplicate = buffer.duplicate();
+					byte[] chunk = new byte[Math.min(length, Byte.MAX_VALUE + 1)];
+					while (duplicate.hasRemaining()) {
+						int bytes = Math.min(duplicate.remaining(), chunk.length);
+						duplicate.get(chunk, 0, bytes);
+						writer.writeRawBytes(chunk, 0, bytes);
+					}
+				}
 			}
 		}
 
@@ -283,7 +285,9 @@ public enum Scalar implements ScalarMarshaller<Object> {
 		@Override
 		public void writeTo(ProtoStreamWriter writer, byte[] value) throws IOException {
 			writer.writeVarint32(value.length);
-			writer.writeRawBytes(value, 0, value.length);
+			if (value.length > 0) {
+				writer.writeRawBytes(value, 0, value.length);
+			}
 		}
 
 		@Override

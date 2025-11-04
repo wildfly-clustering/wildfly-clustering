@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.marshalling;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,7 +36,7 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 
 	@Override
 	default Object read(ByteBuffer buffer) throws IOException {
-		try (InputStream input = new ByteBufferInputStream(buffer)) {
+		try (InputStream input = buffer.hasArray() ? new ByteArrayInputStream(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining()) : new ByteBufferInputStream(buffer)) {
 			return this.readFrom(input);
 		}
 	}
@@ -49,7 +50,7 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 			if (Logger.INSTANCE.isLoggable(System.Logger.Level.DEBUG)) {
 				if (size.isPresent()) {
 					int predictedSize = size.getAsInt();
-					int actualSize = buffer.limit() - buffer.arrayOffset();
+					int actualSize = buffer.remaining();
 					if (predictedSize < actualSize) {
 						Logger.INSTANCE.log(System.Logger.Level.DEBUG, "Buffer size prediction too small for {0} ({1}), predicted = {3}, actual = {4}", object, (object != null) ? object.getClass().getCanonicalName() : null, predictedSize, actualSize);
 					}
