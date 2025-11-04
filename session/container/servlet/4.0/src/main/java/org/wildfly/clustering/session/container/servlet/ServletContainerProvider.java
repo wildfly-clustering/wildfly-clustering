@@ -53,20 +53,18 @@ public class ServletContainerProvider<C> implements ContainerProvider.SessionAtt
 
 	@Override
 	public Consumer<HttpSession> getPrePassivateEventNotifier(HttpSessionActivationListener listener) {
-		return compose(listener::sessionWillPassivate);
-	}
-
-	@Override
-	public Consumer<HttpSession> getPostActivateEventNotifier(HttpSessionActivationListener listener) {
-		return compose(listener::sessionDidActivate);
-	}
-
-	private static Consumer<HttpSession> compose(Consumer<HttpSessionEvent> eventNotifier) {
+		Consumer<HttpSessionEvent> eventNotifier = listener::sessionWillPassivate;
 		return eventNotifier.compose(HttpSessionEvent::new);
 	}
 
 	@Override
-	public Optional<HttpSessionActivationListener> getSessionEventListener(Consumer<HttpSession> prePassivateEventNotifier, Consumer<HttpSession> postActivateEventNotifier) {
+	public Consumer<HttpSession> getPostActivateEventNotifier(HttpSessionActivationListener listener) {
+		Consumer<HttpSessionEvent> eventNotifier = listener::sessionDidActivate;
+		return eventNotifier.compose(HttpSessionEvent::new);
+	}
+
+	@Override
+	public Optional<HttpSessionActivationListener> getSessionEventListener(java.util.function.Consumer<HttpSession> prePassivateEventNotifier, java.util.function.Consumer<HttpSession> postActivateEventNotifier) {
 		return Optional.of(new HttpSessionActivationListener() {
 			@Override
 			public void sessionWillPassivate(HttpSessionEvent event) {
