@@ -2,10 +2,26 @@ syntax = "proto3";
 
 package org.infinispan.remoting.transport;
 
-// IDs: 135
+import "java.util.proto";
+
+// IDs: 134-5
+
+/**
+ * @TypeId(134)
+ */
+message Address {
+	java.util.UUID	uuid	= 1;
+	NodeVersion	version	= 2;
+	string	site	= 3;
+	string	rack	= 4;
+	string	machine	= 5;
+}
 
 /**
  * @TypeId(135)
  */
-message LocalModeAddress {
+message NodeVersion {
+	uint32	major	= 1;
+	uint32	minor	= 2;
+	uint32	micro	= 3;
 }

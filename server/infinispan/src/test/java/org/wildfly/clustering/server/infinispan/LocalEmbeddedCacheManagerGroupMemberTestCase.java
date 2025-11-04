@@ -7,7 +7,7 @@ package org.wildfly.clustering.server.infinispan;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.infinispan.remoting.transport.Address;
 import org.jgroups.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,7 +40,7 @@ public class LocalEmbeddedCacheManagerGroupMemberTestCase {
 				.isEqualTo(LocalGroupMember.of(name))
 				.isNotEqualTo(new LocalEmbeddedCacheManagerGroupMember("bar"))
 				.isNotEqualTo(LocalGroupMember.of("bar"))
-				.isNotEqualTo(new EmbeddedCacheManagerGroupMember(new JGroupsAddress(UUID.randomUUID())))
+				.isNotEqualTo(new EmbeddedCacheManagerGroupMember(Address.random()))
 				.isNotEqualTo(new JChannelGroupMember(UUID.randomUUID()))
 				;
 	}

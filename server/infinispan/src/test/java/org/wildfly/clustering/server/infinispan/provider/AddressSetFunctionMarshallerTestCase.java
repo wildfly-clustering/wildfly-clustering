@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
-import org.jgroups.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.wildfly.clustering.cache.function.CollectionFunction;
 import org.wildfly.clustering.marshalling.TesterFactory;
@@ -27,7 +25,7 @@ public class AddressSetFunctionMarshallerTestCase {
 	public void test(TesterFactory factory) {
 		Consumer<CollectionFunction<Address, Set<Address>>> tester = factory.createTester();
 
-		Address address = new JGroupsAddress(UUID.randomUUID());
+		Address address = Address.random();
 		tester.accept(new AddressSetAddFunction(address));
 		tester.accept(new AddressSetRemoveFunction(address));
 	}

@@ -212,6 +212,11 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
 		this.writer.flush();
 	}
 
+	@Override
+	public TagWriter subWriter(int number, boolean nested) throws IOException {
+		return this.writer.subWriter(number, nested);
+	}
+
 	static class DefaultProtoStreamWriterContext implements ProtoStreamWriterContext, Function<Object, Reference> {
 		private final Map<Object, Reference> references = new IdentityHashMap<>(128);
 		private int reference = 0; // Enumerates object references

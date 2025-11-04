@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.infinispan.protostream.BaseMarshaller;
+import org.infinispan.protostream.BaseMarshallerDelegate;
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.SerializationContext;
@@ -88,6 +89,16 @@ public class NativeSerializationContext implements SerializationContext {
 	@Override
 	public <T> BaseMarshaller<T> getMarshaller(Class<T> clazz) {
 		return this.context.getMarshaller(clazz);
+	}
+
+	@Override
+	public <T> BaseMarshallerDelegate<T> getMarshallerDelegate(int typeId) {
+		return this.context.getMarshallerDelegate(typeId);
+	}
+
+	@Override
+	public <T> BaseMarshallerDelegate<T> getMarshallerDelegate(Class<T> typeName) {
+		return this.context.getMarshallerDelegate(typeName);
 	}
 
 	@Deprecated

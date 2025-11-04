@@ -77,6 +77,11 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-server-jgroups</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-server-jgroups</artifactId>
+			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
 

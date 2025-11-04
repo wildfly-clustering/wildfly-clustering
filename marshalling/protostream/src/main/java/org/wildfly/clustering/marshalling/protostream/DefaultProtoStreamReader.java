@@ -91,7 +91,16 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
 
 	@Override
 	public int readTag() throws IOException {
-		return this.currentTag = this.reader.readTag();
+		int tag = this.reader.readTag();
+		this.currentTag = tag;
+		return tag;
+	}
+
+	@Override
+	public byte readByteTag() throws IOException {
+		byte tag = this.reader.readByteTag();
+		this.currentTag = tag;
+		return tag;
 	}
 
 	@Override

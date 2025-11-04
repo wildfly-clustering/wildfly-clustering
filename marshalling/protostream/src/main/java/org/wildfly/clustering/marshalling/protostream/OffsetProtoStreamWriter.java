@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.descriptors.WireType;
 
 /**
@@ -173,5 +174,10 @@ public class OffsetProtoStreamWriter implements ProtoStreamWriter {
 	@Override
 	public void writeFixed64(int index, long value) throws IOException {
 		this.writer.writeFixed64(this.offset + index, value);
+	}
+
+	@Override
+	public TagWriter subWriter(int index, boolean nested) throws IOException {
+		return this.writer.subWriter(this.offset + index, nested);
 	}
 }

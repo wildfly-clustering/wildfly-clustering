@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package org.wildfly.clustering.server.infinispan.provider;
 
-import "org.infinispan.remoting.transport.jgroups.proto";
+import "org.infinispan.remoting.transport.proto";
 
 // IDs: 140 -144
 
@@ -10,12 +10,12 @@ import "org.infinispan.remoting.transport.jgroups.proto";
  * @TypeId(140)
  */
 message AddressSetAddFunction {
-	repeated	org.infinispan.remoting.transport.jgroups.JGroupsAddress	address	= 1;
+	repeated	org.infinispan.remoting.transport.Address	address	= 1;
 }
 
 /**
  * @TypeId(141)
  */
 message AddressSetRemoveFunction {
-	repeated	org.infinispan.remoting.transport.jgroups.JGroupsAddress	address	= 1;
+	repeated	org.infinispan.remoting.transport.Address	address	= 1;
 }

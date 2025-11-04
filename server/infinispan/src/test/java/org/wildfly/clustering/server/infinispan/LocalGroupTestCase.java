@@ -30,18 +30,6 @@ public class LocalGroupTestCase {
 	public void test() throws IOException {
 		GlobalConfiguration global = new GlobalConfigurationBuilder().nonClusteredDefault().cacheManagerName(GROUP_NAME)
 				.serialization().marshaller(IdentityMarshaller.INSTANCE).addContextInitializer(new SerializationContextInitializer() {
-					@Deprecated
-					@Override
-					public String getProtoFile() {
-						return null;
-					}
-
-					@Deprecated
-					@Override
-					public String getProtoFileName() {
-						return null;
-					}
-
 					@Override
 					public void registerMarshallers(SerializationContext context) {
 					}

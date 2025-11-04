@@ -90,7 +90,7 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 			};
 			GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder().cacheManagerName(CONTAINER_NAME).classLoader(loader);
 			try {
-				builder.globalState()
+				builder.globalState().enable()
 						.configurationStorage(ConfigurationStorage.VOLATILE)
 						.persistentLocation(Files.createTempDirectory(CONTAINER_NAME).resolve(channel.get().getName()).toString())
 						.temporaryLocation(Files.createTempDirectory(CONTAINER_NAME).resolve(channel.get().getName()).toString())
@@ -101,18 +101,6 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 			builder.transport().defaultTransport().clusterName(channel.get().getClusterName()).nodeName(channel.get().getName()).addProperty(JGroupsTransport.CHANNEL_CONFIGURATOR, configurator);
 			// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
 			builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
-				@Deprecated
-				@Override
-				public String getProtoFile() {
-					return null;
-				}
-
-				@Deprecated
-				@Override
-				public String getProtoFileName() {
-					return null;
-				}
-
 				@Override
 				public void registerMarshallers(SerializationContext context) {
 				}

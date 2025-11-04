@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.infinispan;
 
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.infinispan.remoting.transport.Address;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
@@ -26,7 +26,7 @@ public class InfinispanServerSerializationContextInitializer extends AbstractSer
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(context.getMarshaller(JGroupsAddress.class).wrap(EmbeddedCacheManagerGroupMember.class, EmbeddedCacheManagerGroupMember::getId, EmbeddedCacheManagerGroupMember::new));
+		context.registerMarshaller(context.getMarshaller(Address.class).wrap(EmbeddedCacheManagerGroupMember.class, EmbeddedCacheManagerGroupMember::getId, EmbeddedCacheManagerGroupMember::new));
 		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(LocalEmbeddedCacheManagerGroupMember.class, LocalEmbeddedCacheManagerGroupMember::getName, LocalEmbeddedCacheManagerGroupMember::new));
 	}
 }

@@ -32,7 +32,7 @@ import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.cache.SessionManagerITCase;
 
 /**
- * Session manager integration test using an embedded Infinispan cache tested under a combination of settings.
+ * Session manager integration test using an embedded Infinispan cache with a remote Infinispan store tested under a combination of settings.
  * @author Paul Ferraro
  */
 public class HotRodStoreSessionManagerITCase extends SessionManagerITCase<InfinispanSessionManagerParameters> {

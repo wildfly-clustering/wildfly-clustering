@@ -3,7 +3,6 @@ syntax = "proto3";
 package org.wildfly.clustering.server.infinispan;
 
 import "org.infinispan.remoting.transport.proto";
-import "org.infinispan.remoting.transport.jgroups.proto";
 
 // IDs: 132 - 133
 
@@ -11,7 +10,7 @@ import "org.infinispan.remoting.transport.jgroups.proto";
  * @TypeId(132)
  */
 message EmbeddedCacheManagerGroupMember {
-	org.infinispan.remoting.transport.jgroups.JGroupsAddress	address	= 1;
+	org.infinispan.remoting.transport.Address	address	= 1;
 }
 
 /**
