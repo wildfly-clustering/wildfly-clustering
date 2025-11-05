@@ -361,6 +361,7 @@
 							<Scm-Revision>${project.scm.revision}</Scm-Revision>
 						</manifestEntries>
 					</archive>
+					<failOnWarnings>true</failOnWarnings>
 				</configuration>
 				<executions>
 					<execution>
@@ -370,7 +371,6 @@
 						</goals>
 						<configuration>
 							<doclint>all</doclint>
-							<failOnWarnings>true</failOnWarnings>
 						</configuration>
 					</execution>
 					<execution>
@@ -380,7 +380,6 @@
 						</goals>
 						<configuration>
 							<doclint>all,-missing</doclint>
-							<failOnWarnings>true</failOnWarnings>
 						</configuration>
 					</execution>
 				</executions>
@@ -417,6 +416,15 @@
 						</manifestEntries>
 					</archive>
 				</configuration>
+				<executions>
+					<execution>
+						<id>package-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+							<goal>test-jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -528,19 +536,6 @@
 								<id>default-sign</id>
 								<goals>
 									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>package-sources</id>
-								<goals>
-									<goal>jar-no-fork</goal>
-									<goal>test-jar-no-fork</goal>
 								</goals>
 							</execution>
 						</executions>

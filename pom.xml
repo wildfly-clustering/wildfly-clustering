@@ -234,10 +234,24 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<sourceFileExcludes>
-						<sourceFileExclude>org/wildfly/clustering/cache/infinispan/embedded/**/WildFlyClustering*Impl.java</sourceFileExclude>
+						<sourceFileExclude>**/WildFlyClustering*Impl.java</sourceFileExclude>
 						<sourceFileExclude>**/*SerializationContextInitializerImpl.java</sourceFileExclude>
 					</sourceFileExcludes>
 				</configuration>
+				<executions>
+					<execution>
+						<id>aggregate-javadoc</id>
+						<inherited>false</inherited>
+						<goals>
+							<goal>aggregate-jar</goal>
+						</goals>
+						<configuration>
+							<doclint>none</doclint>
+							<excludePackageNames>org.wildfly.clustering.session.container.servlet</excludePackageNames>
+							<failOnWarnings>false</failOnWarnings>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -248,37 +262,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>release</id>
-			<properties>
-				<checkstyle.skip>true</checkstyle.skip>
-				<skipTests>true</skipTests>
-				<skipITs>true</skipITs>
-			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>javadoc-aggregate</id>
-								<inherited>false</inherited>
-								<goals>
-									<goal>aggregate-jar</goal>
-								</goals>
-								<configuration>
-									<doclint>none</doclint>
-									<excludePackageNames>org.wildfly.clustering.session.container.servlet</excludePackageNames>
-									<failOnWarnings>false</failOnWarnings>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>
