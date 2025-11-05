@@ -247,8 +247,8 @@
 						</goals>
 						<configuration>
 							<doclint>none</doclint>
-							<excludePackageNames>org.wildfly.clustering.session.container.servlet</excludePackageNames>
 							<failOnWarnings>false</failOnWarnings>
+							<skippedModules>wildfly-clustering-session-container-servlet-*</skippedModules>
 						</configuration>
 					</execution>
 				</executions>
