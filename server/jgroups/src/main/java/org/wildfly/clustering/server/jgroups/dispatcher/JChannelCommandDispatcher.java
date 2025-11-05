@@ -146,7 +146,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 
 	@Override
 	public <R, E extends Exception> Map<ChannelGroupMember, CompletionStage<R>> dispatchToGroup(Command<R, ? super CC, E> command, Set<ChannelGroupMember> excluding) throws IOException {
-		LOGGER.log(System.Logger.Level.TRACE, "{0} dispatching {1} to group, excluding %s", this.id, command, excluding);
+		LOGGER.log(System.Logger.Level.TRACE, "{0} dispatching {1} to group, excluding {2}", this.id, command, excluding);
 		Map<ChannelGroupMember, CompletionStage<R>> results = new ConcurrentHashMap<>();
 		ByteBuffer buffer = this.createBuffer(command);
 		for (ChannelGroupMember member : this.group.getMembership().getMembers()) {

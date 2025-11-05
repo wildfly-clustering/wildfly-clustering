@@ -126,7 +126,7 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 	 */
 	public <S, L> InfinispanSessionManagerFactory(Configuration<SC> configuration) {
 		ContainerProvider<CC, S, L, SC> provider = ServiceLoader.load(ContainerProvider.class, ContainerProvider.class.getClassLoader()).findFirst().orElseThrow();
-		LOGGER.log(System.Logger.Level.DEBUG, "%s configured for %s container", this.getClass().getSimpleName(), provider);
+		LOGGER.log(System.Logger.Level.DEBUG, "{0} configured for {1} container", this.getClass().getSimpleName(), provider);
 		this.contextIdentifier = provider::getId;
 		EmbeddedCacheConfiguration cacheConfiguration = configuration.getCacheConfiguration();
 		this.configuration = cacheConfiguration;
