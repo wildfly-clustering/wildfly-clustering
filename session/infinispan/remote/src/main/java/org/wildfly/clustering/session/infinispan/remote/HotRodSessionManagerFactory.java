@@ -86,7 +86,7 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 	 */
 	public <S, L> HotRodSessionManagerFactory(Configuration<SC> configuration) {
 		ContainerProvider<CC, S, L, SC> provider = ServiceLoader.load(ContainerProvider.class, ContainerProvider.class.getClassLoader()).findFirst().orElseThrow();
-		LOGGER.log(System.Logger.Level.DEBUG, "%s configured for %s container", this.getClass().getSimpleName(), provider);
+		LOGGER.log(System.Logger.Level.DEBUG, "{0} configured for {1} container", this.getClass().getSimpleName(), provider);
 		this.contextIdentifier = provider::getId;
 		this.configuration = configuration.getCacheConfiguration();
 		SessionMetaDataFactory<SessionMetaDataEntry<SC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(this.configuration);
