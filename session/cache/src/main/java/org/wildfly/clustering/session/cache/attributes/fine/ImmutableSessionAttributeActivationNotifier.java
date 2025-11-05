@@ -53,7 +53,7 @@ public class ImmutableSessionAttributeActivationNotifier<CC, S, L, SC> implement
 		this.notify(object, this.postActivateListenerFactory, this.provider::getPostActivateEventNotifier);
 	}
 
-	private void notify(Object object, Function<Supplier<L>, Optional<L>> listenerFactory, Function<L, Consumer<S>> notifierFactory) {
+	private void notify(Object object, Function<Supplier<L>, Optional<L>> listenerFactory, Function<L, java.util.function.Consumer<S>> notifierFactory) {
 		this.provider.getSessionEventListener(this.session, object).ifPresent(listener -> {
 			Supplier<L> reference = new SessionActivationListenerKey<>(listener);
 			this.listeners.computeIfAbsent(reference, listenerFactory);

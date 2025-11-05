@@ -9,13 +9,13 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-marshalling</artifactId>
-		<version>8.0.4.Final-SNAPSHOT</version>
+		<version>9.0.0.Beta1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-marshalling-java</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.marshalling}: Java serialization</name>
+	<name>${project.marshalling}: Java Object Serialization</name>
 
 	<dependencies>
 		<dependency>

@@ -33,17 +33,17 @@ public interface ContainerProvider<CC, S, L, SC> {
 		}
 
 		@Override
-		default Consumer<S> getPostActivateEventNotifier(Void listener) {
+		default java.util.function.Consumer<S> getPostActivateEventNotifier(Void listener) {
 			return Consumer.empty();
 		}
 
 		@Override
-		default Consumer<S> getPrePassivateEventNotifier(Void listener) {
+		default java.util.function.Consumer<S> getPrePassivateEventNotifier(Void listener) {
 			return Consumer.empty();
 		}
 
 		@Override
-		default Optional<Void> getSessionEventListener(Consumer<S> prePassivateEventNotifier, Consumer<S> postActivateEventNotifier) {
+		default Optional<Void> getSessionEventListener(java.util.function.Consumer<S> prePassivateEventNotifier, java.util.function.Consumer<S> postActivateEventNotifier) {
 			return Optional.empty();
 		}
 	}
@@ -109,14 +109,14 @@ public interface ContainerProvider<CC, S, L, SC> {
 	 * @param listener the specification listener
 	 * @return the consumer for a session
 	 */
-	Consumer<S> getPrePassivateEventNotifier(L listener);
+	java.util.function.Consumer<S> getPrePassivateEventNotifier(L listener);
 
 	/**
 	 * Returns a post-activation event notifier for the specified session event listener.
 	 * @param listener the specification listener
 	 * @return a consumer for a session
 	 */
-	Consumer<S> getPostActivateEventNotifier(L listener);
+	java.util.function.Consumer<S> getPostActivateEventNotifier(L listener);
 
 	/**
 	 * Composes a specification listener with the specified pre/post event logic.
@@ -124,5 +124,5 @@ public interface ContainerProvider<CC, S, L, SC> {
 	 * @param postActivateEventNotifier a post-event consumer for a session
 	 * @return a specification listener implementation
 	 */
-	Optional<L> getSessionEventListener(Consumer<S> prePassivateEventNotifier, Consumer<S> postActivateEventNotifier);
+	Optional<L> getSessionEventListener(java.util.function.Consumer<S> prePassivateEventNotifier, java.util.function.Consumer<S> postActivateEventNotifier);
 }

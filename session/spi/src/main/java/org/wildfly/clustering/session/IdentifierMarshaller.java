@@ -25,8 +25,8 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 			if (!buffer.hasArray()) {
 				throw new IllegalArgumentException(buffer.toString());
 			}
-			int offset = buffer.arrayOffset();
-			int length = buffer.limit() - offset;
+			int offset = buffer.arrayOffset() + buffer.position();
+			int length = buffer.remaining();
 			return new String(buffer.array(), offset, length, StandardCharsets.ISO_8859_1);
 		}
 

@@ -6,9 +6,9 @@
 package org.wildfly.clustering.session.container;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 

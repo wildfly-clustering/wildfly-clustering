@@ -26,11 +26,11 @@ public class DetachableHttpSession extends AbstractHttpSession {
 	private final Accessor accessor;
 
 	DetachableHttpSession(HttpSession attachedSession, HttpSession detachedSession) {
-		AtomicReference<HttpSession> reference = new AtomicReference<>();
+		AtomicReference<HttpSession> reference = new AtomicReference<>(attachedSession);
 		this.reader = reference::get;
-		Supplier<HttpSession> attached = Supplier.of(attachedSession);
+		Supplier<HttpSession> detached = Supplier.of(detachedSession);
 		// Auto-detach if writing to session
-		this.writer = attached.thenApply(Function.of(reference::set, attached));
+		this.writer = detached.thenApply(Function.of(reference::set, detached));
 		this.accessor = new Accessor() {
 			@Override
 			public void access(Consumer<HttpSession> consumer) {
