@@ -271,7 +271,7 @@
 								</goals>
 								<configuration>
 									<doclint>none</doclint>
-									<excludePackageNames>org.wildfly.clustering.session.spec.servlet:org.wildfly.clustering.session.spec.container:org.wildfly.clustering.session.spec.container.*</excludePackageNames>
+									<excludePackageNames>org.wildfly.clustering.session.container.servlet</excludePackageNames>
 									<failOnWarnings>false</failOnWarnings>
 								</configuration>
 							</execution>
