@@ -58,7 +58,9 @@ public class SessionAttributeActivationNotifierFactory<CC, S, L, SC> implements 
 					CC context = entry.getKey();
 					SessionManager<SC> manager = entry.getValue();
 					S session = provider.getDetachedSession(manager, sessionId, context);
-					provider.getSessionEventListener(session, value).map(notifier).ifPresent(action -> action.accept(session));
+					if (session != null) {
+						provider.getSessionEventListener(session, value).map(notifier).ifPresent(action -> action.accept(session));
+					}
 				}
 			}
 		};

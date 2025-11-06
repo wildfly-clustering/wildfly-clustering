@@ -175,11 +175,13 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	private void notify(BiConsumer<SessionAttributeActivationNotifier, Object> notification, SessionAttributesKey key, Map<String, V> attributes) {
 		String id = key.getId();
 		SessionAttributeActivationNotifier notifier = this.detachedNotifierFactory.apply(id);
-		for (Map.Entry<String, V> entry : attributes.entrySet()) {
-			try {
-				notification.accept(notifier, this.marshaller.read(entry.getValue()));
-			} catch (IOException e) {
-				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+		if (notifier != null) {
+			for (Map.Entry<String, V> entry : attributes.entrySet()) {
+				try {
+					notification.accept(notifier, this.marshaller.read(entry.getValue()));
+				} catch (IOException e) {
+					LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+				}
 			}
 		}
 	}
