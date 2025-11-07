@@ -5,9 +5,12 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -18,6 +21,7 @@ import org.wildfly.clustering.server.cache.Cache;
 import org.wildfly.clustering.server.cache.CacheFactory;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.SessionMetaData;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -31,67 +35,35 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 	private final Cache<String, CompletionStage<CacheableSession<C>>> sessionCache;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionCreator;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionFinder;
-	private final Function<CacheableSession<C>, Session<C>> identity = Functions.cast(Function.identity());
+	private final UnaryOperator<Session<C>> validator = new UnaryOperator<>() {
+		@Override
+		public Session<C> apply(Session<C> session) {
+			if (!session.isValid()) {
+				session.close();
+				return null;
+			}
+			return session;
+		}
+	};
 
+	/**
+	 * Creates a cached session manager decorator.
+	 * @param manager a session manager
+	 * @param cacheFactory a cache factory
+	 */
 	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
 		super(manager);
-		this.sessionCreator = new BiFunction<>() {
-			@Override
-			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-				return manager.createSessionAsync(id).thenApply(session -> new CachedSession<>(session, closeTask));
-			}
-		};
-		UnaryOperator<Session<C>> validator = new UnaryOperator<>() {
-			@Override
-			public Session<C> apply(Session<C> session) {
-				// If session was invalidated by a concurrent thread, return null instead of an invalid session
-				// This will reduce the likelihood that a duplicate invalidation request (e.g. from a double-clicked logout) results in an ISE
-				if (session != null && !session.isValid()) {
-					try {
-						session.close();
-						return null;
-					} catch (Throwable e) {
-						LOGGER.warn(e.getLocalizedMessage(), e);
-					}
-				}
-				return session;
-			}
-		};
-		this.sessionFinder = new BiFunction<>() {
-			@Override
-			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-				Function<Session<C>, CacheableSession<C>> wrapper = new Function<>() {
-					@Override
-					public CacheableSession<C> apply(Session<C> session) {
-						return (session != null) ? new CachedSession<>(session, closeTask) : null;
-					}
-				};
-				CompletionStage<CacheableSession<C>> result = manager.findSessionAsync(id)
-						.thenApply(validator)
-						.thenApply(wrapper);
-				result.whenComplete(new BiConsumer<>() {
-					@Override
-					public void accept(CacheableSession<C> session, Throwable e) {
-						if (session == null) {
-							closeTask.run();
-						}
-					}
-				});
-				return result;
-			}
-		};
+		// If completed exceptionally, return an invalid session that rethrows this exception on Session.close()
+		// If completed with null, return an invalid session that we can filter later
+		this.sessionCreator = new SessionManagerFunction<>(manager::createSessionAsync);
+		this.sessionFinder = new SessionManagerFunction<>(manager::findSessionAsync);
 		this.sessionCache = cacheFactory.createCache(Functions.discardingConsumer(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
-			public void accept(CompletionStage<CacheableSession<C>> future) {
+			public void accept(CompletionStage<CacheableSession<C>> stage) {
 				try {
-					CacheableSession<C> session = future.toCompletableFuture().join();
-					if (session != null) {
-						session.get().close();
-					}
-				} catch (CancellationException e) {
-					// Ignore
-				} catch (Throwable e) {
-					LOGGER.warn(e.getLocalizedMessage(), e);
+					Optional.ofNullable(stage.toCompletableFuture().join()).map(CacheableSession::get).ifPresent(Session::close);
+				} catch (CompletionException | CancellationException e) {
+					LOGGER.debug(e.getLocalizedMessage(), e);
 				}
 			}
 		});
@@ -99,11 +71,67 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 
 	@Override
 	public CompletionStage<Session<C>> createSessionAsync(String id) {
-		return this.sessionCache.computeIfAbsent(id, this.sessionCreator).thenApply(this.identity);
+		return this.sessionCache.computeIfAbsent(id, this.sessionCreator).thenApply(this.validator);
 	}
 
 	@Override
 	public CompletionStage<Session<C>> findSessionAsync(String id) {
-		return this.sessionCache.computeIfAbsent(id, this.sessionFinder).thenApply(this.identity);
+		return this.sessionCache.computeIfAbsent(id, this.sessionFinder).thenApply(this.validator);
+	}
+
+	Set<String> keySet() {
+		return this.sessionCache.keySet();
+	}
+
+	static class SessionManagerFunction<C> implements BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>>, Session<C> {
+		private final Function<String, CompletionStage<Session<C>>> operation;
+
+		SessionManagerFunction(Function<String, CompletionStage<Session<C>>> operation) {
+			this.operation = operation;
+		}
+
+		@Override
+		public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
+			return this.operation.apply(id).handle((session, exception) -> new CachedSession<>((session != null) ? session : this, (exception != null) ? new Runnable() {
+				@Override
+				public void run() {
+					closeTask.run();
+					throw new CompletionException(exception);
+				}
+			} : closeTask));
+		}
+
+		@Override
+		public String getId() {
+			return null;
+		}
+
+		@Override
+		public boolean isValid() {
+			return false;
+		}
+
+		@Override
+		public Map<String, Object> getAttributes() {
+			return Map.of();
+		}
+
+		@Override
+		public SessionMetaData getMetaData() {
+			return null;
+		}
+
+		@Override
+		public void invalidate() {
+		}
+
+		@Override
+		public C getContext() {
+			return null;
+		}
+
+		@Override
+		public void close() {
+		}
 	}
 }

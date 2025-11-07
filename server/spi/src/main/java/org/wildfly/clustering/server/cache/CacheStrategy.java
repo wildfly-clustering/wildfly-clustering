@@ -7,6 +7,7 @@ package org.wildfly.clustering.server.cache;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
@@ -36,6 +37,11 @@ public enum CacheStrategy implements CacheFactory {
 						reference.setPlain(value);
 					}
 					return value;
+				}
+
+				@Override
+				public Set<K> keySet() {
+					return Set.of();
 				}
 			};
 		}
@@ -88,6 +94,11 @@ public enum CacheStrategy implements CacheFactory {
 						}
 					}
 					return result;
+				}
+
+				@Override
+				public Set<K> keySet() {
+					return this.references.keySet();
 				}
 			};
 		}
