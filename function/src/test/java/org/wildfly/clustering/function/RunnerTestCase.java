@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.function;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -21,11 +22,24 @@ public class RunnerTestCase {
 	@Test
 	public void andThen() {
 		Runner runner1 = mock(Runner.class);
-		Runnable runner2 = mock(Runnable.class);
+		Runner runner2 = mock(Runner.class);
 		InOrder order = inOrder(runner1, runner2);
 		doCallRealMethod().when(runner1).andThen(any());
 
 		runner1.andThen(runner2).run();
+
+		order.verify(runner1).run();
+		order.verify(runner2).run();
+	}
+
+	@Test
+	public void compose() {
+		Runner runner1 = mock(Runner.class);
+		Runner runner2 = mock(Runner.class);
+		InOrder order = inOrder(runner1, runner2);
+		doCallRealMethod().when(runner2).compose(any());
+
+		runner2.compose(runner1).run();
 
 		order.verify(runner1).run();
 		order.verify(runner2).run();
@@ -49,6 +63,12 @@ public class RunnerTestCase {
 		runner.handle(handler).run();
 
 		verify(handler).accept(exception);
+	}
+
+	@Test
+	public void throwing() {
+		RuntimeException expected = new RuntimeException();
+		assertThatThrownBy(Runner.throwing(Supplier.of(expected))::run).isSameAs(expected);
 	}
 
 	@Test
