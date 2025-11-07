@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSessionEvent;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.container.ContainerProvider;
 
@@ -38,12 +39,14 @@ public class ServletContainerProvider<C> implements ContainerProvider.SessionAtt
 
 	@Override
 	public HttpSession getDetachableSession(SessionManager<C> manager, ImmutableSession session, ServletContext context) {
-		return new DetachableHttpSession(new ImmutableHttpSession(session, context), new MutableHttpSession(manager.getDetachedSession(session.getId()), context));
+		HttpSession detached = this.getDetachedSession(manager, session.getId(), context);
+		return (detached != null) ? new DetachableHttpSession(new ImmutableHttpSession(session, context), detached) : null;
 	}
 
 	@Override
 	public HttpSession getDetachedSession(SessionManager<C> manager, String id, ServletContext context) {
-		return new MutableHttpSession(manager.getDetachedSession(id), context);
+		Session<C> detached = manager.getDetachedSession(id);
+		return (detached != null) ? new MutableHttpSession(detached, context) : null;
 	}
 
 	@Override

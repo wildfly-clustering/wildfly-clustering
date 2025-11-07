@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.infinispan.remote;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -137,13 +138,16 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 		};
 	}
 
+	SessionManager<SC> findSessionManager(CC context) {
+		return this.managers.get(this.contextIdentifier.apply(context));
+	}
+
 	@Override
 	public SessionManager<SC> createSessionManager(SessionManagerConfiguration<CC> configuration) {
 		RemoteCacheConfiguration cacheConfiguration = this.configuration;
 		SessionFactory<CC, SessionMetaDataEntry<SC>, Object, SC> sessionFactory = this.sessionFactory;
 		IdentifierFactoryService<String> identifierFactory = new SimpleIdentifierFactoryService<>(configuration.getIdentifierFactory());
-		String contextId = this.contextIdentifier.apply(configuration.getContext());
-		BiFunction<String, SC, Session<SC>> detachedSessionFactory = (id, context) -> new DetachedSession<>(this.managers.get(contextId), id, context);
+		BiFunction<String, SC, Session<SC>> detachedSessionFactory = (id, context) -> Optional.ofNullable(this.findSessionManager(configuration.getContext())).map(manager -> new DetachedSession<>(manager, id, context)).orElse(null);
 		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
 		SessionManager<SC> manager = new CachedSessionManager<>(new HotRodSessionManager<>(new HotRodSessionManager.Configuration<CC, SessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
@@ -209,11 +213,11 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider) {
 		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
 			case FINE -> {
-				BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(HotRodSessionManagerFactory.this.managers.get(provider.getId(context)), session, context));
+				BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ImmutableSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(null);
 				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, configuration.getCacheConfiguration());
 			}
 			case COARSE -> {
-				BiFunction<ImmutableSession, CC, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> new ImmutableSessionActivationNotifier<>(provider, provider.getDetachableSession(HotRodSessionManagerFactory.this.managers.get(provider.getId(context)), session, context), session.getAttributes().values());
+				BiFunction<ImmutableSession, CC, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ImmutableSessionActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context), session.getAttributes().values())).orElse(null);
 				return new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, configuration.getCacheConfiguration());
 			}
 			default -> throw new IllegalStateException();

@@ -9,6 +9,7 @@ import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.StampedLock;
@@ -43,6 +44,11 @@ public enum CacheStrategy implements CacheFactory {
 						reference.setPlain(value);
 					}
 					return value;
+				}
+
+				@Override
+				public Set<K> keySet() {
+					return Set.of();
 				}
 			};
 		}
@@ -148,6 +154,11 @@ public enum CacheStrategy implements CacheFactory {
 					}
 					// Remove lock (or decrement usage) last
 					this.locks.compute(key, removeLockFunction);
+				}
+
+				@Override
+				public Set<K> keySet() {
+					return this.references.keySet();
 				}
 			};
 		}

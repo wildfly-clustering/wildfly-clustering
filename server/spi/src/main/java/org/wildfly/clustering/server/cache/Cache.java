@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.server.cache;
 
+import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
@@ -22,4 +23,10 @@ public interface Cache<K, V> {
 	 * @return the value, obtained from this context, or generated from the specified factory.
 	 */
 	V computeIfAbsent(K key, BiFunction<K, Runnable, V> factory);
+
+	/**
+	 * Returns the set of keys of this cache.
+	 * @return the set of keys of this cache.
+	 */
+	Set<K> keySet();
 }

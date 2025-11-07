@@ -174,13 +174,15 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	private void notify(SessionAttributesKey key, V value, BiConsumer<SessionAttributeActivationNotifier, Object> notification) {
 		String id = key.getId();
 		SessionAttributeActivationNotifier notifier = this.detachedNotifierFactory.apply(id);
-		try {
-			Map<String, Object> attributes = this.marshaller.read(value);
-			for (Object attributeValue : attributes.values()) {
-				notification.accept(notifier, attributeValue);
+		if (notifier != null) {
+			try {
+				Map<String, Object> attributes = this.marshaller.read(value);
+				for (Object attributeValue : attributes.values()) {
+					notification.accept(notifier, attributeValue);
+				}
+			} catch (IOException e) {
+				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			}
-		} catch (IOException e) {
-			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		}
 	}
 }
