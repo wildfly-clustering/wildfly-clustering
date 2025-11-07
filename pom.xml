@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-bom</artifactId>
-		<version>5.0.12.Final</version>
+		<version>5.0.13.Final-SNAPSHOT</version>
 		<relativePath>bom</relativePath>
 	</parent>
 
