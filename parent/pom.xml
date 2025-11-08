@@ -8,7 +8,7 @@
 
 	<groupId>org.wildfly.clustering</groupId>
 	<artifactId>wildfly-clustering-parent</artifactId>
-	<version>8.0.4.Final</version>
+	<version>8.0.5.Final-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -65,7 +65,7 @@
 		<connection>scm:git:https://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
 		<developerConnection>scm:git:git@${project.repository.host}:${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
 		<url>${project.repository.url}</url>
-		<tag>8.0.4.Final</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<build>
