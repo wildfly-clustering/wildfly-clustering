@@ -54,7 +54,7 @@ public class UserMarshaller extends AbstractMarshaller {
 	}
 
 	@Override
-	public Object readObject(InputStream input) throws ClassNotFoundException, IOException {
+	public Object readObject(InputStream input) throws IOException {
 		return this.marshaller.readFrom(input);
 	}
 

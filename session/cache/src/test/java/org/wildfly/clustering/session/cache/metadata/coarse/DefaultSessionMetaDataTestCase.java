@@ -31,7 +31,7 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 
 	static class Parameters implements ArgumentsProvider {
 		@Override
-		public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) {
 			MutableSessionMetaDataEntry entry = mock(MutableSessionMetaDataEntry.class);
 			Runnable mutator = mock(Runnable.class);
 			InvalidatableSessionMetaData metaData = new DefaultSessionMetaData(entry, mutator);

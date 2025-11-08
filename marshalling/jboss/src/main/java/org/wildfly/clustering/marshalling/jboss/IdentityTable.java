@@ -34,9 +34,8 @@ public interface IdentityTable<T> {
 	 * @param unmarshaller an unmarshaller
 	 * @return the read object
 	 * @throws IOException if the object could not be read
-	 * @throws ClassNotFoundException if the class of the marshalled object could not be resolved.
 	 */
-	T read(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException;
+	T read(Unmarshaller unmarshaller) throws IOException;
 
 	/**
 	 * Creates an identity table from the list of table entries.
@@ -65,7 +64,7 @@ public interface IdentityTable<T> {
 			}
 
 			@Override
-			public T read(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
+			public T read(Unmarshaller unmarshaller) throws IOException {
 				int index = indexSerializer.readInt(unmarshaller);
 				return entries.get(index);
 			}

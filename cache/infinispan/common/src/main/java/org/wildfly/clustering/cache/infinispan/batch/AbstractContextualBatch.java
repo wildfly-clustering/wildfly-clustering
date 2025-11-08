@@ -26,7 +26,7 @@ public abstract class AbstractContextualBatch implements ContextualBatch {
 	 * @param name the name of this batch
 	 * @param closeTask a task to execute when batch should be closed.
 	 */
-	@SuppressWarnings("removal")
+	@SuppressWarnings({ "removal" })
 	AbstractContextualBatch(String name, Consumer<Status> closeTask) {
 		this.name = name;
 		PrivilegedAction<StackTraceElement[]> action = Thread.currentThread()::getStackTrace;

@@ -28,13 +28,13 @@ public class IdentityClassTable implements ClassTable {
 	}
 
 	@Override
-	public ClassTable.Writer getClassWriter(Class<?> targetClass) throws IOException {
+	public ClassTable.Writer getClassWriter(Class<?> targetClass) {
 		Writable<Class<?>> writer = this.table.findWriter(targetClass);
 		return writer != null ? writer::write : null;
 	}
 
 	@Override
-	public Class<?> readClass(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
+	public Class<?> readClass(Unmarshaller unmarshaller) throws IOException {
 		return this.table.read(unmarshaller);
 	}
 }

@@ -23,7 +23,7 @@ public class DefaultImmutableSessionMetaDataTestCase extends AbstractImmutableSe
 
 	static class Parameters implements ArgumentsProvider {
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 			ImmutableSessionMetaDataEntry entry = mock(ImmutableSessionMetaDataEntry.class);
 			ImmutableSessionMetaData metaData = new DefaultImmutableSessionMetaData(entry);
 			return Stream.of(Arguments.of(entry, metaData));

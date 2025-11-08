@@ -52,7 +52,7 @@ public class LocalSchedulerServiceTestCase {
 	}
 
 	@Test
-	public void lifecycle() throws InterruptedException {
+	public void lifecycle() {
 		ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
 		Predicate<UUID> task = mock(Predicate.class);
 
@@ -65,7 +65,7 @@ public class LocalSchedulerServiceTestCase {
 
 			scheduler.schedule(entry.getKey(), entry.getValue());
 
-			this.waitUntilEmpty(entries);
+			waitUntilEmpty(entries);
 
 			// Tasks do not execute while scheduler is not started
 			verifyNoInteractions(task);
@@ -73,7 +73,7 @@ public class LocalSchedulerServiceTestCase {
 
 			scheduler.start();
 
-			this.waitUntilEmpty(entries);
+			waitUntilEmpty(entries);
 
 			// Verify that entry was removed from backing collection
 			verify(task).test(entry.getKey());
@@ -82,7 +82,7 @@ public class LocalSchedulerServiceTestCase {
 	}
 
 	@Test
-	public void successfulTask() throws InterruptedException {
+	public void successfulTask() {
 		ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
 		Predicate<UUID> task = mock(Predicate.class);
 
@@ -95,7 +95,7 @@ public class LocalSchedulerServiceTestCase {
 
 			scheduler.schedule(entry.getKey(), entry.getValue());
 
-			this.waitUntilEmpty(entries);
+			waitUntilEmpty(entries);
 
 			// Verify that entry was removed from backing collection
 			assertThat(entries).isEmpty();
@@ -104,7 +104,7 @@ public class LocalSchedulerServiceTestCase {
 	}
 
 	@Test
-	public void failingTask() throws InterruptedException {
+	public void failingTask() {
 		ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
 		Predicate<UUID> task = mock(Predicate.class);
 
@@ -117,7 +117,7 @@ public class LocalSchedulerServiceTestCase {
 
 			scheduler.schedule(entry.getKey(), entry.getValue());
 
-			this.waitUntilEmpty(entries);
+			waitUntilEmpty(entries);
 
 			// Verify that entry was not removed from backing collection
 			assertThat(entries).isNotEmpty();
@@ -126,7 +126,7 @@ public class LocalSchedulerServiceTestCase {
 	}
 
 	@Test
-	public void retryUntilSuccessfulTask() throws InterruptedException {
+	public void retryUntilSuccessfulTask() {
 		ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
 		Predicate<UUID> task = mock(Predicate.class);
 
@@ -140,7 +140,7 @@ public class LocalSchedulerServiceTestCase {
 
 			scheduler.schedule(entry.getKey(), entry.getValue());
 
-			this.waitUntilEmpty(entries);
+			waitUntilEmpty(entries);
 
 			// Verify that entry was eventually removed from backing collection
 			assertThat(entries).isEmpty();
@@ -164,7 +164,7 @@ public class LocalSchedulerServiceTestCase {
 		}
 	}
 
-	private void waitUntilEmpty(ScheduledEntries<UUID, Instant> entries) {
+	private static void waitUntilEmpty(ScheduledEntries<UUID, Instant> entries) {
 		// Wait until empty of timeout has elapsed.
 		Instant stop = Instant.now().plus(Duration.ofSeconds(1));
 		while ((entries.peek() != null) && Instant.now().isBefore(stop)) {

@@ -41,7 +41,7 @@ public class TransactionalBatchTestCase {
 	}
 
 	@Test
-	public void nestedBatch() throws Exception {
+	public void nestedBatch() {
 		TransactionalBatch existingBatch = mock(TransactionalBatch.class);
 
 		ThreadContextBatch.INSTANCE.accept(existingBatch);

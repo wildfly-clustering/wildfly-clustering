@@ -36,7 +36,7 @@ public class ContainerExtension<C extends Container<C> & Startable> implements A
 	}
 
 	@Override
-	public void beforeAll(ExtensionContext context) throws Exception {
+	public void beforeAll(ExtensionContext context) {
 		this.container = this.factory.apply(context);
 		LOGGER.log(System.Logger.Level.INFO, "Starting {0}", this.container.getDockerImageName());
 		Instant start = Instant.now();
@@ -45,7 +45,7 @@ public class ContainerExtension<C extends Container<C> & Startable> implements A
 	}
 
 	@Override
-	public void afterAll(ExtensionContext context) throws Exception {
+	public void afterAll(ExtensionContext context) {
 		if (this.container != null) {
 			LOGGER.log(System.Logger.Level.INFO, "Stopping {0}", this.container.getDockerImageName());
 			Instant start = Instant.now();

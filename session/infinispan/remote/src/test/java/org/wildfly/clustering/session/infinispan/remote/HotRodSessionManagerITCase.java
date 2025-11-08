@@ -9,6 +9,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
@@ -44,7 +45,7 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 		Set<TransactionMode> transactionModes = EnumSet.of(TransactionMode.NONE);
 
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 			Stream.Builder<Arguments> builder = Stream.builder();
 			for (MarshallingTesterFactory factory : ServiceLoader.load(this.marshallerClass, this.marshallerClass.getClassLoader())) {
 				ByteBufferMarshaller marshaller = factory.getMarshaller();
@@ -109,21 +110,21 @@ public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessi
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(HotRodSessionManagerArgumentsProvider.class)
-	public void basic(HotRodSessionManagerParameters parameters) throws Exception {
+	public void basic(HotRodSessionManagerParameters parameters) {
 		super.basic(parameters);
 	}
 
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ConcurrentHotRodSessionManagerArgumentsProvider.class)
-	public void concurrent(HotRodSessionManagerParameters parameters) throws Exception {
+	public void concurrent(HotRodSessionManagerParameters parameters) throws InterruptedException, ExecutionException {
 		super.concurrent(parameters);
 	}
 
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ExpirationHotRodSessionManagerArgumentsProvider.class)
-	public void expiration(HotRodSessionManagerParameters parameters) throws Exception {
+	public void expiration(HotRodSessionManagerParameters parameters) throws InterruptedException {
 		super.expiration(parameters);
 	}
 }

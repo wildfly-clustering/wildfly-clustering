@@ -50,12 +50,12 @@ public abstract class AbstractByteBufferMarshaller implements ByteBufferMarshall
 		AtomicInteger size = new AtomicInteger();
 		OutputStream output = new OutputStream() {
 			@Override
-			public void write(int b) throws IOException {
+			public void write(int b) {
 				size.setPlain(size.getPlain() + 1);
 			}
 
 			@Override
-			public void write(byte[] bytes, int offset, int length) throws IOException {
+			public void write(byte[] bytes, int offset, int length) {
 				size.setPlain(size.getPlain() + length);
 			}
 		};

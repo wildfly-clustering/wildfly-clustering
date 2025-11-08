@@ -28,13 +28,13 @@ public class IdentityObjectTable implements ObjectTable {
 	}
 
 	@Override
-	public Writer getObjectWriter(Object object) throws IOException {
+	public Writer getObjectWriter(Object object) {
 		Writable<Object> writer = this.table.findWriter(object);
 		return writer != null ? writer::write : null;
 	}
 
 	@Override
-	public Object readObject(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
+	public Object readObject(Unmarshaller unmarshaller) throws IOException {
 		return this.table.read(unmarshaller);
 	}
 }

@@ -9,6 +9,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -45,7 +46,7 @@ public class HotRodStoreSessionManagerITCase extends SessionManagerITCase<Infini
 		Set<SessionAttributePersistenceStrategy> strategies = EnumSet.allOf(SessionAttributePersistenceStrategy.class);
 
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 			Stream.Builder<Arguments> builder = Stream.builder();
 			for (MarshallingTesterFactory factory : ServiceLoader.load(this.marshallerClass, this.marshallerClass.getClassLoader())) {
 				ByteBufferMarshaller marshaller = factory.getMarshaller();
@@ -129,21 +130,21 @@ public class HotRodStoreSessionManagerITCase extends SessionManagerITCase<Infini
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanInvalidationSessionManagerArgumentsProvider.class)
-	public void basic(InfinispanSessionManagerParameters parameters) throws Exception {
+	public void basic(InfinispanSessionManagerParameters parameters) {
 		super.basic(parameters);
 	}
 
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanInvalidationSessionManagerArgumentsProvider.class)
-	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
+	public void concurrent(InfinispanSessionManagerParameters parameters) throws InterruptedException, ExecutionException {
 		super.concurrent(parameters);
 	}
 
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanInvalidationSessionManagerArgumentsProvider.class)
-	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {
+	public void expiration(InfinispanSessionManagerParameters parameters) throws InterruptedException {
 		super.expiration(parameters);
 	}
 }

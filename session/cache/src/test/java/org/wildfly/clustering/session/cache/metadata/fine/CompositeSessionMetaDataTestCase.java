@@ -31,7 +31,7 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 
 	static class Parameters implements ArgumentsProvider {
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 			SessionCreationMetaData creationMetaData = mock(SessionCreationMetaData.class);
 			SessionAccessMetaData accessMetaData = mock(SessionAccessMetaData.class);
 			Runnable mutator = mock(Runnable.class);

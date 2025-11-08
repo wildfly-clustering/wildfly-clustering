@@ -37,7 +37,7 @@ public class SerializerExternalizer implements Externalizer {
 	}
 
 	@Override
-	public Object createExternal(Class<?> subjectType, ObjectInput input) throws IOException, ClassNotFoundException {
+	public Object createExternal(Class<?> subjectType, ObjectInput input) throws IOException {
 		return this.serializer.read(input);
 	}
 }

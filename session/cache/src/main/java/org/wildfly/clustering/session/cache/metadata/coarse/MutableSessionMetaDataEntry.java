@@ -14,7 +14,7 @@ import org.wildfly.clustering.server.offset.Value;
  * {@link SessionMetaDataEntry} decorator that captures mutations via a {@link MutableSessionMetaDataOffsetValues}.
  * @author Paul Ferraro
  */
-public class MutableSessionMetaDataEntry extends AbstractSessionMetaDataEntry implements SessionMetaDataEntry {
+public class MutableSessionMetaDataEntry extends AbstractSessionMetaDataEntry {
 	private final ImmutableSessionMetaDataEntry entry;
 	private final Value<Duration> timeout;
 	private final Value<Instant> lastAccessStartTime;

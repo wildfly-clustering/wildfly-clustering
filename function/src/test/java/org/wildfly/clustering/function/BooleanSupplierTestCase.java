@@ -8,6 +8,8 @@ package org.wildfly.clustering.function;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Random;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -15,11 +17,12 @@ import org.junit.jupiter.api.Test;
  * @author Paul Ferraro
  */
 public class BooleanSupplierTestCase {
+	private final Random random = new Random();
 
 	@Test
 	public void of() {
-		assertThat(BooleanSupplier.of(false).getAsBoolean()).isEqualTo(false);
-		assertThat(BooleanSupplier.of(true).getAsBoolean()).isEqualTo(true);
+		boolean value = this.random.nextBoolean();
+		assertThat(BooleanSupplier.of(value).getAsBoolean()).isEqualTo(value);
 
 		assertThat(BooleanSupplier.TRUE.getAsBoolean()).isTrue();
 		assertThat(BooleanSupplier.FALSE.getAsBoolean()).isFalse();
@@ -29,13 +32,9 @@ public class BooleanSupplierTestCase {
 
 	@Test
 	public void handle() {
-		this.handle(false, false);
-		this.handle(false, true);
-		this.handle(true, false);
-		this.handle(true, true);
-	}
+		boolean value = this.random.nextBoolean();
+		boolean handled = this.random.nextBoolean();
 
-	private void handle(boolean value, boolean handled) {
 		BooleanSupplier supplier = mock(BooleanSupplier.class);
 
 		doCallRealMethod().when(supplier).handle(any());
