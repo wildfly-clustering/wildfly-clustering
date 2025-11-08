@@ -281,6 +281,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<configuration>
+					<artifact>${project.groupId}:${project.artifactId}:${project.version}</artifact>
+				</configuration>
 				<executions>
 					<execution>
 						<id>default</id>
