@@ -6,15 +6,16 @@
 package org.wildfly.clustering.session.cache;
 
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
-import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.cache.Cache;
 import org.wildfly.clustering.server.cache.CacheFactory;
 import org.wildfly.clustering.session.Session;
@@ -36,12 +37,8 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 		@Override
 		public Session<C> apply(Session<C> session) {
 			if (!session.isValid()) {
-				try {
-					session.close();
-					return null;
-				} catch (Throwable e) {
-					LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-				}
+				session.close();
+				return null;
 			}
 			return session;
 		}
@@ -54,72 +51,17 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 	 */
 	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
 		super(manager);
-		this.sessionCreator = new BiFunction<>() {
-			@Override
-			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-				return manager.createSessionAsync(id).thenApply(session -> new CachedSession<>(session, closeTask));
-			}
-		};
-		// Placeholder for a missing session
-		Session<C> missingSession = new Session<>() {
-			@Override
-			public String getId() {
-				return null;
-			}
-
-			@Override
-			public boolean isValid() {
-				return false;
-			}
-
-			@Override
-			public Map<String, Object> getAttributes() {
-				return Map.of();
-			}
-
-			@Override
-			public SessionMetaData getMetaData() {
-				return null;
-			}
-
-			@Override
-			public void invalidate() {
-			}
-
-			@Override
-			public C getContext() {
-				return null;
-			}
-
-			@Override
-			public void close() {
-			}
-		};
-		this.sessionFinder = new BiFunction<>() {
-			@Override
-			public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-				Function<Session<C>, CacheableSession<C>> wrapper = new Function<>() {
-					@Override
-					public CacheableSession<C> apply(Session<C> session) {
-						return new CachedSession<>(session, closeTask);
-					}
-				};
-				// If session not found, use placeholder
-				return manager.findSessionAsync(id).thenApply(wrapper.withDefault(Objects::nonNull, Supplier.of(missingSession)));
-			}
-		};
+		// If completed exceptionally, return an invalid session that rethrows this exception on Session.close()
+		// If completed with null, return an invalid session that we can filter later
+		this.sessionCreator = new SessionManagerFunction<>(manager::createSessionAsync);
+		this.sessionFinder = new SessionManagerFunction<>(manager::findSessionAsync);
 		this.sessionCache = cacheFactory.createCache(Consumer.empty(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
-			public void accept(CompletionStage<CacheableSession<C>> future) {
+			public void accept(CompletionStage<CacheableSession<C>> stage) {
 				try {
-					CacheableSession<C> session = future.toCompletableFuture().join();
-					if (session != null) {
-						session.get().close();
-					}
-				} catch (CancellationException e) {
-					// Ignore
-				} catch (Throwable e) {
-					LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+					Optional.ofNullable(stage.toCompletableFuture().join()).map(CacheableSession::get).ifPresent(Session::close);
+				} catch (CompletionException | CancellationException e) {
+					LOGGER.log(System.Logger.Level.DEBUG, e.getLocalizedMessage(), e);
 				}
 			}
 		});
@@ -127,11 +69,67 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 
 	@Override
 	public CompletionStage<Session<C>> createSessionAsync(String id) {
-		return this.sessionCache.computeIfAbsent(id, this.sessionCreator).thenApply(Function.identity());
+		return this.sessionCache.computeIfAbsent(id, this.sessionCreator).thenApply(this.validator);
 	}
 
 	@Override
 	public CompletionStage<Session<C>> findSessionAsync(String id) {
 		return this.sessionCache.computeIfAbsent(id, this.sessionFinder).thenApply(this.validator);
+	}
+
+	Set<String> keys() {
+		return this.sessionCache.keys();
+	}
+
+	static class SessionManagerFunction<C> implements BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>>, Session<C> {
+		private final Function<String, CompletionStage<Session<C>>> operation;
+
+		SessionManagerFunction(Function<String, CompletionStage<Session<C>>> operation) {
+			this.operation = operation;
+		}
+
+		@Override
+		public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
+			return this.operation.apply(id).handle((session, exception) -> new CachedSession<>((session != null) ? session : this, (exception != null) ? new Runnable() {
+				@Override
+				public void run() {
+					closeTask.run();
+					throw new CompletionException(exception);
+				}
+			} : closeTask));
+		}
+
+		@Override
+		public String getId() {
+			return null;
+		}
+
+		@Override
+		public boolean isValid() {
+			return false;
+		}
+
+		@Override
+		public Map<String, Object> getAttributes() {
+			return Map.of();
+		}
+
+		@Override
+		public SessionMetaData getMetaData() {
+			return null;
+		}
+
+		@Override
+		public void invalidate() {
+		}
+
+		@Override
+		public C getContext() {
+			return null;
+		}
+
+		@Override
+		public void close() {
+		}
 	}
 }
