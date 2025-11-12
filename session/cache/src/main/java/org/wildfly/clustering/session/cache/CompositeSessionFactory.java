@@ -16,23 +16,23 @@ import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 
 /**
  * A session factory composed of metadata, attribute, and context factories.
- * @param <DC> the deployment context type
+ * @param <CC> the deployment context type
  * @param <MV> the session metadata type
  * @param <AV> the session attributes type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public class CompositeSessionFactory<DC, MV extends Contextual<SC>, AV, SC> extends CompositeImmutableSessionFactory<MV, AV> implements SessionFactory<DC, MV, AV, SC> {
+public class CompositeSessionFactory<CC, MV extends Contextual<SC>, AV, SC> extends CompositeImmutableSessionFactory<MV, AV> implements SessionFactory<CC, MV, AV, SC> {
 
 	private final SessionMetaDataFactory<MV> metaDataFactory;
-	private final SessionAttributesFactory<DC, AV> attributesFactory;
+	private final SessionAttributesFactory<CC, AV> attributesFactory;
 	private final Supplier<SC> contextFactory;
 
 	/**
 	 * Creates a session factory composed from metadata, attribute, and context factories.
 	 * @param configuration the configuration of this session factory
 	 */
-	public CompositeSessionFactory(SessionFactoryConfiguration<DC, MV, AV, SC> configuration) {
+	public CompositeSessionFactory(SessionFactoryConfiguration<CC, MV, AV, SC> configuration) {
 		super(configuration);
 		this.metaDataFactory = configuration.getSessionMetaDataFactory();
 		this.attributesFactory = configuration.getSessionAttributesFactory();
@@ -45,7 +45,7 @@ public class CompositeSessionFactory<DC, MV extends Contextual<SC>, AV, SC> exte
 	}
 
 	@Override
-	public SessionAttributesFactory<DC, AV> getSessionAttributesFactory() {
+	public SessionAttributesFactory<CC, AV> getSessionAttributesFactory() {
 		return this.attributesFactory;
 	}
 
@@ -55,7 +55,7 @@ public class CompositeSessionFactory<DC, MV extends Contextual<SC>, AV, SC> exte
 	}
 
 	@Override
-	public Session<SC> createSession(String id, Map.Entry<MV, AV> entry, DC context) {
+	public Session<SC> createSession(String id, Map.Entry<MV, AV> entry, CC context) {
 		MV metaDataValue = entry.getKey();
 		AV attributesValue = entry.getValue();
 		if ((metaDataValue == null) || (attributesValue == null)) return null;
