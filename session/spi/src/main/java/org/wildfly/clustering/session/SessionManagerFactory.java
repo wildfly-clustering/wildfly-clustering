@@ -6,17 +6,17 @@ package org.wildfly.clustering.session;
 
 /**
  * A factory for creating a session manager.
- * @param <DC> the deployment context type
+ * @param <CC> the container context type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory<DC, SC> extends AutoCloseable {
+public interface SessionManagerFactory<CC, SC> extends AutoCloseable {
 	/**
 	 * Create a session manager using the specified configuration.
 	 * @param configuration a session manager configuration
 	 * @return a new session manager
 	 */
-	SessionManager<SC> createSessionManager(SessionManagerConfiguration<DC> configuration);
+	SessionManager<SC> createSessionManager(SessionManagerConfiguration<CC> configuration);
 
 	@Override
 	void close();

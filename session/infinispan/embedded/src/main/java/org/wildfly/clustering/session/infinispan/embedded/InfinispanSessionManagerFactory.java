@@ -135,7 +135,7 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 		SessionMetaDataFactory<ContextualSessionMetaDataEntry<SC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.configuration);
 		@SuppressWarnings("unchecked")
 		SessionAttributesFactory<CC, Object> attributesFactory = (SessionAttributesFactory<CC, Object>) this.createSessionAttributesFactory(configuration, provider, notifierFactory);
-		this.factory = (SessionFactory<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>) new CompositeSessionFactory<>(new SessionFactoryConfiguration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
+		this.factory = new CompositeSessionFactory<>(new SessionFactoryConfiguration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public CacheProperties getCacheProperties() {
 				return cacheConfiguration.getCacheProperties();

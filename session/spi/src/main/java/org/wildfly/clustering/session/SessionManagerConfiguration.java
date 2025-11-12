@@ -10,7 +10,7 @@ import org.wildfly.clustering.server.manager.ManagerConfiguration;
 /**
  * Encapsulates the configuration of a session manager.
  * @author Paul Ferraro
- * @param <C> the deployment context type
+ * @param <C> the container context type
  */
 public interface SessionManagerConfiguration<C> extends ManagerConfiguration<String>, ExpirationConfiguration<ImmutableSession> {
 	/**
