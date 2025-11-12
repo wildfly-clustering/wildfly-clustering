@@ -18,13 +18,8 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier {
 	 * @param consumer a integer consumer
 	 * @return a runner that accepts the value returned by this supplier via the specified consumer.
 	 */
-	default Runnable thenAccept(java.util.function.DoubleConsumer consumer) {
-		return new Runnable() {
-			@Override
-			public void run() {
-				consumer.accept(DoubleSupplier.this.getAsDouble());
-			}
-		};
+	default Runner thenAccept(java.util.function.DoubleConsumer consumer) {
+		return Runner.accept(consumer, this);
 	}
 
 	/**

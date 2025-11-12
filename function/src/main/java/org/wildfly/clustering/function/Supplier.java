@@ -22,13 +22,8 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param consumer a consumer of the supplied value
 	 * @return a {@link Runnable} that consumes the supplied value.
 	 */
-	default Runnable thenAccept(Consumer<T> consumer) {
-		return new Runnable() {
-			@Override
-			public void run() {
-				consumer.accept(Supplier.this.get());
-			}
-		};
+	default Runner thenAccept(Consumer<T> consumer) {
+		return Runner.accept(consumer, this);
 	}
 
 	/**

@@ -6,6 +6,9 @@
 package org.wildfly.clustering.function;
 
 import java.util.List;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -86,6 +89,51 @@ public interface Runner extends java.lang.Runnable {
 			@Override
 			public void run() {
 				consumer.accept(supplier.get());
+			}
+		};
+	}
+
+	/**
+	 * Returns a runner that consumes a value from the specified supplier.
+	 * @param consumer a consumer of the supplied value
+	 * @param supplier a supplier of the consumed value
+	 * @return a runner that consumes a value from the specified supplier.
+	 */
+	static Runner accept(java.util.function.DoubleConsumer consumer, DoubleSupplier supplier) {
+		return new Runner() {
+			@Override
+			public void run() {
+				consumer.accept(supplier.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Returns a runner that consumes a value from the specified supplier.
+	 * @param consumer a consumer of the supplied value
+	 * @param supplier a supplier of the consumed value
+	 * @return a runner that consumes a value from the specified supplier.
+	 */
+	static Runner accept(java.util.function.IntConsumer consumer, IntSupplier supplier) {
+		return new Runner() {
+			@Override
+			public void run() {
+				consumer.accept(supplier.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Returns a runner that consumes a value from the specified supplier.
+	 * @param consumer a consumer of the supplied value
+	 * @param supplier a supplier of the consumed value
+	 * @return a runner that consumes a value from the specified supplier.
+	 */
+	static Runner accept(java.util.function.LongConsumer consumer, LongSupplier supplier) {
+		return new Runner() {
+			@Override
+			public void run() {
+				consumer.accept(supplier.getAsLong());
 			}
 		};
 	}
