@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.session;
 
+import java.time.Instant;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.server.manager.Manager;
@@ -24,7 +25,19 @@ public interface SessionManager<C> extends Manager<String> {
 	 * @return a new web session, or null if a session with the specified identifier already exists.
 	 */
 	default Session<C> createSession(String id) {
-		return this.createSessionAsync(id).toCompletableFuture().join();
+		return this.createSession(id, Instant.now());
+	}
+
+	/**
+	 * Creates a session using the specified identifier.
+	 * Sessions returned by this method must be closed via {@link Session#close()}.
+	 * This method is intended to be invoked within the context of a batch.
+	 * @param id a session identifier
+	 * @param creationTime the time this session was created
+	 * @return a new web session, or null if a session with the specified identifier already exists.
+	 */
+	default Session<C> createSession(String id, Instant creationTime) {
+		return this.createSessionAsync(id, creationTime).toCompletableFuture().join();
 	}
 
 	/**
@@ -34,7 +47,19 @@ public interface SessionManager<C> extends Manager<String> {
 	 * @param id a session identifier
 	 * @return a new web session, or null if a session with the specified identifier already exists.
 	 */
-	CompletionStage<Session<C>> createSessionAsync(String id);
+	default CompletionStage<Session<C>> createSessionAsync(String id) {
+		return this.createSessionAsync(id, Instant.now());
+	}
+
+	/**
+	 * Creates a session using the specified identifier.
+	 * Sessions returned by this method must be closed via {@link Session#close()}.
+	 * This method is intended to be invoked within the context of a batch.
+	 * @param id a session identifier
+	 * @param creationTime the time this session was created
+	 * @return a new web session, or null if a session with the specified identifier already exists.
+	 */
+	CompletionStage<Session<C>> createSessionAsync(String id, Instant creationTime);
 
 	/**
 	 * Returns the session with the specified identifier, or null if none exists.

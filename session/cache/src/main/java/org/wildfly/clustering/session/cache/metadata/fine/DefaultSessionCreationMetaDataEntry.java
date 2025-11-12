@@ -7,7 +7,6 @@ package org.wildfly.clustering.session.cache.metadata.fine;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 import org.wildfly.clustering.function.Supplier;
@@ -24,14 +23,6 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 	private final Instant creationTime;
 	private volatile Duration timeout = Duration.ZERO;
 	private final Supplied<C> context = Supplied.cached();
-
-	/**
-	 * Creates a session creation metadata entry for a new session.
-	 */
-	public DefaultSessionCreationMetaDataEntry() {
-		// Only retain millisecond precision
-		this(Instant.now().truncatedTo(ChronoUnit.MILLIS));
-	}
 
 	/**
 	 * Creates a session creation metadata entry for an existing session.

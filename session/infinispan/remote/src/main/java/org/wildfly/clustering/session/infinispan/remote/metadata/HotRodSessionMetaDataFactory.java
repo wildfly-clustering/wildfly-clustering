@@ -6,7 +6,9 @@
 package org.wildfly.clustering.session.infinispan.remote.metadata;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -66,14 +68,14 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 	}
 
 	@Override
-	public CompletionStage<SessionMetaDataEntry<C>> createValueAsync(String id, Duration defaultTimeout) {
+	public CompletionStage<SessionMetaDataEntry<C>> createValueAsync(String id, Map.Entry<Instant, Duration> context) {
 		SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
 		SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
-		SessionCreationMetaDataEntry<C> creationMetaData = new DefaultSessionCreationMetaDataEntry<>();
-		creationMetaData.setTimeout(defaultTimeout);
+		SessionCreationMetaDataEntry<C> creationMetaData = new DefaultSessionCreationMetaDataEntry<>(context.getKey());
+		creationMetaData.setTimeout(context.getValue());
 		SessionAccessMetaDataEntry accessMetaData = new DefaultSessionAccessMetaDataEntry();
 		CompletableFuture<?> creationStage = this.writeCreationMetaDataCache.putAsync(creationMetaDataKey, creationMetaData);
-		CompletableFuture<?> accessStage = this.writeAccessMetaDataCache.putAsync(accessMetaDataKey, accessMetaData, 0L, TimeUnit.SECONDS, defaultTimeout.getSeconds(), TimeUnit.SECONDS);
+		CompletableFuture<?> accessStage = this.writeAccessMetaDataCache.putAsync(accessMetaDataKey, accessMetaData, 0L, TimeUnit.SECONDS, creationMetaData.getTimeout().getSeconds(), TimeUnit.SECONDS);
 		return CompletableFuture.allOf(creationStage, accessStage).thenApply(Function.of(new DefaultSessionMetaDataEntry<>(creationMetaData, accessMetaData)));
 	}
 

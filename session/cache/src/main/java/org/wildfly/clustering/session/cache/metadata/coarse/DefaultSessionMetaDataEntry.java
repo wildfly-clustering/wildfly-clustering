@@ -7,7 +7,6 @@ package org.wildfly.clustering.session.cache.metadata.coarse;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.offset.OffsetValue;
@@ -26,14 +25,6 @@ public class DefaultSessionMetaDataEntry<C> extends AbstractSessionMetaDataEntry
 	// The end time of the last access, expressed an an offset from the start time of the last access
 	private final OffsetValue<Instant> lastAccessEndTime;
 	private final Supplied<C> context = Supplied.cached();
-
-	/**
-	 * Create a session metadata entry for a new session.
-	 */
-	public DefaultSessionMetaDataEntry() {
-		// Only retain millisecond precision
-		this(Instant.now().truncatedTo(ChronoUnit.MILLIS));
-	}
 
 	/**
 	 * Create a session metadata entry for an existing session.

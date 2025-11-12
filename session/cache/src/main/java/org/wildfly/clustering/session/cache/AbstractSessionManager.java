@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
@@ -133,9 +136,9 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 	}
 
 	@Override
-	public CompletionStage<Session<SC>> createSessionAsync(String id) {
+	public CompletionStage<Session<SC>> createSessionAsync(String id, Instant creationTime) {
 		this.logger.log(System.Logger.Level.TRACE, "Creating session {0}", id);
-		return this.sessionFactory.createValueAsync(id, this.expiration.getTimeout()).thenApply(entry -> this.wrapper.apply(this.sessionFactory.createSession(id, entry, this.context)));
+		return this.sessionFactory.createValueAsync(id, Map.entry(creationTime.truncatedTo(ChronoUnit.MILLIS), this.expiration.getTimeout())).thenApply(entry -> this.wrapper.apply(this.sessionFactory.createSession(id, entry, this.context)));
 	}
 
 	@Override
