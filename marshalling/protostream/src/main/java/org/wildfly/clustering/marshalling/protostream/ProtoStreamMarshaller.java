@@ -105,12 +105,12 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 			}
 
 			@Override
-			public T readFrom(ProtoStreamReader reader) throws IOException {
+			public T readFrom(ProtoStreamReader reader) {
 				return factory.get();
 			}
 
 			@Override
-			public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
+			public void writeTo(ProtoStreamWriter writer, T value) {
 				// Nothing to write
 			}
 

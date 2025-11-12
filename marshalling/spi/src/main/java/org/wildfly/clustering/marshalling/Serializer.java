@@ -120,11 +120,11 @@ public interface Serializer<T> {
 	static <T> Serializer<T> of(T value) {
 		return new Serializer<>() {
 			@Override
-			public void write(DataOutput output, T value) throws IOException {
+			public void write(DataOutput output, T value) {
 			}
 
 			@Override
-			public T read(DataInput input) throws IOException {
+			public T read(DataInput input) {
 				return value;
 			}
 		};

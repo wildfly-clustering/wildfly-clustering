@@ -31,7 +31,7 @@ public class CacheContainerRegistryFactoryContext<K, V> extends AbstractContext<
 
 	private final RegistryFactory<CacheContainerGroupMember, K, V> factory;
 
-	public CacheContainerRegistryFactoryContext(String clusterName, String memberName) throws Exception {
+	public CacheContainerRegistryFactoryContext(String clusterName, String memberName) {
 		Context<CacheContainerGroup> groupContext = new EmbeddedCacheManagerGroupContext(clusterName, memberName);
 		this.accept(groupContext::close);
 

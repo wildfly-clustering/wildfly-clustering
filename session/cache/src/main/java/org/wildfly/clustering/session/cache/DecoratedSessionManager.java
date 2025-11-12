@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.time.Instant;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.server.manager.DecoratedManager;
@@ -32,8 +33,8 @@ public class DecoratedSessionManager<C> extends DecoratedManager<String> impleme
 	}
 
 	@Override
-	public CompletionStage<Session<C>> createSessionAsync(String id) {
-		return this.manager.createSessionAsync(id);
+	public CompletionStage<Session<C>> createSessionAsync(String id, Instant creationTime) {
+		return this.manager.createSessionAsync(id, creationTime);
 	}
 
 	@Override

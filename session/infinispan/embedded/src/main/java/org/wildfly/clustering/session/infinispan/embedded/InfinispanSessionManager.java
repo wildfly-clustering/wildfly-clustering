@@ -112,15 +112,15 @@ public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionMan
 	@Override
 	public Set<String> getActiveSessions() {
 		// Omit passivated sessions
-		return this.getLocalSessions(this.cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD));
+		return getLocalSessions(this.cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD));
 	}
 
 	@Override
 	public Set<String> getSessions() {
-		return this.getLocalSessions(this.cache);
+		return getLocalSessions(this.cache);
 	}
 
-	private Set<String> getLocalSessions(Cache<Key<String>, ?> cache) {
+	private static Set<String> getLocalSessions(Cache<Key<String>, ?> cache) {
 		CacheStreamFilter<Key<String>> filter = CacheStreamFilter.local(cache);
 		try (Stream<Key<String>> keys = filter.apply(cache.keySet().stream())) {
 			return keys.filter(SessionCacheKeyFilter.META_DATA).map(Key::getId).collect(Collectors.toUnmodifiableSet());

@@ -45,7 +45,7 @@ public class ByteBufferInputStream extends InputStream {
 
 	@Override
 	public long skip(long bytes) {
-		int offset = (int) Math.min((long) this.buffer.remaining(), bytes);
+		int offset = (int) Math.min(this.buffer.remaining(), bytes);
 		this.buffer.position(this.buffer.position() + offset);
 		return offset;
 	}

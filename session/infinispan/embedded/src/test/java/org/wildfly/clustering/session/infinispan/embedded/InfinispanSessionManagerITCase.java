@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.h2.jdbcx.JdbcDataSource;
@@ -50,7 +51,7 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 		}
 
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 			Stream.Builder<Arguments> builder = Stream.builder();
 			for (MarshallingTesterFactory factory : ServiceLoader.load(this.marshallerClass, this.marshallerClass.getClassLoader())) {
 				ByteBufferMarshaller marshaller = factory.getMarshaller();
@@ -135,21 +136,21 @@ public class InfinispanSessionManagerITCase extends SessionManagerITCase<Infinis
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanSessionManagerArgumentsProvider.class)
-	public void basic(InfinispanSessionManagerParameters parameters) throws Exception {
+	public void basic(InfinispanSessionManagerParameters parameters) {
 		super.basic(parameters);
 	}
 
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ConcurrentInfinispanSessionManagerArgumentsProvider.class)
-	public void concurrent(InfinispanSessionManagerParameters parameters) throws Exception {
+	public void concurrent(InfinispanSessionManagerParameters parameters) throws InterruptedException, ExecutionException {
 		super.concurrent(parameters);
 	}
 
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ExpirationInfinispanSessionManagerArgumentsProvider.class)
-	public void expiration(InfinispanSessionManagerParameters parameters) throws Exception {
+	public void expiration(InfinispanSessionManagerParameters parameters) throws InterruptedException {
 		super.expiration(parameters);
 	}
 }

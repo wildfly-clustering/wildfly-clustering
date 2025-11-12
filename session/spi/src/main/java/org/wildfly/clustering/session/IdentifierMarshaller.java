@@ -21,7 +21,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	/** Marshals session identifier as a ISO 8859 encoded string */
 	ISO_LATIN_1() {
 		@Override
-		public String read(ByteBuffer buffer) throws IOException {
+		public String read(ByteBuffer buffer) {
 			if (!buffer.hasArray()) {
 				throw new IllegalArgumentException(buffer.toString());
 			}
@@ -31,7 +31,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 		}
 
 		@Override
-		public ByteBuffer write(String value) throws IOException {
+		public ByteBuffer write(String value) {
 			return ByteBuffer.wrap(value.getBytes(StandardCharsets.ISO_8859_1));
 		}
 
@@ -109,7 +109,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 		}
 
 		@Override
-		public String read(ByteBuffer buffer) throws IOException {
+		public String read(ByteBuffer buffer) {
 			if (!buffer.hasArray()) {
 				throw new IllegalArgumentException(buffer.toString());
 			}
@@ -117,7 +117,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 		}
 
 		@Override
-		public ByteBuffer write(String value) throws IOException {
+		public ByteBuffer write(String value) {
 			return ByteBuffer.wrap(this.format.parseHex(value));
 		}
 

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -57,7 +58,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		this.factory = factory;
 	}
 
-	protected void basic(P parameters) throws Exception {
+	protected void basic(P parameters) {
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
@@ -103,7 +104,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		}
 	}
 
-	protected void concurrent(P parameters) throws Exception {
+	protected void concurrent(P parameters) throws InterruptedException, ExecutionException {
 		int threads = 10;
 		int requests = 10;
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
@@ -191,7 +192,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		}
 	}
 
-	protected void expiration(P parameters) throws Exception {
+	protected void expiration(P parameters) throws InterruptedException {
 		Duration expirationDuration = Duration.ofSeconds(120);
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
@@ -241,7 +242,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 						assertThat(expiredSession.getMetaData().isNew()).isFalse();
 						assertThat(expiredSession.getMetaData().isExpired()).isTrue();
 						assertThat(expiredSession.getMetaData().isImmortal()).isFalse();
-						this.verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
+						verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
 
 						assertThat(expiredSessions).isEmpty();
 					} catch (InterruptedException e) {
@@ -262,18 +263,18 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	private void createSession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
 		this.requestSession(manager, manager::createSession, sessionId, session -> {
 			assertThat(session.getMetaData().isNew()).isTrue();
-			this.verifySessionMetaData(session);
-			this.verifySessionAttributes(session, Map.of());
-			this.updateSessionAttributes(session, attributes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> new AbstractMap.SimpleEntry<>(null, entry.getValue()))));
-			this.verifySessionAttributes(session, attributes);
+			verifySessionMetaData(session);
+			verifySessionAttributes(session, Map.of());
+			updateSessionAttributes(session, attributes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> new AbstractMap.SimpleEntry<>(null, entry.getValue()))));
+			verifySessionAttributes(session, attributes);
 		});
 	}
 
 	private void verifySession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
 		this.requestSession(manager, sessionId, session -> {
 			assertThat(session.getMetaData().isNew()).isFalse();
-			this.verifySessionMetaData(session);
-			this.verifySessionAttributes(session, attributes);
+			verifySessionMetaData(session);
+			verifySessionAttributes(session, attributes);
 		});
 	}
 
@@ -282,8 +283,8 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(sessionId);
 			assertThat(session.getMetaData().isNew()).isFalse();
-			this.verifySessionMetaData(session);
-			this.updateSessionAttributes(session, attributes);
+			verifySessionMetaData(session);
+			updateSessionAttributes(session, attributes);
 		});
 	}
 
@@ -331,7 +332,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		}
 	}
 
-	private void verifySessionMetaData(Session<AtomicReference<String>> session) {
+	private static void verifySessionMetaData(Session<AtomicReference<String>> session) {
 		assertThat(session.isValid()).isTrue();
 		SessionMetaData metaData = session.getMetaData();
 		assertThat(metaData.isImmortal()).isFalse();
@@ -350,14 +351,14 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		}
 	}
 
-	private void verifySessionAttributes(ImmutableSession session, Map<String, Object> attributes) {
+	private static void verifySessionAttributes(ImmutableSession session, Map<String, Object> attributes) {
 		assertThat(session.getAttributes().keySet()).containsAll(attributes.keySet());
 		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
 			assertThat(session.getAttributes().get(entry.getKey())).isEqualTo(entry.getValue());
 		}
 	}
 
-	private void updateSessionAttributes(Session<AtomicReference<String>> session, Map<String, Map.Entry<Object, Object>> attributes) {
+	private static void updateSessionAttributes(Session<AtomicReference<String>> session, Map<String, Map.Entry<Object, Object>> attributes) {
 		for (Map.Entry<String, Map.Entry<Object, Object>> entry : attributes.entrySet()) {
 			String name = entry.getKey();
 			Object expected = entry.getValue().getKey();

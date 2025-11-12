@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.cache;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -419,12 +420,13 @@ public class CachedSessionManagerTestCase {
 		Session<Void> expected1 = mock(Session.class);
 		Session<Void> expected2 = mock(Session.class);
 		String id = "foo";
+		Instant creationTime = Instant.now();
 		SessionMetaData metaData1 = mock(SessionMetaData.class);
 		SessionAttributes attributes1 = mock(SessionAttributes.class);
 		SessionMetaData metaData2 = mock(SessionMetaData.class);
 		SessionAttributes attributes2 = mock(SessionAttributes.class);
 
-		doReturn(CompletableFuture.completedStage(expected1), CompletableFuture.completedStage(expected2)).when(manager).createSessionAsync(id);
+		doReturn(CompletableFuture.completedStage(expected1), CompletableFuture.completedStage(expected2)).when(manager).createSessionAsync(id, creationTime);
 		doReturn(id).when(expected1).getId();
 		doReturn(true).when(expected1).isValid();
 		doReturn(attributes1).when(expected1).getAttributes();
@@ -434,8 +436,8 @@ public class CachedSessionManagerTestCase {
 		doReturn(attributes2).when(expected2).getAttributes();
 		doReturn(metaData2).when(expected2).getMetaData();
 
-		try (Session<Void> session1 = subject.createSession(id)) {
-			verify(manager).createSessionAsync(id);
+		try (Session<Void> session1 = subject.createSession(id, creationTime)) {
+			verify(manager).createSessionAsync(id, creationTime);
 
 			assertThat(session1).isNotNull();
 			assertThat(session1.getId()).isSameAs(id);
@@ -466,8 +468,8 @@ public class CachedSessionManagerTestCase {
 		assertThat(subject.keySet()).isEmpty();
 
 		// Should use second session instance
-		try (Session<Void> session = subject.createSession(id)) {
-			verify(manager, times(2)).createSessionAsync(id);
+		try (Session<Void> session = subject.createSession(id, creationTime)) {
+			verify(manager, times(2)).createSessionAsync(id, creationTime);
 
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isSameAs(id);
@@ -492,12 +494,13 @@ public class CachedSessionManagerTestCase {
 		Session<Void> expected1 = mock(Session.class);
 		Session<Void> expected2 = mock(Session.class);
 		String id = "foo";
+		Instant creationTime = Instant.now();
 		SessionMetaData metaData1 = mock(SessionMetaData.class);
 		SessionAttributes attributes1 = mock(SessionAttributes.class);
 		SessionMetaData metaData2 = mock(SessionMetaData.class);
 		SessionAttributes attributes2 = mock(SessionAttributes.class);
 
-		doReturn(future1, future2).when(manager).createSessionAsync(id);
+		doReturn(future1, future2).when(manager).createSessionAsync(id, creationTime);
 
 		doReturn(id).when(expected1).getId();
 		doReturn(true).when(expected1).isValid();
@@ -508,13 +511,13 @@ public class CachedSessionManagerTestCase {
 		doReturn(attributes2).when(expected2).getAttributes();
 		doReturn(metaData2).when(expected2).getMetaData();
 
-		CompletionStage<Session<Void>> stage1 = subject.createSessionAsync(id);
+		CompletionStage<Session<Void>> stage1 = subject.createSessionAsync(id, creationTime);
 
-		verify(manager).createSessionAsync(id);
+		verify(manager).createSessionAsync(id, creationTime);
 
 		assertThat(subject.keySet()).containsExactly(id);
 
-		CompletionStage<Session<Void>> stage2 = subject.createSessionAsync(id);
+		CompletionStage<Session<Void>> stage2 = subject.createSessionAsync(id, creationTime);
 
 		// Should return the same session without invoking the manager
 		verifyNoMoreInteractions(manager);
@@ -545,9 +548,9 @@ public class CachedSessionManagerTestCase {
 		// Cache should now be empty
 		assertThat(subject.keySet()).isEmpty();
 
-		CompletionStage<Session<Void>> stage = subject.createSessionAsync(id);
+		CompletionStage<Session<Void>> stage = subject.createSessionAsync(id, creationTime);
 
-		verify(manager, times(2)).createSessionAsync(id);
+		verify(manager, times(2)).createSessionAsync(id, creationTime);
 
 		assertThat(subject.keySet()).containsExactly(id);
 
@@ -573,18 +576,19 @@ public class CachedSessionManagerTestCase {
 		SessionManager<Void> manager = mock(SessionManager.class);
 		CachedSessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.CONCURRENT);
 		String id = "foo";
+		Instant creationTime = Instant.now();
 
-		doReturn(CompletableFuture.failedFuture(new Exception())).when(manager).createSessionAsync(id);
+		doReturn(CompletableFuture.failedFuture(new Exception())).when(manager).createSessionAsync(id, creationTime);
 
-		assertThatThrownBy(() -> subject.createSession(id));
+		assertThatThrownBy(() -> subject.createSession(id, creationTime));
 
-		verify(manager).createSessionAsync(id);
+		verify(manager).createSessionAsync(id, creationTime);
 
 		assertThat(subject.keySet()).isEmpty();
 
-		assertThatThrownBy(() -> subject.createSession(id));
+		assertThatThrownBy(() -> subject.createSession(id, creationTime));
 
-		verify(manager, times(2)).createSessionAsync(id);
+		verify(manager, times(2)).createSessionAsync(id, creationTime);
 
 		// Cache should now be empty
 		assertThat(subject.keySet()).isEmpty();
@@ -596,16 +600,17 @@ public class CachedSessionManagerTestCase {
 		CachedSessionManager<Void> subject = new CachedSessionManager<>(manager, CacheStrategy.CONCURRENT);
 		CompletableFuture<Session<Void>> future = new CompletableFuture<>();
 		String id = "foo";
+		Instant creationTime = Instant.now();
 
-		doReturn(future).when(manager).createSessionAsync(id);
+		doReturn(future).when(manager).createSessionAsync(id, creationTime);
 
-		CompletionStage<Session<Void>> stage1 = subject.createSessionAsync(id);
+		CompletionStage<Session<Void>> stage1 = subject.createSessionAsync(id, creationTime);
 
-		verify(manager).createSessionAsync(id);
+		verify(manager).createSessionAsync(id, creationTime);
 
 		assertThat(subject.keySet()).containsExactly(id);
 
-		CompletionStage<Session<Void>> stage2 = subject.createSessionAsync(id);
+		CompletionStage<Session<Void>> stage2 = subject.createSessionAsync(id, creationTime);
 
 		verifyNoMoreInteractions(manager);
 

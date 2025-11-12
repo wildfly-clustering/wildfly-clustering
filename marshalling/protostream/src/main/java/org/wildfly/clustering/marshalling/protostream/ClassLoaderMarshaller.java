@@ -39,7 +39,7 @@ public interface ClassLoaderMarshaller extends FieldSetMarshaller.Simple<ClassLo
 			}
 
 			@Override
-			public void writeTo(ProtoStreamWriter writer, ClassLoader value) throws IOException {
+			public void writeTo(ProtoStreamWriter writer, ClassLoader value) {
 			}
 		};
 	}

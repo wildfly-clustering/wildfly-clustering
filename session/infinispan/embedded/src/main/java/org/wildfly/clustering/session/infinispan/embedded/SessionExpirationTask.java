@@ -65,10 +65,9 @@ public class SessionExpirationTask<SC, MV, AV, LC> implements Predicate<String> 
 							LOGGER.log(System.Logger.Level.TRACE, "Removal of session {0} was cancelled.", id);
 							return false;
 						}
-					} else {
-						LOGGER.log(System.Logger.Level.TRACE, "Session {0} does not expire until {1}", id, metaData.getExpirationTime().orElse(null));
-						return false;
 					}
+					LOGGER.log(System.Logger.Level.TRACE, "Session {0} does not expire until {1}", id, metaData.getExpirationTime().orElse(null));
+					return false;
 				}
 				LOGGER.log(System.Logger.Level.TRACE, "Session {0} was not found or is currently in use.", id);
 				return true;

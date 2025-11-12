@@ -5,14 +5,15 @@
 
 package org.wildfly.clustering.session.cache;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiFunction;
 
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Runner;
@@ -33,7 +34,8 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 	static final System.Logger LOGGER = System.getLogger(CachedSessionManager.class.getName());
 
 	private final Cache<String, CompletionStage<CacheableSession<C>>> sessionCache;
-	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionCreator;
+	private final BiFunction<String, Instant, CompletionStage<Session<C>>> sessionCreator;
+	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> defaultSessionCreator;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionFinder;
 	private final UnaryOperator<Session<C>> validator = new UnaryOperator<>() {
 		@Override
@@ -53,9 +55,10 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 	 */
 	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
 		super(manager);
+		this.sessionCreator = manager::createSessionAsync;
 		// If completed exceptionally, return an invalid session that rethrows this exception on Session.close()
 		// If completed with null, return an invalid session that we can filter later
-		this.sessionCreator = new SessionManagerFunction<>(manager::createSessionAsync);
+		this.defaultSessionCreator = new SessionManagerFunction<>(manager::createSessionAsync);
 		this.sessionFinder = new SessionManagerFunction<>(manager::findSessionAsync);
 		this.sessionCache = cacheFactory.createCache(Consumer.empty(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
@@ -71,7 +74,12 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 
 	@Override
 	public CompletionStage<Session<C>> createSessionAsync(String id) {
-		return this.sessionCache.computeIfAbsent(id, this.sessionCreator).thenApply(this.validator);
+		return this.sessionCache.computeIfAbsent(id, this.defaultSessionCreator).thenApply(this.validator);
+	}
+
+	@Override
+	public CompletionStage<Session<C>> createSessionAsync(String id, Instant creationTime) {
+		return this.sessionCache.computeIfAbsent(id, new SessionManagerFunction<>(this.sessionCreator.composeUnary(UnaryOperator.identity(), Function.of(creationTime)))).thenApply(this.validator);
 	}
 
 	@Override

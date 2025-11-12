@@ -74,7 +74,7 @@ public class SessionServlet extends HttpServlet {
 	}
 
 	@Override
-	public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public void doDelete(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			session.invalidate();

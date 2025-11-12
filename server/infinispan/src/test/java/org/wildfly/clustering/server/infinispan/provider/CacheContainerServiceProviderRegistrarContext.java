@@ -24,7 +24,7 @@ public class CacheContainerServiceProviderRegistrarContext<T> extends AbstractCo
 
 	private final CacheServiceProviderRegistrar<T> registrar;
 
-	public CacheContainerServiceProviderRegistrarContext(String clusterName, String memberName) throws Exception {
+	public CacheContainerServiceProviderRegistrarContext(String clusterName, String memberName) {
 		Context<CacheContainerGroup> groupContext = new EmbeddedCacheManagerGroupContext(clusterName, memberName);
 		this.accept(groupContext::close);
 

@@ -22,13 +22,8 @@ public interface LongSupplier extends java.util.function.LongSupplier {
 	 * @param consumer a integer consumer
 	 * @return a runner that accepts the value returned by this supplier via the specified consumer.
 	 */
-	default Runnable thenAccept(java.util.function.LongConsumer consumer) {
-		return new Runnable() {
-			@Override
-			public void run() {
-				consumer.accept(LongSupplier.this.getAsLong());
-			}
-		};
+	default Runner thenAccept(java.util.function.LongConsumer consumer) {
+		return Runner.accept(consumer, this);
 	}
 
 	/**

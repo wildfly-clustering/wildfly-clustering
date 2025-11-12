@@ -29,12 +29,12 @@ public interface Marshaller<V, S> extends Predicate<Object> {
 			}
 
 			@Override
-			public T read(T value) throws IOException {
+			public T read(T value) {
 				return value;
 			}
 
 			@Override
-			public T write(T value) throws IOException {
+			public T write(T value) {
 				return value;
 			}
 		};

@@ -22,13 +22,8 @@ public interface IntSupplier extends java.util.function.IntSupplier {
 	 * @param consumer a integer consumer
 	 * @return a runner that accepts the value returned by this supplier via the specified consumer.
 	 */
-	default Runnable thenAccept(java.util.function.IntConsumer consumer) {
-		return new Runnable() {
-			@Override
-			public void run() {
-				consumer.accept(IntSupplier.this.getAsInt());
-			}
-		};
+	default Runner thenAccept(java.util.function.IntConsumer consumer) {
+		return Runner.accept(consumer, this);
 	}
 
 	/**

@@ -54,15 +54,15 @@ public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
 	@Override
 	public Duration readFrom(ProtoStreamReader reader, int index, WireType type, Duration duration) throws IOException {
 		return switch (index) {
-			case POSITIVE_SECONDS_INDEX -> this.withSeconds(duration, reader.readUInt64());
+			case POSITIVE_SECONDS_INDEX -> withSeconds(duration, reader.readUInt64());
 			case NEGATIVE_SECONDS_INDEX -> duration.withSeconds(0 - reader.readUInt64());
-			case MILLIS_INDEX -> this.withMillis(duration, reader.readUInt32());
-			case NANOS_INDEX -> this.withNanos(duration, reader.readUInt32());
+			case MILLIS_INDEX -> withMillis(duration, reader.readUInt32());
+			case NANOS_INDEX -> withNanos(duration, reader.readUInt32());
 			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(duration)).get();
 		};
 	}
 
-	private Duration withSeconds(Duration duration, long seconds) {
+	private static Duration withSeconds(Duration duration, long seconds) {
 		if (duration.isZero()) {
 			// Use standard Duration, if possible
 			for (ChronoUnit unit : SUPER_SECOND_UNITS) {
@@ -75,12 +75,12 @@ public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
 		return duration.withSeconds(seconds);
 	}
 
-	private Duration withMillis(Duration duration, int millis) {
+	private static Duration withMillis(Duration duration, int millis) {
 		// Use standard Duration, if possible
 		return (duration.isZero() && (millis == 1)) ? ChronoUnit.MILLIS.getDuration() : duration.withNanos(millis * NANOS_PER_MILLI);
 	}
 
-	private Duration withNanos(Duration duration, int nanos) {
+	private static Duration withNanos(Duration duration, int nanos) {
 		if (duration.isZero()) {
 			// Use standard Duration, if possible
 			for (ChronoUnit unit : SUB_MILLSECOND_UNITS) {
