@@ -8,7 +8,6 @@ package org.wildfly.clustering.server.infinispan;
 import java.io.Serializable;
 
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.LocalModeAddress;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.group.AbstractGroupMember;
 
@@ -32,7 +31,7 @@ public class LocalEmbeddedCacheManagerGroupMember extends AbstractGroupMember<Ad
 
 	@Override
 	public Address getId() {
-		return LocalModeAddress.INSTANCE;
+		return Address.LOCAL;
 	}
 
 	@Override

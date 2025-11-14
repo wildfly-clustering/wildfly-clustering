@@ -24,7 +24,7 @@ public class TesterFactoryArgumentsProvider extends AnnotationBasedArgumentsProv
 
 	@Deprecated
 	@Override
-	protected Stream<? extends Arguments> provideArguments(ExtensionContext context, TesterFactorySource annotation) {
+	protected Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context, TesterFactorySource annotation) {
 		Stream.Builder<Arguments> builder = Stream.builder();
 		for (Class<? extends TesterFactory> factoryClass : annotation.value()) {
 			Iterator<? extends TesterFactory> factories = ServiceLoader.load(factoryClass, factoryClass.getClassLoader()).iterator();
@@ -36,10 +36,5 @@ public class TesterFactoryArgumentsProvider extends AnnotationBasedArgumentsProv
 			}
 		}
 		return builder.build();
-	}
-
-	@Override
-	protected Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context, TesterFactorySource annotation) {
-		return this.provideArguments(context, annotation);
 	}
 }

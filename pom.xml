@@ -16,10 +16,6 @@
 	<artifactId>wildfly-clustering</artifactId>
 	<packaging>pom</packaging>
 
-	<properties>
-		<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-	</properties>
-
 	<name>${project.repository.name}: Modules</name>
 
 	<modules>
@@ -61,7 +57,7 @@
 			<dependency>
 				<groupId>org.infinispan</groupId>
 				<artifactId>infinispan-bom</artifactId>
-				<version>15.2.6.Final</version>
+				<version>16.0.1</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -135,18 +131,6 @@
 				<version>11.0.14</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.logmanager</groupId>
-				<artifactId>jboss-logmanager</artifactId>
-				<version>3.1.2.Final</version>
-				<exclusions>
-					<!-- Infinispan requires 3.6.x -->
-					<exclusion>
-						<groupId>org.jboss.logging</groupId>
-						<artifactId>jboss-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.marshalling</groupId>
 				<artifactId>jboss-marshalling</artifactId>
 				<version>2.2.3.Final</version>
@@ -159,7 +143,7 @@
 			<dependency>
 				<groupId>org.jgroups</groupId>
 				<artifactId>jgroups</artifactId>
-				<version>5.4.11.Final</version>
+				<version>5.5.1.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kohsuke.metainf-services</groupId>
@@ -173,11 +157,6 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.logmanager</groupId>
-			<artifactId>jboss-logmanager</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

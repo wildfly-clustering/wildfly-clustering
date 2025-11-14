@@ -5,10 +5,9 @@
 
 package org.wildfly.clustering.server.infinispan;
 
-import org.infinispan.remoting.transport.LocalModeAddress;
+import org.infinispan.remoting.transport.Address;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
@@ -22,11 +21,12 @@ public class InfinispanTransportSerializationContextInitializer extends Abstract
 	 * Creates a serialization context initializer.
 	 */
 	public InfinispanTransportSerializationContextInitializer() {
-		super(LocalModeAddress.class.getPackage());
+		super(Address.class.getPackage());
 	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(ProtoStreamMarshaller.of(LocalModeAddress.INSTANCE));
+		context.registerMarshaller(AddressMarshaller.INSTANCE);
+		context.registerMarshaller(VersionMarshaller.INSTANCE);
 	}
 }

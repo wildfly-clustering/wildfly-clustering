@@ -74,6 +74,11 @@ public class OffsetProtoStreamReader implements ProtoStreamReader {
 	}
 
 	@Override
+	public byte readByteTag() throws IOException {
+		return this.reader.readByteTag();
+	}
+
+	@Override
 	public void checkLastTagWas(int tag) throws IOException {
 		this.reader.checkLastTagWas(tag);
 	}

@@ -25,12 +25,12 @@ public enum EmbeddedCacheManagerGroupMemberSerializer implements Serializer<Embe
 
 	@Override
 	public void write(DataOutput output, EmbeddedCacheManagerGroupMember member) throws IOException {
-		JGroupsAddressSerializer.INSTANCE.write(output, member.getId());
+		AddressSerializer.INSTANCE.write(output, member.getId());
 	}
 
 	@Override
 	public EmbeddedCacheManagerGroupMember read(DataInput input) throws IOException {
-		return new EmbeddedCacheManagerGroupMember(JGroupsAddressSerializer.INSTANCE.read(input));
+		return new EmbeddedCacheManagerGroupMember(AddressSerializer.INSTANCE.read(input));
 	}
 
 	/**

@@ -37,7 +37,7 @@ public class WrappedMessageByteBufferMarshaller implements ByteBufferMarshaller 
 
 	@Override
 	public Object readFrom(InputStream input) throws IOException {
-		return ProtobufUtil.fromWrappedStream(this.context, input);
+		return ProtobufUtil.fromWrappedStream(this.context, input, input.available());
 	}
 
 	@Override

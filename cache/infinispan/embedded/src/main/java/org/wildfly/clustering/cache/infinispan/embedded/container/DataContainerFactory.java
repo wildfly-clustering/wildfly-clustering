@@ -70,15 +70,12 @@ public class DataContainerFactory extends AbstractNamedCacheComponentFactory imp
 			return offHeap ? new OffHeapDataContainer() : DefaultDataContainer.unBoundedDataContainer(this.configuration.locking().concurrencyLevel());
 		}
 
-		// Create bounded container
-		@SuppressWarnings("removal")
-		org.infinispan.eviction.EvictionType type = memory.evictionType();
-
+		boolean hasSize = memory.maxSize() != null;
 		if (offHeap) {
-			return segmented ? new SegmentedBoundedOffHeapDataContainer(segments, memory.maxCount(), type) : new BoundedOffHeapDataContainer(memory.maxCount(), type);
+			return segmented ? new SegmentedBoundedOffHeapDataContainer(segments, memory.maxCount(), hasSize) : new BoundedOffHeapDataContainer(memory.maxCount(), hasSize);
 		}
-		if (memory.maxSize() != null) {
-			return segmented ? new BoundedSegmentedDataContainer<>(segments, memory.maxSizeBytes(), type) : DefaultDataContainer.boundedDataContainer(this.configuration.locking().concurrencyLevel(), memory.maxSizeBytes(), type);
+		if (hasSize) {
+			return segmented ? new BoundedSegmentedDataContainer<>(segments, memory.maxSizeBytes(), hasSize) : DefaultDataContainer.boundedDataContainer(this.configuration.locking().concurrencyLevel(), memory.maxSizeBytes(), hasSize);
 		}
 		return segmented ? new SegmentedEvictableDataContainer<>(this.basicComponentRegistry, this.configuration) : new EvictableDataContainer<>(this.basicComponentRegistry, this.configuration);
 	}

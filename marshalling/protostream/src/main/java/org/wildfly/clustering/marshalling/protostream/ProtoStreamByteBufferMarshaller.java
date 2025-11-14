@@ -68,7 +68,7 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
 	@Override
 	public Object readFrom(InputStream input) throws IOException {
-		ReadContext context = TagReaderImpl.newInstance(this.context, input);
+		ReadContext context = TagReaderImpl.newInstance(this.context, input, input.available());
 		ProtoStreamReader reader = new DefaultProtoStreamReader(context);
 		ProtoStreamMarshaller<Any> marshaller = reader.findMarshaller(Any.class);
 		return marshaller.readFrom(reader).get();

@@ -7,7 +7,6 @@ package org.wildfly.clustering.server.infinispan.provider;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -15,8 +14,6 @@ import java.util.function.Function;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.LocalModeAddress;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.wildfly.clustering.cache.function.CollectionFunction;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -54,21 +51,22 @@ public class AddressSetFunctionMarshaller<F extends CollectionFunction<Address, 
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ELEMENT_INDEX -> operand.add(reader.readObject(JGroupsAddress.class));
+				case ELEMENT_INDEX -> operand.add(reader.readObject(Address.class));
 				default -> reader.skipField(tag);
 			}
 		}
-		// If no element were read, use singleton LocalModeAddress collection.
-		return this.factory.apply(operand.isEmpty() ? Collections.singleton(LocalModeAddress.INSTANCE) : operand);
+		// If no element were read, use singleton local address collection.
+		return this.factory.apply(operand.isEmpty() ? Set.of(Address.LOCAL) : operand);
 	}
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, F function) throws IOException {
 		Collection<Address> operand = function.getOperand();
 		// If operand is a singleton LocalModeAddress, don't write any elements
-		if ((operand.size() == 1) && operand.iterator().next().equals(LocalModeAddress.INSTANCE)) return;
-		for (Address value : function.getOperand()) {
-			writer.writeObject(ELEMENT_INDEX, value);
+		if ((operand.size() > 1) || (operand.iterator().next() != Address.LOCAL)) {
+			for (Address value : function.getOperand()) {
+				writer.writeObject(ELEMENT_INDEX, value);
+			}
 		}
 	}
 }

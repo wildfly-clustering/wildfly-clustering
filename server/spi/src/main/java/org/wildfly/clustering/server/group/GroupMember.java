@@ -13,8 +13,8 @@ package org.wildfly.clustering.server.group;
 public interface GroupMember<I extends Comparable<I>> extends org.wildfly.clustering.server.GroupMember, Comparable<GroupMember<I>> {
 
 	/**
-	 * Returns the unique identifier of this group member
-	 * @return a unique identifier
+	 * Returns the unique address of this group member
+	 * @return the unique address of this group member
 	 */
 	I getId();
 }

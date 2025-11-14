@@ -8,8 +8,6 @@ package org.wildfly.clustering.server.infinispan.dispatcher;
 import java.util.function.Function;
 
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.LocalModeAddress;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.infinispan.ChannelEmbeddedCacheManagerGroupConfiguration;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
@@ -30,7 +28,7 @@ public interface ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguratio
 		return new Function<>() {
 			@Override
 			public org.jgroups.Address apply(Address address) {
-				return (address != LocalModeAddress.INSTANCE) ? JGroupsAddress.class.cast(address).getJGroupsAddress() : ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration.this.getCommandDispatcherFactory().getGroup().getLocalMember().getId();
+				return (address != Address.LOCAL) ? Address.toExtendedUUID(address) : ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration.this.getCommandDispatcherFactory().getGroup().getLocalMember().getId();
 			}
 		};
 	}

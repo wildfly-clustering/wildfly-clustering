@@ -6,7 +6,6 @@
 package org.wildfly.clustering.server.infinispan;
 
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.LocalModeAddress;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheContainerConfiguration;
 
 /**
@@ -27,6 +26,6 @@ public class EmbeddedCacheManagerGroupMemberFactory implements CacheContainerGro
 
 	@Override
 	public CacheContainerGroupMember createGroupMember(Address address) {
-		return (address != LocalModeAddress.INSTANCE) ? new EmbeddedCacheManagerGroupMember(address) : this.localMember;
+		return (address != Address.LOCAL) ? new EmbeddedCacheManagerGroupMember(address) : this.localMember;
 	}
 }
