@@ -122,7 +122,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	/** A consumer that does nothing with its parameter */
 	Consumer<?> EMPTY = value -> {};
 	/** A map of exception logging consumers per level */
-	Map<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), ExceptionLogger::new, BinaryOperator.former(), () -> new EnumMap<>(System.Logger.Level.class)));
+	Map<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), ExceptionLogger::new, BinaryOperator.former(), Supplier.of(System.Logger.Level.class).thenApply(EnumMap::new)));
 	/** A function returning the exception logger for a given level */
 	Function<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGER = EXCEPTION_LOGGERS::get;
 
