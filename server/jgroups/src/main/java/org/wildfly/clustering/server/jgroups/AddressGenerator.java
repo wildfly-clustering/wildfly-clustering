@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 import org.jgroups.Address;
 import org.jgroups.util.ExtendedUUID;
-import org.jgroups.util.NameCache;
+import org.jgroups.util.Util;
 
 /**
  * Address generators for JGroups.
@@ -17,11 +17,7 @@ import org.jgroups.util.NameCache;
  */
 public enum AddressGenerator implements org.jgroups.stack.AddressGenerator {
 	/** Generates {@link org.jgroups.util.UUID} instances */
-	UUID(name -> {
-		Address address = org.jgroups.util.UUID.randomUUID();
-		NameCache.add(address, name);
-		return address;
-	}),
+	UUID(Util::createRandomAddress),
 	/** Generates {@link ExtendedUUID} instances */
 	EXTENDED_UUID(ExtendedUUID::randomUUID),
 	;
