@@ -13,7 +13,8 @@ import org.wildfly.clustering.marshalling.test.Person;
 /**
  * @author Paul Ferraro
  */
-public class PersonMarshaller implements ProtoStreamMarshaller<Person> {
+public enum PersonMarshaller implements ProtoStreamMarshaller<Person> {
+	INSTANCE;
 
 	private static final int NAME_INDEX = 1;
 	private static final int PARENT_INDEX = 2;

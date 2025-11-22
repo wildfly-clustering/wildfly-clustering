@@ -22,7 +22,15 @@ message TestInvocationHandler {
  * @TypeId(1002)
  */
 message Person {
-	string	name	 = 1;
-	org.wildfly.clustering.marshalling.protostream.Any	parent	 = 2;
-	org.wildfly.clustering.marshalling.protostream.Any	child	 = 3;
+	string	name	= 1;
+	org.wildfly.clustering.marshalling.protostream.Any	parent	= 2;
+	org.wildfly.clustering.marshalling.protostream.Any	child	= 3;
+}
+
+/**
+ * @TypeId(1003)
+ */
+message TestRecord {
+	string	name	= 1;
+	sfixed32	value	= 2;
 }

@@ -23,6 +23,7 @@ public class TestSerializationContextInitializer extends AbstractSerializationCo
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(ProtoStreamMarshaller.of(new TestComparator<>()));
 		context.registerMarshaller(Scalar.ANY.toMarshaller(TestInvocationHandler.class, TestInvocationHandler::getValue, TestInvocationHandler::new));
-		context.registerMarshaller(new PersonMarshaller());
+		context.registerMarshaller(PersonMarshaller.INSTANCE);
+		context.registerMarshaller(TestRecordMarshaller.INSTANCE);
 	}
 }
