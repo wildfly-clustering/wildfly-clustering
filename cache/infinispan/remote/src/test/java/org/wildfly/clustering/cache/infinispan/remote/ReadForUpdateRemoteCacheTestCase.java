@@ -21,7 +21,7 @@ import jakarta.transaction.TransactionManager;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
-import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -31,7 +31,7 @@ public class ReadForUpdateRemoteCacheTestCase {
 
 	@Test
 	public void getAsync() throws SystemException {
-		RemoteCache<UUID, String> cache = mock(RemoteCache.class);
+		InternalRemoteCache<UUID, String> cache = mock(InternalRemoteCache.class);
 		TransactionManager tm = mock(TransactionManager.class);
 		UUID missingKey = UUID.randomUUID();
 		UUID existingKey = UUID.randomUUID();
@@ -65,7 +65,7 @@ public class ReadForUpdateRemoteCacheTestCase {
 		doReturn(CompletableFuture.completedFuture(Boolean.FALSE)).when(cache).replaceWithVersionAsync(existingKey, staleValue, staleVersion, 0L, TimeUnit.SECONDS, 0L, TimeUnit.SECONDS);
 		doReturn(CompletableFuture.completedFuture(Boolean.TRUE)).when(cache).replaceWithVersionAsync(existingKey, expectedValue, expectedVersion, 0L, TimeUnit.SECONDS, 0L, TimeUnit.SECONDS);
 
-		RemoteCache<UUID, String> subject = new ReadForUpdateRemoteCache<>(cache);
+		InternalRemoteCache<UUID, String> subject = new ReadForUpdateRemoteCache<>(cache);
 
 		assertThat(subject.getAsync(exceptionKey)).isCompletedExceptionally();
 		assertThat(subject.getAsync(missingKey)).isCompletedWithValue(null);
@@ -74,7 +74,7 @@ public class ReadForUpdateRemoteCacheTestCase {
 
 	@Test
 	public void getAllAsync() throws SystemException {
-		RemoteCache<UUID, String> cache = mock(RemoteCache.class);
+		InternalRemoteCache<UUID, String> cache = mock(InternalRemoteCache.class);
 		TransactionManager tm = mock(TransactionManager.class);
 		UUID missingKey = UUID.randomUUID();
 		UUID existingKey = UUID.randomUUID();
@@ -108,7 +108,7 @@ public class ReadForUpdateRemoteCacheTestCase {
 		doReturn(CompletableFuture.completedFuture(Boolean.FALSE)).when(cache).replaceWithVersionAsync(existingKey, staleValue, staleVersion, 0L, TimeUnit.SECONDS, 0L, TimeUnit.SECONDS);
 		doReturn(CompletableFuture.completedFuture(Boolean.TRUE)).when(cache).replaceWithVersionAsync(existingKey, expectedValue, expectedVersion, 0L, TimeUnit.SECONDS, 0L, TimeUnit.SECONDS);
 
-		RemoteCache<UUID, String> subject = new ReadForUpdateRemoteCache<>(cache);
+		InternalRemoteCache<UUID, String> subject = new ReadForUpdateRemoteCache<>(cache);
 
 		assertThat(subject.getAllAsync(Set.of(existingKey, missingKey))).isCompletedWithValue(Map.of(existingKey, expectedValue));
 		assertThat(subject.getAllAsync(Set.of(existingKey, missingKey, exceptionKey))).isCompletedExceptionally();

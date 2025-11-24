@@ -41,6 +41,26 @@ public interface BasicCacheConfiguration extends CacheConfiguration, BasicCacheC
 	<K, V> BasicCache<K, V> getCache();
 
 	/**
+	 * Returns a cache configured for write operations that return/require previous values.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @return a cache configured for read/write operations.
+	 */
+	default <K, V> BasicCache<K, V> getReadWriteCache() {
+		return this.getCache();
+	}
+
+	/**
+	 * Returns a cache configured for write-only operations, i.e. that do not return/require previous values.
+	 * @param <K> the cache key type
+	 * @param <V> the cache value type
+	 * @return a cache configured for write-only operations.
+	 */
+	default <K, V> BasicCache<K, V> getWriteOnlyCache() {
+		return this.getCache();
+	}
+
+	/**
 	 * Returns the cache entry mutator associated with this configuration.
 	 * @param <K> the cache key type
 	 * @param <V> the cache value type

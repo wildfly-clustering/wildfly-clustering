@@ -114,7 +114,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 * @param <V> the cache value type
 	 * @return a cache with write semantics.
 	 */
-	default <K, V> Cache<K, V> getWriteCache() {
+	default <K, V> Cache<K, V> getReadWriteCache() {
 		return this.getCache();
 	}
 
@@ -160,7 +160,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 		if (this.isFaultTolerant()) {
 			flags.add(Flag.FAIL_SILENTLY);
 		}
-		return this.<K, V>getWriteCache().getAdvancedCache().withFlags(flags);
+		return this.<K, V>getReadWriteCache().getAdvancedCache().withFlags(flags);
 	}
 
 	/**

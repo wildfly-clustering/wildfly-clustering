@@ -19,6 +19,7 @@ import jakarta.transaction.TransactionManager;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.wildfly.clustering.function.BooleanSupplier;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
@@ -29,7 +30,7 @@ import org.wildfly.clustering.function.Supplier;
  * @param <V> the cache value type
  * @author Paul Ferraro
  */
-public class ReadForUpdateRemoteCache<K, V> extends AbstractRemoteCache<K, V> {
+public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 	private final Function<MetadataValue<V>, V> value;
 	private final RemoteCache<K, V> forceReturnCache;
 	private final BooleanSupplier currentTransation;
@@ -38,8 +39,8 @@ public class ReadForUpdateRemoteCache<K, V> extends AbstractRemoteCache<K, V> {
 	 * Creates a read-for-update remote cache decorator.
 	 * @param cache the decorated remote cache.
 	 */
-	public ReadForUpdateRemoteCache(RemoteCache<K, V> cache) {
-		super(cache);
+	public ReadForUpdateRemoteCache(InternalRemoteCache<K, V> cache) {
+		super(cache, ReadForUpdateRemoteCache::new);
 		Function<MetadataValue<V>, V> value = MetadataValue::getValue;
 		this.value = value.orDefault(Objects::nonNull, Supplier.empty());
 		this.forceReturnCache = cache.withFlags(Flag.FORCE_RETURN_VALUE);
@@ -99,10 +100,5 @@ public class ReadForUpdateRemoteCache<K, V> extends AbstractRemoteCache<K, V> {
 			});
 		}
 		return result;
-	}
-
-	@Override
-	public RemoteCache<K, V> apply(RemoteCache<K, V> cache) {
-		return new ReadForUpdateRemoteCache<>(cache);
 	}
 }
