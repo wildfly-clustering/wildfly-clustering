@@ -25,7 +25,7 @@ public interface MarshallingTesterFactory extends TesterFactory {
 		ByteBufferMarshaller marshaller = this.getMarshaller();
 		return new Tester<>() {
 			@Override
-			public void accept(T subject) {
+			public T apply(T subject) {
 				try {
 					assertThat(marshaller.test(subject)).as(() -> Optional.ofNullable(subject).map(Object::toString).orElse(null)).isTrue();
 
@@ -48,8 +48,10 @@ public interface MarshallingTesterFactory extends TesterFactory {
 					T result = (T) marshaller.read(buffer);
 
 					assertion.accept(subject, result);
+
+					return result;
 				} catch (IOException e) {
-					fail(e);
+					throw new IllegalArgumentException(e);
 				}
 			}
 

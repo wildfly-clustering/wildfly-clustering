@@ -93,7 +93,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 	private volatile int batchSize;
 	private volatile String cacheName;
 	private volatile int segments;
-	private volatile UnaryOperator<RemoteCache<K, MarshalledValue>> cacheTransformer;
+	private volatile UnaryOperator<InternalRemoteCache<K, MarshalledValue>> cacheTransformer;
 	private volatile Supplier<Batch> batchFactory;
 	private final Map<Transaction, SuspendedBatch> transactions = new ConcurrentHashMap<>();
 
@@ -344,7 +344,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 				RemoteCache<K, MarshalledValue> cache = this.container.getCache(cacheName);
 				cache.start();
 				DataFormat format = DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(this.marshaller.getUserMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(this.marshaller).build();
-				this.caches.set(index, this.cacheTransformer.apply(cache.withDataFormat(format)));
+				this.caches.set(index, ((cache instanceof InternalRemoteCache<K, MarshalledValue> internalCache) ? this.cacheTransformer.apply(internalCache) : cache).withDataFormat(format));
 			}, "hotrod-store-add-segments").whenComplete((value, e) -> {
 				if (e != null) {
 					result.completeExceptionally(e);

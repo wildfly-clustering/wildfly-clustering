@@ -142,6 +142,11 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 	}
 
 	@Override
+	public InternalCacheEntry<K, V> get(Object k) {
+		return super.get(-1, k);
+	}
+
+	@Override
 	public InternalCacheEntry<K, V> peek(Object k) {
 		return this.peek(-1, k);
 	}

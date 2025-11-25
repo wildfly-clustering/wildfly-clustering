@@ -6,6 +6,7 @@
 package org.wildfly.clustering.marshalling;
 
 import java.lang.reflect.Proxy;
+import java.util.Random;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -28,6 +29,7 @@ import org.assertj.core.api.Short2DArrayAssert;
 import org.assertj.core.api.ShortArrayAssert;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.marshalling.test.TestInvocationHandler;
+import org.wildfly.clustering.marshalling.test.TestRecord;
 
 /**
  * Validates marshalling of java.lang* objects.
@@ -35,6 +37,7 @@ import org.wildfly.clustering.marshalling.test.TestInvocationHandler;
  */
 public abstract class AbstractLangTestCase {
 
+	private final Random random = new Random();
 	private final MarshallingTesterFactory factory;
 
 	public AbstractLangTestCase(MarshallingTesterFactory factory) {
@@ -74,8 +77,7 @@ public abstract class AbstractLangTestCase {
 	public void testInteger() {
 		Consumer<Integer> tester = this.factory.createTester();
 		for (int i = 0; i < Integer.SIZE; ++i) {
-			tester.accept((1 << i) - 1);
-			tester.accept(-1 << i);
+			tester.accept(this.random.nextInt());
 		}
 	}
 
@@ -83,8 +85,7 @@ public abstract class AbstractLangTestCase {
 	public void testLong() {
 		Consumer<Long> tester = this.factory.createTester();
 		for (int i = 0; i < Long.SIZE; ++i) {
-			tester.accept((1L << i) - 1L);
-			tester.accept(-1L << i);
+			tester.accept(this.random.nextLong());
 		}
 	}
 
@@ -97,6 +98,7 @@ public abstract class AbstractLangTestCase {
 		tester.accept(Float.MAX_VALUE);
 		tester.accept(Float.POSITIVE_INFINITY);
 		tester.accept(Float.NaN);
+		tester.accept(this.random.nextFloat());
 	}
 
 	@Test
@@ -108,6 +110,7 @@ public abstract class AbstractLangTestCase {
 		tester.accept(Double.MAX_VALUE);
 		tester.accept(Double.POSITIVE_INFINITY);
 		tester.accept(Double.NaN);
+		tester.accept(this.random.nextDouble());
 	}
 
 	@Test
@@ -263,6 +266,13 @@ public abstract class AbstractLangTestCase {
 		Object proxy = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class<?>[] { Iterable.class }, new TestInvocationHandler("foo"));
 
 		this.factory.createTester(AbstractLangTestCase::assertProxyEquals).accept(proxy);
+	}
+
+	@Test
+	public void testRecord() {
+		Tester<TestRecord> tester = this.factory.createTester();
+		tester.accept(new TestRecord("foo", null));
+		tester.accept(new TestRecord("foo", this.random.nextInt()));
 	}
 
 	private static void assertProxyEquals(Object expected, Object actual) {

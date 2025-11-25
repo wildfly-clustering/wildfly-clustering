@@ -24,7 +24,7 @@ public interface FormatterTesterFactory extends TesterFactory {
 		TwoWayKey2StringMapper mapper = this.getMapper();
 		return new Tester<>() {
 			@Override
-			public void accept(T key) {
+			public T apply(T key) {
 				Class<?> keyClass = key.getClass();
 				assertThat(mapper.isSupportedType(keyClass)).as(key::toString).isTrue();
 				String string = mapper.getStringMapping(key);
@@ -34,6 +34,7 @@ public interface FormatterTesterFactory extends TesterFactory {
 				@SuppressWarnings("unchecked")
 				T remappedKey = (T) mapper.getKeyMapping(string);
 				assertion.accept(key, remappedKey);
+				return remappedKey;
 			}
 
 			@Override

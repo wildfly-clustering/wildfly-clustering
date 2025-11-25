@@ -25,11 +25,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.jcip</groupId>
-			<artifactId>jcip-annotations</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-component-processor</artifactId>
 			<scope>provided</scope>

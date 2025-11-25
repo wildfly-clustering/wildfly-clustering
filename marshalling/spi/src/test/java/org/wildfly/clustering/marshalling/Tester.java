@@ -6,13 +6,19 @@
 package org.wildfly.clustering.marshalling;
 
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * Test interface for marshalling validation.
  * @param <T> test subject type
  * @author Paul Ferraro
  */
-public interface Tester<T> extends Consumer<T> {
+public interface Tester<T> extends Consumer<T>, UnaryOperator<T> {
+
+	@Override
+	default void accept(T value) {
+		this.apply(value);
+	}
 
 	/**
 	 * Validates that the specified value is rejected by the tester.
