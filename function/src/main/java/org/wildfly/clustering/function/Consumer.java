@@ -119,6 +119,28 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		};
 	}
 
+	/**
+	 * Returns a new consumer that accepts its value while holding the monitor returned by the specified function.
+	 * @param <M> a function returning an object monitor
+	 * @param monitorFunction a function returning an object monitor.
+	 * @return a new consumer that accepts its value while holding the monitor returned by the specified function.
+	 */
+	default <M> Consumer<T> withMonitor(java.util.function.Function<T, M> monitorFunction) {
+		return new Consumer<>() {
+			@Override
+			public void accept(T value) {
+				M monitor = monitorFunction.apply(value);
+				if (monitor != null) {
+					synchronized (monitor) {
+						Consumer.this.accept(value);
+					}
+				} else {
+					Consumer.this.accept(value);
+				}
+			}
+		};
+	}
+
 	/** A consumer that does nothing with its parameter */
 	Consumer<?> EMPTY = value -> {};
 	/** A map of exception logging consumers per level */
