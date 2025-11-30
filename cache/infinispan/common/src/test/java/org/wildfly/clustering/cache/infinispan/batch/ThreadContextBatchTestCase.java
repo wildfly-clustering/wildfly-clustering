@@ -70,9 +70,12 @@ public class ThreadContextBatchTestCase {
 	public void resumeWithContextWhileAssociatedBatch() {
 		ContextualBatch contextualBatch = mock(ContextualBatch.class);
 		ContextualSuspendedBatch contextualSuspendedBatch = mock(ContextualSuspendedBatch.class);
+		Batch.Status contextualStatus = mock(Batch.Status.class);
 
 		doReturn(contextualSuspendedBatch).when(contextualBatch).suspend();
 		doReturn(contextualBatch).when(contextualSuspendedBatch).resume();
+		doReturn(contextualStatus).when(contextualBatch).getStatus();
+		doReturn(false).when(contextualStatus).isClosed();
 
 		ThreadContextBatch.INSTANCE.accept(contextualBatch);
 
@@ -82,22 +85,27 @@ public class ThreadContextBatchTestCase {
 
 		ContextualBatch currentBatch = mock(ContextualBatch.class);
 		ContextualSuspendedBatch currentSuspendedBatch = mock(ContextualSuspendedBatch.class);
+		Batch.Status currentStatus = mock(Batch.Status.class);
 
 		ThreadContextBatch.INSTANCE.accept(currentBatch);
 
 		doReturn(currentSuspendedBatch).when(currentBatch).suspend();
 		doReturn(currentBatch).when(currentSuspendedBatch).resume();
+		doReturn(currentStatus).when(currentBatch).getStatus();
+		doReturn(false).when(currentStatus).isClosed();
 
 		try (Context<Batch> context = suspended.resumeWithContext()) {
 			verify(currentBatch).suspend();
 			verifyNoInteractions(currentSuspendedBatch);
 			verify(contextualSuspendedBatch).resume();
+			verify(contextualBatch).getStatus();
 			verifyNoMoreInteractions(contextualBatch);
 		}
 
 		verify(contextualBatch, times(2)).suspend();
 		verifyNoMoreInteractions(contextualSuspendedBatch);
 		verify(currentSuspendedBatch).resume();
+		verify(currentBatch).getStatus();
 		verifyNoMoreInteractions(currentBatch);
 	}
 
@@ -134,6 +142,9 @@ public class ThreadContextBatchTestCase {
 	public void suspendResume() {
 		ContextualBatch batch = mock(ContextualBatch.class);
 		ContextualSuspendedBatch suspendedBatch = mock(ContextualSuspendedBatch.class);
+		Batch.Status status = mock(Batch.Status.class);
+
+		doReturn(status).when(batch).getStatus();
 
 		ThreadContextBatch.INSTANCE.accept(batch);
 
@@ -151,13 +162,53 @@ public class ThreadContextBatchTestCase {
 
 		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 
+		doReturn(false).when(status).isClosed();
+
 		Batch resumed = suspended.resume();
 
 		verify(suspendedBatch, only()).resume();
+		verify(batch).getStatus();
 		verifyNoMoreInteractions(batch);
 
 		assertThat(ThreadContextBatch.INSTANCE).isSameAs(resumed);
 		assertThat(ThreadContextBatch.INSTANCE.get()).isSameAs(batch);
+	}
+
+	@Test
+	public void suspendResumeClosed() {
+		ContextualBatch batch = mock(ContextualBatch.class);
+		ContextualSuspendedBatch suspendedBatch = mock(ContextualSuspendedBatch.class);
+		Batch.Status status = mock(Batch.Status.class);
+
+		doReturn(status).when(batch).getStatus();
+
+		ThreadContextBatch.INSTANCE.accept(batch);
+
+		verifyNoInteractions(batch);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isSameAs(batch);
+
+		doReturn(suspendedBatch).when(batch).suspend();
+		doReturn(batch).when(suspendedBatch).resume();
+
+		SuspendedBatch suspended = ThreadContextBatch.INSTANCE.suspend();
+
+		verify(batch, only()).suspend();
+		verifyNoInteractions(suspendedBatch);
+
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
+
+		doReturn(true).when(status).isClosed();
+
+		Batch resumed = suspended.resume();
+
+		verify(suspendedBatch, only()).resume();
+		verify(batch).getStatus();
+		verify(batch, times(2)).suspend();
+		verifyNoMoreInteractions(batch);
+
+		assertThat(ThreadContextBatch.INSTANCE).isSameAs(resumed);
+		assertThat(ThreadContextBatch.INSTANCE.get()).isNull();
 	}
 
 	@Test

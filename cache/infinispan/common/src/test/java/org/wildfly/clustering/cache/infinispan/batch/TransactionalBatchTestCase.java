@@ -492,10 +492,13 @@ public class TransactionalBatchTestCase {
 
 		this.validateDisassociated(tx);
 
+		doReturn(Status.STATUS_ACTIVE).when(tx).getStatus();
+
 		Batch resumed = suspended.resume();
 
 		verify(this.tm).resume(tx);
 		verifyNoMoreInteractions(this.tm);
+		verify(tx).getStatus();
 		verifyNoMoreInteractions(tx);
 
 		assertThat(ThreadContextBatch.INSTANCE).isSameAs(resumed);
@@ -542,7 +545,7 @@ public class TransactionalBatchTestCase {
 			}
 		}
 
-		verify(tx, times(3)).getStatus();
+		verify(tx, times(4)).getStatus();
 		verify(tx).commit();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);

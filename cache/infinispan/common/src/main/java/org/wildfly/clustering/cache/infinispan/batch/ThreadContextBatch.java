@@ -82,7 +82,15 @@ enum ThreadContextBatch implements Batch, ContextReference<ContextualBatch> {
 					throw new IllegalStateException(this.toString(), new ContextualException(current));
 				}
 				ContextualBatch resumed = (suspended != null) ? suspended.resume() : null;
-				ThreadContextBatch.this.accept(resumed);
+				if ((resumed != null) && !resumed.getStatus().isClosed()) {
+					ThreadContextBatch.this.accept(resumed);
+				} else {
+					// If resumed batch is closed, re-suspend it and leave thread disassociated.
+					if (resumed != null) {
+						resumed.suspend();
+					}
+					ThreadContextBatch.this.accept(null);
+				}
 				return INSTANCE;
 			}
 		};

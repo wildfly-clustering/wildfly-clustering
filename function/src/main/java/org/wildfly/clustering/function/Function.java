@@ -119,6 +119,27 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	}
 
 	/**
+	 * Returns a new function that applies this function while holding the monitor returned by the specified function.
+	 * @param <M> a function returning an object monitor
+	 * @param monitorFunction a function returning an object monitor.
+	 * @return a new function that applies this function while holding the monitor returned by the specified function.
+	 */
+	default <M> Function<T, R> withMonitor(java.util.function.Function<T, M> monitorFunction) {
+		return new Function<>() {
+			@Override
+			public R apply(T value) {
+				M monitor = monitorFunction.apply(value);
+				if (monitor != null) {
+					synchronized (monitor) {
+						return Function.this.apply(value);
+					}
+				}
+				return Function.this.apply(value);
+			}
+		};
+	}
+
+	/**
 	 * Returns a function that returns its parameter.
 	 * @param <T> the function parameter type
 	 * @param <R> the function return type
