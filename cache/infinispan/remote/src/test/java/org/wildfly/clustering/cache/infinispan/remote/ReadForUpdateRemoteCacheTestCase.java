@@ -21,6 +21,8 @@ import jakarta.transaction.TransactionManager;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
+import org.infinispan.client.hotrod.RemoteCacheContainer;
+import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +34,10 @@ public class ReadForUpdateRemoteCacheTestCase {
 	@Test
 	public void getAsync() throws SystemException {
 		InternalRemoteCache<UUID, String> cache = mock(InternalRemoteCache.class);
+		RemoteCacheContainer container = mock(RemoteCacheContainer.class);
+		Configuration configuration = mock(Configuration.class);
 		TransactionManager tm = mock(TransactionManager.class);
+
 		UUID missingKey = UUID.randomUUID();
 		UUID existingKey = UUID.randomUUID();
 		UUID exceptionKey = UUID.randomUUID();
@@ -46,6 +51,8 @@ public class ReadForUpdateRemoteCacheTestCase {
 		String expectedValue = "expected";
 		long expectedVersion = existingKey.getMostSignificantBits();
 
+		doReturn(container).when(cache).getRemoteCacheContainer();
+		doReturn(configuration).when(container).getConfiguration();
 		doReturn(tm).when(cache).getTransactionManager();
 		doReturn(Status.STATUS_ACTIVE).when(tm).getStatus();
 		doReturn(cache).when(cache).withFlags(aryEq(new Flag[] { Flag.FORCE_RETURN_VALUE }));
@@ -75,6 +82,8 @@ public class ReadForUpdateRemoteCacheTestCase {
 	@Test
 	public void getAllAsync() throws SystemException {
 		InternalRemoteCache<UUID, String> cache = mock(InternalRemoteCache.class);
+		RemoteCacheContainer container = mock(RemoteCacheContainer.class);
+		Configuration configuration = mock(Configuration.class);
 		TransactionManager tm = mock(TransactionManager.class);
 		UUID missingKey = UUID.randomUUID();
 		UUID existingKey = UUID.randomUUID();
@@ -89,6 +98,8 @@ public class ReadForUpdateRemoteCacheTestCase {
 		String expectedValue = "expected";
 		long expectedVersion = existingKey.getMostSignificantBits();
 
+		doReturn(container).when(cache).getRemoteCacheContainer();
+		doReturn(configuration).when(container).getConfiguration();
 		doReturn(tm).when(cache).getTransactionManager();
 		doReturn(Status.STATUS_ACTIVE).when(tm).getStatus();
 		doReturn(cache).when(cache).withFlags(aryEq(new Flag[] { Flag.FORCE_RETURN_VALUE }));

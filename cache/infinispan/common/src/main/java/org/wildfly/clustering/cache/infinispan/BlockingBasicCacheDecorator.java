@@ -5,12 +5,14 @@
 
 package org.wildfly.clustering.cache.infinispan;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -24,13 +26,16 @@ import org.infinispan.commons.api.BasicCache;
  * @param <V> cache value type
  */
 public class BlockingBasicCacheDecorator<K, V> extends AbstractBasicCacheDecorator<K, V> {
+	private final long timeoutNanos;
 
 	/**
 	 * Creates a cache decorator
 	 * @param cache the decorated cache
+	 * @param timeout the duration of time to wait for async operations to complete.
 	 */
-	protected BlockingBasicCacheDecorator(BasicCache<K, V> cache) {
+	protected BlockingBasicCacheDecorator(BasicCache<K, V> cache, Duration timeout) {
 		super(cache);
+		this.timeoutNanos = timeout.toNanos();
 	}
 
 	/**
@@ -42,12 +47,15 @@ public class BlockingBasicCacheDecorator<K, V> extends AbstractBasicCacheDecorat
 	 */
 	protected <T> T join(CompletableFuture<T> future) {
 		try {
-			return future.get();
+			return future.get(this.timeoutNanos, TimeUnit.NANOSECONDS);
 		} catch (ExecutionException e) {
 			throw new CompletionException(e);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new CancellationException();
+			throw new CancellationException(e.getLocalizedMessage());
+		} catch (TimeoutException e) {
+			future.cancel(false);
+			throw new CancellationException(e.getLocalizedMessage());
 		}
 	}
 
