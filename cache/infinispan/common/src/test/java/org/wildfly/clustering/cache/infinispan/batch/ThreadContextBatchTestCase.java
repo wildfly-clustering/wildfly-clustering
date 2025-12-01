@@ -202,9 +202,8 @@ public class ThreadContextBatchTestCase {
 
 		Batch resumed = suspended.resume();
 
-		verify(suspendedBatch, only()).resume();
+		verifyNoMoreInteractions(suspendedBatch);
 		verify(batch).getStatus();
-		verify(batch, times(2)).suspend();
 		verifyNoMoreInteractions(batch);
 
 		assertThat(ThreadContextBatch.INSTANCE).isSameAs(resumed);
