@@ -75,7 +75,7 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 	 * @param decorator the cache decorator.
 	 */
 	protected RemoteCacheDecorator(InternalRemoteCache<K, V> cache, UnaryOperator<InternalRemoteCache<K, V>> decorator) {
-		super(cache);
+		super(cache, Duration.ofMillis(Math.max(cache.getRemoteCacheContainer().getConfiguration().socketTimeout(), cache.getRemoteCacheContainer().getConfiguration().transactionTimeout())));
 		this.cache = cache;
 		this.decorator = decorator;
 	}
