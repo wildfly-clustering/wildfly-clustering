@@ -133,7 +133,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 		this.batchFactory = configuration.transactional() ? new TransactionalBatchFactory(this.cacheName, RemoteTransactionManager.getInstance(), CacheException::new) : null;
 		this.caches = new AtomicReferenceArray<>(this.segments);
 		for (int i = 0; i < this.segments; ++i) {
-			this.container.getConfiguration().addRemoteCache(this.segmentCacheName(i), configuration);
+			this.container.getConfiguration().addRemoteCache(this.segmentCacheName(i), configuration.andThen(builder -> builder.marshaller(this.marshaller.getUserMarshaller())));
 		}
 		// When segmented and unshared, add/removeSegments(...) will be triggered as needed.
 		return !configuration.segmented() || configuration.shared() ? this.addSegments(IntSets.immutableRangeSet(this.segments)) : CompletableFuture.completedStage(null);
@@ -343,7 +343,10 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 			this.blockingManager.runBlocking(() -> {
 				RemoteCache<K, MarshalledValue> cache = this.container.getCache(cacheName);
 				cache.start();
-				DataFormat format = DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(this.marshaller.getUserMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(this.marshaller).build();
+				DataFormat format = DataFormat.builder()
+						.keyMarshaller(this.marshaller.getUserMarshaller()).keyType(MediaType.APPLICATION_OBJECT)
+						.valueMarshaller(this.marshaller).valueType(MediaType.APPLICATION_OBJECT)
+						.build();
 				this.caches.set(index, ((cache instanceof InternalRemoteCache<K, MarshalledValue> internalCache) ? this.cacheTransformer.apply(internalCache) : cache).withDataFormat(format));
 			}, "hotrod-store-add-segments").whenComplete((value, e) -> {
 				if (e != null) {

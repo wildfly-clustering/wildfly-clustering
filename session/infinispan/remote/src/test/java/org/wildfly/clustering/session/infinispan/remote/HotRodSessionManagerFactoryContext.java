@@ -43,10 +43,11 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 	private final SessionManagerFactory<CC, SC> factory;
 
 	public HotRodSessionManagerFactoryContext(HotRodSessionManagerParameters parameters, String memberName, Supplier<SC> contextFactory) {
+		RemoteCacheManager container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder()));
+		this.accept(container::close);
+
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();
 		Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
-		RemoteCacheManager container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder().marshaller(marshaller)));
-		this.accept(container::close);
 
 		Configuration configuration = container.getConfiguration();
 		OptionalInt maxSize = parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
@@ -73,6 +74,7 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 	}
 }""")
 				.forceReturnValues(false)
+				.marshaller(marshaller)
 				.nearCacheMode(parameters.getNearCacheMode())
 				.nearCacheFactory(parameters.getNearCacheMode().invalidated() ? new SessionManagerNearCacheFactory(new EvictionConfiguration() {
 					@Override
@@ -128,8 +130,8 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 			}
 		};
 		DataFormat format = DataFormat.builder()
-				.keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(marshaller)
-				.valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(marshaller)
+				.keyMarshaller(marshaller).keyType(MediaType.APPLICATION_OBJECT)
+				.valueMarshaller(marshaller).valueType(MediaType.APPLICATION_OBJECT)
 				.build();
 		RemoteCache<?, ?> cache = container.getCache(parameters.getDeploymentName());
 		cache.start();
