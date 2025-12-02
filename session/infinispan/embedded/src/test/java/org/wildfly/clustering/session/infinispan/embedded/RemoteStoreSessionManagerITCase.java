@@ -35,7 +35,7 @@ import org.wildfly.clustering.session.cache.SessionManagerITCase;
  * Session manager integration test using an embedded Infinispan cache with a remote Infinispan store tested under a combination of settings.
  * @author Paul Ferraro
  */
-public class HotRodStoreSessionManagerITCase extends SessionManagerITCase<InfinispanSessionManagerParameters> {
+public class RemoteStoreSessionManagerITCase extends SessionManagerITCase<InfinispanSessionManagerParameters> {
 
 	@RegisterExtension
 	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();
@@ -123,7 +123,7 @@ public class HotRodStoreSessionManagerITCase extends SessionManagerITCase<Infini
 		}
 	}
 
-	HotRodStoreSessionManagerITCase() {
+	RemoteStoreSessionManagerITCase() {
 		super(InfinispanSessionManagerFactoryContext::new);
 	}
 
