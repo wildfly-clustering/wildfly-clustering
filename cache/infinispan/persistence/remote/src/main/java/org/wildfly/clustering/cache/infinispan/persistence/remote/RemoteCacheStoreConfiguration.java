@@ -35,6 +35,14 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 	static final AttributeDefinition<String> CONFIGURATION = AttributeDefinition.builder("configuration", """
 {
 	"distributed-cache": {
+		"encoding" : {
+			"key" : {
+				"media-type" : "application/octet-stream"
+			},
+			"value" : {
+				"media-type" : "application/octet-stream"
+			}
+		},
 		"mode" : "SYNC",
 		"transaction" : {
 			"mode" : "NON_XA",
