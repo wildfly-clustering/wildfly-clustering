@@ -76,7 +76,7 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 				}
 
 				@Override
-				public JChannel createChannel(String ignored) throws Exception {
+				public JChannel createChannel(String ignored) {
 					return channelFactory.apply(CONTAINER_NAME);
 				}
 

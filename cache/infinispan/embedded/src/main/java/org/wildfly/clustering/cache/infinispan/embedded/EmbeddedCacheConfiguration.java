@@ -114,6 +114,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 * @param <V> the cache value type
 	 * @return a cache with write semantics.
 	 */
+	@Override
 	default <K, V> Cache<K, V> getReadWriteCache() {
 		return this.getCache();
 	}
@@ -154,6 +155,7 @@ public interface EmbeddedCacheConfiguration extends EmbeddedCacheContainerConfig
 	 * @param <V> the cache value type
 	 * @return a cache for use with write-only operations.
 	 */
+	@Override
 	default <K, V> Cache<K, V> getWriteOnlyCache() {
 		List<Flag> flags = new ArrayList<>(2);
 		flags.add(Flag.IGNORE_RETURN_VALUES);

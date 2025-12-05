@@ -6,6 +6,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.descriptors.WireType;
@@ -26,7 +27,7 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 	<T> FieldSetWriter<T> createFieldSetWriter(Writable<T> writer, int startIndex);
 
 	/**
-	 * Writes the specified object of an abitrary type using the specified index.
+	 * Writes the specified object of an arbitrary type using the specified index.
 	 * Object will be read via {@link ProtoStreamReader#readAny()}.
 	 * @param index a field index
 	 * @param value a value to be written
@@ -38,7 +39,7 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 	}
 
 	/**
-	 * Writes the specified object of a specific type using the specified index.
+	 * Writes the specified object using the specified index.
 	 * Object will be read via {@link ProtoStreamReader#readObject(Class)}.
 	 * @param index a field index
 	 * @param value a value to be written
@@ -47,6 +48,20 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 	default void writeObject(int index, Object value) throws IOException {
 		this.writeTag(index, WireType.LENGTH_DELIMITED);
 		this.writeObjectNoTag(value);
+	}
+
+	/**
+	 * If present, writes the specified object of a specific type using the specified index.
+	 * Object will be read via {@link ProtoStreamReader#readObject(Class)}.
+	 * @param <T> the optional type
+	 * @param index a field index
+	 * @param value a value to be written
+	 * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
+	 */
+	default <T> void writeObject(int index, Optional<T> value) throws IOException {
+		if (value.isPresent()) {
+			this.writeObject(index, value.get());
+		}
 	}
 
 	/**

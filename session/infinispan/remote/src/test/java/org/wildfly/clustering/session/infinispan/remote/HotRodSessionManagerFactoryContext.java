@@ -129,9 +129,10 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 				return this.getClass().getClassLoader();
 			}
 		};
+		// Entries are opaque to server
 		DataFormat format = DataFormat.builder()
-				.keyMarshaller(marshaller).keyType(MediaType.APPLICATION_OBJECT)
-				.valueMarshaller(marshaller).valueType(MediaType.APPLICATION_OBJECT)
+				.keyMarshaller(marshaller).keyType(MediaType.APPLICATION_OCTET_STREAM)
+				.valueMarshaller(marshaller).valueType(MediaType.APPLICATION_OCTET_STREAM)
 				.build();
 		RemoteCache<?, ?> cache = container.getCache(parameters.getDeploymentName());
 		cache.start();
