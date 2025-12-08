@@ -36,7 +36,7 @@ public class MutableHttpSessionTestCase extends AbstractHttpSessionTestCase<Sess
 
 		this.subject.setMaxInactiveInterval(timeout);
 
-		verify(this.metaData).setTimeout(capturedTimeout.capture());
+		verify(this.metaData).setMaxIdle(capturedTimeout.capture());
 
 		assertThat(capturedTimeout.getValue()).hasSeconds(timeout);
 	}

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -51,10 +52,11 @@ public class CommandMarshallerTestCase {
 	public void testScheduleWithExpirationMetaDataCommand(TesterFactory factory) {
 		Consumer<ScheduleCommand<String, ExpirationMetaData>> tester = factory.createTester((expected, actual) -> {
 			assertThat(actual.getKey()).isEqualTo(expected.getKey());
-			assertThat(actual.getValue().getTimeout()).isEqualTo(expected.getValue().getTimeout());
+			assertThat(actual.getValue().getMaxIdle()).isEqualTo(expected.getValue().getMaxIdle());
 			assertThat(actual.getValue().getLastAccessTime()).isEqualTo(expected.getValue().getLastAccessTime());
 		});
 
+		tester.accept(new ScheduleExpirationCommand<>(Map.entry("foo", new TestExpirationMetaData(null, null))));
 		tester.accept(new ScheduleExpirationCommand<>(Map.entry("foo", new TestExpirationMetaData(Duration.ZERO, Instant.EPOCH))));
 		tester.accept(new ScheduleExpirationCommand<>(Map.entry("bar", new TestExpirationMetaData(Duration.ofMinutes(30), Instant.now()))));
 		tester.accept(new ScheduleExpirationCommand<>(Map.entry("bar", new TestExpirationMetaData(Duration.ofHours(1), Instant.now()))));
@@ -70,13 +72,13 @@ public class CommandMarshallerTestCase {
 		}
 
 		@Override
-		public Duration getTimeout() {
-			return this.timeout;
+		public Optional<Duration> getMaxIdle() {
+			return Optional.ofNullable(this.timeout);
 		}
 
 		@Override
-		public Instant getLastAccessTime() {
-			return this.lastAccessTime;
+		public Optional<Instant> getLastAccessTime() {
+			return Optional.ofNullable(this.lastAccessTime);
 		}
 	}
 }

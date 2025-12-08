@@ -66,7 +66,7 @@ public class SessionExpirationTask<SC, MV, AV, LC> implements Predicate<String> 
 							return false;
 						}
 					}
-					LOGGER.log(System.Logger.Level.TRACE, "Session {0} does not expire until {1}", id, metaData.getExpirationTime().orElse(null));
+					LOGGER.log(System.Logger.Level.INFO, "Session {0} does not expire until {1}", id, metaData.getExpirationTime().orElse(null));
 					return false;
 				}
 				LOGGER.log(System.Logger.Level.TRACE, "Session {0} was not found or is currently in use.", id);

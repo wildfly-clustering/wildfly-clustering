@@ -20,8 +20,8 @@ public interface SessionMetaData extends ImmutableSessionMetaData {
 	void setLastAccess(Instant startTime, Instant endTime);
 
 	/**
-	 * Set the time interval as a duration, after which this session will expire.
-	 * @param duration a timeout duration
+	 * Specifies the duration of time since last access after which this session will expire.
+	 * @param maxIdle the maximum idle duration
 	 */
-	void setTimeout(Duration duration);
+	void setMaxIdle(Duration maxIdle);
 }

@@ -26,7 +26,7 @@ public class MutableHttpSession extends ImmutableHttpSession {
 
 	@Override
 	public void setMaxInactiveInterval(int interval) {
-		this.session.getMetaData().setTimeout(Duration.ofSeconds(interval));
+		this.session.getMetaData().setMaxIdle(Duration.ofSeconds(interval));
 	}
 
 	@Override

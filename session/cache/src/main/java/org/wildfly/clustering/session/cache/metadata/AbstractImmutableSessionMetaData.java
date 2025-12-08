@@ -23,7 +23,7 @@ public abstract class AbstractImmutableSessionMetaData implements ImmutableSessi
 	@Override
 	public String toString() {
 		return Map.of(
-				"timeout", this.getTimeout(),
+				"max-idle", this.getMaxIdle(),
 				"creation-time", this.getCreationTime(),
 				"last-access-start-time", this.getLastAccessStartTime(),
 				"last-access-end-time", this.getLastAccessEndTime()

@@ -7,6 +7,8 @@ package org.wildfly.clustering.session.cache.metadata.fine;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.wildfly.clustering.session.cache.metadata.AbstractImmutableSessionMetaData;
 
@@ -15,6 +17,7 @@ import org.wildfly.clustering.session.cache.metadata.AbstractImmutableSessionMet
  * @author Paul Ferraro
  */
 public class CompositeImmutableSessionMetaData extends AbstractImmutableSessionMetaData {
+	private static final Predicate<Duration> MORTAL = Predicate.not(Duration::isZero);
 
 	private final ImmutableSessionCreationMetaData creationMetaData;
 	private final ImmutableSessionAccessMetaData accessMetaData;
@@ -30,13 +33,8 @@ public class CompositeImmutableSessionMetaData extends AbstractImmutableSessionM
 	}
 
 	@Override
-	public boolean isNew() {
-		return this.accessMetaData.isNew();
-	}
-
-	@Override
-	public Duration getTimeout() {
-		return this.creationMetaData.getTimeout();
+	public Optional<Duration> getMaxIdle() {
+		return Optional.of(this.creationMetaData.getMaxIdle()).filter(MORTAL);
 	}
 
 	@Override
@@ -45,12 +43,12 @@ public class CompositeImmutableSessionMetaData extends AbstractImmutableSessionM
 	}
 
 	@Override
-	public Instant getLastAccessStartTime() {
-		return !this.isNew() ? this.getCreationTime().plus(this.accessMetaData.getSinceCreationDuration()) : null;
+	public Optional<Instant> getLastAccessStartTime() {
+		return !this.accessMetaData.getLastAccessDuration().isZero() ? Optional.of(this.getCreationTime().plus(this.accessMetaData.getSinceCreationDuration())) : Optional.empty();
 	}
 
 	@Override
-	public Instant getLastAccessEndTime() {
-		return !this.isNew() ? this.getLastAccessStartTime().plus(this.accessMetaData.getLastAccessDuration()) : null;
+	public Optional<Instant> getLastAccessEndTime() {
+		return this.getLastAccessStartTime().map(start -> start.plus(this.accessMetaData.getLastAccessDuration()));
 	}
 }

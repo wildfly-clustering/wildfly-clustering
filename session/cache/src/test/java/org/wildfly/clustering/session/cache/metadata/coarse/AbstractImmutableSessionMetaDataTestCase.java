@@ -38,11 +38,11 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 		doReturn(lastAccessStartTime).when(entry).getLastAccessStartTime();
 		doReturn(expected).when(lastAccessStartTime).get();
 
-		assertThat(metaData.getLastAccessStartTime()).isSameAs(expected);
+		assertThat(metaData.getLastAccessStartTime()).hasValue(expected);
 
 		doReturn(true).when(entry).isNew();
 
-		assertThat(metaData.getLastAccessStartTime()).isNull();
+		assertThat(metaData.getLastAccessStartTime()).isEmpty();
 	}
 
 	void testLastAccessEndTime(ImmutableSessionMetaDataEntry entry, ImmutableSessionMetaData metaData) {
@@ -53,21 +53,20 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 		doReturn(lastAccessEndTime).when(entry).getLastAccessEndTime();
 		doReturn(expected).when(lastAccessEndTime).get();
 
-		assertThat(metaData.getLastAccessEndTime()).isEqualTo(expected);
-		assertThat(metaData.getLastAccessTime()).isEqualTo(expected);
+		assertThat(metaData.getLastAccessEndTime()).hasValue(expected);
+		assertThat(metaData.getLastAccessTime()).hasValue(expected);
 
 		doReturn(true).when(entry).isNew();
 
-		assertThat(metaData.getLastAccessEndTime()).isNull();
+		assertThat(metaData.getLastAccessEndTime()).isEmpty();
 	}
 
 	void testTimeout(ImmutableSessionMetaDataEntry entry, ImmutableSessionMetaData metaData) {
 		Duration expected = Duration.ofMinutes(60);
 
-		doReturn(expected).when(entry).getTimeout();
+		doReturn(Duration.ZERO, expected).when(entry).getMaxIdle();
 
-		Duration result = metaData.getTimeout();
-
-		assertThat(result).isSameAs(expected);
+		assertThat(metaData.getMaxIdle()).isEmpty();
+		assertThat(metaData.getMaxIdle()).hasValue(expected);
 	}
 }

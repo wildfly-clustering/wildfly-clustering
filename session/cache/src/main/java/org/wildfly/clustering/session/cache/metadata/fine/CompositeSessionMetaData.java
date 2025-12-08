@@ -66,8 +66,8 @@ public class CompositeSessionMetaData extends CompositeImmutableSessionMetaData 
 	}
 
 	@Override
-	public void setTimeout(Duration duration) {
-		this.creationMetaData.setTimeout(duration.isNegative() ? Duration.ZERO : duration);
+	public void setMaxIdle(Duration duration) {
+		this.creationMetaData.setMaxIdle((duration == null) || duration.isNegative() ? Duration.ZERO : duration);
 	}
 
 	@Override

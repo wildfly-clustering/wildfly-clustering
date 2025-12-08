@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.cache;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.wildfly.clustering.function.Supplier;
@@ -35,8 +36,8 @@ public class DecoratedSessionManagerConfiguration<C> implements SessionManagerCo
 	}
 
 	@Override
-	public Duration getTimeout() {
-		return this.configuration.getTimeout();
+	public Optional<Duration> getMaxIdle() {
+		return this.configuration.getMaxIdle();
 	}
 
 	@Override

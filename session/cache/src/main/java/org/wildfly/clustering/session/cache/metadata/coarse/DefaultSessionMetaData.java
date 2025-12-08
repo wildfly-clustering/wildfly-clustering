@@ -64,8 +64,8 @@ public class DefaultSessionMetaData extends DefaultImmutableSessionMetaData impl
 	}
 
 	@Override
-	public void setTimeout(Duration duration) {
-		this.entry.setTimeout(duration.isNegative() ? Duration.ZERO : duration);
+	public void setMaxIdle(Duration duration) {
+		this.entry.setMaxIdle((duration == null) || duration.isNegative() ? Duration.ZERO : duration);
 	}
 
 	@Override

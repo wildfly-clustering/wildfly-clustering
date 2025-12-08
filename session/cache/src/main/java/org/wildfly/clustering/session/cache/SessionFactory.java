@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.cache;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -22,10 +23,10 @@ import org.wildfly.clustering.session.Session;
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
-public interface SessionFactory<DC, MV, AV, SC> extends ImmutableSessionFactory<MV, AV>, SessionFactoryConfiguration<DC, MV, AV, SC>, BiCacheEntryCreator<String, MV, AV, Map.Entry<Instant, Duration>>, CacheEntryRemover<String>, AutoCloseable {
+public interface SessionFactory<DC, MV, AV, SC> extends ImmutableSessionFactory<MV, AV>, SessionFactoryConfiguration<DC, MV, AV, SC>, BiCacheEntryCreator<String, MV, AV, Map.Entry<Instant, Optional<Duration>>>, CacheEntryRemover<String>, AutoCloseable {
 
 	@Override
-	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> createEntry(String id, Map.Entry<Instant, Duration> context) {
+	default Map.Entry<CompletionStage<MV>, CompletionStage<AV>> createEntry(String id, Map.Entry<Instant, Optional<Duration>> context) {
 		return Map.entry(this.getSessionMetaDataFactory().createValueAsync(id, context), this.getSessionAttributesFactory().createValueAsync(id, null));
 	}
 

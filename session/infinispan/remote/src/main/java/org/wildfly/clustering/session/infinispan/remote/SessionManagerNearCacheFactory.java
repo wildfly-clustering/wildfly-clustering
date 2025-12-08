@@ -49,12 +49,12 @@ public class SessionManagerNearCacheFactory implements NearCacheFactory {
 	@Override
 	public <K, V> NearCache<K, V> createNearCache(NearCacheConfiguration config, BiConsumer<K, MetadataValue<V>> removedConsumer) {
 		CacheConfiguration.Builder<K, MetadataValue<V>> builder = CacheConfiguration.builder();
-		OptionalInt maxSize = this.configuration.getMaxSize();
-		Optional<Duration> idleTimeout = this.configuration.getIdleTimeout();
+		OptionalInt maxSize = this.configuration.getSizeThreshold();
+		Optional<Duration> idleThreshold = this.configuration.getIdleThreshold();
 		AtomicReference<Cache<Key<String>, MetadataValue<V>>> reference = new AtomicReference<>();
-		if (maxSize.isPresent() || idleTimeout.isPresent()) {
+		if (maxSize.isPresent() || idleThreshold.isPresent()) {
 			maxSize.ifPresent(builder::withMaxWeight);
-			idleTimeout.ifPresent(builder::evictAfter);
+			idleThreshold.ifPresent(builder::evictAfter);
 			builder.evictableWhen(SessionCreationMetaDataKey.class::isInstance);
 			builder.whenRemoved(new RemovalListener<>() {
 				@Override

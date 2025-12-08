@@ -33,11 +33,11 @@ public abstract class AbstractSessionCreationMetaDataEntryTestCase implements Co
 
 		// Verify defaults
 		assertThat(entry.getCreationTime()).isEqualTo(this.created);
-		assertThat(entry.getTimeout()).isZero();
+		assertThat(entry.getMaxIdle()).isZero();
 		assertThat(entry.getContext().get(() -> null)).isNull();
 
 		// Apply original state
-		entry.setTimeout(this.originalTimeout);
+		entry.setMaxIdle(this.originalTimeout);
 
 		this.verifyOriginalState(entry);
 
@@ -54,16 +54,16 @@ public abstract class AbstractSessionCreationMetaDataEntryTestCase implements Co
 	}
 
 	void updateState(SessionCreationMetaData metaData) {
-		metaData.setTimeout(this.updatedTimeout);
+		metaData.setMaxIdle(this.updatedTimeout);
 	}
 
 	void verifyOriginalState(SessionCreationMetaData metaData) {
 		assertThat(metaData.getCreationTime()).isEqualTo(this.created);
-		assertThat(metaData.getTimeout()).isEqualTo(this.originalTimeout);
+		assertThat(metaData.getMaxIdle()).isEqualTo(this.originalTimeout);
 	}
 
 	void verifyUpdatedState(SessionCreationMetaData metaData) {
 		assertThat(metaData.getCreationTime()).isEqualTo(this.created);
-		assertThat(metaData.getTimeout()).isEqualTo(this.updatedTimeout);
+		assertThat(metaData.getMaxIdle()).isEqualTo(this.updatedTimeout);
 	}
 }

@@ -27,17 +27,17 @@ public class DefaultSessionCreationMetaDataEntryMarshallerTestCase {
 		DefaultSessionCreationMetaDataEntry<Object> entry = new DefaultSessionCreationMetaDataEntry<>(Instant.now());
 
 		// Default max-inactive-interval
-		entry.setTimeout(Duration.ofMinutes(30));
+		entry.setMaxIdle(Duration.ofMinutes(30));
 		tester.accept(entry);
 
 		// Custom max-inactive-interval
-		entry.setTimeout(Duration.ofMinutes(10));
+		entry.setMaxIdle(Duration.ofMinutes(10));
 		tester.accept(entry);
 	}
 
 	static void assertEquals(DefaultSessionCreationMetaDataEntry<Object> entry1, DefaultSessionCreationMetaDataEntry<Object> entry2) {
 		// Compare only to millisecond precision
 		assertThat(entry2.getCreationTime().toEpochMilli()).isEqualTo(entry1.getCreationTime().toEpochMilli());
-		assertThat(entry2.getTimeout()).isEqualTo(entry1.getTimeout());
+		assertThat(entry2.getMaxIdle()).isEqualTo(entry1.getMaxIdle());
 	}
 }

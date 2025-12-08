@@ -50,7 +50,7 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 		Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
 
 		Configuration configuration = container.getConfiguration();
-		OptionalInt maxSize = parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
+		OptionalInt sizeThreshold = parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
 		// Use local cache since our remote cluster has a single member
 		// Reduce expiration interval to speed up expiration verification
 		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration("""
@@ -78,8 +78,8 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 				.nearCacheMode(parameters.getNearCacheMode())
 				.nearCacheFactory(parameters.getNearCacheMode().invalidated() ? new SessionManagerNearCacheFactory(new EvictionConfiguration() {
 					@Override
-					public OptionalInt getMaxSize() {
-						return maxSize;
+					public OptionalInt getSizeThreshold() {
+						return sizeThreshold;
 					}
 				}) : null)
 				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
@@ -90,8 +90,8 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 		this.accept(() -> configuration.removeRemoteCache(deploymentName));
 		SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
 			@Override
-			public OptionalInt getMaxSize() {
-				return maxSize;
+			public OptionalInt getSizeThreshold() {
+				return sizeThreshold;
 			}
 
 			@Override

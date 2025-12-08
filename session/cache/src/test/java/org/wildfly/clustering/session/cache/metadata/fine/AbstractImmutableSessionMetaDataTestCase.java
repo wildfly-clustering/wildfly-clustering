@@ -18,31 +18,15 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
  */
 public abstract class AbstractImmutableSessionMetaDataTestCase {
 
-	void isNew(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
-		when(accessMetaData.isNew()).thenReturn(true);
-
-		assertThat(metaData.isNew()).isTrue();
-
-		when(accessMetaData.isNew()).thenReturn(false);
-
-		assertThat(metaData.isNew()).isFalse();
-	}
-
 	void isExpired(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
-		when(creationMetaData.getCreationTime()).thenReturn(Instant.now().minus(Duration.ofMinutes(10L)));
-		when(creationMetaData.getTimeout()).thenReturn(Duration.ofMinutes(10L));
-		when(accessMetaData.getSinceCreationDuration()).thenReturn(Duration.ofMinutes(5L));
-		when(accessMetaData.getLastAccessDuration()).thenReturn(Duration.ofSeconds(1));
+		doReturn(Instant.now().minus(Duration.ofMinutes(10L))).when(creationMetaData).getCreationTime();
+		doReturn(Duration.ofMinutes(10L), Duration.ofMinutes(5L).minus(Duration.ofSeconds(1, 1)), Duration.ZERO).when(creationMetaData).getMaxIdle();
+		doReturn(Duration.ofMinutes(5L)).when(accessMetaData).getSinceCreationDuration();
+		doReturn(Duration.ofSeconds(1)).when(accessMetaData).getLastAccessDuration();
 
 		assertThat(metaData.isExpired()).isFalse();
-
-		when(creationMetaData.getTimeout()).thenReturn(Duration.ofMinutes(5L).minus(Duration.ofSeconds(1, 1)));
-
 		assertThat(metaData.isExpired()).isTrue();
-
 		// Timeout of 0 means never expire
-		when(creationMetaData.getTimeout()).thenReturn(Duration.ZERO);
-
 		assertThat(metaData.isExpired()).isFalse();
 	}
 
@@ -57,38 +41,43 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 	}
 
 	void getLastAccessStartTime(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
+		doReturn(Duration.ZERO).when(accessMetaData).getLastAccessDuration();
+
+		assertThat(metaData.getLastAccessStartTime()).isEmpty();
+
 		Instant now = Instant.now();
 		Duration sinceCreation = Duration.ofSeconds(10L);
 
-		when(creationMetaData.getCreationTime()).thenReturn(now.minus(sinceCreation));
-		when(accessMetaData.getSinceCreationDuration()).thenReturn(sinceCreation);
+		doReturn(Duration.ofSeconds(1)).when(accessMetaData).getLastAccessDuration();
+		doReturn(now.minus(sinceCreation)).when(creationMetaData).getCreationTime();
+		doReturn(sinceCreation).when(accessMetaData).getSinceCreationDuration();
 
-		Instant result = metaData.getLastAccessStartTime();
-
-		assertThat(result).isEqualTo(now);
+		assertThat(metaData.getLastAccessStartTime()).hasValue(now);
 	}
 
 	void getLastAccessEndTime(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
+		doReturn(Duration.ZERO).when(accessMetaData).getLastAccessDuration();
+
+		assertThat(metaData.getLastAccessEndTime()).isEmpty();
+
 		Instant now = Instant.now();
 		Duration sinceCreation = Duration.ofSeconds(10L);
 		Duration lastAccess = Duration.ofSeconds(1L);
 
-		when(creationMetaData.getCreationTime()).thenReturn(now.minus(sinceCreation).minus(lastAccess));
-		when(accessMetaData.getSinceCreationDuration()).thenReturn(sinceCreation);
-		when(accessMetaData.getLastAccessDuration()).thenReturn(lastAccess);
+		doReturn(Duration.ofSeconds(1)).when(accessMetaData).getLastAccessDuration();
+		doReturn(now.minus(sinceCreation).minus(lastAccess)).when(creationMetaData).getCreationTime();
+		doReturn(sinceCreation).when(accessMetaData).getSinceCreationDuration();
+		doReturn(lastAccess).when(accessMetaData).getLastAccessDuration();
 
-		Instant result = metaData.getLastAccessEndTime();
-
-		assertThat(result).isEqualTo(now);
+		assertThat(metaData.getLastAccessEndTime()).hasValue(now);
 	}
 
-	void getMaxInactiveInterval(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
+	void getMaxIdle(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
 		Duration expected = Duration.ofMinutes(30L);
 
-		when(creationMetaData.getTimeout()).thenReturn(expected);
+		doReturn(Duration.ZERO, expected).when(creationMetaData).getMaxIdle();
 
-		Duration result = metaData.getTimeout();
-
-		assertThat(result).isSameAs(expected);
+		assertThat(metaData.getMaxIdle()).isEmpty();
+		assertThat(metaData.getMaxIdle()).hasValue(expected);
 	}
 }

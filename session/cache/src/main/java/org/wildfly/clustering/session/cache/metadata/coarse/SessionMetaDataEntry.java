@@ -22,8 +22,8 @@ public interface SessionMetaDataEntry extends ImmutableSessionMetaDataEntry {
 	Value<Instant> getLastAccessEndTime();
 
 	/**
-	 * Sets the session timeout.
-	 * @param timeout the session timeout
+	 * Specifies the duration of time since last access after which this session will expire.
+	 * @param maxIdle the duration of time since last access after which this session will expire.
 	 */
-	void setTimeout(Duration timeout);
+	void setMaxIdle(Duration maxIdle);
 }

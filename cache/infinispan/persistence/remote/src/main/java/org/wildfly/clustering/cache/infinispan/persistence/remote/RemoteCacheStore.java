@@ -188,9 +188,9 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 		K key = entry.getKey();
 		MarshalledValue value = entry.getMarshalledValue();
 		Metadata metadata = entry.getMetadata();
-		long lifespan = (metadata != null) ? TimeUnit.SECONDS.convert(metadata.lifespan(), TimeUnit.MILLISECONDS) : -1L;
-		long maxIdle = (metadata != null) ? TimeUnit.SECONDS.convert(metadata.maxIdle(), TimeUnit.MILLISECONDS) : -1L;
-		return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(key, value, lifespan, TimeUnit.SECONDS, maxIdle, TimeUnit.SECONDS).thenAcceptAsync(Consumer.empty(), this.executor);
+		long lifespan = (metadata != null) ? metadata.lifespan() : 0L;
+		long maxIdle = (metadata != null) ? metadata.maxIdle() : 0L;
+		return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(key, value, lifespan, TimeUnit.MILLISECONDS, maxIdle, TimeUnit.MILLISECONDS).thenAcceptAsync(Consumer.empty(), this.executor);
 	}
 
 	@Override

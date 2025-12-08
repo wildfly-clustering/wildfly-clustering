@@ -50,7 +50,7 @@ public enum SessionMetaDataEntryFunctionMarshaller implements ProtoStreamMarshal
 		}
 		return new SessionMetaDataEntryFunction<>(new SessionMetaDataEntryOffsets() {
 			@Override
-			public Offset<Duration> getTimeoutOffset() {
+			public Offset<Duration> getMaxIdleOffset() {
 				return timeoutOffset.getPlain();
 			}
 
@@ -70,7 +70,7 @@ public enum SessionMetaDataEntryFunctionMarshaller implements ProtoStreamMarshal
 	public void writeTo(ProtoStreamWriter writer, SessionMetaDataEntryFunction<Object> function) throws IOException {
 		SessionMetaDataEntryOffsets operand = function.getOperand();
 
-		Offset<Duration> timeoutOffset = operand.getTimeoutOffset();
+		Offset<Duration> timeoutOffset = operand.getMaxIdleOffset();
 		if (!timeoutOffset.isZero()) {
 			writer.writeObject(TIMEOUT_OFFSET_INDEX, timeoutOffset);
 		}

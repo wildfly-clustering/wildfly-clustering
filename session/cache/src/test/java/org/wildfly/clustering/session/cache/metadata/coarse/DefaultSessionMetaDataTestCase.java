@@ -141,9 +141,9 @@ public class DefaultSessionMetaDataTestCase extends AbstractImmutableSessionMeta
 	public void setTimeout(MutableSessionMetaDataEntry entry, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		Duration timeout = Duration.ofHours(1);
 
-		metaData.setTimeout(timeout);
+		metaData.setMaxIdle(timeout);
 
-		Mockito.verify(entry).setTimeout(timeout);
+		Mockito.verify(entry).setMaxIdle(timeout);
 
 		Mockito.verifyNoInteractions(mutator);
 	}

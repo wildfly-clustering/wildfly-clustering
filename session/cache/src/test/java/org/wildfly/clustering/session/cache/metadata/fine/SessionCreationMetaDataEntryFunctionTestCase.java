@@ -26,7 +26,7 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 		assertThat(entry.getContext().get(Supplier.of(context))).isSameAs(context);
 		assertThat(entry.getContext().get(Supplier.empty())).isSameAs(context);
 
-		OffsetValue<Duration> timeoutOffset = OffsetValue.from(entry.getTimeout());
+		OffsetValue<Duration> timeoutOffset = OffsetValue.from(entry.getMaxIdle());
 
 		MutableSessionCreationMetaData mutableEntry = new MutableSessionCreationMetaData(entry, timeoutOffset);
 

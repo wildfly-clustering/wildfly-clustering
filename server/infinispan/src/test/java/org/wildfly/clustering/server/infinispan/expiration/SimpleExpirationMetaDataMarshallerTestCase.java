@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,11 +28,14 @@ public class SimpleExpirationMetaDataMarshallerTestCase {
 	@TesterFactorySource(ProtoStreamTesterFactory.class)
 	public void test(TesterFactory factory) {
 		Consumer<ExpirationMetaData> tester = factory.createTester((expected, actual) -> {
-			assertThat(actual.getTimeout()).isEqualTo(expected.getTimeout());
+			assertThat(actual.getMaxIdle()).isEqualTo(expected.getMaxIdle());
 			assertThat(actual.getLastAccessTime()).isEqualTo(expected.getLastAccessTime());
 		});
 
-		tester.accept(new SimpleExpirationMetaData(Duration.ofMinutes(30), Instant.EPOCH));
-		tester.accept(new SimpleExpirationMetaData(Duration.ofSeconds(600), Instant.now()));
+		tester.accept(new SimpleExpirationMetaData(Optional.empty(), Optional.empty()));
+		tester.accept(new SimpleExpirationMetaData(Optional.of(Duration.ofMinutes(30)), Optional.empty()));
+		tester.accept(new SimpleExpirationMetaData(Optional.empty(), Optional.of(Instant.EPOCH)));
+		tester.accept(new SimpleExpirationMetaData(Optional.of(Duration.ofMinutes(30)), Optional.of(Instant.EPOCH)));
+		tester.accept(new SimpleExpirationMetaData(Optional.of(Duration.ofSeconds(600)), Optional.of(Instant.now())));
 	}
 }

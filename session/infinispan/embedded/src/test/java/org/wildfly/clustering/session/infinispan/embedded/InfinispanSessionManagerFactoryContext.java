@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.embedded;
 
-import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 import org.assertj.core.api.Assertions;
@@ -91,11 +90,6 @@ public class InfinispanSessionManagerFactoryContext<CC, SC> extends AbstractCont
 				}
 			});
 			SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
-				@Override
-				public OptionalInt getMaxSize() {
-					return OptionalInt.of(1);
-				}
-
 				@Override
 				public ByteBufferMarshaller getMarshaller() {
 					return parameters.getSessionAttributeMarshaller();

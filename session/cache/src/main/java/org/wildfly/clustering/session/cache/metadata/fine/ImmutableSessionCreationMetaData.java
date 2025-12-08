@@ -20,8 +20,8 @@ public interface ImmutableSessionCreationMetaData {
 	Instant getCreationTime();
 
 	/**
-	 * Returns the maximum duration of time this session may remain idle before it will be expired by the session manager.
-	 * @return the maximum duration of time this session may remain idle before it will be expired by the session manager.
+	 * Returns the maximum duration of time this session may remain idle before it will be expired by the session manager, or {@link Duration#ZERO} if the session will never expire.
+	 * @return the maximum duration of time this session may remain idle before it will be expired by the session manager, or {@link Duration#ZERO} if the session will never expire.
 	 */
-	Duration getTimeout();
+	Duration getMaxIdle();
 }

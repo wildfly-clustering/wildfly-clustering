@@ -38,13 +38,13 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 	}
 
 	@Override
-	public Duration getTimeout() {
+	public Duration getMaxIdle() {
 		return this.timeout;
 	}
 
 	@Override
-	public void setTimeout(Duration timeout) {
-		this.timeout = timeout;
+	public void setMaxIdle(Duration timeout) {
+		this.timeout = timeout.isNegative() ? Duration.ZERO : timeout;
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 	@Override
 	public SessionCreationMetaDataEntry<C> remap(java.util.function.Supplier<Offset<Duration>> timeoutOffset) {
 		SessionCreationMetaDataEntry<C> result = new DefaultSessionCreationMetaDataEntry<>(this.creationTime);
-		result.setTimeout(timeoutOffset.get().apply(this.timeout));
+		result.setMaxIdle(timeoutOffset.get().apply(this.timeout));
 		result.getContext().get(Supplier.of(this.context.get(Supplier.empty())));
 		return result;
 	}

@@ -34,13 +34,6 @@ public class CompositeImmutableSessionMetaDataTestCase extends AbstractImmutable
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void isNew(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
-		super.isNew(creationMetaData, accessMetaData, metaData);
-	}
-
-	@Override
-	@ParameterizedTest
-	@ArgumentsSource(Parameters.class)
 	public void isExpired(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
 		super.isExpired(creationMetaData, accessMetaData, metaData);
 	}
@@ -69,7 +62,7 @@ public class CompositeImmutableSessionMetaDataTestCase extends AbstractImmutable
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void getMaxInactiveInterval(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
-		super.getMaxInactiveInterval(creationMetaData, accessMetaData, metaData);
+	public void getMaxIdle(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
+		super.getMaxIdle(creationMetaData, accessMetaData, metaData);
 	}
 }

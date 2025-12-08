@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,92 +20,79 @@ import org.junit.jupiter.api.Test;
 public class ExpirationMetaDataTestCase {
 
 	@Test
-	public void nullTimeout() {
+	public void immortal() {
 		ExpirationMetaData metaData = new ExpirationMetaData() {
-
 			@Override
-			public Duration getTimeout() {
-				return null;
+			public Optional<Duration> getMaxIdle() {
+				return Optional.empty();
 			}
 
 			@Override
-			public Instant getLastAccessTime() {
-				return Instant.now().plus(Duration.ofHours(1));
+			public Optional<Instant> getLastAccessTime() {
+				return Optional.of(Instant.now());
 			}
 		};
 		assertThat(metaData.isExpired()).isFalse();
-		assertThat(metaData.isImmortal()).isTrue();
+		assertThat(metaData.getExpirationTime()).isEmpty();
 	}
 
 	@Test
-	public void negativeTimeout() {
+	public void notYetAccessed() {
 		ExpirationMetaData metaData = new ExpirationMetaData() {
 
 			@Override
-			public Duration getTimeout() {
-				return Duration.ofSeconds(-1);
+			public Optional<Duration> getMaxIdle() {
+				return Optional.of(Duration.ofHours(1));
 			}
 
 			@Override
-			public Instant getLastAccessTime() {
-				return Instant.now().plus(Duration.ofHours(1));
+			public Optional<Instant> getLastAccessTime() {
+				return Optional.empty();
 			}
 		};
 		assertThat(metaData.isExpired()).isFalse();
-		assertThat(metaData.isImmortal()).isTrue();
-	}
-
-	@Test
-	public void zeroTimeout() {
-		ExpirationMetaData metaData = new ExpirationMetaData() {
-
-			@Override
-			public Duration getTimeout() {
-				return Duration.ZERO;
-			}
-
-			@Override
-			public Instant getLastAccessTime() {
-				return Instant.now().plus(Duration.ofHours(1));
-			}
-		};
-		assertThat(metaData.isExpired()).isFalse();
-		assertThat(metaData.isImmortal()).isTrue();
+		assertThat(metaData.getExpirationTime()).isEmpty();
 	}
 
 	@Test
 	public void expired() {
-		ExpirationMetaData metaData = new ExpirationMetaData() {
+		Duration maxIdle = Duration.ofHours(1);
+		Instant expiryTime = Instant.now();
+		Instant lastAccessed = expiryTime.minus(maxIdle);
 
+		ExpirationMetaData metaData = new ExpirationMetaData() {
 			@Override
-			public Duration getTimeout() {
-				return Duration.ofMinutes(1);
+			public Optional<Duration> getMaxIdle() {
+				return Optional.of(maxIdle);
 			}
 
 			@Override
-			public Instant getLastAccessTime() {
-				return Instant.now().minus(Duration.ofHours(1));
+			public Optional<Instant> getLastAccessTime() {
+				return Optional.of(lastAccessed);
 			}
 		};
-		assertThat(metaData.isImmortal()).isFalse();
 		assertThat(metaData.isExpired()).isTrue();
+		assertThat(metaData.getExpirationTime()).hasValue(expiryTime);
 	}
 
 	@Test
 	public void notYetExpired() {
-		ExpirationMetaData metaData = new ExpirationMetaData() {
+		Duration maxIdle = Duration.ofHours(1);
+		Instant lastAccessed = Instant.now();
+		Instant expiryTime = lastAccessed.plus(maxIdle);
 
+		ExpirationMetaData metaData = new ExpirationMetaData() {
 			@Override
-			public Duration getTimeout() {
-				return Duration.ofHours(1);
+			public Optional<Duration> getMaxIdle() {
+				return Optional.of(maxIdle);
 			}
 
 			@Override
-			public Instant getLastAccessTime() {
-				return Instant.now();
+			public Optional<Instant> getLastAccessTime() {
+				return Optional.of(lastAccessed);
 			}
 		};
-		assertThat(metaData.isImmortal()).isFalse();
 		assertThat(metaData.isExpired()).isFalse();
+		assertThat(metaData.getExpirationTime()).hasValue(expiryTime);
 	}
 }
