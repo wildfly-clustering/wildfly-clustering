@@ -16,18 +16,18 @@ import java.util.OptionalInt;
 public interface EvictionConfiguration {
 
 	/**
-	 * When present, defines the maximum number of elements to retain in memory.
-	 * @return an option size-based eviction threshold.
+	 * When present, defines the maximum number of elements to retain in memory, beyond which least recently used elements will be evicted.
+	 * @return an optional eviction threshold size
 	 */
-	default OptionalInt getMaxSize() {
+	default OptionalInt getSizeThreshold() {
 		return OptionalInt.empty();
 	}
 
 	/**
-	 * When present, defines the maximum duration of time that an idle entry should remain in memory.
-	 * @return an option time-based eviction threshold.
+	 * When present, defines the duration of time after which managed state should be considered idle, and thus eligible for eviction.
+	 * @return an optional eviction threshold duration
 	 */
-	default Optional<Duration> getIdleTimeout() {
+	default Optional<Duration> getIdleThreshold() {
 		return Optional.empty();
 	}
 }

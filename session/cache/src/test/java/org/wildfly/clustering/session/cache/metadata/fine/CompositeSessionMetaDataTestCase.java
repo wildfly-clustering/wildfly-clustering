@@ -42,13 +42,6 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void isNew(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
-		super.isNew(creationMetaData, accessMetaData, metaData);
-		Mockito.verifyNoInteractions(mutator);
-	}
-
-	@ParameterizedTest
-	@ArgumentsSource(Parameters.class)
 	public void isExpired(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		super.isExpired(creationMetaData, accessMetaData, metaData);
 		Mockito.verifyNoInteractions(mutator);
@@ -78,7 +71,7 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
 	public void getMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
-		super.getMaxInactiveInterval(creationMetaData, accessMetaData, metaData);
+		super.getMaxIdle(creationMetaData, accessMetaData, metaData);
 		Mockito.verifyNoInteractions(mutator);
 	}
 
@@ -128,9 +121,9 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 	public void setMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		Duration duration = Duration.ZERO;
 
-		metaData.setTimeout(duration);
+		metaData.setMaxIdle(duration);
 
-		verify(creationMetaData).setTimeout(duration);
+		verify(creationMetaData).setMaxIdle(duration);
 		verifyNoInteractions(mutator);
 	}
 

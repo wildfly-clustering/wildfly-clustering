@@ -36,12 +36,12 @@ public class MutableSessionCreationMetaData implements SessionCreationMetaData {
 	}
 
 	@Override
-	public Duration getTimeout() {
+	public Duration getMaxIdle() {
 		return this.timeout.get();
 	}
 
 	@Override
-	public void setTimeout(Duration timeout) {
+	public void setMaxIdle(Duration timeout) {
 		this.timeout.set(timeout);
 	}
 

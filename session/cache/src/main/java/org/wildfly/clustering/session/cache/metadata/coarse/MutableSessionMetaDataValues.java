@@ -16,10 +16,10 @@ import org.wildfly.clustering.server.offset.Value;
  */
 public interface MutableSessionMetaDataValues {
 	/**
-	 * Returns the session timeout value.
-	 * @return the session timeout value.
+	 * Returns the max idle duration value
+	 * @return the max idle duration value.
 	 */
-	Value<Duration> getTimeout();
+	Value<Duration> getMaxIdle();
 
 	/**
 	 * Returns the last access start time value.

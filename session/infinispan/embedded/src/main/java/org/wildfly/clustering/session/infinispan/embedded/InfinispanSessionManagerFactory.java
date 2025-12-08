@@ -281,8 +281,8 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 			}
 
 			@Override
-			public Duration getTimeout() {
-				return configuration.getTimeout();
+			public Optional<Duration> getMaxIdle() {
+				return configuration.getMaxIdle();
 			}
 
 			@Override

@@ -24,7 +24,7 @@ public enum DefaultSessionCreationMetaDataEntryMarshaller implements ProtoStream
 
 	private static final Instant DEFAULT_CREATION_TIME = Instant.EPOCH;
 	// Optimize for specification default
-	private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(30L);
+	private static final Duration DEFAULT_MAX_IDLE = Duration.ofMinutes(30L);
 
 	private static final int CREATION_TIME_INDEX = 1;
 	private static final int TIMEOUT_INDEX = 2;
@@ -32,7 +32,7 @@ public enum DefaultSessionCreationMetaDataEntryMarshaller implements ProtoStream
 	@Override
 	public DefaultSessionCreationMetaDataEntry<Object> readFrom(ProtoStreamReader reader) throws IOException {
 		Instant creationTime = DEFAULT_CREATION_TIME;
-		Duration timeout = DEFAULT_TIMEOUT;
+		Duration timeout = DEFAULT_MAX_IDLE;
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
@@ -46,7 +46,7 @@ public enum DefaultSessionCreationMetaDataEntryMarshaller implements ProtoStream
 			}
 		}
 		DefaultSessionCreationMetaDataEntry<Object> result = new DefaultSessionCreationMetaDataEntry<>(creationTime);
-		result.setTimeout(timeout);
+		result.setMaxIdle(timeout);
 		return result;
 	}
 
@@ -58,9 +58,9 @@ public enum DefaultSessionCreationMetaDataEntryMarshaller implements ProtoStream
 			writer.writeObject(CREATION_TIME_INDEX, creationTime);
 		}
 
-		Duration timeout = metaData.getTimeout();
-		if (!timeout.equals(DEFAULT_TIMEOUT)) {
-			writer.writeObject(TIMEOUT_INDEX, timeout);
+		Duration maxIdle = metaData.getMaxIdle();
+		if (!maxIdle.equals(DEFAULT_MAX_IDLE)) {
+			writer.writeObject(TIMEOUT_INDEX, maxIdle);
 		}
 	}
 

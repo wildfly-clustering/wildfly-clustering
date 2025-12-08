@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.cache.metadata;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.cache.batch.Batch;
@@ -34,12 +35,6 @@ public class DetachedSessionMetaData<C, B extends Batch> implements SessionMetaD
 	}
 
 	@Override
-	public boolean isNew() {
-		// A detached session is not new, by definition.
-		return false;
-	}
-
-	@Override
 	public boolean isExpired() {
 		try (B batch = this.batchFactory.get()) {
 			try (Session<C> session = this.sessionFactory.get()) {
@@ -58,7 +53,7 @@ public class DetachedSessionMetaData<C, B extends Batch> implements SessionMetaD
 	}
 
 	@Override
-	public Instant getLastAccessStartTime() {
+	public Optional<Instant> getLastAccessStartTime() {
 		try (B batch = this.batchFactory.get()) {
 			try (Session<C> session = this.sessionFactory.get()) {
 				return session.getMetaData().getLastAccessStartTime();
@@ -67,7 +62,7 @@ public class DetachedSessionMetaData<C, B extends Batch> implements SessionMetaD
 	}
 
 	@Override
-	public Instant getLastAccessEndTime() {
+	public Optional<Instant> getLastAccessEndTime() {
 		try (B batch = this.batchFactory.get()) {
 			try (Session<C> session = this.sessionFactory.get()) {
 				return session.getMetaData().getLastAccessEndTime();
@@ -76,19 +71,19 @@ public class DetachedSessionMetaData<C, B extends Batch> implements SessionMetaD
 	}
 
 	@Override
-	public Duration getTimeout() {
+	public Optional<Duration> getMaxIdle() {
 		try (B batch = this.batchFactory.get()) {
 			try (Session<C> session = this.sessionFactory.get()) {
-				return session.getMetaData().getTimeout();
+				return session.getMetaData().getMaxIdle();
 			}
 		}
 	}
 
 	@Override
-	public void setTimeout(Duration duration) {
+	public void setMaxIdle(Duration duration) {
 		try (B batch = this.batchFactory.get()) {
 			try (Session<C> session = this.sessionFactory.get()) {
-				session.getMetaData().setTimeout(duration);
+				session.getMetaData().setMaxIdle(duration);
 			}
 		}
 	}

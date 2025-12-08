@@ -51,7 +51,7 @@ public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionMan
 			return new Consumer<>() {
 				@Override
 				public void accept(ImmutableSession session) {
-					if (session.isValid() && !session.getMetaData().isImmortal()) {
+					if (session.isValid() && session.getMetaData().getMaxIdle().isPresent()) {
 						scheduler.schedule(session.getId(), session.getMetaData());
 					}
 				}

@@ -5,16 +5,15 @@
 
 package org.wildfly.clustering.session.cache.metadata.coarse;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Supplier;
-
-import org.wildfly.clustering.server.expiration.Expiration;
 
 /**
  * An immutable view of the session metadata entry.
  * @author Paul Ferraro
  */
-public interface ImmutableSessionMetaDataEntry extends Expiration {
+public interface ImmutableSessionMetaDataEntry {
 
 	/**
 	 * Returns true, if this is a newly created entry, false otherwise.
@@ -39,4 +38,11 @@ public interface ImmutableSessionMetaDataEntry extends Expiration {
 	 * @return the last access end time, as an offset of the last access start time.
 	 */
 	Supplier<Instant> getLastAccessEndTime();
+
+	/**
+	 * Returns the duration of time since last access that this session should expire.
+	 * An immortal session will return {@link Duration#ZERO}.
+	 * @return the duration of time since last access that this session should expire.
+	 */
+	Duration getMaxIdle();
 }

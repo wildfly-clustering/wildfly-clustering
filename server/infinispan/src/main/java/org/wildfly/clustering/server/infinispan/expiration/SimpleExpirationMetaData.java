@@ -8,6 +8,7 @@ package org.wildfly.clustering.server.infinispan.expiration;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 
@@ -17,34 +18,34 @@ import org.wildfly.clustering.server.expiration.ExpirationMetaData;
  */
 public class SimpleExpirationMetaData implements ExpirationMetaData {
 
-	private final Duration timeout;
-	private final Instant lastAccessTime;
+	private final Optional<Duration> maxIdle;
+	private final Optional<Instant> lastAccessTime;
 
 	/**
 	 * Creates a cached expiration meta data.
 	 * @param metaData expiration metadata
 	 */
 	public SimpleExpirationMetaData(ExpirationMetaData metaData) {
-		this(metaData.getTimeout(), metaData.getLastAccessTime());
+		this(metaData.getMaxIdle(), metaData.getLastAccessTime());
 	}
 
-	SimpleExpirationMetaData(Duration timeout, Instant lastAccessedTime) {
-		this.timeout = timeout;
+	SimpleExpirationMetaData(Optional<Duration> maxIdle, Optional<Instant> lastAccessedTime) {
+		this.maxIdle = maxIdle;
 		this.lastAccessTime = lastAccessedTime;
 	}
 
 	@Override
-	public Duration getTimeout() {
-		return this.timeout;
+	public Optional<Duration> getMaxIdle() {
+		return this.maxIdle;
 	}
 
 	@Override
-	public Instant getLastAccessTime() {
+	public Optional<Instant> getLastAccessTime() {
 		return this.lastAccessTime;
 	}
 
 	@Override
 	public String toString() {
-		return Map.of("timeout", this.timeout, "last-access-time", this.lastAccessTime).toString();
+		return Map.of("max-idle", this.maxIdle, "last-access-time", this.lastAccessTime).toString();
 	}
 }

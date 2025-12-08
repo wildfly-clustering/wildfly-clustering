@@ -16,20 +16,20 @@ import org.wildfly.clustering.server.offset.Offset;
  */
 public interface SessionMetaDataEntryOffsets {
 	/**
-	 * Returns the session timeout delta, as an offset from the current value.
-	 * @return the session timeout delta, as an offset from the current value.
+	 * Returns the max idle duration, as an offset from the current value.
+	 * @return the max idle duration, as an offset from the current value.
 	 */
-	Offset<Duration> getTimeoutOffset();
+	Offset<Duration> getMaxIdleOffset();
 
 	/**
-	 * Returns the last access start time delta, as an offset from the current value.
-	 * @return the last access start time delta, as an offset from the current value.
+	 * Returns the last access start time, as an offset from the current value.
+	 * @return the last access start time, as an offset from the current value.
 	 */
 	Offset<Instant> getLastAccessStartTimeOffset();
 
 	/**
-	 * Returns the last access end time delta, as an offset from the current value.
-	 * @return the last access end time delta, as an offset from the current value.
+	 * Returns the last access end time, as an offset from the current value.
+	 * @return the last access end time, as an offset from the current value.
 	 */
 	Offset<Instant> getLastAccessEndTimeOffset();
 }

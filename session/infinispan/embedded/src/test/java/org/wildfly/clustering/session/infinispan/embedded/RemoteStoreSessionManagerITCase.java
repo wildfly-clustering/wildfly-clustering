@@ -27,7 +27,6 @@ import org.wildfly.clustering.cache.infinispan.persistence.remote.RemoteCacheSto
 import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
-import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.cache.SessionManagerITCase;
 
@@ -41,7 +40,7 @@ public class RemoteStoreSessionManagerITCase extends SessionManagerITCase<Infini
 	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();
 
 	static class InfinispanInvalidationSessionManagerArgumentsProvider implements ArgumentsProvider {
-		Class<? extends MarshallingTesterFactory> marshallerClass = JBossMarshallingTesterFactory.class;
+		Class<? extends MarshallingTesterFactory> marshallerClass = MarshallingTesterFactory.class;
 		Set<TransactionMode> transactionModes = EnumSet.of(TransactionMode.NON_TRANSACTIONAL);
 		Set<SessionAttributePersistenceStrategy> strategies = EnumSet.allOf(SessionAttributePersistenceStrategy.class);
 
@@ -102,6 +101,8 @@ public class RemoteStoreSessionManagerITCase extends SessionManagerITCase<Infini
 }""")
 										.segmented(true)
 										.shared(true)
+										// transactional(true) Currently fails with: java.lang.UnsupportedOperationException: Decorated caches should not delegate wrapping operations
+										// See https://github.com/infinispan/infinispan/issues/14926
 										.transactional(false)
 										;
 								return container::close;

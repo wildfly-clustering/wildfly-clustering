@@ -14,7 +14,7 @@ public class MutableSessionCreationMetaDataTestCase extends AbstractSessionCreat
 
 	@Override
 	public void accept(SessionCreationMetaDataEntry<Object> entry) {
-		SessionCreationMetaData mutableEntry = new MutableSessionCreationMetaData(entry, OffsetValue.from(entry.getTimeout()));
+		SessionCreationMetaData mutableEntry = new MutableSessionCreationMetaData(entry, OffsetValue.from(entry.getMaxIdle()));
 
 		// Verify decorator reflects current values
 		this.verifyOriginalState(mutableEntry);

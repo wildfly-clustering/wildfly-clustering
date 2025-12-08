@@ -6,6 +6,7 @@ package org.wildfly.clustering.session.cache.metadata;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
@@ -16,9 +17,9 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
 public class SimpleImmutableSessionMetaData extends AbstractImmutableSessionMetaData {
 
 	private final Instant creationTime;
-	private final Instant lastAccessStartTime;
-	private final Instant lastAccessEndTime;
-	private final Duration timeout;
+	private final Optional<Instant> lastAccessStartTime;
+	private final Optional<Instant> lastAccessEndTime;
+	private final Optional<Duration> timeout;
 
 	/**
 	 * Creates an immutable snapshot from the specified metadata.
@@ -28,7 +29,7 @@ public class SimpleImmutableSessionMetaData extends AbstractImmutableSessionMeta
 		this.creationTime = metaData.getCreationTime();
 		this.lastAccessStartTime = metaData.getLastAccessStartTime();
 		this.lastAccessEndTime = metaData.getLastAccessEndTime();
-		this.timeout = metaData.getTimeout();
+		this.timeout = metaData.getMaxIdle();
 	}
 
 	@Override
@@ -37,17 +38,17 @@ public class SimpleImmutableSessionMetaData extends AbstractImmutableSessionMeta
 	}
 
 	@Override
-	public Instant getLastAccessStartTime() {
+	public Optional<Instant> getLastAccessStartTime() {
 		return this.lastAccessStartTime;
 	}
 
 	@Override
-	public Instant getLastAccessEndTime() {
+	public Optional<Instant> getLastAccessEndTime() {
 		return this.lastAccessEndTime;
 	}
 
 	@Override
-	public Duration getTimeout() {
+	public Optional<Duration> getMaxIdle() {
 		return this.timeout;
 	}
 }

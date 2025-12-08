@@ -17,7 +17,9 @@ public interface ImmutableSessionAccessMetaData {
 	 * Returns true, if this is a newly created entry, false otherwise.
 	 * @return true, if this is a newly created entry, false otherwise.
 	 */
-	boolean isNew();
+	default boolean isNew() {
+		return this.getLastAccessDuration().isZero();
+	}
 
 	/**
 	 * Returns the duration of time between session creation and the start of the last access.

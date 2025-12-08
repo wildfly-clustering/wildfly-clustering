@@ -23,11 +23,6 @@ public class DefaultSessionAccessMetaDataEntry implements SessionAccessMetaDataE
 	}
 
 	@Override
-	public boolean isNew() {
-		return this.getLastAccessDuration().isZero();
-	}
-
-	@Override
 	public Duration getSinceCreationDuration() {
 		return this.lastAccess.getKey();
 	}

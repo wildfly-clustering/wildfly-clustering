@@ -176,8 +176,8 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 			}
 
 			@Override
-			public Duration getTimeout() {
-				return configuration.getTimeout();
+			public Optional<Duration> getMaxIdle() {
+				return configuration.getMaxIdle();
 			}
 
 			@Override

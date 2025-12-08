@@ -22,7 +22,7 @@ public abstract class AbstractSessionMetaDataEntry implements SessionMetaDataEnt
 				"creation-time", this.getCreationTime(),
 				"last-access-start", this.getLastAccessStartTime().get(),
 				"last-access-end", this.getLastAccessEndTime().get(),
-				"timeout", this.getTimeout())
+				"max-idle", this.getMaxIdle())
 				.toString();
 	}
 }

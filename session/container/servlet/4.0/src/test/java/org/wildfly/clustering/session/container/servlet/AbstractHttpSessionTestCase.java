@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -72,29 +73,32 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 		Duration timeout = Duration.ofSeconds(this.random.nextInt(Short.MAX_VALUE));
 
 		doReturn(this.metaData).when(this.session).getMetaData();
-		doReturn(timeout).when(this.metaData).getTimeout();
+		doReturn(Optional.empty(), Optional.of(timeout)).when(this.metaData).getMaxIdle();
 
+		assertThat(this.subject.getMaxInactiveInterval()).isEqualTo(0);
 		assertThat(this.subject.getMaxInactiveInterval()).isEqualTo(timeout.getSeconds());
 	}
 
 	@Test
 	public void getLastAccessedTime() {
-		Instant now = Instant.now();
+		Instant expected = Instant.now();
+		Instant created = expected.minus(Duration.ofMinutes(1));
 
 		doReturn(this.metaData).when(this.session).getMetaData();
-		doReturn(now).when(this.metaData).getLastAccessStartTime();
+		doReturn(created).when(this.metaData).getCreationTime();
+		doReturn(Optional.empty(), Optional.of(expected)).when(this.metaData).getLastAccessStartTime();
 
-		assertThat(this.subject.getLastAccessedTime()).isEqualTo(now.toEpochMilli());
+		assertThat(this.subject.getLastAccessedTime()).isEqualTo(created.toEpochMilli());
+		assertThat(this.subject.getLastAccessedTime()).isEqualTo(expected.toEpochMilli());
 	}
 
 	@Test
 	public void isNew() {
-		boolean expected = this.random.nextBoolean();
-
 		doReturn(this.metaData).when(this.session).getMetaData();
-		doReturn(expected).when(this.metaData).isNew();
+		doReturn(Optional.empty(), Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
 
-		assertThat(this.subject.isNew()).isEqualTo(expected);
+		assertThat(this.subject.isNew()).isTrue();
+		assertThat(this.subject.isNew()).isFalse();
 	}
 
 	@Test

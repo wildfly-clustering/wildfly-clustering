@@ -8,6 +8,7 @@ package org.wildfly.clustering.server.infinispan.expiration;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -22,12 +23,8 @@ public enum SimpleExpirationMetaDataMarshaller implements ProtoStreamMarshaller<
 	/** Singleton instance */
 	INSTANCE;
 
-	private static final int TIMEOUT_INDEX = 1;
+	private static final int MAX_IDLE_INDEX = 1;
 	private static final int LAST_ACCESS_TIME_INDEX = 2;
-
-	// This is the default specification timeout for web sessions
-	private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(30);
-	private static final Instant DEFAULT_LAST_ACCESS_TIME = Instant.EPOCH;
 
 	@Override
 	public Class<? extends SimpleExpirationMetaData> getJavaClass() {
@@ -36,32 +33,26 @@ public enum SimpleExpirationMetaDataMarshaller implements ProtoStreamMarshaller<
 
 	@Override
 	public SimpleExpirationMetaData readFrom(ProtoStreamReader reader) throws IOException {
-		Duration timeout = DEFAULT_TIMEOUT;
-		Instant lastAccessTime = DEFAULT_LAST_ACCESS_TIME;
+		Optional<Duration> maxIdle = Optional.empty();
+		Optional<Instant> lastAccessTime = Optional.empty();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case TIMEOUT_INDEX -> {
-					timeout = reader.readObject(Duration.class);
+				case MAX_IDLE_INDEX -> {
+					maxIdle = Optional.of(reader.readObject(Duration.class));
 				}
 				case LAST_ACCESS_TIME_INDEX -> {
-					lastAccessTime = reader.readObject(Instant.class);
+					lastAccessTime = Optional.of(reader.readObject(Instant.class));
 				}
 				default -> reader.skipField(tag);
 			}
 		}
-		return new SimpleExpirationMetaData(timeout, lastAccessTime);
+		return new SimpleExpirationMetaData(maxIdle, lastAccessTime);
 	}
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, SimpleExpirationMetaData metaData) throws IOException {
-		Duration timeout = metaData.getTimeout();
-		if (!DEFAULT_TIMEOUT.equals(timeout)) {
-			writer.writeObject(TIMEOUT_INDEX, timeout);
-		}
-		Instant lastAccessedTime = metaData.getLastAccessTime();
-		if (!DEFAULT_LAST_ACCESS_TIME.equals(lastAccessedTime)) {
-			writer.writeObject(LAST_ACCESS_TIME_INDEX, lastAccessedTime);
-		}
+		writer.writeObject(MAX_IDLE_INDEX, metaData.getMaxIdle());
+		writer.writeObject(LAST_ACCESS_TIME_INDEX, metaData.getLastAccessTime());
 	}
 }

@@ -15,6 +15,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -214,7 +215,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 					// Setup session to expire soon
 					this.requestSession(manager1, sessionId, session -> {
-						session.getMetaData().setTimeout(Duration.ofSeconds(2));
+						session.getMetaData().setMaxIdle(Duration.ofSeconds(2));
 					});
 
 					// Verify that session does not expire prematurely
@@ -239,9 +240,9 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 						this.logger.log(System.Logger.Level.INFO, "Received expiration event for {0} after {1}", expiredSession.getId(), Duration.between(start, Instant.now()));
 						assertThat(sessionId).isEqualTo(expiredSession.getId());
 						assertThat(expiredSession.isValid()).isFalse();
-						assertThat(expiredSession.getMetaData().isNew()).isFalse();
+						assertThat(expiredSession.getMetaData().getLastAccessTime()).isPresent();
 						assertThat(expiredSession.getMetaData().isExpired()).isTrue();
-						assertThat(expiredSession.getMetaData().isImmortal()).isFalse();
+						assertThat(expiredSession.getMetaData().getMaxIdle()).isPresent();
 						verifySessionAttributes(expiredSession, Map.of("foo", foo, "bar", bar));
 
 						assertThat(expiredSessions).isEmpty();
@@ -262,7 +263,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 	private void createSession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
 		this.requestSession(manager, manager::createSession, sessionId, session -> {
-			assertThat(session.getMetaData().isNew()).isTrue();
+			assertThat(session.getMetaData().getLastAccessTime()).isEmpty();
 			verifySessionMetaData(session);
 			verifySessionAttributes(session, Map.of());
 			updateSessionAttributes(session, attributes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> new AbstractMap.SimpleEntry<>(null, entry.getValue()))));
@@ -272,7 +273,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 
 	private void verifySession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
 		this.requestSession(manager, sessionId, session -> {
-			assertThat(session.getMetaData().isNew()).isFalse();
+			assertThat(session.getMetaData().getLastAccessTime()).isPresent();
 			verifySessionMetaData(session);
 			verifySessionAttributes(session, attributes);
 		});
@@ -282,7 +283,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		this.requestSession(manager, sessionId, session -> {
 			assertThat(session).isNotNull();
 			assertThat(session.getId()).isEqualTo(sessionId);
-			assertThat(session.getMetaData().isNew()).isFalse();
+			assertThat(session.getMetaData().getLastAccessTime()).isPresent();
 			verifySessionMetaData(session);
 			updateSessionAttributes(session, attributes);
 		});
@@ -314,14 +315,20 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 					Instant end = Instant.now();
 					metaData.setLastAccess(start, end);
 					// Once last-access is set, session should no longer be "new"
-					assertThat(metaData.isNew()).isFalse();
+					assertThat(session.getMetaData().getLastAccessTime()).isPresent();
+					assertThat(session.getMetaData().getLastAccessStartTime()).isPresent();
+					assertThat(session.getMetaData().getLastAccessEndTime()).isPresent();
 					// Skip these assertions during concurrent session access
 					// We would otherwise require memory synchronization to validate
 					if (!Thread.currentThread().getThreadGroup().getName().equals(this.threadGroupName)) {
 						// Validate last-access times are within precision bounds
-						assertThat(Duration.between(metaData.getLastAccessStartTime(), start).getSeconds()).isEqualTo(0);
-						assertThat(Duration.between(metaData.getLastAccessStartTime(), start).truncatedTo(ChronoUnit.MILLIS).getNano()).isEqualTo(0);
-						assertThat(Duration.between(end, metaData.getLastAccessEndTime()).getSeconds()).isEqualTo(0);
+						if (metaData.getLastAccessStartTime().isPresent()) {
+							assertThat(Duration.between(metaData.getLastAccessStartTime().get(), start).getSeconds()).isEqualTo(0);
+							assertThat(Duration.between(metaData.getLastAccessStartTime().get(), start).truncatedTo(ChronoUnit.MILLIS).getNano()).isEqualTo(0);
+						}
+						if (metaData.getLastAccessEndTime().isPresent()) {
+							assertThat(Duration.between(end, metaData.getLastAccessEndTime().get()).getSeconds()).isEqualTo(0);
+						}
 					}
 				}
 			} catch (RuntimeException e) {
@@ -335,19 +342,14 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	private static void verifySessionMetaData(Session<AtomicReference<String>> session) {
 		assertThat(session.isValid()).isTrue();
 		SessionMetaData metaData = session.getMetaData();
-		assertThat(metaData.isImmortal()).isFalse();
+		assertThat(metaData.getMaxIdle()).isPresent();
 		assertThat(metaData.isExpired()).isFalse();
-		if (metaData.isNew()) {
-			assertThat(metaData.getLastAccessStartTime()).isNull();
-			assertThat(metaData.getLastAccessEndTime()).isNull();
-		} else {
-			assertThat(metaData.getLastAccessStartTime()).isNotNull();
-			assertThat(metaData.getLastAccessEndTime()).isNotNull();
+		if (metaData.getLastAccessTime().isPresent()) {
 			// For the request following session creation, the last access time will precede the creation time, but this duration should be tiny
-			if (metaData.getLastAccessStartTime().isBefore(metaData.getCreationTime())) {
-				assertThat(Duration.between(metaData.getLastAccessStartTime(), metaData.getCreationTime()).getSeconds()).isEqualTo(0);
+			if (metaData.getLastAccessStartTime().get().isBefore(metaData.getCreationTime())) {
+				assertThat(Duration.between(metaData.getLastAccessStartTime().get(), metaData.getCreationTime()).getSeconds()).isEqualTo(0);
 			}
-			assertThat(metaData.getLastAccessStartTime()).isBefore(metaData.getLastAccessEndTime());
+			assertThat(metaData.getLastAccessStartTime().get()).isBefore(metaData.getLastAccessEndTime().get());
 		}
 	}
 
@@ -404,8 +406,8 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 		}
 
 		@Override
-		public Duration getTimeout() {
-			return Duration.ofMinutes(1);
+		public Optional<Duration> getMaxIdle() {
+			return Optional.of(Duration.ofMinutes(1));
 		}
 
 		@Override

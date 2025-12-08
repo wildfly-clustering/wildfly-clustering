@@ -151,7 +151,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	@Override
 	public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
 		try {
-			Runnable mutator = (this.properties.isTransactional() && metaData.isNew()) ? CacheEntryMutator.EMPTY : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
+			Runnable mutator = (this.properties.isTransactional() && metaData.getLastAccessTime().isEmpty()) ? CacheEntryMutator.EMPTY : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
 			SessionActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : null;
 			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Predicate.always() , this.immutability, notifier);
 		} catch (IOException e) {

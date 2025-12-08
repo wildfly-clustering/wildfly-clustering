@@ -62,7 +62,7 @@ public enum DefaultSessionMetaDataEntryMarshaller implements ProtoStreamMarshall
 			}
 		}
 		DefaultSessionMetaDataEntry<Object> metaData = new DefaultSessionMetaDataEntry<>(creationTime);
-		metaData.setTimeout(timeout);
+		metaData.setMaxIdle(timeout);
 		metaData.getLastAccessStartTime().setOffset(lastAccessStartTimeOffset);
 		metaData.getLastAccessEndTime().setOffset(lastAccessEndTimeOffset);
 		return metaData;
@@ -76,7 +76,7 @@ public enum DefaultSessionMetaDataEntryMarshaller implements ProtoStreamMarshall
 			writer.writeObject(CREATION_TIME_INDEX, creationTime);
 		}
 
-		Duration timeout = metaData.getTimeout();
+		Duration timeout = metaData.getMaxIdle();
 		if (!timeout.equals(DEFAULT_TIMEOUT)) {
 			writer.writeObject(TIMEOUT_INDEX, timeout);
 		}

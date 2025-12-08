@@ -23,13 +23,13 @@ public interface MutableSessionMetaDataOffsetValues extends MutableSessionMetaDa
 	 * @return an object encapsulating the mutable session meta data properties
 	 */
 	static <C> MutableSessionMetaDataOffsetValues from(ContextualSessionMetaDataEntry<C> entry) {
-		OffsetValue<Duration> timeout = OffsetValue.from(entry.getTimeout());
+		OffsetValue<Duration> maxIdle = OffsetValue.from(entry.getMaxIdle());
 		OffsetValue<Instant> lastAccessStartTime = entry.getLastAccessStartTime().rebase();
 		OffsetValue<Instant> lastAccessEndTime = entry.getLastAccessEndTime().rebase();
 		return new MutableSessionMetaDataOffsetValues() {
 			@Override
-			public OffsetValue<Duration> getTimeout() {
-				return timeout;
+			public OffsetValue<Duration> getMaxIdle() {
+				return maxIdle;
 			}
 
 			@Override
@@ -45,7 +45,7 @@ public interface MutableSessionMetaDataOffsetValues extends MutableSessionMetaDa
 	}
 
 	@Override
-	OffsetValue<Duration> getTimeout();
+	OffsetValue<Duration> getMaxIdle();
 
 	@Override
 	OffsetValue<Instant> getLastAccessStartTime();

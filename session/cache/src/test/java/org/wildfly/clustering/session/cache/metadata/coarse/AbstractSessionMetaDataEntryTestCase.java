@@ -42,19 +42,19 @@ public abstract class AbstractSessionMetaDataEntryTestCase implements Consumer<C
 		assertThat(entry.getCreationTime()).isEqualTo(this.created);
 		assertThat(entry.getLastAccessStartTime().get()).isEqualTo(this.created);
 		assertThat(entry.getLastAccessEndTime().get()).isEqualTo(this.created);
-		assertThat(entry.getTimeout()).isZero();
+		assertThat(entry.getMaxIdle()).isZero();
 		assertThat(entry.getContext().get(() -> null)).isNull();
 
 		// Apply original state
 		entry.getLastAccessStartTime().set(this.originalLastAccessStartTime);
 		entry.getLastAccessEndTime().set(this.originalLastAccessEndTime);
-		entry.setTimeout(this.originalTimeout);
+		entry.setMaxIdle(this.originalTimeout);
 
 		this.verifyOriginalState(entry);
 
 		// Verify remap
 		SessionMetaDataEntryOffsets offsets = mock(SessionMetaDataEntryOffsets.class);
-		doReturn(Offset.forDuration(this.timeoutDelta)).when(offsets).getTimeoutOffset();
+		doReturn(Offset.forDuration(this.timeoutDelta)).when(offsets).getMaxIdleOffset();
 		doReturn(Offset.forInstant(this.lastAccessStartTimeDelta)).when(offsets).getLastAccessStartTimeOffset();
 		doReturn(Offset.forInstant(this.lastAccessEndTimeDelta)).when(offsets).getLastAccessEndTimeOffset();
 
@@ -71,20 +71,20 @@ public abstract class AbstractSessionMetaDataEntryTestCase implements Consumer<C
 	void updateState(SessionMetaDataEntry entry) {
 		entry.getLastAccessStartTime().set(this.updatedLastAccessStartTime);
 		entry.getLastAccessEndTime().set(this.updatedLastAccessEndTime);
-		entry.setTimeout(this.updatedTimeout);
+		entry.setMaxIdle(this.updatedTimeout);
 	}
 
 	void verifyOriginalState(SessionMetaDataEntry entry) {
 		assertThat(entry.getCreationTime()).isEqualTo(this.created);
 		assertThat(entry.getLastAccessStartTime().get()).isEqualTo(this.originalLastAccessStartTime);
 		assertThat(entry.getLastAccessEndTime().get()).isEqualTo(this.originalLastAccessEndTime);
-		assertThat(entry.getTimeout()).isEqualTo(this.originalTimeout);
+		assertThat(entry.getMaxIdle()).isEqualTo(this.originalTimeout);
 	}
 
 	void verifyUpdatedState(SessionMetaDataEntry entry) {
 		assertThat(entry.getCreationTime()).isEqualTo(this.created);
 		assertThat(entry.getLastAccessStartTime().get()).isEqualTo(this.updatedLastAccessStartTime);
 		assertThat(entry.getLastAccessEndTime().get()).isEqualTo(this.updatedLastAccessEndTime);
-		assertThat(entry.getTimeout()).isEqualTo(this.updatedTimeout);
+		assertThat(entry.getMaxIdle()).isEqualTo(this.updatedTimeout);
 	}
 }

@@ -14,7 +14,7 @@ import java.time.Duration;
 public interface SessionCreationMetaData extends ImmutableSessionCreationMetaData {
 	/**
 	 * Sets the maximum duration of time this session may remain idle before it will be expired by the session manager.
-	 * @param duration a maximum duration of time this session may remain idle before it will be expired by the session manager.
+	 * @param maxIdle a maximum duration of time this session may remain idle before it will be expired by the session manager.
 	 */
-	void setTimeout(Duration duration);
+	void setMaxIdle(Duration maxIdle);
 }

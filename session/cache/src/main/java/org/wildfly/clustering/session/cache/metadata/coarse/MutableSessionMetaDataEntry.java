@@ -27,7 +27,7 @@ public class MutableSessionMetaDataEntry extends AbstractSessionMetaDataEntry {
 	 */
 	public MutableSessionMetaDataEntry(ImmutableSessionMetaDataEntry entry, MutableSessionMetaDataOffsetValues values) {
 		this.entry = entry;
-		this.timeout = values.getTimeout();
+		this.timeout = values.getMaxIdle();
 		this.lastAccessStartTime = values.getLastAccessStartTime();
 		this.lastAccessEndTime = values.getLastAccessEndTime();
 	}
@@ -43,12 +43,12 @@ public class MutableSessionMetaDataEntry extends AbstractSessionMetaDataEntry {
 	}
 
 	@Override
-	public Duration getTimeout() {
+	public Duration getMaxIdle() {
 		return this.timeout.get();
 	}
 
 	@Override
-	public void setTimeout(Duration timeout) {
+	public void setMaxIdle(Duration timeout) {
 		this.timeout.set(timeout);
 	}
 

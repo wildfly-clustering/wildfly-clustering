@@ -8,6 +8,7 @@ package org.wildfly.clustering.session.infinispan.embedded.metadata;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import org.infinispan.Cache;
@@ -56,9 +57,9 @@ public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFacto
 	}
 
 	@Override
-	public CompletionStage<ContextualSessionMetaDataEntry<C>> createValueAsync(String id, Map.Entry<Instant, Duration> context) {
+	public CompletionStage<ContextualSessionMetaDataEntry<C>> createValueAsync(String id, Map.Entry<Instant, Optional<Duration>> context) {
 		DefaultSessionMetaDataEntry<C> entry = new DefaultSessionMetaDataEntry<>(context.getKey());
-		entry.setTimeout(context.getValue());
+		context.getValue().ifPresent(entry::setMaxIdle);
 		return this.writeOnlyCache.putAsync(new SessionMetaDataKey(id), entry).thenApply(Function.of(entry));
 	}
 

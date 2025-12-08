@@ -19,7 +19,7 @@ import org.wildfly.clustering.server.util.Supplied;
  */
 public class DefaultSessionMetaDataEntry<C> extends AbstractSessionMetaDataEntry implements ContextualSessionMetaDataEntry<C> {
 
-	private volatile Duration timeout = Duration.ZERO;
+	private volatile Duration maxIdle = Duration.ZERO;
 	// The start time of the last access, expressed as an offset from the creation time
 	private final OffsetValue<Instant> lastAccessStartTime;
 	// The end time of the last access, expressed an an offset from the start time of the last access
@@ -41,13 +41,13 @@ public class DefaultSessionMetaDataEntry<C> extends AbstractSessionMetaDataEntry
 	}
 
 	@Override
-	public Duration getTimeout() {
-		return this.timeout;
+	public Duration getMaxIdle() {
+		return this.maxIdle;
 	}
 
 	@Override
-	public void setTimeout(Duration timeout) {
-		this.timeout = timeout;
+	public void setMaxIdle(Duration maxIdle) {
+		this.maxIdle = maxIdle.isNegative() ? Duration.ZERO : maxIdle;
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class DefaultSessionMetaDataEntry<C> extends AbstractSessionMetaDataEntry
 	@Override
 	public ContextualSessionMetaDataEntry<C> remap(SessionMetaDataEntryOffsets offsets) {
 		ContextualSessionMetaDataEntry<C> result = new DefaultSessionMetaDataEntry<>(this.getCreationTime());
-		result.setTimeout(offsets.getTimeoutOffset().apply(this.timeout));
+		result.setMaxIdle(offsets.getMaxIdleOffset().apply(this.maxIdle));
 		result.getLastAccessStartTime().set(offsets.getLastAccessStartTimeOffset().apply(this.lastAccessStartTime.get()));
 		result.getLastAccessEndTime().set(offsets.getLastAccessEndTimeOffset().apply(this.lastAccessEndTime.get()));
 		result.getContext().get(Supplier.of(this.context.get(Supplier.empty())));

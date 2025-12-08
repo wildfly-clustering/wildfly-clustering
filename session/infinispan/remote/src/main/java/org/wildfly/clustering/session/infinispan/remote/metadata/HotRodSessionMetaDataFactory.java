@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -68,14 +69,14 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 	}
 
 	@Override
-	public CompletionStage<SessionMetaDataEntry<C>> createValueAsync(String id, Map.Entry<Instant, Duration> context) {
+	public CompletionStage<SessionMetaDataEntry<C>> createValueAsync(String id, Map.Entry<Instant, Optional<Duration>> context) {
 		SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
 		SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
 		SessionCreationMetaDataEntry<C> creationMetaData = new DefaultSessionCreationMetaDataEntry<>(context.getKey());
-		creationMetaData.setTimeout(context.getValue());
+		context.getValue().ifPresent(creationMetaData::setMaxIdle);
 		SessionAccessMetaDataEntry accessMetaData = new DefaultSessionAccessMetaDataEntry();
 		CompletableFuture<?> creationStage = this.writeCreationMetaDataCache.putAsync(creationMetaDataKey, creationMetaData);
-		CompletableFuture<?> accessStage = this.writeAccessMetaDataCache.putAsync(accessMetaDataKey, accessMetaData, 0L, TimeUnit.SECONDS, creationMetaData.getTimeout().getSeconds(), TimeUnit.SECONDS);
+		CompletableFuture<?> accessStage = this.writeAccessMetaDataCache.putAsync(accessMetaDataKey, accessMetaData, 0L, TimeUnit.SECONDS, creationMetaData.getMaxIdle().getSeconds(), TimeUnit.SECONDS);
 		return CompletableFuture.allOf(creationStage, accessStage).thenApply(Function.of(new DefaultSessionMetaDataEntry<>(creationMetaData, accessMetaData)));
 	}
 
@@ -100,14 +101,14 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 
 	@Override
 	public InvalidatableSessionMetaData createSessionMetaData(String id, SessionMetaDataEntry<C> entry) {
-		OffsetValue<Duration> timeoutOffset = OffsetValue.from(entry.getCreationMetaDataEntry().getTimeout());
+		OffsetValue<Duration> timeoutOffset = OffsetValue.from(entry.getCreationMetaDataEntry().getMaxIdle());
 		SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(entry.getCreationMetaDataEntry(), timeoutOffset);
 
 		MutableSessionAccessMetaDataOffsetValues values = MutableSessionAccessMetaDataOffsetValues.from(entry.getAccessMetaDataEntry());
 		SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaDataEntry(), values);
 
 		CacheEntryMutator creationMetaDataMutator = this.creationMetaDataMutatorFactory.createMutator(new SessionCreationMetaDataKey(id), timeoutOffset);
-		CacheEntryMutator accessMetaDataMutator = this.accessMetaDataMutatorFactory.createMutator(new SessionAccessMetaDataKey(id), values).withMaxIdle(creationMetaData::getTimeout);
+		CacheEntryMutator accessMetaDataMutator = this.accessMetaDataMutatorFactory.createMutator(new SessionAccessMetaDataKey(id), values).withMaxIdle(creationMetaData::getMaxIdle);
 		CacheEntryMutator mutator = CacheEntryMutator.of(List.of(creationMetaDataMutator, accessMetaDataMutator));
 		return new CompositeSessionMetaData(creationMetaData, accessMetaData, mutator);
 	}

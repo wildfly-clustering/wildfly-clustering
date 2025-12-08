@@ -24,8 +24,8 @@ public class SessionMetaDataEntryFunction<C> extends RemappingFunction<Contextua
 	public SessionMetaDataEntryFunction(MutableSessionMetaDataOffsetValues values) {
 		this(new SessionMetaDataEntryOffsets() {
 			@Override
-			public Offset<Duration> getTimeoutOffset() {
-				return values.getTimeout().getOffset();
+			public Offset<Duration> getMaxIdleOffset() {
+				return values.getMaxIdle().getOffset();
 			}
 
 			@Override

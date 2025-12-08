@@ -100,7 +100,7 @@ public class HotRodSessionFactory<DC, AV, SC> extends CompositeSessionFactory<DC
 						// Fabricate a reasonable SessionAccessMetaData
 						SessionAccessMetaDataEntry accessMetaData = new DefaultSessionAccessMetaDataEntry();
 						Duration lastAccess = Duration.ofSeconds(1);
-						Duration sinceCreation = Duration.between(creationMetaDataEntry.getCreationTime(), Instant.now()).minus(creationMetaDataEntry.getTimeout()).minus(lastAccess);
+						Duration sinceCreation = Duration.between(creationMetaDataEntry.getCreationTime(), Instant.now()).minus(creationMetaDataEntry.getMaxIdle()).minus(lastAccess);
 						accessMetaData.setLastAccessDuration(sinceCreation, lastAccess);
 
 						// Notify session expiration listeners

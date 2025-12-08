@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -36,34 +37,35 @@ public class DetachedSessionTestCase {
 	@Test
 	public void getId() {
 		SessionManager<Object> manager = mock(SessionManager.class);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
+
+		doReturn(batchFactory).when(manager).getBatchFactory();
+
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			assertThat(detached.getId()).isSameAs(this.id);
 		}
-	}
 
-	@Test
-	public void isNew() {
-		SessionManager<Object> manager = mock(SessionManager.class);
-		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
-			assertThat(detached.getMetaData().isNew()).isFalse();
-		}
+		verifyNoInteractions(batchFactory);
 	}
 
 	@Test
 	public void isValid() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			doReturn(null).when(manager).findImmutableSession(this.id);
 
 			assertThat(detached.isValid()).isFalse();
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
 
 			ImmutableSession session = mock(ImmutableSession.class);
 
@@ -71,25 +73,34 @@ public class DetachedSessionTestCase {
 
 			assertThat(detached.isValid()).isTrue();
 
-			verify(batch).close();
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
 	}
 
 	@Test
 	public void invalidate() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			doReturn(null).when(manager).findSession(this.id);
 
 			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(detached::invalidate);
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
 
 			Session<Object> session = mock(Session.class);
 
@@ -97,27 +108,36 @@ public class DetachedSessionTestCase {
 
 			detached.invalidate();
 
+			verify(batchFactory, times(2)).get();
 			verify(session).invalidate();
 			verify(session).close();
-			verify(batch).close();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
 	}
 
 	@Test
 	public void isExpired() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			doReturn(null).when(manager).findSession(this.id);
 
 			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(detached.getMetaData()::isExpired);
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
 
 			Session<Object> session = mock(Session.class);
 			SessionMetaData metaData = mock(SessionMetaData.class);
@@ -127,11 +147,12 @@ public class DetachedSessionTestCase {
 			doReturn(metaData).when(session).getMetaData();
 			doReturn(expected).when(metaData).isExpired();
 
-			boolean result = detached.getMetaData().isExpired();
+			assertThat(detached.getMetaData().isExpired()).isEqualTo(expected);
 
-			assertThat(result).isEqualTo(expected);
-
-			verify(batch).close();
+			verify(batchFactory, times(2)).get();
+			verify(session).close();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
 		}
 	}
 
@@ -159,9 +180,7 @@ public class DetachedSessionTestCase {
 			doReturn(metaData).when(session).getMetaData();
 			doReturn(expected).when(metaData).getCreationTime();
 
-			Instant result = detached.getMetaData().getCreationTime();
-
-			assertThat(result).isSameAs(expected);
+			assertThat(detached.getMetaData().getCreationTime()).isSameAs(expected);
 
 			verify(batch).close();
 		}
@@ -169,19 +188,24 @@ public class DetachedSessionTestCase {
 
 	@Test
 	public void getLastAccessStartTime() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
+		Batch batch3 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2, batch3).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			doReturn(null).when(manager).findSession(this.id);
 
 			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(detached.getMetaData()::getLastAccessStartTime);
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
+			verifyNoInteractions(batch3);
 
 			Session<Object> session = mock(Session.class);
 			SessionMetaData metaData = mock(SessionMetaData.class);
@@ -189,31 +213,49 @@ public class DetachedSessionTestCase {
 
 			doReturn(session).when(manager).findSession(this.id);
 			doReturn(metaData).when(session).getMetaData();
-			doReturn(expected).when(metaData).getLastAccessStartTime();
+			doReturn(Optional.empty(), Optional.of(expected)).when(metaData).getLastAccessStartTime();
 
-			Instant result = detached.getMetaData().getLastAccessStartTime();
+			assertThat(detached.getMetaData().getLastAccessStartTime()).isEmpty();
 
-			assertThat(result).isSameAs(expected);
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
+			verifyNoInteractions(batch3);
 
-			verify(batch).close();
+			assertThat(detached.getMetaData().getLastAccessStartTime()).hasValue(expected);
+
+			verify(batchFactory, times(3)).get();
+			verifyNoMoreInteractions(batch1);
+			verifyNoMoreInteractions(batch2);
+			verify(batch3).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
+		verifyNoMoreInteractions(batch3);
 	}
 
 	@Test
 	public void getLastAccessEndTime() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
+		Batch batch3 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2, batch3).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			doReturn(null).when(manager).findSession(this.id);
 
 			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(detached.getMetaData()::getLastAccessEndTime);
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
+			verifyNoInteractions(batch3);
 
 			Session<Object> session = mock(Session.class);
 			SessionMetaData metaData = mock(SessionMetaData.class);
@@ -221,31 +263,49 @@ public class DetachedSessionTestCase {
 
 			doReturn(session).when(manager).findSession(this.id);
 			doReturn(metaData).when(session).getMetaData();
-			doReturn(expected).when(metaData).getLastAccessEndTime();
+			doReturn(Optional.empty(), Optional.of(expected)).when(metaData).getLastAccessEndTime();
 
-			Instant result = detached.getMetaData().getLastAccessEndTime();
+			assertThat(detached.getMetaData().getLastAccessEndTime()).isEmpty();
 
-			assertThat(result).isSameAs(expected);
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
+			verifyNoInteractions(batch3);
 
-			verify(batch).close();
+			assertThat(detached.getMetaData().getLastAccessEndTime()).hasValue(expected);
+
+			verify(batchFactory, times(3)).get();
+			verifyNoMoreInteractions(batch1);
+			verifyNoMoreInteractions(batch2);
+			verify(batch3).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
+		verifyNoMoreInteractions(batch3);
 	}
 
 	@Test
-	public void getMaxInactiveInterval() {
-		Batch batch = mock(Batch.class);
+	public void getMaxIdle() {
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
+		Batch batch3 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2, batch3).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			doReturn(null).when(manager).findSession(this.id);
 
-			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(detached.getMetaData()::getTimeout);
+			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(detached.getMetaData()::getMaxIdle);
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
+			verifyNoInteractions(batch3);
 
 			Session<Object> session = mock(Session.class);
 			SessionMetaData metaData = mock(SessionMetaData.class);
@@ -253,40 +313,62 @@ public class DetachedSessionTestCase {
 
 			doReturn(session).when(manager).findSession(this.id);
 			doReturn(metaData).when(session).getMetaData();
-			doReturn(expected).when(metaData).getTimeout();
+			doReturn(Optional.empty(), Optional.of(expected)).when(metaData).getMaxIdle();
 
-			Duration result = detached.getMetaData().getTimeout();
+			assertThat(detached.getMetaData().getMaxIdle()).isEmpty();
 
-			assertThat(result).isSameAs(expected);
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
+			verifyNoInteractions(batch3);
 
-			verify(batch).close();
+			assertThat(detached.getMetaData().getMaxIdle()).hasValue(expected);
+
+			verify(batchFactory, times(3)).get();
+			verifyNoMoreInteractions(batch1);
+			verifyNoMoreInteractions(batch2);
+			verify(batch3).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
+		verifyNoMoreInteractions(batch3);
 	}
 
 	@Test
 	public void setLastAccess() {
 		SessionManager<Object> manager = mock(SessionManager.class);
-		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
-			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> detached.getMetaData().setLastAccess(Instant.now(), Instant.now()));
-		}
-	}
-
-	@Test
-	public void setTimeout() {
-		Duration duration = Duration.ofMinutes(this.random.nextInt(Byte.MAX_VALUE) + 1);
-		Batch batch = mock(Batch.class);
-		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
+			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> detached.getMetaData().setLastAccess(Instant.now(), Instant.now()));
+		}
+
+		verifyNoInteractions(batchFactory);
+	}
+
+	@Test
+	public void setMaxIdle() {
+		Duration duration = Duration.ofMinutes(this.random.nextInt(Byte.MAX_VALUE) + 1);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
+		SessionManager<Object> manager = mock(SessionManager.class);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
+
+		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2).when(batchFactory).get();
+
+		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			doReturn(null).when(manager).findSession(this.id);
 
-			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> detached.getMetaData().setTimeout(duration));
+			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> detached.getMetaData().setMaxIdle(duration));
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
 
 			Session<Object> session = mock(Session.class);
 			SessionMetaData metaData = mock(SessionMetaData.class);
@@ -294,29 +376,38 @@ public class DetachedSessionTestCase {
 			doReturn(session).when(manager).findSession(this.id);
 			doReturn(metaData).when(session).getMetaData();
 
-			detached.getMetaData().setTimeout(duration);
+			detached.getMetaData().setMaxIdle(duration);
 
-			verify(metaData).setTimeout(duration);
+			verify(metaData).setMaxIdle(duration);
 			verify(session).close();
-			verify(batch).close();
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
 	}
 
 	@Test
 	public void getAttributeNames() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			doReturn(null).when(manager).findSession(this.id);
 
 			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(detached.getAttributes()::keySet);
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
 
 			Session<Object> session = mock(Session.class);
 			Map<String, Object> attributes = mock(Map.class);
@@ -326,21 +417,27 @@ public class DetachedSessionTestCase {
 			doReturn(attributes).when(session).getAttributes();
 			doReturn(expected).when(attributes).keySet();
 
-			Set<String> result = detached.getAttributes().keySet();
+			assertThat(detached.getAttributes().keySet()).isSameAs(expected);
 
-			assertThat(result).isSameAs(expected);
-
-			verify(batch).close();
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
 	}
 
 	@Test
 	public void getAttribute() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			String attributeName = "foo";
@@ -349,8 +446,9 @@ public class DetachedSessionTestCase {
 
 			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> detached.getAttributes().get(attributeName));
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
 
 			Session<Object> session = mock(Session.class);
 			Map<String, Object> attributes = mock(Map.class);
@@ -360,21 +458,27 @@ public class DetachedSessionTestCase {
 			doReturn(attributes).when(session).getAttributes();
 			doReturn(expected).when(attributes).get(attributeName);
 
-			Object result = detached.getAttributes().get(attributeName);
+			assertThat(detached.getAttributes().get(attributeName)).isSameAs(expected);
 
-			assertThat(result).isSameAs(expected);
-
-			verify(batch).close();
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
 	}
 
 	@Test
 	public void setAttribute() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			String attributeName = "foo";
@@ -384,8 +488,9 @@ public class DetachedSessionTestCase {
 
 			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> detached.getAttributes().put(attributeName, attributeValue));
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
 
 			Session<Object> session = mock(Session.class);
 			Map<String, Object> attributes = mock(Map.class);
@@ -395,22 +500,29 @@ public class DetachedSessionTestCase {
 			doReturn(attributes).when(session).getAttributes();
 			doReturn(expected).when(attributes).put(attributeName, attributeValue);
 
-			Object result = detached.getAttributes().put(attributeName, attributeValue);
-
-			assertThat(result).isSameAs(expected);
+			assertThat(detached.getAttributes().put(attributeName, attributeValue)).isSameAs(expected);
 
 			verify(session).close();
-			verify(batch).close();
+
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
 	}
 
 	@Test
 	public void removeAttribute() {
-		Batch batch = mock(Batch.class);
+		Batch batch1 = mock(Batch.class);
+		Batch batch2 = mock(Batch.class);
 		SessionManager<Object> manager = mock(SessionManager.class);
-		Supplier<Batch> batchFactory = Supplier.of(batch);
+		Supplier<Batch> batchFactory = mock(Supplier.class);
 
 		doReturn(batchFactory).when(manager).getBatchFactory();
+		doReturn(batch1, batch2).when(batchFactory).get();
 
 		try (Session<Object> detached = new DetachedSession<>(manager, this.id, this.localContext)) {
 			String attributeName = "foo";
@@ -419,8 +531,9 @@ public class DetachedSessionTestCase {
 
 			assertThatExceptionOfType(IllegalStateException.class).isThrownBy(() -> detached.getAttributes().remove(attributeName));
 
-			verify(batch).close();
-			reset(batch);
+			verify(batchFactory).get();
+			verify(batch1).close();
+			verifyNoInteractions(batch2);
 
 			Session<Object> session = mock(Session.class);
 			Map<String, Object> attributes = mock(Map.class);
@@ -430,12 +543,15 @@ public class DetachedSessionTestCase {
 			doReturn(attributes).when(session).getAttributes();
 			doReturn(expected).when(attributes).remove(attributeName);
 
-			Object result = detached.getAttributes().remove(attributeName);
+			assertThat(detached.getAttributes().remove(attributeName)).isSameAs(expected);
 
-			assertThat(result).isSameAs(expected);
-
-			verify(session).close();
-			verify(batch).close();
+			verify(batchFactory, times(2)).get();
+			verifyNoMoreInteractions(batch1);
+			verify(batch2).close();
 		}
+
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(batch1);
+		verifyNoMoreInteractions(batch2);
 	}
 }

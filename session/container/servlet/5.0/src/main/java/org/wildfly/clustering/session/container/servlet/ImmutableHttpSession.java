@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.session.container.servlet;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Enumeration;
 
@@ -48,17 +49,20 @@ public class ImmutableHttpSession extends AbstractHttpSession {
 
 	@Override
 	public int getMaxInactiveInterval() {
-		return (int) this.session.getMetaData().getTimeout().getSeconds();
+		// Per Servlet specification, 0 or less indicates no timeout
+		return (int) this.session.getMetaData().getMaxIdle().orElse(Duration.ZERO).getSeconds();
 	}
 
 	@Override
 	public long getLastAccessedTime() {
-		return this.session.getMetaData().getLastAccessStartTime().toEpochMilli();
+		// Specification does not clearly define what this method should return for new sessions
+		// Per Tomcat, default to creation time for new session
+		return this.session.getMetaData().getLastAccessStartTime().orElse(this.session.getMetaData().getCreationTime()).toEpochMilli();
 	}
 
 	@Override
 	public boolean isNew() {
-		return this.session.getMetaData().isNew();
+		return this.session.getMetaData().getLastAccessTime().isEmpty();
 	}
 
 	@Override
