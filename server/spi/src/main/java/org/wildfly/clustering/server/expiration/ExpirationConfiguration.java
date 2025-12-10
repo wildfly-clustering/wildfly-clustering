@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.expiration;
 
-import java.util.function.Consumer;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * Encapsulates expiration configuration.

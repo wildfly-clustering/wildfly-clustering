@@ -26,13 +26,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.MapEntry;
 import org.wildfly.clustering.session.ImmutableSession;
