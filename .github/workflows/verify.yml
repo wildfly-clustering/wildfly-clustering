@@ -28,4 +28,4 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Verify
-      run: mvn --batch-mode verify
+      run: mvn --batch-mode --no-transfer-progress verify
