@@ -4,8 +4,7 @@
  */
 package org.wildfly.clustering.session;
 
-import java.util.function.Supplier;
-
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
 import org.wildfly.clustering.server.eviction.EvictionConfiguration;

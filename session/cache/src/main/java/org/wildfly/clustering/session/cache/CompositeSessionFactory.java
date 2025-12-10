@@ -6,8 +6,8 @@
 package org.wildfly.clustering.session.cache;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;

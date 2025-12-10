@@ -9,12 +9,12 @@ import static org.mockito.Mockito.*;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Predicate;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.SessionFactory;
