@@ -51,7 +51,7 @@ public class CompositeSessionFactoryTestCase {
 		}
 
 		@Override
-		public java.util.function.Supplier<Object> getSessionContextFactory() {
+		public Supplier<Object> getSessionContextFactory() {
 			return Supplier.of(CompositeSessionFactoryTestCase.this.transientContext);
 		}
 	});

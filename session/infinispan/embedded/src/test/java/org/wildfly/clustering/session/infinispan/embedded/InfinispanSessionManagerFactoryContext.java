@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.embedded;
 
-import java.util.function.Supplier;
-
 import org.assertj.core.api.Assertions;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheType;
@@ -23,6 +21,7 @@ import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheManagerCont
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheProperties;
 import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
 import org.wildfly.clustering.server.immutable.Immutability;

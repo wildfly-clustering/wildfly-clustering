@@ -13,9 +13,9 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadFactory;
-import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.server.scheduler.SchedulerService;
 
 /**

@@ -11,12 +11,12 @@ import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 
 import io.github.resilience4j.core.functions.CheckedFunction;
 import io.github.resilience4j.retry.Retry;
 
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
@@ -66,7 +66,7 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 		 * Returns the factory for creating a schedule command.
 		 * @return the factory for creating a schedule command.
 		 */
-		default java.util.function.Function<Map.Entry<K, V>, PrimaryOwnerCommand<K, V, Void>> getScheduleCommandFactory() {
+		default Function<Map.Entry<K, V>, PrimaryOwnerCommand<K, V, Void>> getScheduleCommandFactory() {
 			return ScheduleCommand::new;
 		}
 

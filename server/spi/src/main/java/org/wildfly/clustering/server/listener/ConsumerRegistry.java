@@ -7,8 +7,8 @@ package org.wildfly.clustering.server.listener;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.Registrar;
 import org.wildfly.clustering.server.Registration;

@@ -18,9 +18,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.scheduler.SchedulerService;
