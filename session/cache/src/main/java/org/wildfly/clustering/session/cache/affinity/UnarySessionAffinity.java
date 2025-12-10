@@ -5,9 +5,8 @@
 
 package org.wildfly.clustering.session.cache.affinity;
 
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.GroupMember;
 
 /**
