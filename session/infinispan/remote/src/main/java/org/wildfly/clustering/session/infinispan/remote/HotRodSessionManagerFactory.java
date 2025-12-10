@@ -171,7 +171,7 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 			}
 
 			@Override
-			public java.util.function.Consumer<ImmutableSession> getExpirationListener() {
+			public Consumer<ImmutableSession> getExpirationListener() {
 				return configuration.getExpirationListener();
 			}
 

@@ -77,6 +77,20 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 		default Function<K, CacheContainerGroupMember> getAffinity() {
 			return new UnaryGroupMemberAffinity<>(this.getCacheConfiguration().getCache(), this.getCommandDispatcherFactory().getGroup());
 		}
+
+		/**
+		 * Returns the class loader from which this scheduler will configure its command dispatcher.
+		 * @return a class loader
+		 */
+		@SuppressWarnings("removal")
+		default ClassLoader getClassLoader() {
+			return AccessController.doPrivileged(new PrivilegedAction<>() {
+				@Override
+				public ClassLoader run() {
+					return Configuration.this.getScheduler().getClass().getClassLoader();
+				}
+			});
+		}
 	}
 
 	private final String name;
@@ -92,16 +106,10 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 	 * @param <CE> the cancel task entry type
 	 * @param configuration the configuration of a primary owner scheduler
 	 */
-	@SuppressWarnings("removal")
 	public <SE, CE> PrimaryOwnerSchedulerService(Configuration<K, V, SE, CE> configuration) {
 		super(configuration.getScheduler());
 		this.name = configuration.getName();
-		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, configuration.getScheduler(), AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public ClassLoader run() {
-				return PrimaryOwnerSchedulerService.class.getClassLoader();
-			}
-		}));
+		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, configuration.getScheduler(), configuration.getClassLoader());
 		Function<K, CacheContainerGroupMember> affinity = configuration.getAffinity();
 		Retry retry = Retry.of(this.name, configuration.getCacheConfiguration().getRetryConfig());
 		this.primaryOwnerSchedule = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, configuration.getScheduleCommandFactory()));

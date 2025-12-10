@@ -276,7 +276,7 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 			}
 
 			@Override
-			public java.util.function.Consumer<ImmutableSession> getExpirationListener() {
+			public Consumer<ImmutableSession> getExpirationListener() {
 				return configuration.getExpirationListener();
 			}
 
