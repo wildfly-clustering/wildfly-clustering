@@ -7,6 +7,7 @@ package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -39,15 +40,19 @@ import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.impl.ClientStatistics;
 import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.infinispan.client.hotrod.impl.operations.CacheOperationsFactory;
 import org.infinispan.client.hotrod.impl.operations.GetWithMetadataOperation.GetWithMetadataResult;
 import org.infinispan.client.hotrod.impl.operations.PingResponse;
+import org.infinispan.client.hotrod.impl.query.RemoteQueryFactory;
 import org.infinispan.client.hotrod.impl.transport.netty.OperationDispatcher;
+import org.infinispan.commons.api.query.ContinuousQuery;
 import org.infinispan.commons.api.query.Query;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.CloseableIteratorCollection;
 import org.infinispan.commons.util.CloseableIteratorSet;
@@ -78,6 +83,36 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 		super(cache, Duration.ofMillis(Math.max(cache.getRemoteCacheContainer().getConfiguration().socketTimeout(), cache.getRemoteCacheContainer().getConfiguration().transactionTimeout())));
 		this.cache = cache;
 		this.decorator = decorator;
+	}
+
+	@SuppressWarnings("removal")
+	@Override
+	public <T> Query<T> query(String query) {
+		return this.createQueryFactory().create(query);
+	}
+
+	@SuppressWarnings("removal")
+	@Override
+	public ContinuousQuery<K, V> continuousQuery() {
+		return this.createQueryFactory().continuousQuery(this);
+	}
+
+	@SuppressWarnings("removal")
+	private RemoteQueryFactory createQueryFactory() {
+		RemoteCacheContainer container = this.getRemoteCacheContainer();
+		// Prefer RemoteCache marshaller
+		Marshaller marshaller = Optional.ofNullable(container.getConfiguration().remoteCaches().get(this.getName())).map(RemoteCacheConfiguration::marshaller).orElse(container.getMarshaller());
+		return new RemoteQueryFactory(new RemoteCacheDecorator<>(this.cache, this.decorator) {
+			@Override
+			public RemoteCacheContainer getRemoteCacheContainer() {
+				return new RemoteCacheContainerDecorator(container) {
+					@Override
+					public Marshaller getMarshaller() {
+						return marshaller;
+					}
+				};
+			}
+		});
 	}
 
 	@Override
