@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-session-container-servlet</artifactId>
-		<version>9.0.0.CR2-SNAPSHOT</version>
+		<version>9.0.0.CR2</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-session-container-servlet-4.0</artifactId>
