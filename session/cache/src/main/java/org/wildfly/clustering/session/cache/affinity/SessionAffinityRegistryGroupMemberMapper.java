@@ -6,8 +6,8 @@
 package org.wildfly.clustering.session.cache.affinity;
 
 import java.util.Map;
-import java.util.function.Function;
 
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.registry.Registry;
 
