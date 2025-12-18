@@ -5,10 +5,8 @@
 
 package org.wildfly.clustering.session.container;
 
-import java.util.Optional;
-import java.util.function.Consumer;
-
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 
@@ -38,21 +36,6 @@ public class MockContainerProvider<SC> implements ContainerProvider.SessionAttri
 	@Override
 	public Consumer<Session<SC>> getPostActivateEventNotifier(PassivationListener<SC> listener) {
 		return listener::activated;
-	}
-
-	@Override
-	public Optional<PassivationListener<SC>> getSessionEventListener(Consumer<Session<SC>> prePassivateEventNotifier, Consumer<Session<SC>> postActivateEventNotifier) {
-		return Optional.of(new PassivationListener<>() {
-			@Override
-			public void passivated(Session<SC> session) {
-				prePassivateEventNotifier.accept(session);
-			}
-
-			@Override
-			public void activated(Session<SC> session) {
-				postActivateEventNotifier.accept(session);
-			}
-		});
 	}
 
 	@SuppressWarnings("unchecked")
