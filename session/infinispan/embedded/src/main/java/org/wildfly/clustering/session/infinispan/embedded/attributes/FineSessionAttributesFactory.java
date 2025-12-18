@@ -20,20 +20,19 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.listener.ListenerRegistration;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.PostActivateBlockingListener;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.PostPassivateBlockingListener;
-import org.wildfly.clustering.cache.infinispan.embedded.listener.PrePassivateBlockingListener;
+import org.wildfly.clustering.cache.infinispan.embedded.listener.PassivationCacheEventListenerRegistrar;
+import org.wildfly.clustering.cache.infinispan.embedded.listener.PostPassivateCacheEventListenerRegistrar;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapComputeFunction;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
 
@@ -55,20 +54,19 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	private final Predicate<Object> immutability;
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, Map<String, V>> mutatorFactory;
-	private final BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory;
-	private final Function<String, SessionAttributeActivationNotifier> detachedNotifierFactory;
-	private final ListenerRegistration evictListenerRegistration;
-	private final ListenerRegistration prePassivateListenerRegistration;
-	private final ListenerRegistration postActivateListenerRegistration;
+	private final BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> persistenceNotifierFactory;
+	private final Function<String, SessionAttributeActivationNotifier> passivationNotifierFactory;
+	private final ListenerRegistration evictionListenerRegistration;
+	private final ListenerRegistration passivationListenerRegistration;
 
 	/**
 	 * Creates a factory for fine-granularity session attributes entry.
 	 * @param configuration the configuration for this factory
-	 * @param notifierFactory the notifier factory
-	 * @param detachedNotifierFactory the detached notifier factory
+	 * @param persistenceNotifierFactory the persistence notifier factory
+	 * @param passivationNotifierFactory the passivation notifier factory
 	 * @param infinispan the configuration of the associated cache
 	 */
-	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory, Function<String, SessionAttributeActivationNotifier> detachedNotifierFactory, EmbeddedCacheConfiguration infinispan) {
+	public FineSessionAttributesFactory(SessionAttributesFactoryConfiguration<Object, V> configuration, BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> persistenceNotifierFactory, Function<String, SessionAttributeActivationNotifier> passivationNotifierFactory, EmbeddedCacheConfiguration infinispan) {
 		this.cache = infinispan.getCache();
 		this.writeCache = infinispan.getWriteOnlyCache();
 		this.silentCache = infinispan.getSilentWriteCache();
@@ -76,22 +74,16 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 		this.immutability = configuration.getImmutability();
 		this.properties = infinispan.getCacheProperties();
 		this.mutatorFactory = infinispan.getCacheEntryMutatorFactory(SessionAttributeMapComputeFunction::new);
-		this.notifierFactory = notifierFactory;
-		this.detachedNotifierFactory = detachedNotifierFactory;
-		this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
-		this.postActivateListenerRegistration = !this.properties.isPersistent() ? new PostActivateBlockingListener<>(this.cache, this::postActivate).register(SessionAttributesKey.class) : null;
-		this.evictListenerRegistration = new PostPassivateBlockingListener<>(infinispan.getCache(), this::cascadeEvict).register(SessionMetaDataKey.class);
+		this.persistenceNotifierFactory = persistenceNotifierFactory;
+		this.passivationNotifierFactory = passivationNotifierFactory;
+		this.passivationListenerRegistration = !this.properties.isPersistent() ? new PassivationCacheEventListenerRegistrar<>(this.cache, this::prePassivate, this::postActivate).register(SessionAttributesKey.class) : ListenerRegistration.EMPTY;
+		this.evictionListenerRegistration = new PostPassivateCacheEventListenerRegistrar<>(infinispan.getCache(), this::cascadeEvict).register(SessionMetaDataKey.class);
 	}
 
 	@Override
 	public void close() {
-		this.evictListenerRegistration.close();
-		if (this.prePassivateListenerRegistration != null) {
-			this.prePassivateListenerRegistration.close();
-		}
-		if (this.postActivateListenerRegistration != null) {
-			this.postActivateListenerRegistration.close();
-		}
+		this.evictionListenerRegistration.close();
+		this.passivationListenerRegistration.close();
 	}
 
 	@Override
@@ -156,7 +148,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
-		SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : null;
+		SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? this.persistenceNotifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : SessionAttributeActivationNotifier.SILENT;
 		return new FineSessionAttributes<>(new SessionAttributesKey(id), attributes, this.mutatorFactory, this.marshaller, this.immutability, this.properties, notifier);
 	}
 
@@ -174,7 +166,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	private void notify(BiConsumer<SessionAttributeActivationNotifier, Object> notification, SessionAttributesKey key, Map<String, V> attributes) {
 		String id = key.getId();
-		SessionAttributeActivationNotifier notifier = this.detachedNotifierFactory.apply(id);
+		SessionAttributeActivationNotifier notifier = this.passivationNotifierFactory.apply(id);
 		if (notifier != null) {
 			for (Map.Entry<String, V> entry : attributes.entrySet()) {
 				try {

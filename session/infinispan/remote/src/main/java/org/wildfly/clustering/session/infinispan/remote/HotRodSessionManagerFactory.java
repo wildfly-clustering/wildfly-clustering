@@ -32,12 +32,10 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.cache.CachedSessionManager;
 import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.SessionFactory;
+import org.wildfly.clustering.session.cache.attributes.ContainerSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
-import org.wildfly.clustering.session.cache.attributes.coarse.ImmutableSessionActivationNotifier;
-import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationNotifier;
-import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttributeActivationNotifier;
-import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 import org.wildfly.clustering.session.cache.metadata.fine.SessionMetaDataEntry;
 import org.wildfly.clustering.session.container.ContainerProvider;
@@ -211,14 +209,13 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 	}
 
 	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider) {
+		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> notifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(null);
 		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
 			case FINE -> {
-				BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ImmutableSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(null);
-				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, configuration.getCacheConfiguration());
+				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), notifierFactory, configuration.getCacheConfiguration());
 			}
 			case COARSE -> {
-				BiFunction<ImmutableSession, CC, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ImmutableSessionActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context), session.getAttributes().values())).orElse(null);
-				return new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, configuration.getCacheConfiguration());
+				return new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), notifierFactory, configuration.getCacheConfiguration());
 			}
 			default -> throw new IllegalStateException();
 		}

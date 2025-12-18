@@ -24,11 +24,11 @@ import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeMapComputeFunction;
 
 /**

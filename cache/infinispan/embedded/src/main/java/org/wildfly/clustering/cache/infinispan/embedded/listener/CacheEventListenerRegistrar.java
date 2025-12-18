@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.listener;
 
+import java.util.List;
+
 import org.infinispan.notifications.FilteringListenable;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 
@@ -17,16 +19,12 @@ import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 public class CacheEventListenerRegistrar<K, V> extends EventListenerRegistrar implements CacheListenerRegistrar<K, V> {
 
 	private final FilteringListenable<K, V> listenable;
-	private final Object listener;
+	private final Iterable<Object> listeners;
 
-	/**
-	 * Creates a registrar for a cache event listener
-	 * @param listenable a listener target
-	 */
-	public CacheEventListenerRegistrar(FilteringListenable<K, V> listenable) {
+	CacheEventListenerRegistrar(FilteringListenable<K, V> listenable) {
 		super(listenable);
 		this.listenable = listenable;
-		this.listener = this;
+		this.listeners = List.of(this);
 	}
 
 	/**
@@ -35,14 +33,25 @@ public class CacheEventListenerRegistrar<K, V> extends EventListenerRegistrar im
 	 * @param listener a cache event listener
 	 */
 	public CacheEventListenerRegistrar(FilteringListenable<K, V> listenable, Object listener) {
-		super(listenable, listener);
+		this(listenable, List.of(listener));
+	}
+
+	/**
+	 * Creates a registrar for a cache event listener
+	 * @param listenable a listener target
+	 * @param listeners one or more cache event listeners
+	 */
+	public CacheEventListenerRegistrar(FilteringListenable<K, V> listenable, Iterable<Object> listeners) {
+		super(listenable, listeners);
 		this.listenable = listenable;
-		this.listener = listener;
+		this.listeners = listeners;
 	}
 
 	@Override
 	public ListenerRegistration register(CacheEventFilter<? super K, ? super V> filter) {
-		this.listenable.addListener(this.listener, filter, null);
-		return () -> this.listenable.removeListener(this.listener);
+		for (Object listener : this.listeners) {
+			this.listenable.addListener(listener, filter, null);
+		}
+		return this.getListenerRegistration();
 	}
 }
