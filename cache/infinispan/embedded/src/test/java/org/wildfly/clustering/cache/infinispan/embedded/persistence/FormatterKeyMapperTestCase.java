@@ -80,8 +80,7 @@ public class FormatterKeyMapperTestCase {
 		assertThat(result).isEqualTo("10TYPE16");
 	}
 
-	@SuppressWarnings("unchecked")
 	private static List<? extends Formatter<?>> createPersistenceList(int size) {
-		return IntStream.range(0, size).mapToObj(index -> Formatter.IDENTITY.wrap((Class<Type>) Type.values()[index].getClass(), Type::name, value -> Type.valueOf(value))).toList();
+		return IntStream.range(0, size).mapToObj(index -> Formatter.IDENTITY.wrap(Type.values()[index].getClass(), Type::name, value -> Type.valueOf(value))).toList();
 	}
 }
