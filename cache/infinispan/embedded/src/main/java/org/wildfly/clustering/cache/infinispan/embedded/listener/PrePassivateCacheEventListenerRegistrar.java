@@ -5,24 +5,23 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.listener;
 
-import java.util.function.BiConsumer;
-
 import org.infinispan.Cache;
+import org.wildfly.clustering.function.BiConsumer;
 
 /**
- * Generic non-blocking pre-passivation listener that delegates to a blocking consumer.
+ * Pre-passivation listener whose completion requires event consumption.
  * @author Paul Ferraro
  * @param <K> cache key type
  * @param <V> cache value type
  */
-public class PrePassivateBlockingListener<K, V> extends CacheEventListenerRegistrar<K, V> {
+public class PrePassivateCacheEventListenerRegistrar<K, V> extends CacheEventListenerRegistrar<K, V> {
 
 	/**
 	 * Creates a blocking listener of pre-passivate events.
 	 * @param cache an embedded cache
 	 * @param listener a consumer of pre-passivate events
 	 */
-	public PrePassivateBlockingListener(Cache<K, V> cache, BiConsumer<K, V> listener) {
-		super(cache, new PrePassivateListener<>(new BlockingCacheEventListener<>(cache, listener)));
+	public PrePassivateCacheEventListenerRegistrar(Cache<K, V> cache, BiConsumer<K, V> listener) {
+		super(cache, new PrePassivateListener<>(new BlockingCacheEntryEventListener<>(cache, listener)));
 	}
 }

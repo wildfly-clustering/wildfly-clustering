@@ -2,14 +2,16 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package org.wildfly.clustering.session.container.servlet;
 
 import java.io.IOException;
+import java.util.OptionalInt;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.IntFunction;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,9 +22,18 @@ import org.wildfly.clustering.session.container.SessionManagementEndpointConfigu
 /**
  * @author Paul Ferraro
  */
-@WebServlet(SessionManagementEndpointConfiguration.ENDPOINT_PATH)
-public class SessionServlet extends HttpServlet {
-	private static final long serialVersionUID = 2878267318695777395L;
+public class SessionServlet<T> extends HttpServlet {
+	private static final long serialVersionUID = 2864700300414161976L;
+
+	private final IntFunction<T> factory;
+	private final BiFunction<HttpSession, String, OptionalInt> accessor;
+	private final BiFunction<HttpSession, String, OptionalInt> incrementor;
+
+	protected SessionServlet(IntFunction<T> factory, BiFunction<HttpSession, String, OptionalInt> accessor, BiFunction<HttpSession, String, OptionalInt> incrementor) {
+		this.factory = factory;
+		this.accessor = accessor;
+		this.incrementor = incrementor;
+	}
 
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -38,21 +49,18 @@ public class SessionServlet extends HttpServlet {
 
 	@Override
 	public void doHead(HttpServletRequest request, HttpServletResponse response) {
-		recordSession(request, response, AtomicInteger::get);
+		recordSession(request, response, this.accessor);
 	}
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
-		recordSession(request, response, AtomicInteger::incrementAndGet);
+		recordSession(request, response, this.incrementor);
 	}
 
-	private static void recordSession(HttpServletRequest request, HttpServletResponse response, java.util.function.ToIntFunction<AtomicInteger> count) {
+	private static void recordSession(HttpServletRequest request, HttpServletResponse response, BiFunction<HttpSession, String, OptionalInt> function) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
-			AtomicInteger counter = (AtomicInteger) session.getAttribute(SessionManagementEndpointConfiguration.COUNTER);
-			if (counter != null) {
-				response.setIntHeader(SessionManagementEndpointConfiguration.COUNTER, count.applyAsInt(counter));
-			}
+			function.apply(session, SessionManagementEndpointConfiguration.COUNTER).ifPresent(value -> response.setIntHeader(SessionManagementEndpointConfiguration.COUNTER, value));
 			UUID value = (UUID) session.getAttribute(SessionManagementEndpointConfiguration.IMMUTABLE);
 			if (value != null) {
 				response.setHeader(SessionManagementEndpointConfiguration.IMMUTABLE, value.toString());
@@ -68,9 +76,9 @@ public class SessionServlet extends HttpServlet {
 		session.setAttribute(SessionManagementEndpointConfiguration.IMMUTABLE, immutableValue);
 		response.addHeader(SessionManagementEndpointConfiguration.IMMUTABLE, immutableValue.toString());
 
-		AtomicInteger counter = new AtomicInteger(0);
-		session.setAttribute(SessionManagementEndpointConfiguration.COUNTER, counter);
-		response.addIntHeader(SessionManagementEndpointConfiguration.COUNTER, counter.get());
+		int count = 0;
+		session.setAttribute(SessionManagementEndpointConfiguration.COUNTER, this.factory.apply(count));
+		response.addIntHeader(SessionManagementEndpointConfiguration.COUNTER, count);
 	}
 
 	@Override

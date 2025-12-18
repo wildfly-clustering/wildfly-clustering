@@ -21,6 +21,7 @@ import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 
 /**
@@ -44,6 +45,7 @@ public class FineSessionAttributesTestCase {
 		for (Object value : map.values()) {
 			verify(this.notifier).postActivate(value);
 		}
+		verifyNoMoreInteractions(this.notifier);
 
 		return attribute;
 	}
@@ -64,6 +66,7 @@ public class FineSessionAttributesTestCase {
 			verify(this.notifier).prePassivate(value);
 		}
 
+		verifyNoMoreInteractions(this.notifier);
 		verifyNoInteractions(this.properties);
 		verifyNoInteractions(this.marshaller);
 		verifyNoInteractions(this.mutatorFactory);
@@ -90,6 +93,7 @@ public class FineSessionAttributesTestCase {
 		for (Object value : map.values()) {
 			verify(this.notifier).prePassivate(value);
 		}
+		verifyNoMoreInteractions(this.notifier);
 		// Read-only request should not write
 		verifyNoInteractions(this.mutatorFactory);
 
@@ -113,6 +117,7 @@ public class FineSessionAttributesTestCase {
 		for (Object value : map.values()) {
 			verify(this.notifier).prePassivate(value);
 		}
+		verifyNoMoreInteractions(this.notifier);
 
 		// Accessing a mutable attribute should write
 		verify(mutator).run();

@@ -55,24 +55,23 @@ import org.wildfly.clustering.session.cache.CompositeSessionFactory;
 import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.SessionFactoryConfiguration;
+import org.wildfly.clustering.session.cache.attributes.ContainerSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.IdentityMarshallerSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
-import org.wildfly.clustering.session.cache.attributes.coarse.ImmutableSessionActivationNotifier;
-import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationNotifier;
-import org.wildfly.clustering.session.cache.attributes.fine.ImmutableSessionAttributeActivationNotifier;
-import org.wildfly.clustering.session.cache.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
 import org.wildfly.clustering.session.cache.metadata.coarse.ContextualSessionMetaDataEntry;
 import org.wildfly.clustering.session.container.ContainerProvider;
 import org.wildfly.clustering.session.infinispan.embedded.attributes.CoarseSessionAttributesFactory;
+import org.wildfly.clustering.session.infinispan.embedded.attributes.CompositeContainerSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.infinispan.embedded.attributes.FineSessionAttributesFactory;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.InfinispanSessionMetaDataFactory;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
 
 /**
  * Factory for creating session managers.
- * @param <CC> the deployment context type
+ * @param <CC> the container context type
  * @param <SC> the session context type
  * @author Paul Ferraro
  */
@@ -131,10 +130,9 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 		this.contextIdentifier = provider::getId;
 		EmbeddedCacheConfiguration cacheConfiguration = configuration.getCacheConfiguration();
 		this.configuration = cacheConfiguration;
-		Function<String, SessionAttributeActivationNotifier> notifierFactory = new SessionAttributeActivationNotifierFactory<>(provider, this.managers.values());
 		SessionMetaDataFactory<ContextualSessionMetaDataEntry<SC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.configuration);
 		@SuppressWarnings("unchecked")
-		SessionAttributesFactory<CC, Object> attributesFactory = (SessionAttributesFactory<CC, Object>) this.createSessionAttributesFactory(configuration, provider, notifierFactory);
+		SessionAttributesFactory<CC, Object> attributesFactory = (SessionAttributesFactory<CC, Object>) this.createSessionAttributesFactory(configuration, provider);
 		this.factory = new CompositeSessionFactory<>(new SessionFactoryConfiguration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public CacheProperties getCacheProperties() {
@@ -324,16 +322,16 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 		return manager;
 	}
 
-	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider, Function<String, SessionAttributeActivationNotifier> detachedPassivationNotifierFactory) {
+	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider) {
 		boolean marshalling = configuration.getCacheConfiguration().getCacheProperties().isMarshalling();
+		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> persistenceNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(null);
+		Function<String, SessionAttributeActivationNotifier> passivationNotifierFactory = sessionId -> new CompositeContainerSessionAttributeActivationNotifier<>(provider, this.managers.values(), sessionId);
 		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
 			case FINE -> {
-				BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> passivationNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ImmutableSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(null);
-				return marshalling ? new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, detachedPassivationNotifierFactory, configuration.getCacheConfiguration()) : new FineSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, detachedPassivationNotifierFactory, configuration.getCacheConfiguration());
+				return marshalling ? new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration()) : new FineSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration());
 			}
 			case COARSE -> {
-				BiFunction<ImmutableSession, CC, SessionActivationNotifier> passivationNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ImmutableSessionActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context), session.getAttributes().values())).orElse(null);
-				return marshalling ? new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, detachedPassivationNotifierFactory, configuration.getCacheConfiguration()) : new CoarseSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), passivationNotifierFactory, detachedPassivationNotifierFactory, configuration.getCacheConfiguration());
+				return marshalling ? new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration()) : new CoarseSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration());
 			}
 			default -> throw new IllegalStateException();
 		}

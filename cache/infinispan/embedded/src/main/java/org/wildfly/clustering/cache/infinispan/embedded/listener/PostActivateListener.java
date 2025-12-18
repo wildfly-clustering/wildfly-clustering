@@ -6,34 +6,31 @@
 package org.wildfly.clustering.cache.infinispan.embedded.listener;
 
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
-import org.infinispan.Cache;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
+import org.wildfly.clustering.function.Function;
 
 /**
- * Generic non-blocking post-activation listener that delegates to a blocking consumer.
+ * Generic non-blocking pre-passivation listener that delegates to a generic cache event listener.
  * @author Paul Ferraro
  * @param <K> cache key type
  * @param <V> cache value type
  */
 @Listener(observation = Listener.Observation.POST)
-public class PostActivateBlockingListener<K, V> extends CacheEventListenerRegistrar<K, V> {
+public class PostActivateListener<K, V> {
+	private static final System.Logger LOGGER = System.getLogger(PostActivateCacheEventListenerRegistrar.class.getName());
 
 	private final Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener;
 
 	/**
-	 * Creates a blocking listener of post-activate events.
-	 * @param cache an embedded cache
-	 * @param listener a consumer of post-activate events
+	 * Creates a non-blocking pre-passivate listener
+	 * @param listener a non-blocking listener function
 	 */
-	public PostActivateBlockingListener(Cache<K, V> cache, BiConsumer<K, V> listener) {
-		super(cache);
-		this.listener = new BlockingCacheEventListener<>(cache, listener);
+	public PostActivateListener(Function<CacheEntryEvent<K, V>, CompletionStage<Void>> listener) {
+		this.listener = listener;
 	}
 
 	/**
@@ -43,6 +40,7 @@ public class PostActivateBlockingListener<K, V> extends CacheEventListenerRegist
 	 */
 	@CacheEntryActivated
 	public CompletionStage<Void> postActivate(CacheEntryActivatedEvent<K, V> event) {
+		LOGGER.log(System.Logger.Level.TRACE, "Cache {0} received post-activate event for {1}", event.getCache().getName(), event.getKey());
 		return this.listener.apply(event);
 	}
 }

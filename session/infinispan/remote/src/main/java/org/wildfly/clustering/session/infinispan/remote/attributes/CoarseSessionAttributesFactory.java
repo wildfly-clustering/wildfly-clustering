@@ -24,11 +24,11 @@ import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.CompositeImmutableSession;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.coarse.CoarseSessionAttributes;
-import org.wildfly.clustering.session.cache.attributes.coarse.SessionActivationNotifier;
 
 /**
  * {@link SessionAttributesFactory} for coarse granularity sessions, where all session attributes are stored in a single cache entry.
@@ -46,7 +46,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	private final Immutability immutability;
 	private final CacheProperties properties;
 	private final CacheEntryMutatorFactory<SessionAttributesKey, V> mutatorFactory;
-	private final BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory;
+	private final BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory;
 
 	/**
 	 * Creates a session attributes factory.
@@ -54,7 +54,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	 * @param notifierFactory a passivation/activation notifier factory
 	 * @param hotrod the configuration of the associated cache
 	 */
-	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, BiFunction<ImmutableSession, C, SessionActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
+	public CoarseSessionAttributesFactory(SessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration, BiFunction<ImmutableSession, C, SessionAttributeActivationNotifier> notifierFactory, RemoteCacheConfiguration hotrod) {
 		this.readCache = hotrod.getCache();
 		this.writeCache = hotrod.getIgnoreReturnCache();
 		this.marshaller = configuration.getMarshaller();
@@ -108,7 +108,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
 		try {
 			Runnable mutator = this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
-			SessionActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : null;
+			SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : SessionAttributeActivationNotifier.SILENT;
 			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Predicate.always(), this.immutability, notifier);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);

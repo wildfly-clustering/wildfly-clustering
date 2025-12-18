@@ -17,6 +17,7 @@ import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.util.BlockingReferenceMap;
 import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 
 /**
  * Exposes session attributes for a fine granularity sessions.
@@ -54,12 +55,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		this.immutable = immutable;
 		this.properties = properties;
 		this.notifier = notifier;
-
-		if (this.notifier != null) {
-			for (Object value : this.attributes.values()) {
-				this.notifier.postActivate(value);
-			}
-		}
+		this.attributes.values().forEach(this.notifier::postActivate);
 	}
 
 	@Override
@@ -107,11 +103,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 
 	@Override
 	public void close() {
-		if (this.notifier != null) {
-			for (Object value : this.attributes.values()) {
-				this.notifier.prePassivate(value);
-			}
-		}
+		this.attributes.values().forEach(this.notifier::prePassivate);
 		this.updates.reader().consume(map -> {
 			if (!map.isEmpty()) {
 				Map<String, V> updates = new TreeMap<>();

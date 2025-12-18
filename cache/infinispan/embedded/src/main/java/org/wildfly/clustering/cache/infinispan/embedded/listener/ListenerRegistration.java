@@ -10,6 +10,16 @@ package org.wildfly.clustering.cache.infinispan.embedded.listener;
  * @author Paul Ferraro
  */
 public interface ListenerRegistration extends AutoCloseable {
+	/**
+	 * An empty listener registration.
+	 */
+	ListenerRegistration EMPTY = new ListenerRegistration() {
+		@Override
+		public void close() {
+			// Nothing to close
+		}
+	};
+
 	@Override
 	void close();
 }

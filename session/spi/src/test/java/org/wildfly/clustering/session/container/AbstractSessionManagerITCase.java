@@ -39,9 +39,15 @@ public abstract class AbstractSessionManagerITCase<A extends Archive<A> & ClassC
 	@Override
 	public A createArchive(SessionManagementTesterConfiguration configuration) {
 		String extension = ShrinkWrap.getDefaultDomain().getConfiguration().getExtensionLoader().getExtensionFromExtensionMapping(this.archiveClass);
-		return ShrinkWrap.create(this.archiveClass, this.getClass().getSimpleName() + extension)
+		Class<?> endpointClass = configuration.getEndpointClass();
+		Package endpointPackage = endpointClass.getPackage();
+		A archive = ShrinkWrap.create(this.archiveClass, this.getClass().getSimpleName() + extension)
 				.addClass(SessionManagementEndpointConfiguration.class)
-				.addPackage(configuration.getEndpointClass().getPackage())
+				.addPackage(endpointPackage)
 				;
+		if (!endpointClass.getSuperclass().getPackage().equals(endpointPackage)) {
+			archive.addPackage(endpointClass.getSuperclass().getPackage());
+		}
+		return archive;
 	}
 }

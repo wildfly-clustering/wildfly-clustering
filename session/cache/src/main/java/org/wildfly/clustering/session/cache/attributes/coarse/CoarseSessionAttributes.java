@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
+import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 
 /**
  * Exposes session attributes for a coarse granularity session.
@@ -20,7 +21,7 @@ public class CoarseSessionAttributes extends AbstractSessionAttributes {
 	private final Runnable mutator;
 	private final Predicate<Object> marshallable;
 	private final Predicate<Object> immutable;
-	private final SessionActivationNotifier notifier;
+	private final SessionAttributeActivationNotifier notifier;
 	private final AtomicBoolean dirty = new AtomicBoolean(false);
 
 	/**
@@ -31,16 +32,14 @@ public class CoarseSessionAttributes extends AbstractSessionAttributes {
 	 * @param immutable a predicate used to determine whether a given session attribute is immutable.
 	 * @param notifier a notifier of session activation/passivation
 	 */
-	public CoarseSessionAttributes(Map<String, Object> attributes, Runnable mutator, Predicate<Object> marshallable, Predicate<Object> immutable, SessionActivationNotifier notifier) {
+	public CoarseSessionAttributes(Map<String, Object> attributes, Runnable mutator, Predicate<Object> marshallable, Predicate<Object> immutable, SessionAttributeActivationNotifier notifier) {
 		super(attributes);
 		this.attributes = attributes;
 		this.mutator = mutator;
 		this.marshallable = marshallable;
 		this.immutable = immutable;
 		this.notifier = notifier;
-		if (this.notifier != null) {
-			this.notifier.postActivate();
-		}
+		attributes.values().forEach(this.notifier::postActivate);
 	}
 
 	@Override
@@ -80,9 +79,7 @@ public class CoarseSessionAttributes extends AbstractSessionAttributes {
 
 	@Override
 	public void close() {
-		if (this.notifier != null) {
-			this.notifier.prePassivate();
-		}
+		this.attributes.values().forEach(this.notifier::prePassivate);
 		if (this.dirty.compareAndSet(true, false)) {
 			this.mutator.run();
 		}

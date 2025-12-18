@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.session.container.servlet;
 
-import java.util.Optional;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionActivationListener;
@@ -20,7 +18,7 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.container.ContainerProvider;
 
 /**
- * Jakarta Servlet 4.0 container provider.
+ * Jakarta Servlet 6.0 container provider.
  * @author Paul Ferraro
  * @param <C> the session context type
  */
@@ -56,29 +54,12 @@ public class ServletContainerProvider<C> implements ContainerProvider.SessionAtt
 
 	@Override
 	public Consumer<HttpSession> getPrePassivateEventNotifier(HttpSessionActivationListener listener) {
-		Consumer<HttpSessionEvent> eventNotifier = listener::sessionWillPassivate;
-		return eventNotifier.compose(HttpSessionEvent::new);
+		return Consumer.<HttpSessionEvent>empty().andThen(listener::sessionWillPassivate).compose(HttpSessionEvent::new);
 	}
 
 	@Override
 	public Consumer<HttpSession> getPostActivateEventNotifier(HttpSessionActivationListener listener) {
-		Consumer<HttpSessionEvent> eventNotifier = listener::sessionDidActivate;
-		return eventNotifier.compose(HttpSessionEvent::new);
-	}
-
-	@Override
-	public Optional<HttpSessionActivationListener> getSessionEventListener(java.util.function.Consumer<HttpSession> prePassivateEventNotifier, java.util.function.Consumer<HttpSession> postActivateEventNotifier) {
-		return Optional.of(new HttpSessionActivationListener() {
-			@Override
-			public void sessionWillPassivate(HttpSessionEvent event) {
-				prePassivateEventNotifier.accept(event.getSession());
-			}
-
-			@Override
-			public void sessionDidActivate(HttpSessionEvent event) {
-				postActivateEventNotifier.accept(event.getSession());
-			}
-		});
+		return Consumer.<HttpSessionEvent>empty().andThen(listener::sessionDidActivate).compose(HttpSessionEvent::new);
 	}
 
 	@Override

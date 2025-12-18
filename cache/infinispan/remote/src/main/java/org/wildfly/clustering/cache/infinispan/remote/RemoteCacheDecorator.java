@@ -85,13 +85,11 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 		this.decorator = decorator;
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public <T> Query<T> query(String query) {
 		return this.createQueryFactory().create(query);
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public ContinuousQuery<K, V> continuousQuery() {
 		return this.createQueryFactory().continuousQuery(this);
@@ -210,6 +208,7 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 		return this.cache.getRemoteCacheContainer();
 	}
 
+	@SuppressWarnings("removal")
 	@Deprecated
 	@Override
 	public org.infinispan.client.hotrod.RemoteCacheManager getRemoteCacheManager() {

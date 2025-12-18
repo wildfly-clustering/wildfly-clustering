@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.listener;
 
+import java.util.List;
+
 import org.infinispan.notifications.Listenable;
 
 /**
@@ -14,30 +16,36 @@ import org.infinispan.notifications.Listenable;
 public class EventListenerRegistrar implements ListenerRegistrar {
 
 	private final Listenable listenable;
-	private final Object listener;
+	private final Iterable<Object> listeners;
 
-	/**
-	 * Creates a registrar of event listeners.
-	 * @param listenable the listener target
-	 */
-	public EventListenerRegistrar(Listenable listenable) {
+	EventListenerRegistrar(Listenable listenable) {
 		this.listenable = listenable;
-		this.listener = this;
+		this.listeners = List.of(this);
 	}
 
 	/**
 	 * Creates a registrar of event listeners.
 	 * @param listenable the listener target
-	 * @param listener a listener
+	 * @param listeners one or more listeners
 	 */
-	public EventListenerRegistrar(Listenable listenable, Object listener) {
+	public EventListenerRegistrar(Listenable listenable, Iterable<Object> listeners) {
 		this.listenable = listenable;
-		this.listener = listener;
+		this.listeners = listeners;
 	}
 
 	@Override
 	public ListenerRegistration register() {
-		this.listenable.addListener(this.listener);
-		return () -> this.listenable.removeListener(this.listener);
+		for (Object listener : this.listeners) {
+			this.listenable.addListener(listener);
+		}
+		return this.getListenerRegistration();
+	}
+
+	ListenerRegistration getListenerRegistration() {
+		return () -> {
+			for (Object listener : this.listeners) {
+				this.listenable.removeListener(listener);
+			}
+		};
 	}
 }
