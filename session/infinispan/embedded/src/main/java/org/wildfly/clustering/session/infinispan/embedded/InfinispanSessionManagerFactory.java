@@ -324,7 +324,7 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 
 	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider) {
 		boolean marshalling = configuration.getCacheConfiguration().getCacheProperties().isMarshalling();
-		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> persistenceNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(null);
+		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> persistenceNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).<SessionAttributeActivationNotifier>map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(SessionAttributeActivationNotifier.SILENT);
 		Function<String, SessionAttributeActivationNotifier> passivationNotifierFactory = sessionId -> new CompositeContainerSessionAttributeActivationNotifier<>(provider, this.managers.values(), sessionId);
 		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
 			case FINE -> {
