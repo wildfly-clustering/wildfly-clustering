@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.container.servlet;
 
 import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
+import org.wildfly.clustering.session.container.servlet.atomic.AtomicSessionServlet;
 
 /**
  * @author Paul Ferraro
@@ -14,6 +15,6 @@ public interface ServletSessionManagementTesterConfiguration extends SessionMana
 
 	@Override
 	default Class<?> getEndpointClass() {
-		return SessionServlet.class;
+		return AtomicSessionServlet.class;
 	}
 }
