@@ -102,8 +102,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 
 		@Override
 		public SerializationContextBuilder<SerializationContextInitializer> register(SerializationContextInitializer initializer) {
-			initializer.registerSchema(this.context);
-			initializer.registerMarshallers(this.context);
+			initializer.initialize(this.context);
 			return this;
 		}
 
@@ -146,8 +145,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 			for (org.infinispan.protostream.SerializationContextInitializer initializer : loadAll(org.infinispan.protostream.SerializationContextInitializer.class, loader)) {
 				if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
 					LOGGER.log(System.Logger.Level.DEBUG, "Registering native marshallers/schemas from {0}", initializer.getClass().getName());
-					initializer.registerSchema(this.context);
-					initializer.registerMarshallers(this.context);
+					initializer.register(this.context);
 				}
 			}
 		}
@@ -188,8 +186,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 
 		@Override
 		public SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer> register(org.infinispan.protostream.SerializationContextInitializer initializer) {
-			initializer.registerSchema(this.context);
-			initializer.registerMarshallers(this.context);
+			initializer.register(this.context);
 			return this;
 		}
 

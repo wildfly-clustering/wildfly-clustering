@@ -10,6 +10,14 @@ package org.wildfly.clustering.marshalling.protostream;
  * @author Paul Ferraro
  */
 public interface SerializationContextInitializer {
+	/**
+	 * Initialises the specified context by registering a schema and associated marshallers.
+	 * @param context the context to initialise
+	 */
+	default void initialize(SerializationContext context) {
+		this.registerSchema(context);
+		this.registerMarshallers(context);
+	}
 
 	/**
 	 * Registers a protobuf schema.
