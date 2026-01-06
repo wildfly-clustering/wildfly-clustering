@@ -5,9 +5,8 @@
 
 package org.wildfly.clustering.context;
 
-import java.util.function.Supplier;
-
 import org.wildfly.clustering.function.Runner;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Encapsulates some context that is applicable until {@link #close()}.
