@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.time.ZoneOffset;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -50,7 +48,7 @@ public enum ZoneOffsetMarshaller implements FieldSetMarshaller.Simple<ZoneOffset
 			case HOURS_INDEX -> ZoneOffset.ofHours(reader.readSInt32());
 			case MINUTES_INDEX -> ZoneOffset.ofTotalSeconds(reader.readSInt32() * 60);
 			case SECONDS_INDEX -> ZoneOffset.ofTotalSeconds(reader.readSInt32());
-			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(offset)).get();
+			default -> reader.skipField(type, offset);
 		};
 	}
 

@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.cache;
 
-import java.util.function.Consumer;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * Creates a level-one cache of server-side state.

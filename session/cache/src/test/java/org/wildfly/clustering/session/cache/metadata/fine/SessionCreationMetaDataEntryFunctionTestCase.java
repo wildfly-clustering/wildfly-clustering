@@ -24,7 +24,7 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 	public void accept(SessionCreationMetaDataEntry<Object> entry) {
 		Object context = UUID.randomUUID();
 		assertThat(entry.getContext().get(Supplier.of(context))).isSameAs(context);
-		assertThat(entry.getContext().get(Supplier.empty())).isSameAs(context);
+		assertThat(entry.getContext().get(Supplier.of(null))).isSameAs(context);
 
 		OffsetValue<Duration> timeoutOffset = OffsetValue.from(entry.getMaxIdle());
 
@@ -42,6 +42,6 @@ public class SessionCreationMetaDataEntryFunctionTestCase extends AbstractSessio
 
 		this.verifyUpdatedState(resultEntry);
 
-		assertThat(resultEntry.getContext().get(Supplier.empty())).isSameAs(context);
+		assertThat(resultEntry.getContext().get(Supplier.of(null))).isSameAs(context);
 	}
 }

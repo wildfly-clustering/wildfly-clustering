@@ -15,7 +15,6 @@ import java.util.function.ToDoubleBiFunction;
 import java.util.function.ToDoubleFunction;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 
 /**
@@ -27,78 +26,108 @@ public class DoubleConsumerTestCase {
 
 	@Test
 	public void thenReturn() {
-		Object value = new Object();
+		double value = this.random.nextDouble();
 		Object expected = new Object();
-		Consumer<Object> consumer = mock(Consumer.class);
+		DoubleConsumer consumer = mock(DoubleConsumer.class);
 		Supplier<Object> supplier = mock(Supplier.class);
 		doReturn(expected).when(supplier).get();
 
 		doCallRealMethod().when(consumer).thenReturn(any());
 
-		Object result = consumer.thenReturn(supplier).apply(value);
+		assertThat(consumer.thenReturn(supplier).apply(value)).isSameAs(expected);
 
-		assertThat(result).isSameAs(expected);
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnBoolean() {
+		double value = this.random.nextDouble();
+		boolean expected = this.random.nextBoolean();
+		DoubleConsumer consumer = mock(DoubleConsumer.class);
+		BooleanSupplier supplier = mock(BooleanSupplier.class);
+		doReturn(expected).when(supplier).getAsBoolean();
+
+		doCallRealMethod().when(consumer).thenReturnBoolean(any());
+
+		assertThat(consumer.thenReturnBoolean(supplier).test(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnDouble() {
+		double value = this.random.nextDouble();
+		double expected = this.random.nextDouble();
+		DoubleConsumer consumer = mock(DoubleConsumer.class);
+		DoubleSupplier supplier = mock(DoubleSupplier.class);
+		doReturn(expected).when(supplier).getAsDouble();
+
+		doCallRealMethod().when(consumer).thenReturnDouble(any());
+
+		assertThat(consumer.thenReturnDouble(supplier).applyAsDouble(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnInt() {
+		double value = this.random.nextDouble();
+		int expected = this.random.nextInt();
+		DoubleConsumer consumer = mock(DoubleConsumer.class);
+		IntSupplier supplier = mock(IntSupplier.class);
+		doReturn(expected).when(supplier).getAsInt();
+
+		doCallRealMethod().when(consumer).thenReturnInt(any());
+
+		assertThat(consumer.thenReturnInt(supplier).applyAsInt(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnLong() {
+		double value = this.random.nextDouble();
+		long expected = this.random.nextLong();
+		DoubleConsumer consumer = mock(DoubleConsumer.class);
+		LongSupplier supplier = mock(LongSupplier.class);
+		doReturn(expected).when(supplier).getAsLong();
+
+		doCallRealMethod().when(consumer).thenReturnLong(any());
+
+		assertThat(consumer.thenReturnLong(supplier).applyAsLong(value)).isEqualTo(expected);
+
 		verify(consumer).accept(value);
 	}
 
 	@Test
 	public void when() {
-		double allowed = this.random.nextDouble();
-		double disallowed = this.random.nextDouble();
+		double accepted = this.random.nextDouble();
+		double rejected = this.random.nextDouble();
 		DoublePredicate predicate = mock(DoublePredicate.class);
 
-		doReturn(true).when(predicate).test(allowed);
-		doReturn(false).when(predicate).test(disallowed);
+		doReturn(true).when(predicate).test(accepted);
+		doReturn(false).when(predicate).test(rejected);
 
-		DoubleConsumer consumer = mock(DoubleConsumer.class);
+		DoubleConsumer whenAccepted = mock(DoubleConsumer.class);
+		DoubleConsumer whenRejected = mock(DoubleConsumer.class);
 
-		doCallRealMethod().when(consumer).when(any());
+		DoubleConsumer consumer = DoubleConsumer.when(predicate, whenAccepted, whenRejected);
 
-		DoubleConsumer conditional = consumer.when(predicate);
+		consumer.accept(accepted);
 
-		conditional.accept(disallowed);
+		verify(whenAccepted, only()).accept(accepted);
+		verifyNoInteractions(whenRejected);
 
-		verify(consumer, never()).accept(disallowed);
+		consumer.accept(rejected);
 
-		conditional.accept(allowed);
-
-		verify(consumer).accept(allowed);
-	}
-
-	@Test
-	public void withDefault() {
-		double allowed = this.random.nextDouble();
-		double disallowed = this.random.nextDouble();
-		double defaultValue = this.random.nextDouble();
-
-		DoublePredicate predicate = mock(DoublePredicate.class);
-
-		doReturn(true).when(predicate).test(allowed);
-		doReturn(false).when(predicate).test(disallowed);
-
-		DoubleConsumer consumer = mock(DoubleConsumer.class);
-		DoubleSupplier defaultProvider = mock(DoubleSupplier.class);
-
-		doCallRealMethod().when(consumer).withDefault(any(), any());
-		doReturn(defaultValue).when(defaultProvider).getAsDouble();
-
-		DoubleConsumer conditional = consumer.withDefault(predicate, defaultProvider);
-
-		conditional.accept(allowed);
-
-		verify(consumer).accept(allowed);
-		verifyNoInteractions(defaultProvider);
-
-		conditional.accept(disallowed);
-
-		verify(consumer, never()).accept(disallowed);
-		verify(consumer).accept(defaultValue);
+		verify(whenRejected, only()).accept(rejected);
+		verifyNoMoreInteractions(whenAccepted);
 	}
 
 	@Test
 	public void compose() {
 		DoubleConsumer consumer = mock(DoubleConsumer.class);
-		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<ToDoubleFunction<Object>>any());
+		doCallRealMethod().when(consumer).compose(any());
 		ToDoubleFunction<Object> composer = mock(ToDoubleFunction.class);
 		Object value = new Object();
 		double result = this.random.nextDouble();
@@ -112,13 +141,13 @@ public class DoubleConsumerTestCase {
 	@Test
 	public void composeAsDouble() {
 		DoubleConsumer consumer = mock(DoubleConsumer.class);
-		doCallRealMethod().when(consumer).composeAsDouble(ArgumentMatchers.<DoubleUnaryOperator>any());
+		doCallRealMethod().when(consumer).composeDouble(any());
 		DoubleUnaryOperator composer = mock(DoubleUnaryOperator.class);
 		double value = this.random.nextDouble();
 		double result = this.random.nextDouble();
 		doReturn(result).when(composer).applyAsDouble(value);
 
-		consumer.composeAsDouble(composer).accept(value);
+		consumer.composeDouble(composer).accept(value);
 
 		verify(consumer).accept(result);
 	}
@@ -126,21 +155,21 @@ public class DoubleConsumerTestCase {
 	@Test
 	public void composeBinary() {
 		DoubleConsumer consumer = mock(DoubleConsumer.class);
-		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<ToDoubleBiFunction<Object, Object>>any());
+		doCallRealMethod().when(consumer).composeBinary(any());
 		ToDoubleBiFunction<Object, Object> composer = mock(ToDoubleBiFunction.class);
 		Object key = new Object();
 		Object value = new Object();
 		double result = this.random.nextDouble();
 		doReturn(result).when(composer).applyAsDouble(key, value);
 
-		consumer.compose(composer).accept(key, value);
+		consumer.composeBinary(composer).accept(key, value);
 
 		verify(consumer).accept(result);
 	}
 
 	@Test
 	public void empty() {
-		DoubleConsumer consumer = DoubleConsumer.EMPTY;
+		DoubleConsumer consumer = DoubleConsumer.of();
 		consumer.accept(this.random.nextDouble());
 	}
 
@@ -166,7 +195,7 @@ public class DoubleConsumerTestCase {
 		DoubleConsumer consumer3 = mock(DoubleConsumer.class);
 		InOrder order = inOrder(consumer1, consumer2, consumer3);
 
-		DoubleConsumer consumer = DoubleConsumer.acceptAll(List.of(consumer1, consumer2, consumer3));
+		DoubleConsumer consumer = DoubleConsumer.of(List.of(consumer1, consumer2, consumer3));
 
 		consumer.accept(value);
 

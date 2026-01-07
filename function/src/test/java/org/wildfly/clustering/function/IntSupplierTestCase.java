@@ -14,7 +14,6 @@ import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
 import java.util.function.IntToLongFunction;
 import java.util.function.IntUnaryOperator;
-import java.util.function.ToIntFunction;
 
 import org.junit.jupiter.api.Test;
 
@@ -66,33 +65,6 @@ public class IntSupplierTestCase {
 		supplier.thenAccept(consumer).run();
 
 		verify(consumer).accept(value);
-	}
-
-	@Test
-	public void handle() {
-		int value = this.random.nextInt();
-
-		IntSupplier supplier = mock(IntSupplier.class);
-
-		doCallRealMethod().when(supplier).handle(any());
-		doReturn(value).when(supplier).getAsInt();
-
-		ToIntFunction<RuntimeException> handler = mock(ToIntFunction.class);
-		int handled = this.random.nextInt();
-		RuntimeException exception = new RuntimeException();
-
-		assertThat(supplier.handle(handler).getAsInt()).isEqualTo(value);
-
-		verify(supplier).getAsInt();
-		verify(handler, never()).applyAsInt(any());
-
-		doThrow(exception).when(supplier).getAsInt();
-		doReturn(handled).when(handler).applyAsInt(exception);
-
-		assertThat(supplier.handle(handler).getAsInt()).isEqualTo(handled);
-
-		verify(supplier, times(2)).getAsInt();
-		verify(handler).applyAsInt(any());
 	}
 
 	@Test

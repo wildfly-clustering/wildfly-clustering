@@ -56,7 +56,7 @@ public class DefaultSessionCreationMetaDataEntry<C> implements SessionCreationMe
 	public SessionCreationMetaDataEntry<C> remap(java.util.function.Supplier<Offset<Duration>> timeoutOffset) {
 		SessionCreationMetaDataEntry<C> result = new DefaultSessionCreationMetaDataEntry<>(this.creationTime);
 		result.setMaxIdle(timeoutOffset.get().apply(this.timeout));
-		result.getContext().get(Supplier.of(this.context.get(Supplier.empty())));
+		result.getContext().get(Supplier.of(this.context.get(Supplier.of(null))));
 		return result;
 	}
 

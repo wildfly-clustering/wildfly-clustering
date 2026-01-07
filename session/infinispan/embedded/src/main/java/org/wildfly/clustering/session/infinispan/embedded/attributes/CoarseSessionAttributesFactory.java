@@ -107,7 +107,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(Function.empty());
+		return this.getValueAsync(id).exceptionally(Function.of(null));
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {
@@ -131,7 +131,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 	}
 
 	private CompletionStage<Void> deleteAsync(Cache<SessionAttributesKey, V> cache, String id) {
-		return cache.removeAsync(new SessionAttributesKey(id)).thenAccept(Consumer.empty());
+		return cache.removeAsync(new SessionAttributesKey(id)).thenAccept(Consumer.of());
 	}
 
 	@Override
@@ -144,7 +144,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 		try {
 			Runnable mutator = (this.properties.isTransactional() && metaData.getLastAccessTime().isEmpty()) ? CacheEntryMutator.EMPTY : this.mutatorFactory.createMutator(new SessionAttributesKey(id), this.marshaller.write(attributes));
 			SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? this.persistenceNotifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : SessionAttributeActivationNotifier.SILENT;
-			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Predicate.always() , this.immutability, notifier);
+			return new CoarseSessionAttributes(attributes, mutator, this.properties.isMarshalling() ? this.marshaller : Predicate.of(true) , this.immutability, notifier);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}

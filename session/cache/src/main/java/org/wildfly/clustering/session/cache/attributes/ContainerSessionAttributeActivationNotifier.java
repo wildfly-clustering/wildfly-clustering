@@ -44,6 +44,6 @@ public class ContainerSessionAttributeActivationNotifier<CC, S, L, SC> implement
 	}
 
 	private void notify(Object object, Function<L, Consumer<S>> factory) {
-		this.provider.getSessionEventListener(this.session, object).map(factory).orElse(Consumer.empty()).accept(this.session);
+		this.provider.getSessionEventListener(this.session, object).map(factory).orElse(Consumer.of()).accept(this.session);
 	}
 }

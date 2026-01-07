@@ -53,6 +53,6 @@ public class BlockingCacheEntryEventListener<K, V> extends AbstractCacheEntryEve
 		Runnable notification = Supplier.of(event).thenAccept(this.getConsumer());
 		CompletionStage<Void> stage = CompletableFuture.runAsync(notification, executor);
 		// Subscribe on non-blocking thread, if current thread was non-blocking
-		return (group instanceof NonBlockingResource) ? stage.thenRunAsync(Runner.EMPTY, this.getNonBlockingExecutor()) : stage;
+		return (group instanceof NonBlockingResource) ? stage.thenRunAsync(Runner.of(), this.getNonBlockingExecutor()) : stage;
 	}
 }

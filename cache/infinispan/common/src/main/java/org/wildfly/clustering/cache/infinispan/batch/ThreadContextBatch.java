@@ -71,7 +71,7 @@ enum ThreadContextBatch implements Batch, ContextReference<ContextualBatch> {
 				// Auto-suspend any active tx, and auto-resume on context close
 				SuspendedBatch suspended = ThreadContextBatch.this.suspend();
 				Batch resumed = this.resume();
-				return Context.of(resumed, Runner.runAll(List.of(resumed::suspend, suspended::resume)));
+				return Context.of(resumed, Runner.of(List.of(resumed::suspend, suspended::resume)));
 			}
 
 			@Override

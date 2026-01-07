@@ -6,6 +6,7 @@
 package org.wildfly.clustering.function;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -27,72 +28,102 @@ public class IntConsumerTestCase {
 
 	@Test
 	public void thenReturn() {
-		Object value = new Object();
+		int value = this.random.nextInt();
 		Object expected = new Object();
-		Consumer<Object> consumer = mock(Consumer.class);
+		IntConsumer consumer = mock(IntConsumer.class);
 		Supplier<Object> supplier = mock(Supplier.class);
 		doReturn(expected).when(supplier).get();
 
 		doCallRealMethod().when(consumer).thenReturn(any());
 
-		Object result = consumer.thenReturn(supplier).apply(value);
+		assertThat(consumer.thenReturn(supplier).apply(value)).isSameAs(expected);
 
-		assertThat(result).isSameAs(expected);
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnBoolean() {
+		int value = this.random.nextInt();
+		boolean expected = this.random.nextBoolean();
+		IntConsumer consumer = mock(IntConsumer.class);
+		BooleanSupplier supplier = mock(BooleanSupplier.class);
+		doReturn(expected).when(supplier).getAsBoolean();
+
+		doCallRealMethod().when(consumer).thenReturnBoolean(any());
+
+		assertThat(consumer.thenReturnBoolean(supplier).test(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnDouble() {
+		int value = this.random.nextInt();
+		double expected = this.random.nextDouble();
+		IntConsumer consumer = mock(IntConsumer.class);
+		DoubleSupplier supplier = mock(DoubleSupplier.class);
+		doReturn(expected).when(supplier).getAsDouble();
+
+		doCallRealMethod().when(consumer).thenReturnDouble(any());
+
+		assertThat(consumer.thenReturnDouble(supplier).applyAsDouble(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnInt() {
+		int value = this.random.nextInt();
+		int expected = this.random.nextInt();
+		IntConsumer consumer = mock(IntConsumer.class);
+		IntSupplier supplier = mock(IntSupplier.class);
+		doReturn(expected).when(supplier).getAsInt();
+
+		doCallRealMethod().when(consumer).thenReturnInt(any());
+
+		assertThat(consumer.thenReturnInt(supplier).applyAsInt(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnLong() {
+		int value = this.random.nextInt();
+		long expected = this.random.nextLong();
+		IntConsumer consumer = mock(IntConsumer.class);
+		LongSupplier supplier = mock(LongSupplier.class);
+		doReturn(expected).when(supplier).getAsLong();
+
+		doCallRealMethod().when(consumer).thenReturnLong(any());
+
+		assertThat(consumer.thenReturnLong(supplier).applyAsLong(value)).isEqualTo(expected);
+
 		verify(consumer).accept(value);
 	}
 
 	@Test
 	public void when() {
-		int allowed = this.random.nextInt();
-		int disallowed = this.random.nextInt();
+		int accepted = this.random.nextInt();
+		int rejected = this.random.nextInt();
 		IntPredicate predicate = mock(IntPredicate.class);
 
-		doReturn(true).when(predicate).test(allowed);
-		doReturn(false).when(predicate).test(disallowed);
+		doReturn(true).when(predicate).test(accepted);
+		doReturn(false).when(predicate).test(rejected);
 
-		IntConsumer consumer = mock(IntConsumer.class);
+		IntConsumer whenAccepted = mock(IntConsumer.class);
+		IntConsumer whenRejected = mock(IntConsumer.class);
 
-		doCallRealMethod().when(consumer).when(any());
+		IntConsumer conditional = IntConsumer.when(predicate, whenAccepted, whenRejected);
 
-		IntConsumer conditional = consumer.when(predicate);
+		conditional.accept(accepted);
 
-		conditional.accept(disallowed);
+		verify(whenAccepted, only()).accept(accepted);
+		verifyNoInteractions(whenRejected);
 
-		verify(consumer, never()).accept(disallowed);
+		conditional.accept(rejected);
 
-		conditional.accept(allowed);
-
-		verify(consumer).accept(allowed);
-	}
-
-	@Test
-	public void withDefault() {
-		int allowed = this.random.nextInt();
-		int disallowed = this.random.nextInt();
-		int defaultValue = this.random.nextInt();
-
-		IntPredicate predicate = mock(IntPredicate.class);
-
-		doReturn(true).when(predicate).test(allowed);
-		doReturn(false).when(predicate).test(disallowed);
-
-		IntConsumer consumer = mock(IntConsumer.class);
-		IntSupplier defaultProvider = mock(IntSupplier.class);
-
-		doCallRealMethod().when(consumer).withDefault(any(), any());
-		doReturn(defaultValue).when(defaultProvider).getAsInt();
-
-		IntConsumer conditional = consumer.withDefault(predicate, defaultProvider);
-
-		conditional.accept(allowed);
-
-		verify(consumer).accept(allowed);
-		verifyNoInteractions(defaultProvider);
-
-		conditional.accept(disallowed);
-
-		verify(consumer, never()).accept(disallowed);
-		verify(consumer).accept(defaultValue);
+		verify(whenRejected, only()).accept(rejected);
+		verifyNoMoreInteractions(whenAccepted);
 	}
 
 	@Test
@@ -112,13 +143,13 @@ public class IntConsumerTestCase {
 	@Test
 	public void composeAsInt() {
 		IntConsumer consumer = mock(IntConsumer.class);
-		doCallRealMethod().when(consumer).composeAsInt(ArgumentMatchers.<IntUnaryOperator>any());
+		doCallRealMethod().when(consumer).composeInt(ArgumentMatchers.<IntUnaryOperator>any());
 		IntUnaryOperator composer = mock(IntUnaryOperator.class);
 		int value = this.random.nextInt();
 		int result = this.random.nextInt();
 		doReturn(result).when(composer).applyAsInt(value);
 
-		consumer.composeAsInt(composer).accept(value);
+		consumer.composeInt(composer).accept(value);
 
 		verify(consumer).accept(result);
 	}
@@ -126,21 +157,21 @@ public class IntConsumerTestCase {
 	@Test
 	public void composeBinary() {
 		IntConsumer consumer = mock(IntConsumer.class);
-		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<ToIntBiFunction<Object, Object>>any());
+		doCallRealMethod().when(consumer).composeBinary(ArgumentMatchers.<ToIntBiFunction<Object, Object>>any());
 		ToIntBiFunction<Object, Object> composer = mock(ToIntBiFunction.class);
 		Object key = new Object();
 		Object value = new Object();
 		int result = this.random.nextInt();
 		doReturn(result).when(composer).applyAsInt(key, value);
 
-		consumer.compose(composer).accept(key, value);
+		consumer.composeBinary(composer).accept(key, value);
 
 		verify(consumer).accept(result);
 	}
 
 	@Test
 	public void empty() {
-		IntConsumer consumer = IntConsumer.EMPTY;
+		IntConsumer consumer = IntConsumer.of();
 		consumer.accept(this.random.nextInt());
 	}
 
@@ -166,7 +197,7 @@ public class IntConsumerTestCase {
 		IntConsumer consumer3 = mock(IntConsumer.class);
 		InOrder order = inOrder(consumer1, consumer2, consumer3);
 
-		IntConsumer consumer = IntConsumer.acceptAll(List.of(consumer1, consumer2, consumer3));
+		IntConsumer consumer = IntConsumer.of(List.of(consumer1, consumer2, consumer3));
 
 		consumer.accept(value);
 

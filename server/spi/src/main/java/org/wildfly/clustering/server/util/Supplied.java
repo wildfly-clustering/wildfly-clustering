@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.UnaryOperator;
 
 /**
@@ -42,7 +43,7 @@ public interface Supplied<T> {
 			@Override
 			public T get(Supplier<T> factory) {
 				T value = reference.get();
-				return (value != null) ? value : reference.updateAndGet(UnaryOperator.<T>identity().orDefault(Objects::nonNull, factory));
+				return (value != null) ? value : reference.updateAndGet(UnaryOperator.when(Objects::nonNull, UnaryOperator.identity(), UnaryOperator.of(Consumer.of(), factory)));
 			}
 		};
 	}

@@ -72,7 +72,7 @@ public interface CacheEntryMutator extends Runner {
 			public CompletionStage<Void> runAsync() {
 				CompletionStage<Void> result = CompletableFuture.completedStage(null);
 				for (CacheEntryMutator mutator : mutators) {
-					result = result.runAfterBoth(mutator.runAsync(), Runner.empty());
+					result = result.runAfterBoth(mutator.runAsync(), Runner.of());
 				}
 				return result;
 			}

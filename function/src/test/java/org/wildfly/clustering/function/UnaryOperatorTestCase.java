@@ -6,7 +6,6 @@
 package org.wildfly.clustering.function;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -55,11 +54,6 @@ public class UnaryOperatorTestCase {
 	}
 
 	@Test
-	public void empty() {
-		assertThat(Function.empty().apply(UUID.randomUUID())).isNull();
-	}
-
-	@Test
 	public void of() {
 		UUID parameter = UUID.randomUUID();
 		UUID expected = UUID.randomUUID();
@@ -79,41 +73,21 @@ public class UnaryOperatorTestCase {
 	}
 
 	@Test
-	public void withDefault() {
-		UUID result = UUID.randomUUID();
-		UUID value = UUID.randomUUID();
-		UUID defaultValue = UUID.randomUUID();
-		UUID defaultResult = UUID.randomUUID();
-		UnaryOperator<UUID> function = mock(UnaryOperator.class);
-		doCallRealMethod().when(function).withDefault(any(), any());
-		Predicate<UUID> predicate = mock(Predicate.class);
-		Supplier<UUID> supplier = mock(Supplier.class);
-
-		doReturn(false, true).when(predicate).test(value);
-		doReturn(defaultValue).when(supplier).get();
-		doReturn(result).when(function).apply(value);
-		doReturn(defaultResult).when(function).apply(defaultValue);
-
-		assertThat(function.withDefault(predicate, supplier).apply(value)).isSameAs(defaultResult);
-		assertThat(function.withDefault(predicate, supplier).apply(value)).isSameAs(result);
-	}
-
-	@Test
 	public void orDefault() {
-		UUID result = UUID.randomUUID();
-		UUID value = UUID.randomUUID();
-		UUID defaultResult = UUID.randomUUID();
-		UnaryOperator<UUID> function = mock(UnaryOperator.class);
-		doCallRealMethod().when(function).orDefault(any(), any());
+		UUID accepted = UUID.randomUUID();
+		UUID acceptedResult = UUID.randomUUID();
+		UUID rejected = UUID.randomUUID();
+		UUID rejectedResult = UUID.randomUUID();
+
 		Predicate<UUID> predicate = mock(Predicate.class);
-		Supplier<UUID> supplier = mock(Supplier.class);
 
-		doReturn(false, true).when(predicate).test(value);
-		doReturn(defaultResult).when(supplier).get();
-		doReturn(result).when(function).apply(value);
+		doReturn(true).when(predicate).test(accepted);
+		doReturn(false).when(predicate).test(rejected);
 
-		assertThat(function.orDefault(predicate, supplier).apply(value)).isSameAs(defaultResult);
-		assertThat(function.orDefault(predicate, supplier).apply(value)).isSameAs(result);
+		UnaryOperator<UUID> function = UnaryOperator.when(predicate, UnaryOperator.of(acceptedResult), UnaryOperator.of(rejectedResult));
+
+		assertThat(function.apply(accepted)).isSameAs(acceptedResult);
+		assertThat(function.apply(rejected)).isSameAs(rejectedResult);
 	}
 
 	@Test

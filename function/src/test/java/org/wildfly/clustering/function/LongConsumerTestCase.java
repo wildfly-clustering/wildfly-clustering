@@ -6,6 +6,7 @@
 package org.wildfly.clustering.function;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -27,72 +28,102 @@ public class LongConsumerTestCase {
 
 	@Test
 	public void thenReturn() {
-		Object value = new Object();
+		long value = this.random.nextLong();
 		Object expected = new Object();
-		Consumer<Object> consumer = mock(Consumer.class);
+		LongConsumer consumer = mock(LongConsumer.class);
 		Supplier<Object> supplier = mock(Supplier.class);
 		doReturn(expected).when(supplier).get();
 
 		doCallRealMethod().when(consumer).thenReturn(any());
 
-		Object result = consumer.thenReturn(supplier).apply(value);
+		assertThat(consumer.thenReturn(supplier).apply(value)).isSameAs(expected);
 
-		assertThat(result).isSameAs(expected);
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnBoolean() {
+		long value = this.random.nextLong();
+		boolean expected = this.random.nextBoolean();
+		LongConsumer consumer = mock(LongConsumer.class);
+		BooleanSupplier supplier = mock(BooleanSupplier.class);
+		doReturn(expected).when(supplier).getAsBoolean();
+
+		doCallRealMethod().when(consumer).thenReturnBoolean(any());
+
+		assertThat(consumer.thenReturnBoolean(supplier).test(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnDouble() {
+		long value = this.random.nextLong();
+		double expected = this.random.nextDouble();
+		LongConsumer consumer = mock(LongConsumer.class);
+		DoubleSupplier supplier = mock(DoubleSupplier.class);
+		doReturn(expected).when(supplier).getAsDouble();
+
+		doCallRealMethod().when(consumer).thenReturnDouble(any());
+
+		assertThat(consumer.thenReturnDouble(supplier).applyAsDouble(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnInt() {
+		long value = this.random.nextLong();
+		int expected = this.random.nextInt();
+		LongConsumer consumer = mock(LongConsumer.class);
+		IntSupplier supplier = mock(IntSupplier.class);
+		doReturn(expected).when(supplier).getAsInt();
+
+		doCallRealMethod().when(consumer).thenReturnInt(any());
+
+		assertThat(consumer.thenReturnInt(supplier).applyAsInt(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnLong() {
+		long value = this.random.nextLong();
+		long expected = this.random.nextLong();
+		LongConsumer consumer = mock(LongConsumer.class);
+		LongSupplier supplier = mock(LongSupplier.class);
+		doReturn(expected).when(supplier).getAsLong();
+
+		doCallRealMethod().when(consumer).thenReturnLong(any());
+
+		assertThat(consumer.thenReturnLong(supplier).applyAsLong(value)).isEqualTo(expected);
+
 		verify(consumer).accept(value);
 	}
 
 	@Test
 	public void when() {
-		long allowed = this.random.nextLong();
-		long disallowed = this.random.nextLong();
+		long accepted = this.random.nextLong();
+		long rejected = this.random.nextLong();
 		LongPredicate predicate = mock(LongPredicate.class);
 
-		doReturn(true).when(predicate).test(allowed);
-		doReturn(false).when(predicate).test(disallowed);
+		doReturn(true).when(predicate).test(accepted);
+		doReturn(false).when(predicate).test(rejected);
 
-		LongConsumer consumer = mock(LongConsumer.class);
+		LongConsumer whenAccepted = mock(LongConsumer.class);
+		LongConsumer whenRejected = mock(LongConsumer.class);
 
-		doCallRealMethod().when(consumer).when(any());
+		LongConsumer conditional = LongConsumer.when(predicate, whenAccepted, whenRejected);
 
-		LongConsumer conditional = consumer.when(predicate);
+		conditional.accept(accepted);
 
-		conditional.accept(disallowed);
+		verify(whenAccepted, only()).accept(accepted);
+		verifyNoInteractions(whenRejected);
 
-		verify(consumer, never()).accept(disallowed);
+		conditional.accept(rejected);
 
-		conditional.accept(allowed);
-
-		verify(consumer).accept(allowed);
-	}
-
-	@Test
-	public void withDefault() {
-		long allowed = this.random.nextLong();
-		long disallowed = this.random.nextLong();
-		long defaultValue = this.random.nextLong();
-
-		LongPredicate predicate = mock(LongPredicate.class);
-
-		doReturn(true).when(predicate).test(allowed);
-		doReturn(false).when(predicate).test(disallowed);
-
-		LongConsumer consumer = mock(LongConsumer.class);
-		LongSupplier defaultProvider = mock(LongSupplier.class);
-
-		doCallRealMethod().when(consumer).withDefault(any(), any());
-		doReturn(defaultValue).when(defaultProvider).getAsLong();
-
-		LongConsumer conditional = consumer.withDefault(predicate, defaultProvider);
-
-		conditional.accept(allowed);
-
-		verify(consumer).accept(allowed);
-		verifyNoInteractions(defaultProvider);
-
-		conditional.accept(disallowed);
-
-		verify(consumer, never()).accept(disallowed);
-		verify(consumer).accept(defaultValue);
+		verify(whenRejected, only()).accept(rejected);
+		verifyNoMoreInteractions(whenAccepted);
 	}
 
 	@Test
@@ -112,13 +143,13 @@ public class LongConsumerTestCase {
 	@Test
 	public void composeAsLong() {
 		LongConsumer consumer = mock(LongConsumer.class);
-		doCallRealMethod().when(consumer).composeAsLong(ArgumentMatchers.<LongUnaryOperator>any());
+		doCallRealMethod().when(consumer).composeLong(ArgumentMatchers.<LongUnaryOperator>any());
 		LongUnaryOperator composer = mock(LongUnaryOperator.class);
 		long value = this.random.nextLong();
 		long result = this.random.nextLong();
 		doReturn(result).when(composer).applyAsLong(value);
 
-		consumer.composeAsLong(composer).accept(value);
+		consumer.composeLong(composer).accept(value);
 
 		verify(consumer).accept(result);
 	}
@@ -126,21 +157,21 @@ public class LongConsumerTestCase {
 	@Test
 	public void composeBinary() {
 		LongConsumer consumer = mock(LongConsumer.class);
-		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<ToLongBiFunction<Object, Object>>any());
+		doCallRealMethod().when(consumer).composeBinary(ArgumentMatchers.<ToLongBiFunction<Object, Object>>any());
 		ToLongBiFunction<Object, Object> composer = mock(ToLongBiFunction.class);
 		Object key = new Object();
 		Object value = new Object();
 		long result = this.random.nextLong();
 		doReturn(result).when(composer).applyAsLong(key, value);
 
-		consumer.compose(composer).accept(key, value);
+		consumer.composeBinary(composer).accept(key, value);
 
 		verify(consumer).accept(result);
 	}
 
 	@Test
 	public void empty() {
-		LongConsumer consumer = LongConsumer.EMPTY;
+		LongConsumer consumer = LongConsumer.of();
 		consumer.accept(this.random.nextLong());
 	}
 
@@ -166,7 +197,7 @@ public class LongConsumerTestCase {
 		LongConsumer consumer3 = mock(LongConsumer.class);
 		InOrder order = inOrder(consumer1, consumer2, consumer3);
 
-		LongConsumer consumer = LongConsumer.acceptAll(List.of(consumer1, consumer2, consumer3));
+		LongConsumer consumer = LongConsumer.of(List.of(consumer1, consumer2, consumer3));
 
 		consumer.accept(value);
 

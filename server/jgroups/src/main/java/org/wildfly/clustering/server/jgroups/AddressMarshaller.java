@@ -11,8 +11,6 @@ import org.infinispan.protostream.descriptors.WireType;
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
-import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -44,7 +42,7 @@ public enum AddressMarshaller implements FieldSetMarshaller.Simple<Address> {
 		return switch (index) {
 			case UUID_ADDRESS_INDEX -> reader.readObject(UUID.class);
 			case IP_ADDRESS_INDEX -> reader.readObject(IpAddress.class);
-			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(address)).get();
+			default -> reader.skipField(type, address);
 		};
 	}
 

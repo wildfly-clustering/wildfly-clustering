@@ -6,111 +6,20 @@
 package org.wildfly.clustering.function;
 
 /**
- * An enhanced binary function.
+ * A binary function that operates on a single type.
  * @author Paul Ferraro
  * @param <T> the operator type
  */
 public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>, BiFunction<T, T, T> {
 
 	/**
-	 * Returns a composed operator that applies the specified operators to each parameter as inputs to this operator.
-	 * @param before1 the operator applied to the first parameter
-	 * @param before2 the operator applied to the second parameter
-	 * @return a composed operator that applies the specified operators to each parameter as inputs to this operator.
-	 */
-	default BinaryOperator<T> compose(java.util.function.UnaryOperator<T> before1, java.util.function.UnaryOperator<T> before2) {
-		return new BinaryOperator<>() {
-			@Override
-			public T apply(T value1, T value2) {
-				return BinaryOperator.this.apply(before1.apply(value1), before2.apply(value2));
-			}
-		};
-	}
-
-	/**
-	 * Returns a composed operator that applies the specified operators to each parameter as inputs to this operator.
-	 * @param before1 the operator applied to the first parameter
-	 * @param before2 the operator applied to the second parameter
-	 * @return a composed operator that applies the specified operators to each parameter as inputs to this operator.
-	 */
-	default UnaryOperator<T> composeUnary(java.util.function.UnaryOperator<T> before1, java.util.function.UnaryOperator<T> before2) {
-		return new UnaryOperator<>() {
-			@Override
-			public T apply(T value) {
-				return BinaryOperator.this.apply(before1.apply(value), before2.apply(value));
-			}
-		};
-	}
-
-	/**
-	 * An operator variant of {@link BiFunction#andThen(java.util.function.Function)}.
-	 * @param after the operator to invoke using the result of this operator.
-	 * @return a binary operator that invokes the specified operator using the result of this operator.
-	 */
-	default BinaryOperator<T> andThen(java.util.function.UnaryOperator<T> after) {
-		return new BinaryOperator<>() {
-			@Override
-			public T apply(T value1, T value2) {
-				return after.apply(BinaryOperator.this.apply(value1, value2));
-			}
-		};
-	}
-
-	/**
-	 * Returns a function that processes this function with reversed parameter order.
-	 * @return a function that processes this function with reversed parameter order.
-	 */
-	@Override
-	default BinaryOperator<T> reverse() {
-		return new BinaryOperator<>() {
-			@Override
-			public T apply(T value2, T value1) {
-				return BinaryOperator.this.apply(value1, value2);
-			}
-		};
-	}
-
-	/**
-	 * Returns a function that applies this function to the values returned by the specified providers if its parameters do not match the specified predicates.
-	 * @param predicate1 a predicate used to determine the first parameter of this function
-	 * @param defaultValue1 a provider of the default value of the first parameter
-	 * @param predicate2 a predicate used to determine the second parameter of this function
-	 * @param defaultValue2 a provider of the default value of the second parameter
-	 * @return a function that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
-	 */
-	@Override
-	default BinaryOperator<T> withDefault(java.util.function.Predicate<T> predicate1, java.util.function.Supplier<T> defaultValue1, java.util.function.Predicate<T> predicate2, java.util.function.Supplier<T> defaultValue2) {
-		return new BinaryOperator<>() {
-			@Override
-			public T apply(T value1, T value2) {
-				return BinaryOperator.this.apply(predicate1.test(value1) ? value1 : defaultValue1.get(), predicate2.test(value2) ? value2 : defaultValue2.get());
-			}
-		};
-	}
-
-	/**
-	 * Returns a function that applies this function if its parameters matches the specified predicate, or returns the value provided by the specified supplier otherwise.
-	 * @param predicate a predicate used to determine the parameter of this function
-	 * @param defaultResult a provider of the default parameter value
-	 * @return a function that applies this function if its parameter matches the specified predicate, or returns the value provided by the specified supplier otherwise.
-	 */
-	@Override
-	default BinaryOperator<T> orDefault(java.util.function.BiPredicate<T, T> predicate, java.util.function.Supplier<T> defaultResult) {
-		return new BinaryOperator<>() {
-			@Override
-			public T apply(T value1, T value2) {
-				return predicate.test(value1, value2) ? BinaryOperator.this.apply(value1, value2) : defaultResult.get();
-			}
-		};
-	}
-
-	/**
 	 * Returns a function that returns its first parameter.
 	 * @param <T> the operating type
 	 * @return a function that returns its first parameter.
 	 */
+	@SuppressWarnings("unchecked")
 	static <T> BinaryOperator<T> former() {
-		return BinaryOperators.FORMER.cast();
+		return (BinaryOperator<T>) FormerBinaryOperator.INSTANCE;
 	}
 
 	/**
@@ -118,17 +27,9 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param <T> the operating type
 	 * @return a function that returns its first parameter.
 	 */
+	@SuppressWarnings("unchecked")
 	static <T> BinaryOperator<T> latter() {
-		return BinaryOperators.LATTER.cast();
-	}
-
-	/**
-	 * Returns a function that always returns null, ignoring its parameter.
-	 * @param <T> the operating type
-	 * @return a function that always returns null, ignoring its parameter.
-	 */
-	static <T> BinaryOperator<T> empty() {
-		return BinaryOperators.NULL.cast();
+		return (BinaryOperator<T>) LatterBinaryOperator.INSTANCE;
 	}
 
 	/**
@@ -137,8 +38,9 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param result the function result
 	 * @return a function that always returns the specified value, ignoring its parameter.
 	 */
+	@SuppressWarnings("unchecked")
 	static <T> BinaryOperator<T> of(T result) {
-		return (result != null) ? of(BiConsumer.empty(), Supplier.of(result)) : empty();
+		return (result != null) ? of(BiConsumer.of(), Supplier.of(result)) : (BinaryOperator<T>) SimpleBinaryOperator.NULL;
 	}
 
 	/**
@@ -148,7 +50,7 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param supplier the supplier of the function result
 	 * @return an operator that accepts its parameters via the specified consumer and returns the value returned by the specified supplier.
 	 */
-	static <T> BinaryOperator<T> of(java.util.function.BiConsumer<T, T> consumer, java.util.function.Supplier<T> supplier) {
+	static <T> BinaryOperator<T> of(java.util.function.BiConsumer<? super T, ? super T> consumer, java.util.function.Supplier<? extends T> supplier) {
 		return new BinaryOperator<>() {
 			@Override
 			public T apply(T value1, T value2) {
@@ -159,33 +61,13 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	}
 
 	/**
-	 * Returns an operator view of the specified binary function.
-	 * @param <T> the operating type
-	 * @param function the delegating function
-	 * @return an operator view of the specified function.
-	 */
-	static <T> BinaryOperator<T> apply(java.util.function.BiFunction<? super T, ? super T, T> function) {
-		return (function != null) && (function != Function.empty()) ? new BinaryOperator<>() {
-			@Override
-			public T apply(T value1, T value2) {
-				return function.apply(value1, value2);
-			}
-		} : empty();
-	}
-
-	/**
 	 * Returns an operator that applies the former parameter to the specified operator.
 	 * @param <T> the operating type
 	 * @param operator the operator applied to the former parameter
 	 * @return an operator that applies the former parameter to the specified operator.
 	 */
-	static <T> BinaryOperator<T> applyFormer(java.util.function.UnaryOperator<T> operator) {
-		return new BinaryOperator<>() {
-			@Override
-			public T apply(T value, T ignored) {
-				return operator.apply(value);
-			}
-		};
+	static <T> BinaryOperator<T> former(java.util.function.UnaryOperator<T> operator) {
+		return new FormerBinaryOperator<>(operator);
 	}
 
 	/**
@@ -194,12 +76,61 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param operator the operator applied to the latter parameter
 	 * @return an operator that applies the latter parameter to the specified operator.
 	 */
-	static <T> BinaryOperator<T> applyLatter(java.util.function.UnaryOperator<T> operator) {
+	static <T> BinaryOperator<T> latter(java.util.function.UnaryOperator<T> operator) {
+		return new LatterBinaryOperator<>(operator);
+	}
+
+	/**
+	 * Returns a function that delegates to one of two functions based on the specified predicate.
+	 * @param <T> the operating type
+	 * @param predicate a predicate
+	 * @param accepted the function to apply when accepted by the specified predicate
+	 * @param rejected the function to apply when rejected by the specified predicate
+	 * @return a function that delegates to one of two functions based on the specified predicate.
+	 */
+	static <T> BinaryOperator<T> when(java.util.function.BiPredicate<T, T> predicate, java.util.function.BinaryOperator<T> accepted, java.util.function.BinaryOperator<T> rejected) {
 		return new BinaryOperator<>() {
 			@Override
-			public T apply(T ignored, T value) {
-				return operator.apply(value);
+			public T apply(T value1, T value2) {
+				java.util.function.BinaryOperator<T> function = predicate.test(value1, value2) ? accepted : rejected;
+				return function.apply(value1, value2);
 			}
 		};
+	}
+
+	/**
+	 * A function that returns a fixed value.
+	 * @param <V> the operating type
+	 */
+	class SimpleBinaryOperator<V> extends SimpleBiFunction<V, V, V> implements BinaryOperator<V> {
+		static final BinaryOperator<?> NULL = new SimpleBinaryOperator<>(null);
+
+		SimpleBinaryOperator(V value) {
+			super(value);
+		}
+	}
+
+	/**
+	 * A function that returns its former parameter.
+	 * @param <V> the operating type
+	 */
+	class FormerBinaryOperator<V> extends FormerBiFunction<V, V, V> implements BinaryOperator<V> {
+		static final BinaryOperator<?> INSTANCE = new FormerBinaryOperator<>(UnaryOperator.identity());
+
+		FormerBinaryOperator(java.util.function.UnaryOperator<V> operator) {
+			super(operator);
+		}
+	}
+
+	/**
+	 * A function that returns its latter parameter.
+	 * @param <V> the operating type
+	 */
+	class LatterBinaryOperator<V> extends LatterBiFunction<V, V, V> implements BinaryOperator<V> {
+		static final BinaryOperator<?> INSTANCE = new LatterBinaryOperator<>(UnaryOperator.identity());
+
+		LatterBinaryOperator(java.util.function.UnaryOperator<V> operator) {
+			super(operator);
+		}
 	}
 }

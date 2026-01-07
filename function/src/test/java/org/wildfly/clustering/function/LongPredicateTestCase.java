@@ -29,14 +29,6 @@ public class LongPredicateTestCase {
 		long positive = this.random.nextLong(1L, Integer.MAX_VALUE);
 		long negative = this.random.nextLong(Integer.MIN_VALUE, 0L);
 
-		assertThat(LongPredicate.ALWAYS.test(negative)).isTrue();
-		assertThat(LongPredicate.ALWAYS.test(0L)).isTrue();
-		assertThat(LongPredicate.ALWAYS.test(positive)).isTrue();
-
-		assertThat(LongPredicate.NEVER.test(negative)).isFalse();
-		assertThat(LongPredicate.NEVER.test(0L)).isFalse();
-		assertThat(LongPredicate.NEVER.test(positive)).isFalse();
-
 		assertThat(LongPredicate.of(true).test(negative)).isTrue();
 		assertThat(LongPredicate.of(true).test(0L)).isTrue();
 		assertThat(LongPredicate.of(true).test(positive)).isTrue();
@@ -94,8 +86,8 @@ public class LongPredicateTestCase {
 	@Test
 	public void negate() {
 		long value = this.random.nextLong();
-		assertThat(LongPredicate.ALWAYS.negate().test(value)).isFalse();
-		assertThat(LongPredicate.NEVER.negate().test(value)).isTrue();
+		assertThat(LongPredicate.of(true).negate().test(value)).isFalse();
+		assertThat(LongPredicate.of(false).negate().test(value)).isTrue();
 	}
 
 	@Test
@@ -168,25 +160,5 @@ public class LongPredicateTestCase {
 		doReturn(expected).when(predicate).test(mapped);
 
 		assertThat(predicate.composeLong(function).test(value)).isEqualTo(expected);
-	}
-
-	@Test
-	public void xor() {
-		LongPredicate predicate1 = mock(LongPredicate.class);
-		LongPredicate predicate2 = mock(LongPredicate.class);
-
-		doCallRealMethod().when(predicate1).xor(any());
-
-		LongPredicate predicate = predicate1.xor(predicate2);
-
-		int value = this.random.nextInt();
-
-		doReturn(false, true, false, true).when(predicate1).test(value);
-		doReturn(false, false, true, true).when(predicate2).test(value);
-
-		assertThat(predicate.test(value)).isFalse();
-		assertThat(predicate.test(value)).isTrue();
-		assertThat(predicate.test(value)).isTrue();
-		assertThat(predicate.test(value)).isFalse();
 	}
 }

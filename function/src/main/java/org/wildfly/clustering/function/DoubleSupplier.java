@@ -6,117 +6,81 @@
 package org.wildfly.clustering.function;
 
 /**
- * Enhanced {@link java.util.function.IntSupplier}.
+ * A supplier of a double value.
  * @author Paul Ferraro
  */
-public interface DoubleSupplier extends java.util.function.DoubleSupplier {
+public interface DoubleSupplier extends java.util.function.DoubleSupplier, PrimitiveSupplier<Double>, ToDoubleOperation {
 	/** A supplier that always returns zero. */
 	DoubleSupplier ZERO = of(0d);
 
-	/**
-	 * Returns a runner that accepts the value returned by this supplier via the specified consumer.
-	 * @param consumer a integer consumer
-	 * @return a runner that accepts the value returned by this supplier via the specified consumer.
-	 */
-	default Runner thenAccept(java.util.function.DoubleConsumer consumer) {
-		return Runner.accept(consumer, this);
+	@Override
+	default DoubleSupplier compose(Runnable before) {
+		return DoubleSupplier.of(before, this);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified function to the value returned by this supplier.
-	 * @param <V> the mapped value type
-	 * @param function a mapping function
-	 * @return a supplier that applies the specified function to the value returned by this supplier.
-	 */
-	default <V> Supplier<V> thenApply(java.util.function.DoubleFunction<V> function) {
-		return new Supplier<>() {
-			@Override
-			public V get() {
-				return function.apply(DoubleSupplier.this.getAsDouble());
-			}
-		};
+	@Override
+	default <T> ToDoubleFunction<T> compose(java.util.function.Consumer<? super T> before) {
+		return ToDoubleFunction.of(before, this);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified operator to the value returned by this supplier.
-	 * @param operator a mapping operator
-	 * @return a supplier that applies the specified operator to the value returned by this supplier.
-	 */
-	default DoubleSupplier thenApplyAsDouble(java.util.function.DoubleUnaryOperator operator) {
-		return new DoubleSupplier() {
-			@Override
-			public double getAsDouble() {
-				return operator.applyAsDouble(DoubleSupplier.this.getAsDouble());
-			}
-		};
+	@Override
+	default <T1, T2> ToDoubleBiFunction<T1, T2> composeBinary(java.util.function.BiConsumer<? super T1, ? super T2> before) {
+		return ToDoubleBiFunction.of(before, this);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified function to the value returned by this supplier.
-	 * @param function a mapping function
-	 * @return a supplier that applies the specified function to the value returned by this supplier.
-	 */
-	default IntSupplier thenApplyAsInt(java.util.function.DoubleToIntFunction function) {
-		return new IntSupplier() {
-			@Override
-			public int getAsInt() {
-				return function.applyAsInt(DoubleSupplier.this.getAsDouble());
-			}
-		};
+	@Override
+	default BooleanToDoubleFunction composeBoolean(BooleanConsumer before) {
+		return BooleanToDoubleFunction.of(before, this);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified function to the value returned by this supplier.
-	 * @param function a mapping function
-	 * @return a supplier that applies the specified function to the value returned by this supplier.
-	 */
-	default LongSupplier thenApplyAsLong(java.util.function.DoubleToLongFunction function) {
-		return new LongSupplier() {
-			@Override
-			public long getAsLong() {
-				return function.applyAsLong(DoubleSupplier.this.getAsDouble());
-			}
-		};
+	@Override
+	default DoubleUnaryOperator composeDouble(java.util.function.DoubleConsumer before) {
+		return DoubleUnaryOperator.of(before, this);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified predicate to the value returned by this supplier.
-	 * @param predicate a predicate
-	 * @return a supplier that applies the specified predicate to the value returned by this supplier.
-	 */
-	default BooleanSupplier thenTest(java.util.function.DoublePredicate predicate) {
-		return new BooleanSupplier() {
-			@Override
-			public boolean getAsBoolean() {
-				return predicate.test(DoubleSupplier.this.getAsDouble());
-			}
-		};
+	@Override
+	default IntToDoubleFunction composeInt(java.util.function.IntConsumer before) {
+		return IntToDoubleFunction.of(before, this);
 	}
 
-	/**
-	 * Returns a boxed version of this supplier.
-	 * @return a boxed version of this supplier.
-	 */
-	default Supplier<Double> boxed() {
-		return thenApply(Double::valueOf);
+	@Override
+	default LongToDoubleFunction composeLong(java.util.function.LongConsumer before) {
+		return LongToDoubleFunction.of(before, this);
 	}
 
-	/**
-	 * Returns a new supplier that delegates to this supplier using the specified exception handler.
-	 * @param handler an exception handler
-	 * @return a new supplier that delegates to this supplier using the specified exception handler.
-	 */
-	default DoubleSupplier handle(java.util.function.ToDoubleFunction<RuntimeException> handler) {
-		return new DoubleSupplier() {
-			@Override
-			public double getAsDouble() {
-				try {
-					return DoubleSupplier.this.getAsDouble();
-				} catch (RuntimeException e) {
-					return handler.applyAsDouble(e);
-				}
-			}
-		};
+	@Override
+	default Runner thenAccept(java.util.function.DoubleConsumer after) {
+		return Runner.of(this, after);
+	}
+
+	@Override
+	default <V> Supplier<V> thenApply(java.util.function.DoubleFunction<? extends V> after) {
+		return Supplier.of(this, after);
+	}
+
+	@Override
+	default DoubleSupplier thenApplyAsDouble(java.util.function.DoubleUnaryOperator after) {
+		return DoubleSupplier.of(this, after);
+	}
+
+	@Override
+	default IntSupplier thenApplyAsInt(java.util.function.DoubleToIntFunction after) {
+		return IntSupplier.of(this, after);
+	}
+
+	@Override
+	default LongSupplier thenApplyAsLong(java.util.function.DoubleToLongFunction after) {
+		return LongSupplier.of(this, after);
+	}
+
+	@Override
+	default Supplier<Double> thenBox() {
+		return this.thenApply(DoubleUnaryOperator.identity().thenBox());
+	}
+
+	@Override
+	default BooleanSupplier thenTest(java.util.function.DoublePredicate after) {
+		return BooleanSupplier.of(this, after);
 	}
 
 	/**
@@ -129,6 +93,103 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier {
 			@Override
 			public double getAsDouble() {
 				return value;
+			}
+
+			@Override
+			public Supplier<Double> thenBox() {
+				return Supplier.of(Double.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static DoubleSupplier of(Runnable before, java.util.function.DoubleSupplier after) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				before.run();
+				return after.getAsDouble();
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static <T> DoubleSupplier of(java.util.function.Supplier<? extends T> before, java.util.function.ToDoubleFunction<? super T> after) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				return after.applyAsDouble(before.get());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static DoubleSupplier of(java.util.function.BooleanSupplier before, BooleanToDoubleFunction after) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				return after.applyAsDouble(before.getAsBoolean());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static DoubleSupplier of(java.util.function.DoubleSupplier before, java.util.function.DoubleUnaryOperator after) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				return after.applyAsDouble(before.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static DoubleSupplier of(java.util.function.IntSupplier before, java.util.function.IntToDoubleFunction after) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				return after.applyAsDouble(before.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static DoubleSupplier of(java.util.function.LongSupplier before, java.util.function.LongToDoubleFunction after) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				return after.applyAsDouble(before.getAsLong());
 			}
 		};
 	}

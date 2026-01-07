@@ -71,7 +71,7 @@ public class DefaultSessionMetaDataEntry<C> extends AbstractSessionMetaDataEntry
 		result.setMaxIdle(offsets.getMaxIdleOffset().apply(this.maxIdle));
 		result.getLastAccessStartTime().set(offsets.getLastAccessStartTimeOffset().apply(this.lastAccessStartTime.get()));
 		result.getLastAccessEndTime().set(offsets.getLastAccessEndTimeOffset().apply(this.lastAccessEndTime.get()));
-		result.getContext().get(Supplier.of(this.context.get(Supplier.empty())));
+		result.getContext().get(Supplier.of(this.context.get(Supplier.of(null))));
 		return result;
 	}
 }

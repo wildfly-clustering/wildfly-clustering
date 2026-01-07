@@ -47,7 +47,7 @@ public class SimpleObjectOutput extends SimpleDataOutput implements ObjectOutput
 		 * Creates a builder of an object output
 		 */
 		public Builder() {
-			this.objects = Consumer.empty();
+			this.objects = Consumer.of();
 		}
 
 		/**

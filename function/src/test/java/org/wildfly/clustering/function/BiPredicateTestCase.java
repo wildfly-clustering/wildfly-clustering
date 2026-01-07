@@ -31,7 +31,7 @@ public class BiPredicateTestCase {
 
 		doReturn(expected).when(predicate1).test(this.value1);
 
-		BiPredicate<UUID, UUID> predicate = BiPredicate.testFormer(predicate1);
+		BiPredicate<UUID, UUID> predicate = BiPredicate.former(predicate1);
 
 		assertThat(predicate.test(this.value1, this.value2)).isEqualTo(expected);
 
@@ -45,7 +45,7 @@ public class BiPredicateTestCase {
 
 		doReturn(expected).when(predicate2).test(this.value2);
 
-		BiPredicate<UUID, UUID> predicate = BiPredicate.testLatter(predicate2);
+		BiPredicate<UUID, UUID> predicate = BiPredicate.latter(predicate2);
 
 		assertThat(predicate.test(this.value1, this.value2)).isEqualTo(expected);
 

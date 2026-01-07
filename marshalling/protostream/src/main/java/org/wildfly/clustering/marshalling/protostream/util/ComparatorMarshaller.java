@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.util.Comparator;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -42,7 +40,7 @@ public enum ComparatorMarshaller implements FieldSetMarshaller.Simple<Comparator
 		return switch (index) {
 			case REVERSE_INDEX -> reader.readBool() ? Comparator.reverseOrder() : Comparator.naturalOrder();
 			case COMPARATOR_INDEX -> reader.readAny(Comparator.class);
-			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(comparator)).get();
+			default -> reader.skipField(type, comparator);
 		};
 	}
 

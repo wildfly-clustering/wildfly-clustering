@@ -36,7 +36,7 @@ public class CachedUserManager<C, T, D, S> extends DecoratedUserManager<C, T, D,
 	public CachedUserManager(UserManager<C, T, D, S> manager, CacheFactory cacheFactory) {
 		super(manager);
 		this.findUser = (id, closeTask) -> Optional.ofNullable(manager.findUser(id)).map(user -> new CachedUser<>(user, closeTask)).orElse(null);
-		this.cache = cacheFactory.createCache(Consumer.empty(), Consumer.<User<C, T, D, S>>close().compose(CacheableUser::get));
+		this.cache = cacheFactory.createCache(Consumer.of(), Consumer.<User<C, T, D, S>>close().compose(CacheableUser::get));
 	}
 
 	@Override

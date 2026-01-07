@@ -37,7 +37,7 @@ public interface BlockingReference<T> extends Reference<T> {
 	 * @return a thread-safe reader of this reference.
 	 */
 	default Writer<T> writer(java.util.function.Supplier<T> supplier) {
-		return this.writer(UnaryOperator.of(Consumer.empty(), supplier));
+		return this.writer(UnaryOperator.of(Consumer.of(), supplier));
 	}
 
 	/**

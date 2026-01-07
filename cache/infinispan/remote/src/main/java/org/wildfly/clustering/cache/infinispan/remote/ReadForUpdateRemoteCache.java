@@ -22,7 +22,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.wildfly.clustering.function.BooleanSupplier;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 
 /**
  * A remote cache that performs locking reads if a transaction is active.
@@ -41,8 +40,7 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 	 */
 	public ReadForUpdateRemoteCache(InternalRemoteCache<K, V> cache) {
 		super(cache, ReadForUpdateRemoteCache::new);
-		Function<MetadataValue<V>, V> value = MetadataValue::getValue;
-		this.value = value.orDefault(Objects::nonNull, Supplier.empty());
+		this.value = Function.when(Objects::nonNull, MetadataValue::getValue, Function.of(null));
 		this.forceReturnCache = cache.withFlags(Flag.FORCE_RETURN_VALUE);
 		TransactionManager tm = cache.getTransactionManager();
 		this.currentTransation = (tm != null) ? new BooleanSupplier() {
@@ -54,7 +52,7 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 					return false;
 				}
 			}
-		} : BooleanSupplier.FALSE;
+		} : BooleanSupplier.of(false);
 	}
 
 	@Override

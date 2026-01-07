@@ -63,6 +63,6 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.writeCache.removeAsync(new UserSessionsKey(id)).thenAccept(Consumer.empty());
+		return this.writeCache.removeAsync(new UserSessionsKey(id)).thenAccept(Consumer.of());
 	}
 }

@@ -102,7 +102,7 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 		this.closeTimeout = configuration.getCloseTimeout();
 		Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> scheduleFirst = this::scheduleFirst;
 		Consumer<Future<?>> cancelFuture = future -> future.cancel(true);
-		Consumer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancelEntry = cancelFuture.<Map.Entry<Map.Entry<K, Instant>, Future<?>>>compose(Map.Entry::getValue).when(Objects::nonNull);
+		Consumer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancelEntry = Consumer.when(Objects::nonNull, cancelFuture.compose(Map.Entry::getValue), Consumer.of());
 		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel = UnaryOperator.of(cancelEntry, Supplier.of(null));
 		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule = UnaryOperator.of(cancelEntry, scheduleFirst);
 		BlockingReference<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntry = BlockingReference.of(null);

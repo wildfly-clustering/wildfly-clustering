@@ -94,7 +94,7 @@ public class InfinispanSessionManagerITCase extends AbstractSessionManagerITCase
 												.connectionFactory(DataSourceConnectionFactoryConfigurationBuilder.class).withDataSource(dataSource)
 												;
 									}
-									return Runner.empty();
+									return Runner.of();
 								}
 
 								@Override

@@ -65,7 +65,7 @@ public class InfinispanUserContextFactory<PC, PV, TC> implements UserContextFact
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.writeCache.removeAsync(new UserContextKey(id)).thenAccept(Consumer.empty());
+		return this.writeCache.removeAsync(new UserContextKey(id)).thenAccept(Consumer.of());
 	}
 
 	@Override

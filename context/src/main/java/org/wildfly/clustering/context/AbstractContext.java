@@ -34,6 +34,6 @@ public abstract class AbstractContext<T> implements Context<T>, Consumer<Runnabl
 
 	@Override
 	public void close() {
-		Runner.runAll(this.tasks::descendingIterator).run();
+		Runner.of(this.tasks::descendingIterator).run();
 	}
 }

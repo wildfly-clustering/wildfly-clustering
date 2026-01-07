@@ -63,6 +63,6 @@ public class InfinispanUserSessionsFactory<D, S> implements UserSessionsFactory<
 
 	@Override
 	public CompletionStage<Void> removeAsync(String id) {
-		return this.writeOnlyCache.removeAsync(new UserSessionsKey(id)).thenAccept(Consumer.empty());
+		return this.writeOnlyCache.removeAsync(new UserSessionsKey(id)).thenAccept(Consumer.of());
 	}
 }

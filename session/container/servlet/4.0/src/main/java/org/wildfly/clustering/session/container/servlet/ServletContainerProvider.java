@@ -54,12 +54,12 @@ public class ServletContainerProvider<C> implements ContainerProvider.SessionAtt
 
 	@Override
 	public Consumer<HttpSession> getPrePassivateEventNotifier(HttpSessionActivationListener listener) {
-		return Consumer.<HttpSessionEvent>empty().andThen(listener::sessionWillPassivate).compose(HttpSessionEvent::new);
+		return Consumer.of(HttpSessionEvent::new, listener::sessionWillPassivate);
 	}
 
 	@Override
 	public Consumer<HttpSession> getPostActivateEventNotifier(HttpSessionActivationListener listener) {
-		return Consumer.<HttpSessionEvent>empty().andThen(listener::sessionDidActivate).compose(HttpSessionEvent::new);
+		return Consumer.of(HttpSessionEvent::new, listener::sessionDidActivate);
 	}
 
 	@Override

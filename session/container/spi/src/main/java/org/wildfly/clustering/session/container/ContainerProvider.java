@@ -34,12 +34,12 @@ public interface ContainerProvider<CC, S, L, SC> {
 
 		@Override
 		default Consumer<S> getPostActivateEventNotifier(Void listener) {
-			return Consumer.empty();
+			return Consumer.of();
 		}
 
 		@Override
 		default Consumer<S> getPrePassivateEventNotifier(Void listener) {
-			return Consumer.empty();
+			return Consumer.of();
 		}
 	}
 

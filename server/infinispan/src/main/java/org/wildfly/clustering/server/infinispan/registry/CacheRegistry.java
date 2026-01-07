@@ -88,7 +88,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		 * @return a task to run on {@link CacheContainerRegistry#close()}.
 		 */
 		default Runnable getCloseTask() {
-			return Runner.empty();
+			return Runner.of();
 		}
 	}
 

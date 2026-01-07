@@ -50,6 +50,6 @@ public class EmbeddedCacheEntryMutator<K, V> extends AbstractCacheEntryMutator {
 			builder.maxIdle(seconds, TimeUnit.SECONDS);
 		}
 		// Use FAIL_SILENTLY to prevent mutation from failing locally due to remote exceptions
-		return this.cache.getAdvancedCache().putAsync(this.key, this.value, builder.build()).thenAccept(Consumer.empty());
+		return this.cache.getAdvancedCache().putAsync(this.key, this.value, builder.build()).thenAccept(Consumer.of());
 	}
 }
