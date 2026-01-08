@@ -5,6 +5,7 @@
 package org.wildfly.clustering.session;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
@@ -36,5 +37,13 @@ public interface ImmutableSessionMetaData extends ExpirationMetaData {
 	@Override
 	default Optional<Instant> getLastAccessTime() {
 		return this.getLastAccessEndTime();
+	}
+
+	/**
+	 * If present, returns and entry containing the start and end time of the last request to access this session.
+	 * @return an entry containing the start and end time of the last request to access this session, or empty if session was created during the current request.
+	 */
+	default Optional<Map.Entry<Instant, Instant>> getLastAccess() {
+		return this.getLastAccessTime().isPresent() ? Optional.of(Map.entry(this.getLastAccessStartTime().get(), this.getLastAccessEndTime().get())) : Optional.empty();
 	}
 }
