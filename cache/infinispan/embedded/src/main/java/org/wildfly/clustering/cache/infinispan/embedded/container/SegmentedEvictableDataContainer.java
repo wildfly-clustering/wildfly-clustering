@@ -61,10 +61,12 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 		super(PeekableTouchableContainerMap::new, configuration.clustering().hash().numSegments());
 		Map<Object, CompletableFuture<Void>> futures = new ConcurrentHashMap<>();
 		BiConsumer<K, InternalCacheEntry<K, V>> evictionListener = (key, entry) -> {
-			// Schedule an eviction to happen after the key lock is released
-			CompletableFuture<Void> future = new CompletableFuture<>();
-			futures.put(key, future);
-			this.handleEviction(entry, future);
+			if (this.passivator.isRunning()) {
+				// Schedule an eviction to happen after the key lock is released
+				CompletableFuture<Void> future = new CompletableFuture<>();
+				futures.put(key, future);
+				this.handleEviction(entry, future);
+			}
 		};
 		BiConsumer<K, InternalCacheEntry<K, V>> removalListener = (key, entry) -> {
 			// It is very important that the fact that this method is invoked AFTER the entry has been evicted outside of the lock.
