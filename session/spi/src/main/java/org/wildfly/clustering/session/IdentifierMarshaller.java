@@ -21,13 +21,16 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	/** Marshals session identifier as a ISO 8859 encoded string */
 	ISO_LATIN_1() {
 		@Override
-		public String read(ByteBuffer buffer) {
-			if (!buffer.hasArray()) {
-				throw new IllegalArgumentException(buffer.toString());
-			}
-			int offset = buffer.arrayOffset() + buffer.position();
+		public String read(ByteBuffer original) {
+			boolean hasArray = original.hasArray();
+			ByteBuffer buffer = hasArray ? original : original.duplicate();
 			int length = buffer.remaining();
-			return new String(buffer.array(), offset, length, StandardCharsets.ISO_8859_1);
+			int offset = hasArray ? buffer.arrayOffset() + buffer.position() : 0;
+			byte[] bytes = buffer.hasArray() ? buffer.array() : new byte[length];
+			if (hasArray) {
+				buffer.get(bytes, offset, length);
+			}
+			return new String(bytes, offset, length, StandardCharsets.ISO_8859_1);
 		}
 
 		@Override
@@ -109,11 +112,16 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 		}
 
 		@Override
-		public String read(ByteBuffer buffer) {
-			if (!buffer.hasArray()) {
-				throw new IllegalArgumentException(buffer.toString());
+		public String read(ByteBuffer original) {
+			boolean hasArray = original.hasArray();
+			ByteBuffer buffer = hasArray ? original : original.duplicate();
+			int length = buffer.remaining();
+			int offset = hasArray ? buffer.arrayOffset() + buffer.position() : 0;
+			byte[] bytes = buffer.hasArray() ? buffer.array() : new byte[length];
+			if (hasArray) {
+				buffer.get(bytes, offset, length);
 			}
-			return this.format.formatHex(buffer.array(), buffer.arrayOffset(), buffer.limit());
+			return this.format.formatHex(bytes, offset, length);
 		}
 
 		@Override
