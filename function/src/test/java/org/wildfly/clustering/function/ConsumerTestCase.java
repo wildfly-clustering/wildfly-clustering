@@ -160,23 +160,29 @@ public class ConsumerTestCase {
 	@Test
 	public void close() throws Exception {
 		AutoCloseable resource = mock(AutoCloseable.class);
+		java.util.function.Consumer<Exception> handler = mock(java.util.function.Consumer.class);
 
-		Consumer<AutoCloseable> consumer = Consumer.close(Consumer.debug());
+		Consumer<AutoCloseable> consumer = Consumer.close(handler);
 
 		consumer.accept(resource);
 
 		verify(resource).close();
+		verifyNoInteractions(handler);
 
-		doThrow(new Exception()).when(resource).close();
+		Exception checkedException = new Exception();
+		RuntimeException uncheckedException = new RuntimeException();
+
+		doThrow(checkedException, uncheckedException).when(resource).close();
 
 		// Verify silent close
 		consumer.accept(resource);
 
-		IllegalStateException exception = new IllegalStateException();
-		doThrow(exception).when(resource).close();
+		verify(handler).accept(checkedException);
 
 		// Verify runtime exception propagated
-		assertThatThrownBy(resource::close).isSameAs(exception);
+		assertThatThrownBy(resource::close).isSameAs(uncheckedException);
+
+		verifyNoMoreInteractions(handler);
 	}
 
 	@Test
