@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.container;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
@@ -46,9 +47,7 @@ public abstract class AbstractSessionManagerITCase<A extends Archive<A> & ClassC
 				.addClass(SessionManagementEndpointConfiguration.class)
 				.addPackage(endpointPackage)
 				;
-		if (!Optional.ofNullable(endpointClass.getSuperclass()).map(Class::getPackage).orElse(endpointPackage).equals(endpointPackage)) {
-			archive.addPackage(endpointClass.getSuperclass().getPackage());
-		}
+		Optional.ofNullable(endpointClass.getSuperclass()).map(Class::getPackage).filter(Predicate.isEqual(endpointPackage).negate()).ifPresent(archive::addPackage);
 		return archive;
 	}
 }
