@@ -21,7 +21,7 @@ import org.wildfly.clustering.marshalling.Marshaller;
  * Unit test for {@link IdentifierMarshaller}.
  * @author Paul Ferraro
  */
-public class StringIdentifierSerializerTestCase {
+public class IdentifierMarshallerTestCase {
 
 	@Test
 	public void testString() throws IOException {
@@ -45,6 +45,12 @@ public class StringIdentifierSerializerTestCase {
 			String id = generator.get();
 			ByteBuffer buffer = marshaller.write(id);
 			assertThat(marshaller.read(buffer)).isEqualTo(id);
+
+			if (buffer.hasArray()) {
+				// Verify reading from direct buffer
+				ByteBuffer directBuffer = ByteBuffer.allocateDirect(buffer.rewind().remaining());
+				assertThat(marshaller.read(directBuffer.put(buffer).flip())).isEqualTo(id);
+			}
 		}
 	}
 }

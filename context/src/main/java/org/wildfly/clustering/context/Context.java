@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.context;
 
+import java.util.function.Function;
+
 import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
 
@@ -16,6 +18,21 @@ import org.wildfly.clustering.function.Supplier;
 public interface Context<T> extends Supplier<T>, AutoCloseable {
 	/** An empty context */
 	Context<?> EMPTY = of(null, Runner.empty());
+
+	@Override
+	default <R> Context<R> thenApply(Function<T, R> function) {
+		return new Context<>() {
+			@Override
+			public R get() {
+				return function.apply(Context.this.get());
+			}
+
+			@Override
+			public void close() {
+				Context.this.close();
+			}
+		};
+	}
 
 	@Override
 	void close();

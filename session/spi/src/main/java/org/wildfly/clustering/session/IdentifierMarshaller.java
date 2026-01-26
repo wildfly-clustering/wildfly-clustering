@@ -22,12 +22,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	ISO_LATIN_1() {
 		@Override
 		public String read(ByteBuffer buffer) {
-			if (!buffer.hasArray()) {
-				throw new IllegalArgumentException(buffer.toString());
-			}
-			int offset = buffer.arrayOffset() + buffer.position();
-			int length = buffer.remaining();
-			return new String(buffer.array(), offset, length, StandardCharsets.ISO_8859_1);
+			return StandardCharsets.ISO_8859_1.decode(buffer.duplicate()).toString();
 		}
 
 		@Override
@@ -44,7 +39,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	BASE64() {
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
-			return ISO_LATIN_1.read(Base64.getUrlEncoder().encode(buffer));
+			return ISO_LATIN_1.read(Base64.getUrlEncoder().encode(buffer.duplicate()));
 		}
 
 		@Override
@@ -58,7 +53,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
-			return this.marshaller.read(buffer);
+			return this.marshaller.read(buffer.duplicate());
 		}
 
 		@Override
@@ -72,7 +67,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
-			return this.marshaller.read(buffer);
+			return this.marshaller.read(buffer.duplicate());
 		}
 
 		@Override
@@ -110,10 +105,14 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 
 		@Override
 		public String read(ByteBuffer buffer) {
-			if (!buffer.hasArray()) {
-				throw new IllegalArgumentException(buffer.toString());
+			boolean hasArray = buffer.hasArray();
+			int length = buffer.remaining();
+			int offset = (hasArray ? buffer.arrayOffset() : 0) + buffer.position();
+			byte[] bytes = buffer.hasArray() ? buffer.array() : new byte[length];
+			if (!hasArray) {
+				buffer.get(bytes, offset, length);
 			}
-			return this.format.formatHex(buffer.array(), buffer.arrayOffset(), buffer.limit());
+			return this.format.formatHex(bytes, offset, offset + length);
 		}
 
 		@Override

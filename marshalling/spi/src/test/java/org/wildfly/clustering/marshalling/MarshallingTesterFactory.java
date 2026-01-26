@@ -49,6 +49,16 @@ public interface MarshallingTesterFactory extends TesterFactory {
 
 					assertion.accept(subject, result);
 
+					if (buffer.hasArray()) {
+						// Validate reading from direct buffer
+						ByteBuffer directBuffer = ByteBuffer.allocateDirect(buffer.rewind().remaining());
+
+						@SuppressWarnings("unchecked")
+						T directResult = (T) marshaller.read(directBuffer.put(buffer).flip());
+
+						assertion.accept(subject, directResult);
+					}
+
 					return result;
 				} catch (IOException e) {
 					throw new IllegalArgumentException(e);
