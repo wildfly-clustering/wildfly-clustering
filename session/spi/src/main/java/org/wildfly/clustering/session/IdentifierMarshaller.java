@@ -21,16 +21,8 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	/** Marshals session identifier as a ISO 8859 encoded string */
 	ISO_LATIN_1() {
 		@Override
-		public String read(ByteBuffer original) {
-			boolean hasArray = original.hasArray();
-			ByteBuffer buffer = hasArray ? original : original.duplicate();
-			int length = buffer.remaining();
-			int offset = hasArray ? buffer.arrayOffset() + buffer.position() : 0;
-			byte[] bytes = buffer.hasArray() ? buffer.array() : new byte[length];
-			if (hasArray) {
-				buffer.get(bytes, offset, length);
-			}
-			return new String(bytes, offset, length, StandardCharsets.ISO_8859_1);
+		public String read(ByteBuffer buffer) {
+			return StandardCharsets.ISO_8859_1.decode(buffer.duplicate()).toString();
 		}
 
 		@Override
@@ -47,7 +39,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 	BASE64() {
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
-			return ISO_LATIN_1.read(Base64.getUrlEncoder().encode(buffer));
+			return ISO_LATIN_1.read(Base64.getUrlEncoder().encode(buffer.duplicate()));
 		}
 
 		@Override
@@ -61,7 +53,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
-			return this.marshaller.read(buffer);
+			return this.marshaller.read(buffer.duplicate());
 		}
 
 		@Override
@@ -75,7 +67,7 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 
 		@Override
 		public String read(ByteBuffer buffer) throws IOException {
-			return this.marshaller.read(buffer);
+			return this.marshaller.read(buffer.duplicate());
 		}
 
 		@Override
@@ -112,16 +104,15 @@ public enum IdentifierMarshaller implements Marshaller<String, ByteBuffer> {
 		}
 
 		@Override
-		public String read(ByteBuffer original) {
-			boolean hasArray = original.hasArray();
-			ByteBuffer buffer = hasArray ? original : original.duplicate();
+		public String read(ByteBuffer buffer) {
+			boolean hasArray = buffer.hasArray();
 			int length = buffer.remaining();
-			int offset = hasArray ? buffer.arrayOffset() + buffer.position() : 0;
+			int offset = (hasArray ? buffer.arrayOffset() : 0) + buffer.position();
 			byte[] bytes = buffer.hasArray() ? buffer.array() : new byte[length];
-			if (hasArray) {
+			if (!hasArray) {
 				buffer.get(bytes, offset, length);
 			}
-			return this.format.formatHex(bytes, offset, length);
+			return this.format.formatHex(bytes, offset, offset + length);
 		}
 
 		@Override
