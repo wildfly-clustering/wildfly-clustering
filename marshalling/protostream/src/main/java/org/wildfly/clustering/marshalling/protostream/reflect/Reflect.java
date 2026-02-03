@@ -5,11 +5,14 @@
 
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
-import java.lang.reflect.Constructor;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.LinkedList;
@@ -23,19 +26,27 @@ import java.util.List;
 final class Reflect {
 
 	@SuppressWarnings("removal")
-	static Field findField(Class<?> sourceClass, Class<?> fieldType) {
+	static VarHandle findVarHandle(Class<?> sourceClass, Class<?> fieldType) {
 		if (System.getSecurityManager() == null) {
-			return findFieldUnchecked(sourceClass, fieldType);
+			return findVarHandleUnchecked(sourceClass, fieldType);
 		}
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
-			public Field run() {
-				return findFieldUnchecked(sourceClass, fieldType);
+			public VarHandle run() {
+				return findVarHandleUnchecked(sourceClass, fieldType);
 			}
 		});
 	}
 
-	private static Field findFieldUnchecked(Class<?> sourceClass, Class<?> fieldType) {
+	private static VarHandle findVarHandleUnchecked(Class<?> sourceClass, Class<?> fieldType) {
+		try {
+			return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).unreflectVarHandle(findField(sourceClass, fieldType));
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static Field findField(Class<?> sourceClass, Class<?> fieldType) {
 		List<Field> assignableFields = new LinkedList<>();
 		Field[] fields = sourceClass.getDeclaredFields();
 		// Try first with precise type checking
@@ -59,35 +70,54 @@ final class Reflect {
 			throw new IllegalStateException(assignableFields.toString());
 		}
 		if (!assignableFields.isEmpty()) {
-			Field field = assignableFields.get(0);
-			field.setAccessible(true);
-			return field;
+			return assignableFields.get(0);
 		}
 		Class<?> superClass = sourceClass.getSuperclass();
 		if ((superClass == null) || (superClass == Object.class)) {
 			throw new IllegalArgumentException(fieldType.getName());
 		}
-		return findFieldUnchecked(superClass, fieldType);
+		return findField(superClass, fieldType);
+	}
+
+	static MethodHandle findMethodHandle(Class<?> sourceClass, Class<?> returnType) {
+		return findMethodHandle(sourceClass, MethodType.methodType(returnType));
 	}
 
 	@SuppressWarnings("removal")
-	static Method findMethod(Class<?> sourceClass, Class<?> returnType) {
+	static MethodHandle findMethodHandle(Class<?> sourceClass, MethodType type) {
 		if (System.getSecurityManager() == null) {
-			return findMethodUnchecked(sourceClass, returnType);
+			return findMethodHandleUnchecked(sourceClass, type);
 		}
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
-			public Method run() {
-				return findMethodUnchecked(sourceClass, returnType);
+			public MethodHandle run() {
+				return findMethodHandleUnchecked(sourceClass, type);
 			}
 		});
 	}
 
-	private static Method findMethodUnchecked(Class<?> sourceClass, Class<?> returnType) {
+	private static MethodHandle findMethodHandleUnchecked(Class<?> sourceClass, MethodType type) {
+		try {
+			return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).unreflect(findMethod(sourceClass, type));
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private static Method findMethod(Class<?> sourceClass, MethodType type) {
 		List<Method> matchingMethods = new LinkedList<>();
 		for (Method method : sourceClass.getDeclaredMethods()) {
-			if (!Modifier.isStatic(method.getModifiers()) && (method.getParameterCount() == 0) && (method.getReturnType() == returnType)) {
-				matchingMethods.add(method);
+			if (!Modifier.isStatic(method.getModifiers()) && (method.getParameterCount() == type.parameterCount()) && (method.getReturnType() == type.returnType())) {
+				Parameter[] parameter = method.getParameters();
+				boolean found = true;
+				for (int i = 0; i < method.getParameterCount(); ++i) {
+					if (parameter[i].getType() != type.parameterType(i)) {
+						found = false;
+					}
+				}
+				if (found) {
+					matchingMethods.add(method);
+				}
 			}
 		}
 		// We should not have matched more than 1 method
@@ -95,153 +125,57 @@ final class Reflect {
 			throw new IllegalStateException(matchingMethods.toString());
 		}
 		if (!matchingMethods.isEmpty()) {
-			Method method = matchingMethods.get(0);
-			method.setAccessible(true);
-			return method;
+			return matchingMethods.get(0);
 		}
 		Class<?> superClass = sourceClass.getSuperclass();
 		if ((superClass == null) || (superClass == Object.class)) {
-			throw new IllegalArgumentException(returnType.getName());
+			throw new IllegalArgumentException(type.returnType().getName());
 		}
-		return findMethodUnchecked(superClass, returnType);
+		return findMethod(superClass, type);
 	}
 
 	@SuppressWarnings("removal")
-	static Method findMethod(Class<?> sourceClass, String methodName) {
+	static MethodHandle getMethodHandle(Class<?> sourceClass, String methodName, MethodType type) {
 		if (System.getSecurityManager() == null) {
-			return findMethodUnchecked(sourceClass, methodName);
+			return getMethodHandleUnchecked(sourceClass, methodName, type);
 		}
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
-			public Method run() {
-				return findMethodUnchecked(sourceClass, methodName);
+			public MethodHandle run() {
+				return getMethodHandleUnchecked(sourceClass, methodName, type);
 			}
 		});
 	}
 
-	private static Method findMethodUnchecked(Class<?> sourceClass, String methodName) {
+	private static MethodHandle getMethodHandleUnchecked(Class<?> sourceClass, String methodName, MethodType type) {
 		try {
-			Method method = sourceClass.getDeclaredMethod(methodName);
-			method.setAccessible(true);
-			return method;
-		} catch (NoSuchMethodException e) {
+			return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).findVirtual(sourceClass, methodName, type);
+		} catch (IllegalAccessException | NoSuchMethodException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
+	static MethodHandle getConstructorHandle(Class<?> sourceClass, Class<?>... parameterTypes) {
+		return getConstructorHandle(sourceClass, MethodType.methodType(void.class, parameterTypes));
+	}
+
 	@SuppressWarnings("removal")
-	static <T> Constructor<T> getConstructor(Class<T> sourceClass, Class<?>... parameterTypes) {
+	static MethodHandle getConstructorHandle(Class<?> sourceClass, MethodType type) {
 		if (System.getSecurityManager() == null) {
-			return getConstructorUnchecked(sourceClass, parameterTypes);
+			return getConstructorHandleUnchecked(sourceClass, type);
 		}
 		return AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
-			public Constructor<T> run() {
-				return getConstructorUnchecked(sourceClass, parameterTypes);
+			public MethodHandle run() {
+				return getConstructorHandleUnchecked(sourceClass, type);
 			}
 		});
 	}
 
-	private static <T> Constructor<T> getConstructorUnchecked(Class<T> sourceClass, Class<?>... parameterTypes) {
+	private static MethodHandle getConstructorHandleUnchecked(Class<?> sourceClass, MethodType type) {
 		try {
-			Constructor<T> constructor = sourceClass.getDeclaredConstructor(parameterTypes);
-			constructor.setAccessible(true);
-			return constructor;
-		} catch (NoSuchMethodException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	@SuppressWarnings("removal")
-	static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
-		if (System.getSecurityManager() == null) {
-			return newInstanceUnchecked(constructor, parameters);
-		}
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public T run() {
-				return newInstanceUnchecked(constructor, parameters);
-			}
-		});
-	}
-
-	private static <T> T newInstanceUnchecked(Constructor<T> constructor, Object... parameters) {
-		try {
-			return constructor.newInstance(parameters);
-		} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	static Object getValue(Object source, Field field) {
-		return getValue(source, field, Object.class);
-	}
-
-	@SuppressWarnings("removal")
-	static <T> T getValue(Object source, Field field, Class<T> fieldType) {
-		if (System.getSecurityManager() == null) {
-			return getValueUnchecked(source, field, fieldType);
-		}
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public T run() {
-				return getValueUnchecked(source, field, fieldType);
-			}
-		});
-	}
-
-	private static <T> T getValueUnchecked(Object source, Field field, Class<T> fieldType) {
-		try {
-			return fieldType.cast(field.get(source));
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	@SuppressWarnings("removal")
-	static void setValue(Object source, Field field, Object value) {
-		if (System.getSecurityManager() == null) {
-			setValueUnchecked(source, field, value);
-		} else {
-			AccessController.doPrivileged(new PrivilegedAction<>() {
-				@Override
-				public Void run() {
-					setValueUnchecked(source, field, value);
-					return null;
-				}
-			});
-		}
-	}
-
-	private static void setValueUnchecked(Object source, Field field, Object value) {
-		try {
-			field.set(source, value);
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	static Object invoke(Object source, Method method) {
-		return invoke(source, method, Object.class);
-	}
-
-	@SuppressWarnings("removal")
-	static <T> T invoke(Object source, Method method, Class<T> returnClass) {
-		if (System.getSecurityManager() == null) {
-			return invokeUnchecked(source, method, returnClass);
-		}
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public T run() {
-				return invokeUnchecked(source, method, returnClass);
-			}
-		});
-	}
-
-	private static <T> T invokeUnchecked(Object source, Method method, Class<T> returnClass) {
-		try {
-			return returnClass.cast(method.invoke(source));
-		} catch (IllegalAccessException | InvocationTargetException e) {
+			return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).findConstructor(sourceClass, type);
+		} catch (IllegalAccessException | NoSuchMethodException e) {
 			throw new IllegalStateException(e);
 		}
 	}

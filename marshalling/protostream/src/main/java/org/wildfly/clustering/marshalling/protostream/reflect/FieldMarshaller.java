@@ -6,8 +6,8 @@
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.VarHandle;
 import java.util.function.Supplier;
 
 import org.infinispan.protostream.descriptors.WireType;
@@ -24,7 +24,7 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 
 	private final Class<? extends T> type;
 	private final Supplier<? extends T> factory;
-	private final Field[] fields;
+	private final VarHandle[] handles;
 
 	/**
 	 * Creates a marshaller for the specified fields of the specified class.
@@ -36,8 +36,19 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 	}
 
 	private static <T> Supplier<T> defaultFactory(Class<T> type) {
-		Constructor<T> constructor = Reflect.getConstructor(type);
-		return () -> Reflect.newInstance(constructor);
+		MethodHandle handle = Reflect.getConstructorHandle(type);
+		return new Supplier<>() {
+			@Override
+			public T get() {
+				try {
+					return (T) handle.invokeExact();
+				} catch (RuntimeException | Error e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new IllegalStateException(e);
+				}
+			}
+		};
 	}
 
 	/**
@@ -49,9 +60,9 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 	public FieldMarshaller(Class<? extends T> type, Supplier<? extends T> factory, Class<?>... memberTypes) {
 		this.type = type;
 		this.factory = factory;
-		this.fields = new Field[memberTypes.length];
-		for (int i = 0; i < this.fields.length; ++i) {
-			this.fields[i] = Reflect.findField(type, memberTypes[i]);
+		this.handles = new VarHandle[memberTypes.length];
+		for (int i = 0; i < this.handles.length; ++i) {
+			this.handles[i] = Reflect.findVarHandle(type, memberTypes[i]);
 		}
 	}
 
@@ -66,8 +77,9 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
-			if ((index > 0) || (index <= this.fields.length)) {
-				Reflect.setValue(result, this.fields[index - 1], reader.readAny());
+			if ((index > 0) || (index <= this.handles.length)) {
+				VarHandle handle = this.handles[index - 1];
+				handle.set(result, reader.readAny());
 			} else {
 				reader.skipField(tag);
 			}
@@ -77,8 +89,8 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, T source) throws IOException {
-		for (int i = 0; i < this.fields.length; ++i) {
-			Object value = Reflect.getValue(source, this.fields[i]);
+		for (int i = 0; i < this.handles.length; ++i) {
+			Object value = this.handles[i].get(source);
 			if (value != null) {
 				writer.writeAny(i + 1, value);
 			}

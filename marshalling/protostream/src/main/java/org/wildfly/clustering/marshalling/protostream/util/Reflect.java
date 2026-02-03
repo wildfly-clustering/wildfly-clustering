@@ -5,6 +5,9 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
@@ -15,7 +18,7 @@ import java.util.List;
  */
 class Reflect {
 
-	static Field findField(Class<?> sourceClass, Class<?> fieldType) {
+	static VarHandle getVarHandle(Class<?> sourceClass, Class<?> fieldType) {
 		List<Field> assignableFields = new LinkedList<>();
 		Field[] fields = sourceClass.getDeclaredFields();
 		// Try first with precise type checking
@@ -40,20 +43,25 @@ class Reflect {
 		}
 		if (!assignableFields.isEmpty()) {
 			Field field = assignableFields.get(0);
-			field.setAccessible(true);
-			return field;
+			try {
+				return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).unreflectVarHandle(field);
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
 		}
 		Class<?> superClass = sourceClass.getSuperclass();
 		if ((superClass == null) || (superClass == Object.class)) {
 			throw new IllegalArgumentException(fieldType.getName());
 		}
-		return findField(superClass, fieldType);
+		return getVarHandle(superClass, fieldType);
 	}
 
-	static <T> T getValue(Object source, Field field, Class<T> fieldType) {
+	static <T> T invoke(MethodHandle handle, Object source, Class<T> fieldType) {
 		try {
-			return fieldType.cast(field.get(source));
-		} catch (IllegalAccessException e) {
+			return fieldType.cast(handle.invokeExact(source));
+		} catch (RuntimeException | Error e) {
+			throw e;
+		} catch (Throwable e) {
 			throw new IllegalStateException(e);
 		}
 	}

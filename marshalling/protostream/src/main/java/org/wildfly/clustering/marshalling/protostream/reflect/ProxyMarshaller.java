@@ -6,7 +6,8 @@
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.util.OptionalInt;
 import java.util.function.Function;
 
@@ -32,14 +33,26 @@ public class ProxyMarshaller<T> implements ProtoStreamMarshaller<T> {
 		this.marshaller = Scalar.ANY.toMarshaller(proxyClass, new Function<>() {
 			@Override
 			public Object apply(T object) {
-				Method method = Reflect.findMethod(object.getClass(), "writeReplace");
-				return Reflect.invoke(object, method);
+				MethodHandle method = Reflect.getMethodHandle(object.getClass(), "writeReplace", MethodType.methodType(Object.class));
+				try {
+					return method.invokeExact(object);
+				} catch (RuntimeException | Error e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new IllegalStateException(e);
+				}
 			}
 		}, new Function<>() {
 			@Override
 			public T apply(Object proxy) {
-				Method method = Reflect.findMethod(proxy.getClass(), "readResolve");
-				return Reflect.invoke(proxy, method, proxyClass);
+				MethodHandle method = Reflect.getMethodHandle(proxy.getClass(), "readResolve", MethodType.methodType(Object.class));
+				try {
+					return (T) method.invokeExact(proxy);
+				} catch (RuntimeException | Error e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new IllegalStateException(e);
+				}
 			}
 		});
 	}
