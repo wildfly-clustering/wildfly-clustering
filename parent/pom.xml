@@ -65,7 +65,6 @@
 		<connection>scm:git:https://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
 		<developerConnection>scm:git:git@${project.repository.host}:${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
 		<url>${project.repository.url}</url>
-		<tag>9.0.0.CR2</tag>
 	</scm>
 
 	<build>
@@ -184,9 +183,9 @@
 					<version>0.8.14</version>
 				</plugin>
 				<plugin>
-					<groupId>org.sonatype.plugins</groupId>
-					<artifactId>nxrm3-maven-plugin</artifactId>
-					<version>1.0.13</version>
+					<groupId>org.sonatype.central</groupId>
+					<artifactId>central-maven-deployment-plugin</artifactId>
+					<version>0.10.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -521,16 +520,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nxrm3-maven-plugin</artifactId>
-				<configuration>
-					<nexusUrl>https://repository.jboss.org/nexus/</nexusUrl>
-					<repository>releases</repository>
-					<serverId>jboss</serverId>
-					<tag>${project.groupId}-${project.version}</tag>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
@@ -614,17 +603,13 @@
 						</executions>
 					</plugin>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nxrm3-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>default-deploy</id>
-								<phase>deploy</phase>
-								<goals>
-									<goal>staging-deploy</goal>
-								</goals>
-							</execution>
-						</executions>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-maven-deployment-plugin</artifactId>
+						<configuration>
+							<autoPublish>true</autoPublish>
+							<deploymentName>${project.groupId}-${project.version}</deploymentName>
+							<publishingServerId>central</publishingServerId>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>
