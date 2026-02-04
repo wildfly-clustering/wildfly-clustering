@@ -167,6 +167,11 @@
 					<version>3.3.0</version>
 				</plugin>
 				<plugin>
+					<groupId>org.ec4j.maven</groupId>
+					<artifactId>editorconfig-maven-plugin</artifactId>
+					<version>0.2.0</version>
+				</plugin>
+				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
 					<version>0.8.14</version>
@@ -240,14 +245,7 @@
 				<executions>
 					<execution>
 						<id>check-sources</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>check-test-sources</id>
-						<phase>process-test-sources</phase>
+						<phase>validate</phase>
 						<goals>
 							<goal>check</goal>
 						</goals>
@@ -512,6 +510,7 @@
 			<id>quickly</id>
 			<properties>
 				<checkstyle.skip>true</checkstyle.skip>
+				<editorconfig.skip>true</editorconfig.skip>
 				<maven.javadoc.skip>true</maven.javadoc.skip>
 				<skipTests>true</skipTests>
 				<skipITs>true</skipITs>
