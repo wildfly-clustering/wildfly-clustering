@@ -15,6 +15,8 @@ import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
+import org.wildfly.clustering.session.cache.SessionFactory;
+import org.wildfly.clustering.session.infinispan.remote.metadata.SessionAccessMetaDataKey;
 import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreationMetaDataKey;
 
 /**
@@ -26,7 +28,10 @@ import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreation
  * @author Paul Ferraro
  */
 public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<C, MV, AV, SC> {
+	private static final System.Logger LOGGER = System.getLogger(HotRodSessionManager.class.getCanonicalName());
+
 	private final RemoteCache<Key<String>, ?> cache;
+	private final SessionFactory<C, MV, AV, SC> factory;
 
 	interface Configuration<C, MV, AV, SC> extends AbstractSessionManager.Configuration<C, MV, AV, SC> {
 		@Override
@@ -51,6 +56,20 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 	public HotRodSessionManager(Configuration<C, MV, AV, SC> configuration) {
 		super(configuration);
 		this.cache = configuration.getCacheConfiguration().getCache();
+		this.factory = configuration.getSessionFactory();
+	}
+
+	@Override
+	public void start() {
+		super.start();
+
+		// Purge orphan session entries due to expiration while no client listener was registered.
+		for (String id : this.getSessions()) {
+			if (!this.cache.containsKey(new SessionAccessMetaDataKey(id))) {
+				LOGGER.log(System.Logger.Level.DEBUG, "Purging orphan entries for expired session {0}", id);
+				this.factory.purge(id);
+			}
+		}
 	}
 
 	@Override
