@@ -6,7 +6,6 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -24,8 +23,6 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  */
 class EnumSetMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumSet<E>> {
 	static final ProtoStreamMarshaller<?> INSTANCE = new EnumSetMarshaller<>();
-
-	static final Field ENUM_SET_CLASS_FIELD = Reflect.findField(EnumSet.class, Class.class);
 
 	private static final int CLASS_INDEX = 1;
 	private static final int COMPLEMENT_CLASS_INDEX = 2;

@@ -239,6 +239,19 @@
 					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.ec4j.maven</groupId>
+				<artifactId>editorconfig-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-check</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

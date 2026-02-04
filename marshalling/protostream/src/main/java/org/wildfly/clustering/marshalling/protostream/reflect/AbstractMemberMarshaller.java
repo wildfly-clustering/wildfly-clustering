@@ -6,7 +6,8 @@
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
 import java.io.IOException;
-import java.lang.reflect.Member;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -20,28 +21,41 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Generic marshaller based on non-public members.
  * @param <T> the target type of this marshaller
- * @param <M> the reflection member type
+ * @param <H> the handle type
  * @author Paul Ferraro
  */
-public abstract class AbstractMemberMarshaller<T, M extends Member> implements ProtoStreamMarshaller<T>, Function<Object[], T> {
+public abstract class AbstractMemberMarshaller<T, H> implements ProtoStreamMarshaller<T>, Function<Object[], T> {
+	static <T, R> R invoke(MethodHandle handle, T parameter) {
+		try {
+			return (R) handle.invokeExact(parameter);
+		} catch (RuntimeException | Error e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	static <T, R> R read(VarHandle handle, T parameter) {
+		return (R) handle.get(parameter);
+	}
 
 	private final Class<? extends T> type;
-	private final BiFunction<Object, M, Object> accessor;
-	private final List<M> members;
+	private final BiFunction<H, Object, Object> accessor;
+	private final List<H> handles;
 
 	/**
 	 * Creates a marshaller using the specified member fields.
 	 * @param type the marshalled object type
 	 * @param accessor a field accessor
-	 * @param memberLocator a member locator function
+	 * @param handleLocator a handle locator function
 	 * @param memberTypes the field types
 	 */
-	public AbstractMemberMarshaller(Class<? extends T> type, BiFunction<Object, M, Object> accessor, BiFunction<Class<?>, Class<?>, M> memberLocator, Class<?>... memberTypes) {
+	public AbstractMemberMarshaller(Class<? extends T> type, BiFunction<H, Object, Object> accessor, BiFunction<Class<?>, Class<?>, H> handleLocator, Class<?>... memberTypes) {
 		this.type = type;
 		this.accessor = accessor;
-		this.members = new ArrayList<>(memberTypes.length);
+		this.handles = new ArrayList<>(memberTypes.length);
 		for (Class<?> memberType : memberTypes) {
-			this.members.add(memberLocator.apply(type, memberType));
+			this.handles.add(handleLocator.apply(type, memberType));
 		}
 	}
 
@@ -52,7 +66,7 @@ public abstract class AbstractMemberMarshaller<T, M extends Member> implements P
 
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
-		Object[] values = new Object[this.members.size()];
+		Object[] values = new Object[this.handles.size()];
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
@@ -67,8 +81,8 @@ public abstract class AbstractMemberMarshaller<T, M extends Member> implements P
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, T source) throws IOException {
-		for (int i = 0; i < this.members.size(); ++i) {
-			Object value = this.accessor.apply(source, this.members.get(i));
+		for (int i = 0; i < this.handles.size(); ++i) {
+			Object value = this.accessor.apply(this.handles.get(i), source);
 			if (value != null) {
 				writer.writeAny(i + 1, value);
 			}

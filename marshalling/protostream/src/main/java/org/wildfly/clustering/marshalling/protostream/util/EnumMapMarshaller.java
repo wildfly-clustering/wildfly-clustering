@@ -6,7 +6,7 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.lang.invoke.VarHandle;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -28,7 +28,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumMap<E, Object>> {
 	static final ProtoStreamMarshaller<?> INSTANCE = new EnumMapMarshaller<>();
 
-	static final Field ENUM_MAP_KEY_CLASS_FIELD = Reflect.findField(EnumMap.class, Class.class);
+	static final VarHandle ENUM_MAP_KEY_CLASS_HANDLE = Reflect.getVarHandle(EnumMap.class, Class.class);
 
 	private static final int CLASS_INDEX = 1;
 	private static final int ELEMENT_INDEX = 2;
@@ -88,6 +88,6 @@ class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<Enum
 			return values.next().getDeclaringClass();
 		}
 		// If EnumMap is empty, we need to resort to reflection to obtain the enum type
-		return Reflect.getValue(map, ENUM_MAP_KEY_CLASS_FIELD, Class.class);
+		return (Class<E>) ENUM_MAP_KEY_CLASS_HANDLE.get(map);
 	}
 }

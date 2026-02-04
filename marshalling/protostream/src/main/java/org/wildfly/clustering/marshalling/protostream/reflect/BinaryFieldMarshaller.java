@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
-import java.lang.reflect.Field;
+import java.lang.invoke.VarHandle;
 import java.util.function.BiFunction;
 
 /**
@@ -15,7 +15,7 @@ import java.util.function.BiFunction;
  * @param <F2> the second component field type
  * @author Paul Ferraro
  */
-public class BinaryFieldMarshaller<T, F1, F2> extends BinaryMemberMarshaller<T, Field, F1, F2> {
+public class BinaryFieldMarshaller<T, F1, F2> extends BinaryMemberMarshaller<T, VarHandle, F1, F2> {
 
 	/**
 	 * Creates a marshaller for the specified fields.
@@ -25,6 +25,6 @@ public class BinaryFieldMarshaller<T, F1, F2> extends BinaryMemberMarshaller<T, 
 	 * @param factory the object factory
 	 */
 	public BinaryFieldMarshaller(Class<? extends T> type, Class<F1> field1Type, Class<F2> field2Type, BiFunction<F1, F2, T> factory) {
-		super(type, Reflect::getValue, Reflect::findField, field1Type, field2Type, factory);
+		super(type, AbstractMemberMarshaller::read, Reflect::findVarHandle, field1Type, field2Type, factory);
 	}
 }
