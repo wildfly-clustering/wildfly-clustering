@@ -16,10 +16,6 @@ import java.util.Optional;
  * @param <R> the function return type
  */
 public interface Function<T, R> extends java.util.function.Function<T, R> {
-	/** An identity function that always returns its parameter */
-	Function<?, ?> IDENTITY = value -> value;
-	/** A function that always returns null. */
-	Function<?, ?> NULL = of(Consumer.EMPTY, Supplier.NULL);
 
 	@Override
 	default <V> Function<V, R> compose(java.util.function.Function<? super V, ? extends T> before) {
@@ -145,9 +141,8 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	 * @param <R> the function return type
 	 * @return an identity function
 	 */
-	@SuppressWarnings("unchecked")
 	static <T extends R, R> Function<T, R> identity() {
-		return (Function<T, R>) IDENTITY;
+		return Functions.IDENTITY.cast();
 	}
 
 	/**
@@ -156,9 +151,8 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 	 * @param <R> the function return type
 	 * @return an identity function
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, R> Function<T, R> empty() {
-		return (Function<T, R>) NULL;
+		return Functions.NULL.cast();
 	}
 
 	/**

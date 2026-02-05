@@ -13,7 +13,7 @@ import org.jgroups.Address;
  * Integration test for JChannel-based group implementation.
  * @author Paul Ferraro
  */
-public class JChannelGroupITCase extends GroupITCase<Address, ChannelGroupMember, ChannelGroup> {
+public class JChannelGroupITCase extends AbstractGroupITCase<Address, ChannelGroupMember, ChannelGroup> {
 
 	public JChannelGroupITCase() {
 		super(ChannelGroupContext::new, Function.identity());

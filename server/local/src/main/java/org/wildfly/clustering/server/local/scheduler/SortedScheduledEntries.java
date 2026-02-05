@@ -24,6 +24,17 @@ import java.util.stream.Stream;
  * @author Paul Ferraro
  */
 class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
+	private final SortedSet<Map.Entry<K, V>> sorted;
+	private final Map<K, V> entries = new ConcurrentHashMap<>();
+
+	/**
+	 * Creates a new entries object whose iteration order is based on the specified comparator.
+	 * @param comparator the comparator used to determine the iteration order
+	 */
+	SortedScheduledEntries(Comparator<Map.Entry<K, V>> comparator) {
+		this.sorted = new ConcurrentSkipListSet<>(comparator);
+	}
+
 	static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> defaultComparator() {
 		return new Comparator<>() {
 			private final List<ToIntFunction<K>> hashFunctions = List.of(Object::hashCode, System::identityHashCode);
@@ -47,17 +58,6 @@ class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
 				return 1;
 			}
 		};
-	}
-
-	private final SortedSet<Map.Entry<K, V>> sorted;
-	private final Map<K, V> entries = new ConcurrentHashMap<>();
-
-	/**
-	 * Creates a new entries object whose iteration order is based on the specified comparator.
-	 * @param comparator the comparator used to determine the iteration order
-	 */
-	SortedScheduledEntries(Comparator<Map.Entry<K, V>> comparator) {
-		this.sorted = new ConcurrentSkipListSet<>(comparator);
 	}
 
 	@Override
@@ -106,7 +106,7 @@ class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
 		Iterator<Map.Entry<K, V>> iterator = this.sorted.iterator();
 		Map<K, V> entries = this.entries;
 		return new Iterator<>() {
-			private K current = null;
+			private K current;
 
 			@Override
 			public boolean hasNext() {

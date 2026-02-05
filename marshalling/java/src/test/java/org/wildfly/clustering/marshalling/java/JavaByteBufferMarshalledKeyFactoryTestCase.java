@@ -4,13 +4,13 @@
  */
 package org.wildfly.clustering.marshalling.java;
 
-import org.wildfly.clustering.marshalling.ByteBufferMarshalledKeyFactoryTestCase;
+import org.wildfly.clustering.marshalling.AbstractByteBufferMarshalledKeyFactoryTestCase;
 
 /**
- * Java serialization variant of {@link ByteBufferMarshalledKeyFactoryTestCase}.
+ * Java serialization variant of {@link AbstractByteBufferMarshalledKeyFactoryTestCase}.
  * @author Paul Ferraro
  */
-public class JavaByteBufferMarshalledKeyFactoryTestCase extends ByteBufferMarshalledKeyFactoryTestCase {
+public class JavaByteBufferMarshalledKeyFactoryTestCase extends AbstractByteBufferMarshalledKeyFactoryTestCase {
 
 	public JavaByteBufferMarshalledKeyFactoryTestCase() {
 		super(new JavaSerializationTesterFactory());

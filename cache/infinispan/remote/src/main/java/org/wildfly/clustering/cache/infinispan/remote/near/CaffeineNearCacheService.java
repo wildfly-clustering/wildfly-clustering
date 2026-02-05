@@ -7,14 +7,14 @@ package org.wildfly.clustering.cache.infinispan.remote.near;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import com.github.benmanes.caffeine.cache.Cache;
+
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.near.NearCache;
 import org.infinispan.client.hotrod.near.NearCacheService;
-
-import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Near cache service that constructs its near cache using a generic factory.

@@ -13,7 +13,7 @@ import java.util.Map;
  * @param <K> the map key type
  * @param <V> the map value type
  */
-public class MapComputeFunction<K, V> extends MapFunction<K, V, Map<K, V>> {
+public class MapComputeFunction<K, V> extends AbstractMapOperationFunction<K, V, Map<K, V>> {
 
 	/**
 	 * Constructs a map compute function.
@@ -34,6 +34,11 @@ public class MapComputeFunction<K, V> extends MapFunction<K, V, Map<K, V>> {
 				map.remove(key);
 			}
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		return this.getOperand().hashCode();
 	}
 
 	@Override

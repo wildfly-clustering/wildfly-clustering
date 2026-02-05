@@ -18,7 +18,6 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 	 * Creates a new serialization context initializer.
 	 */
 	public UtilSerializationContextInitializer() {
-		super();
 	}
 
 	@Override

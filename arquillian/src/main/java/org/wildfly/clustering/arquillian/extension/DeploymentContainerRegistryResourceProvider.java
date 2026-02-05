@@ -42,6 +42,13 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 	@Inject
 	private Instance<ContainerRegistry> registry;
 
+	/**
+	 * Constructs a new resource provider of a deployment container registry.
+	 */
+	public DeploymentContainerRegistryResourceProvider() {
+		// Do nothing
+	}
+
 	@Override
 	public boolean canProvide(Class<?> type) {
 		return type.isAssignableFrom(DeploymentContainerRegistry.class);
@@ -50,13 +57,6 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 	@Override
 	public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
 		return new WebContainerRegistryImpl(this.registry.get());
-	}
-
-	/**
-	 * Constructs a new resource provider of a deployment container registry.
-	 */
-	public DeploymentContainerRegistryResourceProvider() {
-		// Do nothing
 	}
 
 	static class WebContainerRegistryImpl implements DeploymentContainerRegistry {

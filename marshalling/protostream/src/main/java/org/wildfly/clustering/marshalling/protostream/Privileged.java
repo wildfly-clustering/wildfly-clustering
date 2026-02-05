@@ -13,6 +13,9 @@ import java.security.PrivilegedAction;
  * @author Paul Ferraro
  */
 class Privileged {
+	private Privileged() {
+		// Hide
+	}
 
 	@SuppressWarnings("removal")
 	static ClassLoader getClassLoader(Class<?> targetClass) {

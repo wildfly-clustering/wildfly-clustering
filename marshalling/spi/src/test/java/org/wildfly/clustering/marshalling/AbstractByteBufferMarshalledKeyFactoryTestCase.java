@@ -14,19 +14,19 @@ import java.util.UUID;
  * @author Brian Stansberry
  * @author Paul Ferraro
  */
-public abstract class ByteBufferMarshalledKeyFactoryTestCase extends ByteBufferMarshalledValueFactoryTestCase {
+public abstract class AbstractByteBufferMarshalledKeyFactoryTestCase extends AbstractByteBufferMarshalledValueFactoryTestCase {
 
 	private final ByteBufferMarshalledKeyFactory factory;
 
-	protected ByteBufferMarshalledKeyFactoryTestCase(MarshallingTesterFactory factory) {
+	protected AbstractByteBufferMarshalledKeyFactoryTestCase(MarshallingTesterFactory factory) {
 		this(factory.getMarshaller());
 	}
 
-	protected ByteBufferMarshalledKeyFactoryTestCase(ByteBufferMarshaller marshaller) {
+	protected AbstractByteBufferMarshalledKeyFactoryTestCase(ByteBufferMarshaller marshaller) {
 		this(marshaller, new ByteBufferMarshalledKeyFactory(marshaller));
 	}
 
-	private ByteBufferMarshalledKeyFactoryTestCase(ByteBufferMarshaller marshaller, ByteBufferMarshalledKeyFactory factory) {
+	private AbstractByteBufferMarshalledKeyFactoryTestCase(ByteBufferMarshaller marshaller, ByteBufferMarshalledKeyFactory factory) {
 		super(marshaller, factory);
 		this.factory = factory;
 	}

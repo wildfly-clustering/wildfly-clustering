@@ -18,10 +18,6 @@ import java.util.function.LongFunction;
  * @param <T> the argument type
  */
 public interface Predicate<T> extends java.util.function.Predicate<T> {
-	/** A predicate that always returns true */
-	Predicate<?> ALWAYS = of(Consumer.EMPTY, BooleanSupplier.TRUE);
-	/** A predicate that always returns false */
-	Predicate<?> NEVER = of(Consumer.EMPTY, BooleanSupplier.FALSE);
 
 	/**
 	 * Returns a new predicate that delegates to this predicate using the specified exception handler.
@@ -190,9 +186,8 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param <T> the argument type
 	 * @return a predicate that always accepts its argument.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> Predicate<T> always() {
-		return (Predicate<T>) ALWAYS;
+		return Predicates.ALWAYS.cast();
 	}
 
 	/**
@@ -200,9 +195,8 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param <T> the argument type
 	 * @return a predicate that never accepts its argument.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> Predicate<T> never() {
-		return (Predicate<T>) NEVER;
+		return Predicates.NEVER.cast();
 	}
 
 	/**

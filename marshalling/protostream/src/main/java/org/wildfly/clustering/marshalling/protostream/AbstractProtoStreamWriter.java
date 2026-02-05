@@ -219,7 +219,7 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
 
 	static class DefaultProtoStreamWriterContext implements ProtoStreamWriterContext, Function<Object, Reference> {
 		private final Map<Object, Reference> references = new IdentityHashMap<>(128);
-		private int reference = 0; // Enumerates object references
+		private int reference; // Enumerates object references
 		private final Map<Object, OptionalInt> sizes;
 
 		DefaultProtoStreamWriterContext() {

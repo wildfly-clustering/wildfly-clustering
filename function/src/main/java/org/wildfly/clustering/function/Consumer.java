@@ -9,7 +9,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * An enhanced unary consumer.
@@ -141,21 +140,13 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		};
 	}
 
-	/** A consumer that does nothing with its parameter */
-	Consumer<?> EMPTY = value -> {};
-	/** A map of exception logging consumers per level */
-	Map<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGERS = EnumSet.allOf(System.Logger.Level.class).stream().collect(Collectors.toMap(Function.identity(), ExceptionLogger::new, BinaryOperator.former(), Supplier.of(System.Logger.Level.class).thenApply(EnumMap::new)));
-	/** A function returning the exception logger for a given level */
-	Function<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGER = EXCEPTION_LOGGERS::get;
-
 	/**
 	 * Returns a consumer that performs no action.
 	 * @param <V> the consumed type
 	 * @return an empty consumer
 	 */
-	@SuppressWarnings("unchecked")
 	static <V> Consumer<V> empty() {
-		return (Consumer<V>) EMPTY;
+		return Consumers.EMPTY.cast();
 	}
 
 	/**
@@ -173,9 +164,8 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param <E> the exception type
 	 * @return an exception logging consumer
 	 */
-	@SuppressWarnings("unchecked")
 	static <E extends Exception> Consumer<E> log(System.Logger.Level level) {
-		return (Consumer<E>) (Consumer<?>) EXCEPTION_LOGGER.apply(level);
+		return ExceptionLogger.getLogger(level);
 	}
 
 	/**
@@ -288,10 +278,22 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 */
 	class ExceptionLogger<E extends Exception> implements Consumer<E> {
 		private static final System.Logger LOGGER = System.getLogger(Consumer.class.getName());
+		private static final Map<System.Logger.Level, Consumer<Exception>> EXCEPTION_LOGGERS = new EnumMap<>(System.Logger.Level.class);
+		static {
+			for (System.Logger.Level level : EnumSet.allOf(System.Logger.Level.class)) {
+				EXCEPTION_LOGGERS.put(level, new ExceptionLogger<>(level));
+			}
+		}
+
 		private final System.Logger.Level level;
 
 		ExceptionLogger(System.Logger.Level level) {
 			this.level = level;
+		}
+
+		@SuppressWarnings("unchecked")
+		static <E extends Exception> Consumer<E> getLogger(System.Logger.Level level) {
+			return (Consumer<E>) EXCEPTION_LOGGERS.get(level);
 		}
 
 		@Override

@@ -92,8 +92,8 @@ public class CacheTestCase {
 	}
 
 	static class ManagedService<I> implements Service, AutoCloseable {
-		private volatile boolean started = false;
-		private volatile boolean stopped = false;
+		private volatile boolean started;
+		private volatile boolean stopped;
 		private final I id;
 		private final Runnable closeTask;
 

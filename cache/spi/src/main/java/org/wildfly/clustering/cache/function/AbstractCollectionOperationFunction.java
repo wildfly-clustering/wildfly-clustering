@@ -13,14 +13,14 @@ import java.util.Collection;
  * @param <V> the collection element type
  * @param <C> the collection type
  */
-public abstract class CollectionFunction<V, C extends Collection<V>> extends AbstractFunction<Collection<V>, C> {
+public abstract class AbstractCollectionOperationFunction<V, C extends Collection<V>> extends AbstractFunction<Collection<V>, C> {
 
 	/**
 	 * Constructs a new collection operation function
 	 * @param operand the operation operand
 	 * @param operations the collection operations
 	 */
-	public CollectionFunction(Collection<V> operand, Operations<C> operations) {
+	public AbstractCollectionOperationFunction(Collection<V> operand, Operations<C> operations) {
 		super(operand, operations.getCopier(), operations.getFactory(), operations.isEmpty());
 	}
 
@@ -37,7 +37,7 @@ public abstract class CollectionFunction<V, C extends Collection<V>> extends Abs
 	public boolean equals(Object object) {
 		if (!this.getClass().isInstance(object)) return false;
 		@SuppressWarnings("unchecked")
-		CollectionFunction<V, C> function = (CollectionFunction<V, C>) object;
+		AbstractCollectionOperationFunction<V, C> function = (AbstractCollectionOperationFunction<V, C>) object;
 		Collection<V> ourOperand = this.getOperand();
 		Collection<V> otherOperand = function.getOperand();
 		return ourOperand.size() == otherOperand.size() && ourOperand.containsAll(otherOperand);

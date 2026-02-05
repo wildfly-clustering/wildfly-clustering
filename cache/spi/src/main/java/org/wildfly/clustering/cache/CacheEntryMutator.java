@@ -21,6 +21,24 @@ public interface CacheEntryMutator extends Runner {
 	/** The mutator logger */
 	System.Logger LOGGER = System.getLogger(CacheEntryMutator.class.getName());
 
+	/**
+	 * Trivial {@link CacheEntryMutator} implementation that does nothing.
+	 * New cache entries created within the context of a batch, in particular, do not require mutation.
+	 */
+	CacheEntryMutator EMPTY = new CacheEntryMutator() {
+		private final CompletionStage<Void> completed = CompletableFuture.completedStage(null);
+
+		@Override
+		public CompletionStage<Void> runAsync() {
+			return this.completed;
+		}
+
+		@Override
+		public CacheEntryMutator withMaxIdle(Supplier<Duration> maxIdle) {
+			return this;
+		}
+	};
+
 	@Override
 	default void run() {
 		try {
@@ -42,24 +60,6 @@ public interface CacheEntryMutator extends Runner {
 	 * @return a reference to this mutator.
 	 */
 	CacheEntryMutator withMaxIdle(Supplier<Duration> maxIdle);
-
-	/**
-	 * Trivial {@link CacheEntryMutator} implementation that does nothing.
-	 * New cache entries created within the context of a batch, in particular, do not require mutation.
-	 */
-	CacheEntryMutator EMPTY = new CacheEntryMutator() {
-		private final CompletionStage<Void> completed = CompletableFuture.completedStage(null);
-
-		@Override
-		public CompletionStage<Void> runAsync() {
-			return this.completed;
-		}
-
-		@Override
-		public CacheEntryMutator withMaxIdle(Supplier<Duration> maxIdle) {
-			return this;
-		}
-	};
 
 	/**
 	 * Returns a composite mutator that runs the specified mutators.

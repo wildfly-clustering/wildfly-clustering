@@ -5,12 +5,12 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import org.wildfly.clustering.marshalling.ByteBufferMarshalledKeyFactoryTestCase;
+import org.wildfly.clustering.marshalling.AbstractByteBufferMarshalledKeyFactoryTestCase;
 
 /**
  * @author Paul Ferraro
  */
-public class JBossByteBufferMarshalledKeyFactoryTestCase extends ByteBufferMarshalledKeyFactoryTestCase {
+public class JBossByteBufferMarshalledKeyFactoryTestCase extends AbstractByteBufferMarshalledKeyFactoryTestCase {
 
 	public JBossByteBufferMarshalledKeyFactoryTestCase() {
 		super(new JBossMarshallingTesterFactory());

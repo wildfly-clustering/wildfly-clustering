@@ -22,11 +22,6 @@ public abstract class AbstractITCase<C, A extends Archive<A>> implements Runnabl
 	@ArquillianResource
 	private DeploymentContainerRegistry registry;
 
-	@Override
-	public DeploymentContainerRegistry getDeploymentContainerRegistry() {
-		return this.registry;
-	}
-
 	private final Function<C, Tester> testerFactory;
 	private final C configuration;
 
@@ -38,6 +33,11 @@ public abstract class AbstractITCase<C, A extends Archive<A>> implements Runnabl
 	protected AbstractITCase(Function<C, Tester> testerFactory, C configuration) {
 		this.testerFactory = testerFactory;
 		this.configuration = configuration;
+	}
+
+	@Override
+	public DeploymentContainerRegistry getDeploymentContainerRegistry() {
+		return this.registry;
 	}
 
 	@Override

@@ -24,6 +24,12 @@ public class CacheKeysTask<K, V> implements Consumer<CacheStreamFilter<K>> {
 	private final Predicate<? super K> filter;
 	private final Consumer<K> task;
 
+	CacheKeysTask(Cache<K, V> cache, Predicate<? super K> filter, Consumer<K> task) {
+		this.cache = cache;
+		this.filter = filter;
+		this.task = task;
+	}
+
 	/**
 	 * Creates a schedule task for keys matching the specified filter.
 	 * @param <K> the cache entry key type
@@ -35,12 +41,6 @@ public class CacheKeysTask<K, V> implements Consumer<CacheStreamFilter<K>> {
 	 */
 	public static <K, V> Consumer<CacheStreamFilter<K>> cancel(Cache<K, V> cache, Predicate<? super K> filter, CacheEntryScheduler<K, V> scheduler) {
 		return new CacheKeysTask<>(cache, filter, scheduler::cancelKey);
-	}
-
-	CacheKeysTask(Cache<K, V> cache, Predicate<? super K> filter, Consumer<K> task) {
-		this.cache = cache;
-		this.filter = filter;
-		this.task = task;
 	}
 
 	@Override

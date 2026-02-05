@@ -29,12 +29,12 @@ import org.wildfly.clustering.server.jgroups.dispatcher.test.IdentityCommand;
  * @param <F> the command dispatcher factory type
  * @author Paul Ferraro
  */
-public abstract class CommandDispatcherITCase<M extends GroupMember, F extends CommandDispatcherFactory<M>> {
+public abstract class AbstractCommandDispatcherITCase<M extends GroupMember, F extends CommandDispatcherFactory<M>> {
 	private static final String CLUSTER_NAME = "cluster";
 
 	private final BiFunction<String, String, Context<F>> contextFactory;
 
-	protected CommandDispatcherITCase(BiFunction<String, String, Context<F>> contextFactory) {
+	protected AbstractCommandDispatcherITCase(BiFunction<String, String, Context<F>> contextFactory) {
 		this.contextFactory = contextFactory;
 	}
 

@@ -35,6 +35,21 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 		this(type, defaultFactory(type), memberTypes);
 	}
 
+	/**
+	 * Creates a field marshaller for the specified fields of the specified class using the specified factory
+	 * @param type a marshalled object type
+	 * @param factory a factory for creating the field
+	 * @param memberTypes the member types
+	 */
+	public FieldMarshaller(Class<? extends T> type, Supplier<? extends T> factory, Class<?>... memberTypes) {
+		this.type = type;
+		this.factory = factory;
+		this.handles = new VarHandle[memberTypes.length];
+		for (int i = 0; i < this.handles.length; ++i) {
+			this.handles[i] = Reflect.findVarHandle(type, memberTypes[i]);
+		}
+	}
+
 	private static <T> Supplier<T> defaultFactory(Class<T> type) {
 		MethodHandle handle = Reflect.getConstructorHandle(type);
 		return new Supplier<>() {
@@ -49,21 +64,6 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 				}
 			}
 		};
-	}
-
-	/**
-	 * Creates a field marshaller for the specified fields of the specified class using the specified factory
-	 * @param type a marshalled object type
-	 * @param factory a factory for creating the field
-	 * @param memberTypes the member types
-	 */
-	public FieldMarshaller(Class<? extends T> type, Supplier<? extends T> factory, Class<?>... memberTypes) {
-		this.type = type;
-		this.factory = factory;
-		this.handles = new VarHandle[memberTypes.length];
-		for (int i = 0; i < this.handles.length; ++i) {
-			this.handles[i] = Reflect.findVarHandle(type, memberTypes[i]);
-		}
 	}
 
 	@Override

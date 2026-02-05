@@ -32,7 +32,8 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 
 	static final AttributeDefinition<RemoteCacheContainer> CONTAINER = AttributeDefinition.builder("container", null, RemoteCacheContainer.class).build();
 	static final AttributeDefinition<String> TEMPLATE = AttributeDefinition.builder("template", null, String.class).build();
-	static final AttributeDefinition<String> CONFIGURATION = AttributeDefinition.builder("configuration", """
+	static final AttributeDefinition<String> CONFIGURATION = AttributeDefinition.builder("configuration",
+"""
 {
 	"distributed-cache": {
 		"encoding" : {
@@ -49,7 +50,8 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 			"locking" : "PESSIMISTIC"
 		}
 	}
-}""", String.class).build();
+}
+""", String.class).build();
 
 	/**
 	 * Creates the configuration of a remote cache store.

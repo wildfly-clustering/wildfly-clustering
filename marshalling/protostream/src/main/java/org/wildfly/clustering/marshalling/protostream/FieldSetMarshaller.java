@@ -35,45 +35,6 @@ public interface FieldSetMarshaller<T, V> extends FieldReadable<V>, Writable<T> 
 	T build(V value);
 
 	/**
-	 * A simple field set marshaller whose reader and writer types are the same
-	 * @param <T> the marshaller type
-	 */
-	interface Simple<T> extends FieldSetMarshaller<T, T> {
-
-		@Override
-		default T build(T value) {
-			return value;
-		}
-	}
-
-	/**
-	 * A marshaller using a map entry field set.
-	 * @param <T> the marshaller type
-	 * @param <K> the entry key type
-	 * @param <V> the entry value type
-	 */
-	interface Entry<T, K, V> extends FieldSetMarshaller<T, Map.Entry<K, V>> {
-
-		@Override
-		default Map.Entry<K, V> createInitialValue() {
-			return new AbstractMap.SimpleEntry<>(null, null);
-		}
-	}
-
-	/**
-	 * A field set marshaller whose reader type supplies the writer type.
-	 * @param <T> the writer type
-	 * @param <V> the reader type
-	 */
-	interface Supplied<T, V extends Supplier<T>> extends FieldSetMarshaller<T, V> {
-
-		@Override
-		default T build(V value) {
-			return value.get();
-		}
-	}
-
-	/**
 	 * Creates a marshaller that reads and writes only the fields of this field set.
 	 * @return a new marshaller
 	 */
@@ -116,5 +77,44 @@ public interface FieldSetMarshaller<T, V> extends FieldReadable<V>, Writable<T> 
 				writer.createFieldSetWriter(marshaller, 1).writeFields(value);
 			}
 		};
+	}
+
+	/**
+	 * A simple field set marshaller whose reader and writer types are the same
+	 * @param <T> the marshaller type
+	 */
+	interface Simple<T> extends FieldSetMarshaller<T, T> {
+
+		@Override
+		default T build(T value) {
+			return value;
+		}
+	}
+
+	/**
+	 * A marshaller using a map entry field set.
+	 * @param <T> the marshaller type
+	 * @param <K> the entry key type
+	 * @param <V> the entry value type
+	 */
+	interface Entry<T, K, V> extends FieldSetMarshaller<T, Map.Entry<K, V>> {
+
+		@Override
+		default Map.Entry<K, V> createInitialValue() {
+			return new AbstractMap.SimpleEntry<>(null, null);
+		}
+	}
+
+	/**
+	 * A field set marshaller whose reader type supplies the writer type.
+	 * @param <T> the writer type
+	 * @param <V> the reader type
+	 */
+	interface Supplied<T, V extends Supplier<T>> extends FieldSetMarshaller<T, V> {
+
+		@Override
+		default T build(V value) {
+			return value.get();
+		}
 	}
 }

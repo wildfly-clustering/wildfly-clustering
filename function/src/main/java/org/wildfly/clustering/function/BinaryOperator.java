@@ -11,12 +11,6 @@ package org.wildfly.clustering.function;
  * @param <T> the operator type
  */
 public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>, BiFunction<T, T, T> {
-	/** An identity function using the former parameter */
-	BinaryOperator<?> FORMER_IDENTITY = (value1, value2) -> value1;
-	/** An identity function using the latter parameter */
-	BinaryOperator<?> LATTER_IDENTITY = (value1, value2) -> value2;
-	/** An operator that always returns null. */
-	BinaryOperator<?> NULL = (value1, value2) -> null;
 
 	/**
 	 * Returns a composed operator that applies the specified operators to each parameter as inputs to this operator.
@@ -115,9 +109,8 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param <T> the operating type
 	 * @return a function that returns its first parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> BinaryOperator<T> former() {
-		return (BinaryOperator<T>) FORMER_IDENTITY;
+		return BinaryOperators.FORMER.cast();
 	}
 
 	/**
@@ -125,9 +118,8 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param <T> the operating type
 	 * @return a function that returns its first parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> BinaryOperator<T> latter() {
-		return (BinaryOperator<T>) LATTER_IDENTITY;
+		return BinaryOperators.LATTER.cast();
 	}
 
 	/**
@@ -135,9 +127,8 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @param <T> the operating type
 	 * @return a function that always returns null, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> BinaryOperator<T> empty() {
-		return (BinaryOperator<T>) NULL;
+		return BinaryOperators.NULL.cast();
 	}
 
 	/**
@@ -174,7 +165,7 @@ public interface BinaryOperator<T> extends java.util.function.BinaryOperator<T>,
 	 * @return an operator view of the specified function.
 	 */
 	static <T> BinaryOperator<T> apply(java.util.function.BiFunction<? super T, ? super T, T> function) {
-		return (function != null) && (function != Function.NULL) ? new BinaryOperator<>() {
+		return (function != null) && (function != Function.empty()) ? new BinaryOperator<>() {
 			@Override
 			public T apply(T value1, T value2) {
 				return function.apply(value1, value2);

@@ -26,6 +26,12 @@ public class CacheEntriesTask<K, V> implements Consumer<CacheStreamFilter<Map.En
 	private final Predicate<Map.Entry<? super K, ? super V>> filter;
 	private final Consumer<Map.Entry<K, V>> task;
 
+	CacheEntriesTask(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, Consumer<Map.Entry<K, V>> task) {
+		this.cache = cache;
+		this.filter = filter;
+		this.task = task;
+	}
+
 	/**
 	 * Creates a task that schedules entries matching the specified filter.
 	 * @param <I> the cache key identifier type
@@ -55,12 +61,6 @@ public class CacheEntriesTask<K, V> implements Consumer<CacheStreamFilter<Map.En
 	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> cancel(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<K, V> scheduler) {
 		org.wildfly.clustering.function.Consumer<K> cancel = scheduler::cancelKey;
 		return new CacheEntriesTask<>(cache, filter, cancel.compose(Map.Entry::getKey));
-	}
-
-	CacheEntriesTask(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, Consumer<Map.Entry<K, V>> task) {
-		this.cache = cache;
-		this.filter = filter;
-		this.task = task;
 	}
 
 	@Override

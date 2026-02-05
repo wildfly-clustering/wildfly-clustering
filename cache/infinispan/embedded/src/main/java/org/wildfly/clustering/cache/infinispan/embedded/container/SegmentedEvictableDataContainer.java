@@ -24,6 +24,8 @@ import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
+import com.github.benmanes.caffeine.cache.Cache;
+
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.commons.util.ByRef;
 import org.infinispan.commons.util.ConcatIterator;
@@ -41,8 +43,6 @@ import org.infinispan.factories.impl.ComponentRef;
 import org.wildfly.clustering.cache.caffeine.CacheConfiguration;
 import org.wildfly.clustering.cache.caffeine.CacheFactory;
 import org.wildfly.clustering.function.Supplier;
-
-import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Copy of {@link org.infinispan.container.impl.BoundedSegmentedDataContainer} with support for selective and time-based eviction.
@@ -67,7 +67,7 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 				futures.put(key, future);
 				this.handleEviction(entry, future);
 			}
-			this.computeEntryRemoved(key, entry);
+			this.computeEntryRemoved(this.getSegmentForKey(key), key, entry);
 		};
 		BiConsumer<K, InternalCacheEntry<K, V>> removalListener = (key, entry) -> {
 			// It is very important that the fact that this method is invoked AFTER the entry has been evicted outside of the lock.
@@ -95,23 +95,15 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 	}
 
 	@Override
-	protected void computeEntryWritten(K key, InternalCacheEntry<K, V> value) {
-		this.computeEntryWritten(this.getSegmentForKey(key), key, value);
-	}
-
-	void computeEntryWritten(int segment, K key, InternalCacheEntry<K, V> value) {
-		Map<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+	protected void computeEntryWritten(int segment, K key, InternalCacheEntry<K, V> value) {
+		ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
 		if (map != null) {
 			map.put(key, value);
 		}
 	}
 
 	@Override
-	protected void computeEntryRemoved(K key, InternalCacheEntry<K, V> value) {
-		this.computeEntryRemoved(this.getSegmentForKey(key), key, value);
-	}
-
-	void computeEntryRemoved(int segment, K key, InternalCacheEntry<K, V> value) {
+	protected void computeEntryRemoved(int segment, K key, InternalCacheEntry<K, V> value) {
 		ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
 		if (map != null) {
 			map.remove(key, value);
@@ -119,10 +111,10 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 	}
 
 	@Override
-	protected void putEntryInMap(PeekableTouchableMap<K, V> map, int segment, K key, InternalCacheEntry<K, V> entry) {
+	protected void putEntryInMap(PeekableTouchableMap<K, V> map, int segment, K key, InternalCacheEntry<K, V> ice) {
 		map.compute(key, (k, v) -> {
-			this.computeEntryWritten(segment, k, entry);
-			return entry;
+			this.computeEntryWritten(segment, k, ice);
+			return ice;
 		});
 	}
 
@@ -146,12 +138,12 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 
 	@Override
 	public InternalCacheEntry<K, V> get(Object k) {
-		return super.get(-1, k);
+		return get(-1, k);
 	}
 
 	@Override
 	public InternalCacheEntry<K, V> peek(Object k) {
-		return this.peek(-1, k);
+		return peek(-1, k);
 	}
 
 	@Override
@@ -164,9 +156,8 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 
 	@Override
 	public void clear(IntSet segments) {
-		this.clear(segments, false);
-		IntConsumer clearIfPresent = this::clearMapIfPresent;
-		segments.forEach(clearIfPresent);
+		this.clearSegments(segments);
+		segments.forEach((IntConsumer) this::clearMapIfPresent);
 	}
 
 	private void clearMapIfPresent(int segment) {
@@ -199,7 +190,7 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 		if (includeOthers) {
 			valueIterables.add(this.entries.values().stream()
 					.filter(e -> segments.contains(getSegmentForKey(e.getKey())))
-						.collect(Collectors.toSet()));
+					.collect(Collectors.toSet()));
 		}
 		return new ConcatIterator<>(valueIterables);
 	}
@@ -216,7 +207,7 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 		AtomicBoolean usedOthers = new AtomicBoolean(false);
 
 		return new FlattenSpliterator<>(i -> {
-			Map<K, InternalCacheEntry<K, V>> map = this.maps.get(segmentArray[i]);
+			ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.maps.get(segmentArray[i]);
 			if (map == null) {
 				if (!usedOthers.getAndSet(true)) {
 					return this.entries.values().stream()
@@ -239,13 +230,12 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 	 * provided segments when keepSegments is <code>true</code> or it will remove only the provided segments when
 	 * keepSegments is <code>false</code>.
 	 * @param segments the segments to either remove or keep
-	 * @param keepSegments whether segments are kept or removed
 	 */
-	private void clear(IntSet segments, boolean keepSegments) {
+	private void clearSegments(IntSet segments) {
 		for (Iterator<K> keyIterator = this.entries.keySet().iterator(); keyIterator.hasNext(); ) {
 			K key = keyIterator.next();
 			int keySegment = getSegmentForKey(key);
-			if (keepSegments != segments.contains(keySegment)) {
+			if (segments.contains(keySegment)) {
 				keyIterator.remove();
 			}
 		}
@@ -256,22 +246,22 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 		// Call super remove segments so the maps are removed more efficiently
 		super.removeSegments(segments);
 		// Finally remove the entries from bounded cache
-		this.clear(segments, false);
+		this.clearSegments(segments);
 	}
 
 	@Override
 	public long capacity() {
-		return this.evictionCache.policy().eviction().orElseThrow().getMaximum();
+		return this.evictionCache.policy().eviction().get().getMaximum();
 	}
 
 	@Override
 	public void resize(long newSize) {
-		this.evictionCache.policy().eviction().orElseThrow().setMaximum(newSize);
+		this.evictionCache.policy().eviction().get().setMaximum(newSize);
 	}
 
 	@Override
 	public long evictionSize() {
-		return this.evictionCache.policy().eviction().orElseThrow().weightedSize().orElse(this.entries.size());
+		return this.evictionCache.policy().eviction().get().weightedSize().orElse(this.entries.size());
 	}
 
 	@Override

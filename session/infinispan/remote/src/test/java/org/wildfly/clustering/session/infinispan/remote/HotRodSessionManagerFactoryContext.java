@@ -53,7 +53,8 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 		OptionalInt sizeThreshold = parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
 		// Use local cache since our remote cluster has a single member
 		// Reduce expiration interval to speed up expiration verification
-		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration("""
+		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration(
+"""
 {
 	"local-cache" : {
 		"encoding" : {
@@ -72,7 +73,8 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 			"locking" : "PESSIMISTIC"
 		}
 	}
-}""")
+}
+""")
 				.forceReturnValues(false)
 				.marshaller(marshaller)
 				.nearCacheMode(parameters.getNearCacheMode())

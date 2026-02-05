@@ -14,17 +14,6 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 public interface ProtoStreamOperation {
 
 	/**
-	 * An operation context.
-	 */
-	interface Context {
-		/**
-		 * Records the specified object, so that it can be referenced later within the same stream
-		 * @param object an object
-		 */
-		void record(Object object);
-	}
-
-	/**
 	 * Returns the context of this operation
 	 * @return the operation context
 	 */
@@ -61,5 +50,16 @@ public interface ProtoStreamOperation {
 			}
 		}
 		throw exception;
+	}
+
+	/**
+	 * An operation context.
+	 */
+	interface Context {
+		/**
+		 * Records the specified object, so that it can be referenced later within the same stream
+		 * @param object an object
+		 */
+		void record(Object object);
 	}
 }

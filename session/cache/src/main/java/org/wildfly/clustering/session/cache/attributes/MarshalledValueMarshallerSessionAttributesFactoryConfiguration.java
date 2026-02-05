@@ -16,7 +16,7 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
  * @author Paul Ferraro
  * @param <V> the attributes value type
  */
-public class MarshalledValueMarshallerSessionAttributesFactoryConfiguration<V> extends MarshallerSessionAttributesFactoryConfiguration<V, MarshalledValue<V, ByteBufferMarshaller>> {
+public class MarshalledValueMarshallerSessionAttributesFactoryConfiguration<V> extends AbstractSessionAttributesFactoryConfiguration<V, MarshalledValue<V, ByteBufferMarshaller>> {
 	/**
 	 * Creates a session attributes factory configuration
 	 * @param <SC> a session context type

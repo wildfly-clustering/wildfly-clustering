@@ -10,7 +10,7 @@ import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 /**
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherITCase extends CommandDispatcherITCase<ChannelGroupMember, ChannelCommandDispatcherFactory> {
+public class ChannelCommandDispatcherITCase extends AbstractCommandDispatcherITCase<ChannelGroupMember, ChannelCommandDispatcherFactory> {
 
 	public ChannelCommandDispatcherITCase() {
 		super(ChannelCommandDispatcherFactoryContext::new);

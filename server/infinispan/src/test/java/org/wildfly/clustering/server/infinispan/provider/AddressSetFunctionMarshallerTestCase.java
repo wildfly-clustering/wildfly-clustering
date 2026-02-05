@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 import org.infinispan.remoting.transport.Address;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.wildfly.clustering.cache.function.CollectionFunction;
+import org.wildfly.clustering.cache.function.AbstractCollectionOperationFunction;
 import org.wildfly.clustering.marshalling.TesterFactory;
 import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
@@ -23,7 +23,7 @@ public class AddressSetFunctionMarshallerTestCase {
 	@ParameterizedTest
 	@TesterFactorySource(ProtoStreamTesterFactory.class)
 	public void test(TesterFactory factory) {
-		Consumer<CollectionFunction<Address, Set<Address>>> tester = factory.createTester();
+		Consumer<AbstractCollectionOperationFunction<Address, Set<Address>>> tester = factory.createTester();
 
 		Address address = Address.random();
 		tester.accept(new AddressSetAddFunction(address));

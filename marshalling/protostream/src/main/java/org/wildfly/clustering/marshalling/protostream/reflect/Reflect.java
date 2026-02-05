@@ -24,6 +24,9 @@ import java.util.List;
  * @author Paul Ferraro
  */
 final class Reflect {
+	private Reflect() {
+		// Hide
+	}
 
 	@SuppressWarnings("removal")
 	static VarHandle findVarHandle(Class<?> sourceClass, Class<?> fieldType) {

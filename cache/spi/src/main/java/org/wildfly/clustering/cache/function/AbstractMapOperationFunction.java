@@ -14,14 +14,14 @@ import java.util.Map;
  * @param <V> the map value type
  * @param <T> the function operand type
  */
-public abstract class MapFunction<K, V, T> extends AbstractFunction<T, Map<K, V>> {
+public abstract class AbstractMapOperationFunction<K, V, T> extends AbstractFunction<T, Map<K, V>> {
 
 	/**
 	 * Constructs a new map operation function
 	 * @param operand the operation operand
 	 * @param operations the map operations
 	 */
-	public MapFunction(T operand, Operations<Map<K, V>> operations) {
+	public AbstractMapOperationFunction(T operand, Operations<Map<K, V>> operations) {
 		super(operand, operations.getCopier(), operations.getFactory(), operations.isEmpty());
 	}
 }

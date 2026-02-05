@@ -79,7 +79,7 @@ import java.util.function.Predicate;
  */
 @SuppressWarnings("unqualified-field-access")
 class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements ConcurrentDirectDeque<E>, Serializable {
-
+//CHECKSTYLE:OFF
 	/*
 	 * This is an implementation of a concurrent lock-free deque
 	 * supporting interior removes but not interior insertions, as
@@ -1608,4 +1608,5 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 			throw new Error(e);
 		}
 	}
+//CHECKSTYLE:ON
 }

@@ -16,6 +16,15 @@ import org.infinispan.remoting.transport.Address;
  * @author Paul Ferraro
  */
 public interface KeyAffinityServiceFactory {
+
+	/** Singleton instance */
+	KeyAffinityServiceFactory INSTANCE = new KeyAffinityServiceFactory() {
+		@Override
+		public <K> KeyAffinityService<K> createService(Cache<? extends K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
+			return (cache.getAdvancedCache().getDistributionManager() != null) ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
+		}
+	};
+
 	/**
 	 * Creates a key affinity service for use with the specified cache, that generates local keys using the specified generator.
 	 * @param <K> the cache key type
@@ -37,12 +46,4 @@ public interface KeyAffinityServiceFactory {
 	 * @return a key affinity service
 	 */
 	<K> KeyAffinityService<K> createService(Cache<? extends K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter);
-
-	/** Singleton instance */
-	KeyAffinityServiceFactory INSTANCE = new KeyAffinityServiceFactory() {
-		@Override
-		public <K> KeyAffinityService<K> createService(Cache<? extends K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
-			return (cache.getAdvancedCache().getDistributionManager() != null) ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
-		}
-	};
 }

@@ -14,8 +14,6 @@ import java.util.List;
  * @param <U> the second parameter type
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
-	/** An empty consumer */
-	BiConsumer<?, ?> EMPTY = (value1, value2) -> {};
 
 	@Override
 	default BiConsumer<T, U> andThen(java.util.function.BiConsumer<? super T, ? super U> after) {
@@ -108,9 +106,8 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 	 * @param <U> the second consumed type
 	 * @return an empty consumer
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, U> BiConsumer<T, U> empty() {
-		return (BiConsumer<T, U>) EMPTY;
+		return BiConsumers.EMPTY.cast();
 	}
 
 	/**

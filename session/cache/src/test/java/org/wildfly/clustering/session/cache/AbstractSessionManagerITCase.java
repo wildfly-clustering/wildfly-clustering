@@ -47,7 +47,7 @@ import org.wildfly.clustering.session.SessionMetaData;
  * @param <P> the parameters type
  * @author Paul Ferraro
  */
-public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
+public abstract class AbstractSessionManagerITCase<P extends SessionManagerParameters> {
 	private static final Supplier<AtomicReference<String>> SESSION_CONTEXT_FACTORY = AtomicReference::new;
 	private static final String DEPLOYMENT_CONTEXT = "deployment";
 
@@ -55,7 +55,7 @@ public abstract class SessionManagerITCase<P extends SessionManagerParameters> {
 	private final SessionManagerFactoryContextProvider<P, String> factory;
 	private final String threadGroupName = this.getClass().getSimpleName();
 
-	protected SessionManagerITCase(SessionManagerFactoryContextProvider<P, String> factory) {
+	protected AbstractSessionManagerITCase(SessionManagerFactoryContextProvider<P, String> factory) {
 		this.factory = factory;
 	}
 

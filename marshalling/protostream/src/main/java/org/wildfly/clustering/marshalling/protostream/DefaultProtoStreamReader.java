@@ -37,7 +37,7 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
 	private final TagReader reader;
 	private final ProtoStreamReaderContext context;
 
-	private int currentTag = 0;
+	private int currentTag;
 
 	DefaultProtoStreamReader(ReadContext context) {
 		this(context, new DefaultProtoStreamReaderContext());

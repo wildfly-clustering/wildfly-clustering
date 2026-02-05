@@ -41,13 +41,13 @@ public class SimpleObjectOutput extends SimpleDataOutput implements ObjectOutput
 	 * Builder of a simple object output.
 	 */
 	public static class Builder extends SimpleDataOutput.Builder {
-		Consumer<Object> objects = Consumer.empty();
+		Consumer<Object> objects;
 
 		/**
 		 * Creates a builder of an object output
 		 */
 		public Builder() {
-			super();
+			this.objects = Consumer.empty();
 		}
 
 		/**

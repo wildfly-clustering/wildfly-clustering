@@ -14,8 +14,6 @@ import java.util.Map;
  * @param <T> the supplied type
  */
 public interface Supplier<T> extends java.util.function.Supplier<T> {
-	/** A supplier that always returns null */
-	Supplier<?> NULL = () -> null;
 
 	/**
 	 * Returns a {@link Runnable} that consumes the supplied value.
@@ -120,9 +118,8 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param <T> the supplied type
 	 * @return a supplier that always returns the specified value.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> Supplier<T> empty() {
-		return (Supplier<T>) NULL;
+		return Suppliers.NULL.cast();
 	}
 
 	/**

@@ -247,7 +247,7 @@ public class SimpleDataOutput implements DataOutput {
 
 	static class ArrayConsumer<T> implements Consumer<T> {
 		private T[] values;
-		private int index = 0;
+		private int index;
 
 		ArrayConsumer(T[] values) {
 			this.values = values;
@@ -261,7 +261,7 @@ public class SimpleDataOutput implements DataOutput {
 
 	static class GenericArrayConsumer<T> implements Consumer<T> {
 		private Object values;
-		private int index = 0;
+		private int index;
 
 		GenericArrayConsumer(Object values) {
 			this.values = values;
@@ -275,7 +275,7 @@ public class SimpleDataOutput implements DataOutput {
 
 	static class IntArrayConsumer implements IntConsumer {
 		private int[] values;
-		private int index = 0;
+		private int index;
 
 		IntArrayConsumer(int[] values) {
 			this.values = values;
@@ -289,7 +289,7 @@ public class SimpleDataOutput implements DataOutput {
 
 	static class LongArrayConsumer implements LongConsumer {
 		private long[] values;
-		private int index = 0;
+		private int index;
 
 		LongArrayConsumer(long[] values) {
 			this.values = values;
@@ -303,7 +303,7 @@ public class SimpleDataOutput implements DataOutput {
 
 	static class DoubleArrayConsumer implements DoubleConsumer {
 		private double[] values;
-		private int index = 0;
+		private int index;
 
 		DoubleArrayConsumer(double[] values) {
 			this.values = values;

@@ -7,8 +7,6 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.ObjectInput;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -68,13 +66,13 @@ public class SimpleObjectInput extends SimpleDataInput implements ObjectInput {
 	 * Builder of a simple object input.
 	 */
 	public static class Builder extends SimpleDataInput.Builder {
-		List<Object> objects = Collections.emptyList();
+		List<Object> objects;
 
 		/**
 		 * Creates a builder of an object input
 		 */
 		public Builder() {
-			super();
+			this.objects = List.of();
 		}
 
 		/**
@@ -83,7 +81,7 @@ public class SimpleObjectInput extends SimpleDataInput implements ObjectInput {
 		 * @return a reference to this builder
 		 */
 		public Builder with(Object... values) {
-			this.objects = Arrays.asList(values);
+			this.objects = List.of(values);
 			return this;
 		}
 

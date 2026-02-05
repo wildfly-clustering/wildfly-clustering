@@ -25,20 +25,6 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public abstract class AbstractMemberMarshaller<T, H> implements ProtoStreamMarshaller<T>, Function<Object[], T> {
-	static <T, R> R invoke(MethodHandle handle, T parameter) {
-		try {
-			return (R) handle.invokeExact(parameter);
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	static <T, R> R read(VarHandle handle, T parameter) {
-		return (R) handle.get(parameter);
-	}
-
 	private final Class<? extends T> type;
 	private final BiFunction<H, Object, Object> accessor;
 	private final List<H> handles;
@@ -57,6 +43,20 @@ public abstract class AbstractMemberMarshaller<T, H> implements ProtoStreamMarsh
 		for (Class<?> memberType : memberTypes) {
 			this.handles.add(handleLocator.apply(type, memberType));
 		}
+	}
+
+	static <T, R> R invoke(MethodHandle handle, T parameter) {
+		try {
+			return (R) handle.invokeExact(parameter);
+		} catch (RuntimeException | Error e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	static <T, R> R read(VarHandle handle, T parameter) {
+		return (R) handle.get(parameter);
 	}
 
 	@Override

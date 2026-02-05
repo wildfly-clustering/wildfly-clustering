@@ -862,10 +862,4 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 	public ContinuousQuery<K, V> continuousQuery() {
 		return this.cache.continuousQuery();
 	}
-
-	@Override
-	public boolean equals(Object object) {
-		if (!(object instanceof AdvancedCache cache)) return false;
-		return this.getCacheManager().equals(cache.getCacheManager()) && super.equals(object);
-	}
 }

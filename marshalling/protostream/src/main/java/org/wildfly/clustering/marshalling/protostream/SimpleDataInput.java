@@ -267,7 +267,7 @@ public class SimpleDataInput implements DataInput {
 		public Iterator<T> iterator() {
 			Object array = this.array;
 			return new Iterator<>() {
-				private int index = 0;
+				private int index;
 
 				@Override
 				public boolean hasNext() {
