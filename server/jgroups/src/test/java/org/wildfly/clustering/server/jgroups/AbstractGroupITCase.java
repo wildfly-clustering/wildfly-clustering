@@ -37,7 +37,7 @@ import org.wildfly.clustering.server.group.GroupMember;
  * @param <G> the group type
  * @author Paul Ferraro
  */
-public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember<A>, G extends Group<A, M>> {
+public abstract class AbstractGroupITCase<A extends Comparable<A>, M extends GroupMember<A>, G extends Group<A, M>> {
 	private static final String CLUSTER_NAME = "cluster";
 	private static final String[] MEMBER_NAMES = new String[] { "member0", "member1", "member2" };
 	private static final Duration VIEW_CHANGE_DURATION = Duration.ofSeconds(20);
@@ -47,7 +47,7 @@ public abstract class GroupITCase<A extends Comparable<A>, M extends GroupMember
 	private final Function<JChannel, Context<G>> groupContextFactory;
 	private final Function<A, Address> mapper;
 
-	protected GroupITCase(Function<JChannel, Context<G>> groupContextFactory, Function<A, Address> mapper) {
+	protected AbstractGroupITCase(Function<JChannel, Context<G>> groupContextFactory, Function<A, Address> mapper) {
 		this.groupContextFactory = groupContextFactory;
 		this.mapper = mapper;
 	}

@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
  * @author Paul Ferraro
  */
 public interface Formatter<T> {
+
 	/**
 	 * Returns the type of the formatted object.
 	 * @return the type of the formatted object.
@@ -62,40 +63,6 @@ public interface Formatter<T> {
 			}
 		};
 	}
-
-	/**
-	 * A formatter specialization for string formatting.
-	 */
-	interface Identity extends Formatter<String> {
-		/**
-		 * Returns a wrapping formatter
-		 * @param <U> the wrapped type
-		 * @param targetClass the wrapped type
-		 * @param wrapper the wrapper function
-		 * @return a wrapped formmater
-		 */
-		default <U> Formatter<U> wrap(Class<U> targetClass, Function<String, U> wrapper) {
-			return this.wrap(targetClass, Object::toString, wrapper);
-		}
-	}
-
-	/** An identity formatter */
-	Identity IDENTITY = new Identity() {
-		@Override
-		public Class<String> getType() {
-			return String.class;
-		}
-
-		@Override
-		public String parse(String value) {
-			return value;
-		}
-
-		@Override
-		public String format(String key) {
-			return key;
-		}
-	};
 
 	/**
 	 * Creates a formatter whose {@link #parse(String)} always returns the specified value.
@@ -183,6 +150,40 @@ public interface Formatter<T> {
 				return String.join(delimiter, unwrapper.apply(value));
 			}
 		};
+	}
+
+	/**
+	 * A formatter specialization for string formatting.
+	 */
+	interface Identity extends Formatter<String> {
+		/** An identity formatter */
+		Identity INSTANCE = new Identity() {
+			@Override
+			public Class<String> getType() {
+				return String.class;
+			}
+
+			@Override
+			public String parse(String value) {
+				return value;
+			}
+
+			@Override
+			public String format(String key) {
+				return key;
+			}
+		};
+
+		/**
+		 * Returns a wrapping formatter
+		 * @param <U> the wrapped type
+		 * @param targetClass the wrapped type
+		 * @param wrapper the wrapper function
+		 * @return a wrapped formmater
+		 */
+		default <U> Formatter<U> wrap(Class<U> targetClass, Function<String, U> wrapper) {
+			return this.wrap(targetClass, Object::toString, wrapper);
+		}
 	}
 
 	/**

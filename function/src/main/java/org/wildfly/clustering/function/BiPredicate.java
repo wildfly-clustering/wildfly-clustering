@@ -12,10 +12,6 @@ package org.wildfly.clustering.function;
 	 * @param <U> the latter parameter type
  */
 public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
-	/** A predicate that always returns true */
-	BiPredicate<?, ?> ALWAYS = of(BiConsumer.EMPTY, BooleanSupplier.TRUE);
-	/** A predicate that always returns false */
-	BiPredicate<?, ?> NEVER = of(BiConsumer.EMPTY, BooleanSupplier.FALSE);
 
 	@Override
 	default BiPredicate<T, U> and(java.util.function.BiPredicate<? super T, ? super U> other) {
@@ -113,9 +109,8 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 	 * @param <U> the latter parameter type
 	 * @return a predicate that always accepts its arguments.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, U> BiPredicate<T, U> always() {
-		return (BiPredicate<T, U>) ALWAYS;
+		return BiPredicates.ALWAYS.cast();
 	}
 
 	/**
@@ -124,9 +119,8 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 	 * @param <U> the latter parameter type
 	 * @return a predicate that never accepts its arguments.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, U> BiPredicate<T, U> never() {
-		return (BiPredicate<T, U>) NEVER;
+		return BiPredicates.NEVER.cast();
 	}
 
 	/**

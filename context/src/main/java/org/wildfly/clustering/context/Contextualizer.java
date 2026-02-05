@@ -16,6 +16,46 @@ import java.util.function.Supplier;
  * @author Paul Ferraro
  */
 public interface Contextualizer {
+	/**
+	 * A pass-through contextualizer.
+	 */
+	Contextualizer NONE = new Contextualizer() {
+		@Override
+		public Runnable contextualize(Runnable runner) {
+			return runner;
+		}
+
+		@Override
+		public <T> Callable<T> contextualize(Callable<T> caller) {
+			return caller;
+		}
+
+		@Override
+		public <T> Supplier<T> contextualize(Supplier<T> supplier) {
+			return supplier;
+		}
+
+		@Override
+		public <V> Consumer<V> contextualize(Consumer<V> consumer) {
+			return consumer;
+		}
+
+		@Override
+		public <V1, V2> BiConsumer<V1, V2> contextualize(BiConsumer<V1, V2> consumer) {
+			return consumer;
+		}
+
+		@Override
+		public <V, R> Function<V, R> contextualize(Function<V, R> function) {
+			return function;
+		}
+
+		@Override
+		public <V1, V2, R> BiFunction<V1, V2, R> contextualize(BiFunction<V1, V2, R> function) {
+			return function;
+		}
+	};
+
 
 	/**
 	 * Decorates the specified runner with a given context.
@@ -75,46 +115,6 @@ public interface Contextualizer {
 	 * @return a contextual function
 	 */
 	<V1, V2, R> BiFunction<V1, V2, R> contextualize(BiFunction<V1, V2, R> function);
-
-	/**
-	 * A pass-through contextualizer.
-	 */
-	Contextualizer NONE = new Contextualizer() {
-		@Override
-		public Runnable contextualize(Runnable runner) {
-			return runner;
-		}
-
-		@Override
-		public <T> Callable<T> contextualize(Callable<T> caller) {
-			return caller;
-		}
-
-		@Override
-		public <T> Supplier<T> contextualize(Supplier<T> supplier) {
-			return supplier;
-		}
-
-		@Override
-		public <V> Consumer<V> contextualize(Consumer<V> consumer) {
-			return consumer;
-		}
-
-		@Override
-		public <V1, V2> BiConsumer<V1, V2> contextualize(BiConsumer<V1, V2> consumer) {
-			return consumer;
-		}
-
-		@Override
-		public <V, R> Function<V, R> contextualize(Function<V, R> function) {
-			return function;
-		}
-
-		@Override
-		public <V1, V2, R> BiFunction<V1, V2, R> contextualize(BiFunction<V1, V2, R> function) {
-			return function;
-		}
-	};
 
 	/**
 	 * Creates a contextualizer from the specified context provider.

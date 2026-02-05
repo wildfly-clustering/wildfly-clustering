@@ -23,7 +23,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @param <F> the function type
  * @author Paul Ferraro
  */
-public class CollectionFunctionMarshaller<V, C extends Collection<V>, F extends CollectionFunction<V, C>> implements ProtoStreamMarshaller<F> {
+public class CollectionFunctionMarshaller<V, C extends Collection<V>, F extends AbstractCollectionOperationFunction<V, C>> implements ProtoStreamMarshaller<F> {
 	private static final int ELEMENT_INDEX = 1;
 
 	private final Class<? extends F> targetClass;

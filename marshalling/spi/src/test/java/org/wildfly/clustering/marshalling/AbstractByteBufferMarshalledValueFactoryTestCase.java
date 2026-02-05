@@ -19,20 +19,20 @@ import org.junit.jupiter.api.Test;
  * @author Brian Stansberry
  * @author Paul Ferraro
  */
-public abstract class ByteBufferMarshalledValueFactoryTestCase {
+public abstract class AbstractByteBufferMarshalledValueFactoryTestCase {
 
 	private final ByteBufferMarshaller marshaller;
 	private final ByteBufferMarshalledValueFactory factory;
 
-	protected ByteBufferMarshalledValueFactoryTestCase(MarshallingTesterFactory factory) {
+	protected AbstractByteBufferMarshalledValueFactoryTestCase(MarshallingTesterFactory factory) {
 		this(factory.getMarshaller());
 	}
 
-	protected ByteBufferMarshalledValueFactoryTestCase(ByteBufferMarshaller marshaller) {
+	protected AbstractByteBufferMarshalledValueFactoryTestCase(ByteBufferMarshaller marshaller) {
 		this(marshaller, new ByteBufferMarshalledValueFactory(marshaller));
 	}
 
-	ByteBufferMarshalledValueFactoryTestCase(ByteBufferMarshaller marshaller, ByteBufferMarshalledValueFactory factory) {
+	AbstractByteBufferMarshalledValueFactoryTestCase(ByteBufferMarshaller marshaller, ByteBufferMarshalledValueFactory factory) {
 		this.marshaller = marshaller;
 		this.factory = factory;
 	}

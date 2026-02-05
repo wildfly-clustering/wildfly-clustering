@@ -21,14 +21,6 @@ import java.util.Set;
  */
 class UnmodifiableImmutability implements Immutability {
 
-	static <T> Set<T> identitySet(Collection<T> collection) {
-		Set<T> set = !collection.isEmpty() ? Collections.newSetFromMap(new IdentityHashMap<>(collection.size())) : Set.of();
-		for (T element : collection) {
-			set.add(element);
-		}
-		return set;
-	}
-
 	private final Set<Class<?>> unmodifiableCollectionClasses = identitySet(List.of(
 			Collections.singleton(null).getClass(),
 			Collections.singletonList(null).getClass(),
@@ -56,6 +48,14 @@ class UnmodifiableImmutability implements Immutability {
 
 	UnmodifiableImmutability(Immutability elementImmutability) {
 		this.elementImmutability = elementImmutability;
+	}
+
+	static <T> Set<T> identitySet(Collection<T> collection) {
+		Set<T> set = !collection.isEmpty() ? Collections.newSetFromMap(new IdentityHashMap<>(collection.size())) : Set.of();
+		for (T element : collection) {
+			set.add(element);
+		}
+		return set;
 	}
 
 	@Override

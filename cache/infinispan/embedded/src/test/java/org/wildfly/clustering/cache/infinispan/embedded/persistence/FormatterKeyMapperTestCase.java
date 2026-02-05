@@ -81,6 +81,6 @@ public class FormatterKeyMapperTestCase {
 	}
 
 	private static List<? extends Formatter<?>> createPersistenceList(int size) {
-		return IntStream.range(0, size).mapToObj(index -> Formatter.IDENTITY.wrap(Type.values()[index].getClass(), Type::name, value -> Type.valueOf(value))).toList();
+		return IntStream.range(0, size).mapToObj(index -> Formatter.Identity.INSTANCE.wrap(Type.values()[index].getClass(), Type::name, value -> Type.valueOf(value))).toList();
 	}
 }

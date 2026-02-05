@@ -6,13 +6,13 @@
 package org.wildfly.clustering.server.infinispan;
 
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.server.jgroups.GroupITCase;
+import org.wildfly.clustering.server.jgroups.AbstractGroupITCase;
 
 /**
  * Integration test for JChannel-based group implementation.
  * @author Paul Ferraro
  */
-public class CacheContainerGroupITCase extends GroupITCase<Address, CacheContainerGroupMember, CacheContainerGroup> {
+public class CacheContainerGroupITCase extends AbstractGroupITCase<Address, CacheContainerGroupMember, CacheContainerGroup> {
 
 	public CacheContainerGroupITCase() {
 		super(EmbeddedCacheManagerGroupContext::new, Address::toExtendedUUID);

@@ -50,7 +50,7 @@ public class SchemaRegistrar implements Consumer<SerializationContext> {
 			try {
 				// If parsing failed, unregister this schema so others can register
 				context.unregisterProtoFile(this.resourceName);
-			} catch (RuntimeException re) {
+			} catch (RuntimeException ignore) {
 				// Ignore
 			}
 			throw e;

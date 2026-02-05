@@ -27,6 +27,6 @@ public class SessionKeyFormatter<K extends Key<String>> extends KeyFormatter<Str
 	}
 
 	private SessionKeyFormatter(Class<K> keyClass, Function<String, K> factory) {
-		super(keyClass, Formatter.IDENTITY, factory);
+		super(keyClass, Formatter.Identity.INSTANCE, factory);
 	}
 }

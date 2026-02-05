@@ -32,13 +32,13 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
-import org.wildfly.clustering.session.cache.SessionManagerITCase;
+import org.wildfly.clustering.session.cache.AbstractSessionManagerITCase;
 
 /**
  * Session manager integration test using an embedded Infinispan cache tested under a combination of settings.
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerITCase extends SessionManagerITCase<InfinispanSessionManagerParameters> {
+public class InfinispanSessionManagerITCase extends AbstractSessionManagerITCase<InfinispanSessionManagerParameters> {
 
 	static class InfinispanSessionManagerArgumentsProvider implements ArgumentsProvider {
 		Class<? extends MarshallingTesterFactory> marshallerClass = MarshallingTesterFactory.class;

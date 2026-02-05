@@ -18,5 +18,4 @@ public enum SessionAttributePersistenceStrategy {
 	 * Persists session attributes individually, precluding cross-attribute references.
 	 */
 	FINE,
-	;
 }

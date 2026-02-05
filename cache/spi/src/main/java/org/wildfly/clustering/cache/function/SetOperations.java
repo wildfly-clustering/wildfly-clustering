@@ -22,18 +22,18 @@ public enum SetOperations implements CollectionOperations<Object, Set<Object>> {
 	TREE(TreeSet::new, TreeSet::new),
 	;
 
-	static <T> Operations<Set<T>> forOperand(T value) {
-		// Prefer TreeSet for its minimal heap requirements
-		SetOperations result = (value instanceof Comparable) ? TREE : HASH;
-		return result.cast();
-	}
-
 	private final Supplier<Set<Object>> factory;
 	private final UnaryOperator<Set<Object>> copier;
 
 	SetOperations(Supplier<Set<Object>> factory, UnaryOperator<Set<Object>> copier) {
 		this.factory = factory;
 		this.copier = copier;
+	}
+
+	static <T> Operations<Set<T>> forOperand(T value) {
+		// Prefer TreeSet for its minimal heap requirements
+		SetOperations result = (value instanceof Comparable) ? TREE : HASH;
+		return result.cast();
 	}
 
 	@Override

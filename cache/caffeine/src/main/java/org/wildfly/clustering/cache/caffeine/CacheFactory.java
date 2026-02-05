@@ -8,12 +8,12 @@ package org.wildfly.clustering.cache.caffeine;
 import java.util.OptionalLong;
 import java.util.function.BiPredicate;
 
-import org.wildfly.clustering.function.Function;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
 import com.github.benmanes.caffeine.cache.Weigher;
+
+import org.wildfly.clustering.function.Function;
 
 /**
  * A factory for creating a Caffeine cache using a given configuration.
@@ -39,16 +39,16 @@ public class CacheFactory<K, V> implements Function<CacheConfiguration<K, V>, Ca
 		}
 	};
 
-	@SuppressWarnings("unchecked")
-	static <K, V> Expiry<K, V> never() {
-		return (Expiry<K, V>) NEVER;
-	}
-
 	/**
 	 * Constructs a new cache factory.
 	 */
 	public CacheFactory() {
 		// Do nothing
+	}
+
+	@SuppressWarnings("unchecked")
+	static <K, V> Expiry<K, V> never() {
+		return (Expiry<K, V>) NEVER;
 	}
 
 	@Override

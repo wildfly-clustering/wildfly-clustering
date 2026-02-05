@@ -164,7 +164,7 @@ public enum CacheStrategy implements CacheFactory {
 		}
 	},
 	;
-	private static class AbstractFunction<K, V> implements BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>> {
+	private abstract static class AbstractFunction<K, V> implements BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>> {
 		static final Predicate<Integer> NOT_NULL = Objects::nonNull;
 		static final Integer INITIAL_INDEX = Integer.valueOf(0);
 

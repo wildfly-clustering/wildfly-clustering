@@ -26,12 +26,12 @@ import org.wildfly.clustering.marshalling.Formatter;
 public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 	private static final int HEX_RADIX = 16;
 	private static final List<Formatter<?>> DEFAULT_FORMATTERS = List.of(
-			Formatter.IDENTITY,
-			Formatter.IDENTITY.wrap(Byte.class, Byte::valueOf),
-			Formatter.IDENTITY.wrap(Short.class, Short::valueOf),
-			Formatter.IDENTITY.wrap(Integer.class, Integer::valueOf),
-			Formatter.IDENTITY.wrap(Long.class, Long::valueOf),
-			Formatter.IDENTITY.wrap(UUID.class, UUID::fromString));
+			Formatter.Identity.INSTANCE,
+			Formatter.Identity.INSTANCE.wrap(Byte.class, Byte::valueOf),
+			Formatter.Identity.INSTANCE.wrap(Short.class, Short::valueOf),
+			Formatter.Identity.INSTANCE.wrap(Integer.class, Integer::valueOf),
+			Formatter.Identity.INSTANCE.wrap(Long.class, Long::valueOf),
+			Formatter.Identity.INSTANCE.wrap(UUID.class, UUID::fromString));
 
 	private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
 	private final List<Formatter<?>> formatters;

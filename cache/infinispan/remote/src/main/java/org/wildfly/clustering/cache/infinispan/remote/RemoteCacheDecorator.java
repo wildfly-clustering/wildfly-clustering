@@ -643,10 +643,4 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 	public <T> java.util.concurrent.Flow.Publisher<CacheEntryProcessorResult<K, T>> processAll(AsyncCacheEntryProcessor<K, V, T> processor, CacheProcessorOptions options) {
 		return this.cache.processAll(processor, options);
 	}
-
-	@Override
-	public boolean equals(Object object) {
-		if (!(object instanceof RemoteCache cache)) return false;
-		return this.getRemoteCacheContainer().equals(cache.getRemoteCacheContainer()) && super.equals(object);
-	}
 }

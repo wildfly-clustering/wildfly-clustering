@@ -28,13 +28,13 @@ import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
-import org.wildfly.clustering.session.cache.SessionManagerITCase;
+import org.wildfly.clustering.session.cache.AbstractSessionManagerITCase;
 
 /**
  * Session manager integration test using an embedded Infinispan cache with a remote Infinispan store tested under a combination of settings.
  * @author Paul Ferraro
  */
-public class RemoteStoreSessionManagerITCase extends SessionManagerITCase<InfinispanSessionManagerParameters> {
+public class RemoteStoreSessionManagerITCase extends AbstractSessionManagerITCase<InfinispanSessionManagerParameters> {
 
 	@RegisterExtension
 	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();
@@ -79,7 +79,8 @@ public class RemoteStoreSessionManagerITCase extends SessionManagerITCase<Infini
 
 								builder.persistence().addStore(RemoteCacheStoreConfigurationBuilder.class)
 										.container(container)
-										.configuration("""
+										.configuration(
+"""
 {
 	"local-cache" : {
 		"encoding" : {
@@ -98,7 +99,8 @@ public class RemoteStoreSessionManagerITCase extends SessionManagerITCase<Infini
 			"locking" : "PESSIMISTIC"
 		}
 	}
-}""")
+}
+""")
 										.segmented(true)
 										.shared(true)
 										// transactional(true) Currently fails with: java.lang.UnsupportedOperationException: Decorated caches should not delegate wrapping operations

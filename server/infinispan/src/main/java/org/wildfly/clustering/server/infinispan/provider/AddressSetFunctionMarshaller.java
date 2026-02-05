@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.cache.function.CollectionFunction;
+import org.wildfly.clustering.cache.function.AbstractCollectionOperationFunction;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -24,7 +24,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @param <F> the function type
  * @author Paul Ferraro
  */
-public class AddressSetFunctionMarshaller<F extends CollectionFunction<Address, Set<Address>>> implements ProtoStreamMarshaller<F> {
+public class AddressSetFunctionMarshaller<F extends AbstractCollectionOperationFunction<Address, Set<Address>>> implements ProtoStreamMarshaller<F> {
 	private static final int ELEMENT_INDEX = 1;
 
 	private final Class<? extends F> targetClass;

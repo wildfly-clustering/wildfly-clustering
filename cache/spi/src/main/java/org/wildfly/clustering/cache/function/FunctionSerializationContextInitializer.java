@@ -22,7 +22,7 @@ public class FunctionSerializationContextInitializer extends AbstractSerializati
 	 * Creates a serialization context initializer.
 	 */
 	public FunctionSerializationContextInitializer() {
-		super();
+		// Do nothing
 	}
 
 	@Override

@@ -16,7 +16,10 @@ import java.util.List;
 /**
  * @author Paul Ferraro
  */
-class Reflect {
+final class Reflect {
+	private Reflect() {
+		// Hide
+	}
 
 	static VarHandle getVarHandle(Class<?> sourceClass, Class<?> fieldType) {
 		List<Field> assignableFields = new LinkedList<>();

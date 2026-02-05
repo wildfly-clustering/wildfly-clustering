@@ -10,5 +10,5 @@ package org.wildfly.clustering.server.jgroups.dispatcher;
  */
 public enum ServiceResponse {
 	/** A response indicating that the recipient could not execute a given command as the associated service is not recognized. */
-	NO_SUCH_SERVICE;
+	NO_SUCH_SERVICE
 }

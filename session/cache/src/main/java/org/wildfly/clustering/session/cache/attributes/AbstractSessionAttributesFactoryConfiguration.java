@@ -15,7 +15,7 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
  * @param <V> the attributes value type
  * @param <MV> the serialized attributes value type
  */
-public abstract class MarshallerSessionAttributesFactoryConfiguration<V, MV> implements SessionAttributesFactoryConfiguration<V, MV> {
+public abstract class AbstractSessionAttributesFactoryConfiguration<V, MV> implements SessionAttributesFactoryConfiguration<V, MV> {
 	private final Immutability immutability;
 	private final Marshaller<V, MV> marshaller;
 
@@ -25,7 +25,7 @@ public abstract class MarshallerSessionAttributesFactoryConfiguration<V, MV> imp
 	 * @param configuration a session manager factory configuration
 	 * @param marshaller a session attributes marshaller
 	 */
-	protected <SC> MarshallerSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<SC> configuration, Marshaller<V, MV> marshaller) {
+	protected <SC> AbstractSessionAttributesFactoryConfiguration(SessionManagerFactoryConfiguration<SC> configuration, Marshaller<V, MV> marshaller) {
 		this.immutability = configuration.getImmutability();
 		this.marshaller = marshaller;
 	}

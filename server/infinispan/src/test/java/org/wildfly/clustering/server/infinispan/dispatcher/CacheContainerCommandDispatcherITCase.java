@@ -6,12 +6,12 @@
 package org.wildfly.clustering.server.infinispan.dispatcher;
 
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
-import org.wildfly.clustering.server.jgroups.dispatcher.CommandDispatcherITCase;
+import org.wildfly.clustering.server.jgroups.dispatcher.AbstractCommandDispatcherITCase;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheContainerCommandDispatcherITCase extends CommandDispatcherITCase<CacheContainerGroupMember, CacheContainerCommandDispatcherFactory> {
+public class CacheContainerCommandDispatcherITCase extends AbstractCommandDispatcherITCase<CacheContainerGroupMember, CacheContainerCommandDispatcherFactory> {
 
 	public CacheContainerCommandDispatcherITCase() {
 		super(CacheContainerCommandDispatcherFactoryContext::new);

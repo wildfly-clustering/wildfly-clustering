@@ -18,6 +18,6 @@ public class LocalEmbeddedCacheManagerGroupMemberFormatter extends Formatter.Pro
 	 * Creates a group member formatter.
 	 */
 	public LocalEmbeddedCacheManagerGroupMemberFormatter() {
-		super(Formatter.IDENTITY.wrap(LocalEmbeddedCacheManagerGroupMember.class, LocalEmbeddedCacheManagerGroupMember::getName, LocalEmbeddedCacheManagerGroupMember::new));
+		super(Formatter.Identity.INSTANCE.wrap(LocalEmbeddedCacheManagerGroupMember.class, LocalEmbeddedCacheManagerGroupMember::getName, LocalEmbeddedCacheManagerGroupMember::new));
 	}
 }

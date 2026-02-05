@@ -12,6 +12,10 @@ import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.RemovalListener;
+
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.near.NearCache;
@@ -24,10 +28,6 @@ import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.attributes.SessionAttributesKey;
 import org.wildfly.clustering.session.infinispan.remote.metadata.SessionAccessMetaDataKey;
 import org.wildfly.clustering.session.infinispan.remote.metadata.SessionCreationMetaDataKey;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.RemovalCause;
-import com.github.benmanes.caffeine.cache.RemovalListener;
 
 /**
  * A near-cache factory based on max-active-sessions.

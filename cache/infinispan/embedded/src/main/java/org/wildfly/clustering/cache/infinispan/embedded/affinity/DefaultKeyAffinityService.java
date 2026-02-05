@@ -55,6 +55,7 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
  */
 @Listener(observation = Observation.POST)
 public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supplier<BlockingQueue<K>> {
+	static final int DEFAULT_QUEUE_SIZE = 100;
 	@SuppressWarnings("removal")
 	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(DefaultKeyAffinityService.class, AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
 		@Override
@@ -65,7 +66,6 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 	private static final Function<Cache<?, ?>, ConsistentHash> CURRENT_CONSISTENT_HASH = cache -> cache.getAdvancedCache().getDistributionManager().getCacheTopology().getWriteConsistentHash();
 	private static final BiFunction<Cache<?, ?>, ConsistentHash, KeyDistribution> KEY_DISTRIBUTION_FACTORY = KeyDistribution::forConsistentHash;
 
-	static final int DEFAULT_QUEUE_SIZE = 100;
 	private static final System.Logger LOGGER = System.getLogger(DefaultKeyAffinityService.class.getName());
 
 	private final Cache<? extends K, ?> cache;

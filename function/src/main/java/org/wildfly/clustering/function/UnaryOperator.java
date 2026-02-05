@@ -14,10 +14,6 @@ import java.util.Map;
  * @param <T> the operating type
  */
 public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, Function<T, T> {
-	/** An identity operator that always returns its parameter */
-	UnaryOperator<?> IDENTITY = value -> value;
-	/** An operator that always returns null */
-	UnaryOperator<?> NULL = of(Consumer.empty(), Supplier.empty());
 
 	/**
 	 * Returns an operator that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
@@ -103,9 +99,8 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param <T> the operating type
 	 * @return an operator that returns its value.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> UnaryOperator<T> identity() {
-		return (UnaryOperator<T>) IDENTITY;
+		return UnaryOperators.IDENTITY.cast();
 	}
 
 	/**
@@ -113,9 +108,8 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param <T> the operating type
 	 * @return an operator that always returns null, ignoring its parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> UnaryOperator<T> empty() {
-		return (UnaryOperator<T>) NULL;
+		return UnaryOperators.NULL.cast();
 	}
 
 	/**
@@ -152,7 +146,7 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @return an operator view of the specified function.
 	 */
 	static <T> UnaryOperator<T> apply(java.util.function.Function<? super T, T> function) {
-		return (function != null) && (function != Function.NULL) ? new UnaryOperator<>() {
+		return (function != null) && (function != Function.empty()) ? new UnaryOperator<>() {
 			@Override
 			public T apply(T value) {
 				return function.apply(value);

@@ -23,18 +23,18 @@ public enum MapOperations implements Operations<Map<Object, Object>> {
 	TREE(TreeMap::new, TreeMap::new),
 	;
 
-	static <K, V> Operations<Map<K, V>> forOperandKey(K value) {
-		// Prefer TreeMap for its minimal heap requirements
-		MapOperations result = (value instanceof Comparable) ? TREE : HASH;
-		return result.cast();
-	}
-
 	private final Supplier<Map<Object, Object>> factory;
 	private final UnaryOperator<Map<Object, Object>> copier;
 
 	MapOperations(Supplier<Map<Object, Object>> factory, UnaryOperator<Map<Object, Object>> copier) {
 		this.factory = factory;
 		this.copier = copier;
+	}
+
+	static <K, V> Operations<Map<K, V>> forOperandKey(K value) {
+		// Prefer TreeMap for its minimal heap requirements
+		MapOperations result = (value instanceof Comparable) ? TREE : HASH;
+		return result.cast();
 	}
 
 	@Override

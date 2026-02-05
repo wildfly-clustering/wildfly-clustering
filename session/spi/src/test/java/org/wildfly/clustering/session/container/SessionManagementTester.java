@@ -36,7 +36,7 @@ import org.wildfly.clustering.arquillian.Tester;
 public class SessionManagementTester implements Tester {
 
 	public enum HttpMethod {
-		HEAD, GET, PUT, DELETE;
+		HEAD, GET, PUT, DELETE
 	}
 
 	private final ExecutorService executor;

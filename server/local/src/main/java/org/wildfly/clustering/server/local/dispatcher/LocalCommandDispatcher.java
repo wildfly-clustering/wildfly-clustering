@@ -22,7 +22,7 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<LocalGroupMe
 
 	private final LocalGroupMember member;
 	private final C context;
-	private volatile boolean closed = false;
+	private volatile boolean closed;
 
 	/**
 	 * Creates a local command dispatcher.

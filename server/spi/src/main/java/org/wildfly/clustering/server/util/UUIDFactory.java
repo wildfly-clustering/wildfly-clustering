@@ -48,5 +48,4 @@ public enum UUIDFactory implements Supplier<UUID> {
 			return UUID.randomUUID();
 		}
 	},
-	;
 }

@@ -10,7 +10,7 @@ package org.wildfly.clustering.server.service;
  * @author Paul Ferraro
  */
 public class SimpleService implements Service {
-	private volatile boolean started = false;
+	private volatile boolean started;
 
 	/**
 	 * Creates a simple service

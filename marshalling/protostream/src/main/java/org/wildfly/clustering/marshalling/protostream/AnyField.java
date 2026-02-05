@@ -137,6 +137,18 @@ enum AnyField implements Field<Object> {
 		}
 	}),
 	;
+	private static final AnyField[] VALUES = AnyField.values();
+	private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();
+	static {
+		for (AnyField field : VALUES) {
+			Class<?> fieldClass = field.getMarshaller().getJavaClass();
+			if ((fieldClass != Object.class) && (fieldClass != Enum.class) && fieldClass != Class.class) {
+				FIELDS.put(fieldClass, field);
+			}
+		}
+	}
+
+
 	private final FieldMarshaller<Object> marshaller;
 
 	AnyField(ScalarMarshaller<?> marshaller) {
@@ -158,20 +170,8 @@ enum AnyField implements Field<Object> {
 		return this.marshaller;
 	}
 
-	private static final AnyField[] VALUES = AnyField.values();
-
 	static AnyField fromIndex(int index) {
 		return (index > 0) && (index <= VALUES.length) ? VALUES[index - 1] : null;
-	}
-
-	private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();
-	static {
-		for (AnyField field : VALUES) {
-			Class<?> fieldClass = field.getMarshaller().getJavaClass();
-			if ((fieldClass != Object.class) && (fieldClass != Enum.class) && fieldClass != Class.class) {
-				FIELDS.put(fieldClass, field);
-			}
-		}
 	}
 
 	static AnyField fromJavaType(Class<?> targetClass) {

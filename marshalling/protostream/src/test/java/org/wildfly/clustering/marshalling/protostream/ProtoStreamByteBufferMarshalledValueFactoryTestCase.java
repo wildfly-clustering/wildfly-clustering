@@ -5,12 +5,12 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactoryTestCase;
+import org.wildfly.clustering.marshalling.AbstractByteBufferMarshalledValueFactoryTestCase;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtoStreamByteBufferMarshalledValueFactoryTestCase extends ByteBufferMarshalledValueFactoryTestCase {
+public class ProtoStreamByteBufferMarshalledValueFactoryTestCase extends AbstractByteBufferMarshalledValueFactoryTestCase {
 
 	public ProtoStreamByteBufferMarshalledValueFactoryTestCase() {
 		super(new ProtoStreamTesterFactory());

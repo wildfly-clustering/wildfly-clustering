@@ -13,12 +13,6 @@ package org.wildfly.clustering.function;
  * @param <R> the result type
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
-	/** An identity function using the former parameter */
-	BiFunction<?, ?, ?> FORMER_IDENTITY = (value1, value2) -> value1;
-	/** An identity function using the latter parameter */
-	BiFunction<?, ?, ?> LATTER_IDENTITY = (value1, value2) -> value2;
-	/** A function that always returns null. */
-	BiFunction<?, ?, ?> NULL = (value1, value2) -> null;
 
 	/**
 	 * Composes a function that applies the specified functions to each parameter as inputs to this function.
@@ -115,9 +109,8 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param <R> the function return type
 	 * @return a function that returns its first parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T extends R, U, R> BiFunction<T, U, R> former() {
-		return (BiFunction<T, U, R>) FORMER_IDENTITY;
+		return BiFunctions.FORMER.cast();
 	}
 
 	/**
@@ -127,9 +120,8 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param <R> the function return type
 	 * @return a function that returns its first parameter.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, U extends R, R> BiFunction<T, U, R> latter() {
-		return (BiFunction<T, U, R>) LATTER_IDENTITY;
+		return BiFunctions.LATTER.cast();
 	}
 
 	/**
@@ -139,9 +131,8 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 	 * @param <R> the function return type
 	 * @return a function that always returns the specified value, ignoring its parameters.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T, U, R> BiFunction<T, U, R> empty() {
-		return (BiFunction<T, U, R>) NULL;
+		return BiFunctions.NULL.cast();
 	}
 
 	/**

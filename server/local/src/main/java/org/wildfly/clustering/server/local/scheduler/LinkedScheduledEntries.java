@@ -58,7 +58,7 @@ class LinkedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
 		Iterator<Map.Entry<K, V>> iterator = this.queue.iterator();
 		Map<K, Object> tokens = this.tokens;
 		return new Iterator<>() {
-			private K current = null;
+			private K current;
 
 			@Override
 			public boolean hasNext() {

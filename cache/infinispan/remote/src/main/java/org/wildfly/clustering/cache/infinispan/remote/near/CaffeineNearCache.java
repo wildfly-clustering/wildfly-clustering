@@ -7,10 +7,10 @@ package org.wildfly.clustering.cache.infinispan.remote.near;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.github.benmanes.caffeine.cache.Cache;
+
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.near.NearCache;
-
-import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Near cache implementation based on a Caffeine cache.

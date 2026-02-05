@@ -26,13 +26,13 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
-import org.wildfly.clustering.session.cache.SessionManagerITCase;
+import org.wildfly.clustering.session.cache.AbstractSessionManagerITCase;
 
 /**
  * Session manager integration test using an Infinispan server container.
  * @author Paul Ferraro
  */
-public class HotRodSessionManagerITCase extends SessionManagerITCase<HotRodSessionManagerParameters> {
+public class HotRodSessionManagerITCase extends AbstractSessionManagerITCase<HotRodSessionManagerParameters> {
 
 	@RegisterExtension
 	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();

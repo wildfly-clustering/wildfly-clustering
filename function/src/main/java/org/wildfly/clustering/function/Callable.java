@@ -11,8 +11,6 @@ package org.wildfly.clustering.function;
  * @param <T> the result type
  */
 public interface Callable<T> extends java.util.concurrent.Callable<T> {
-	/** A caller that always returns null */
-	Callable<?> NULL = () -> null;
 
 	/**
 	 * Returns a callable whose result is mapped by the specified function.
@@ -34,9 +32,8 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @param <T> the result type
 	 * @return a callable that returns null.
 	 */
-	@SuppressWarnings("unchecked")
 	static <T> Callable<T> empty() {
-		return (Callable<T>) NULL;
+		return Callables.NULL.cast();
 	}
 
 	/**
@@ -62,7 +59,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T> {
 	 * @return the result of the specified supplier.
 	 */
 	static <T> Callable<T> get(java.util.function.Supplier<T> supplier) {
-		return (supplier != null) && (supplier != Supplier.NULL) ? new Callable<>() {
+		return (supplier != null) && (supplier != Supplier.empty()) ? new Callable<>() {
 			@Override
 			public T call() {
 				return supplier.get();

@@ -13,7 +13,7 @@ import java.util.Collection;
  * @param <V> the collection element type
  * @param <C> the collection type
  */
-public class CollectionRemoveFunction<V, C extends Collection<V>> extends CollectionFunction<V, C> {
+public class CollectionRemoveFunction<V, C extends Collection<V>> extends AbstractCollectionOperationFunction<V, C> {
 
 	/**
 	 * Constructs a new function that removes the specified elements from a collection.

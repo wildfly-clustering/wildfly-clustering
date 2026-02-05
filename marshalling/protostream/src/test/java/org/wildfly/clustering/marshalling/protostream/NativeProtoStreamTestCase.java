@@ -49,7 +49,6 @@ public class NativeProtoStreamTestCase {
 	enum Sex {
 		@ProtoEnumValue(0) MALE,
 		@ProtoEnumValue(1) FEMALE,
-		;
 	}
 
 	static class Employee {

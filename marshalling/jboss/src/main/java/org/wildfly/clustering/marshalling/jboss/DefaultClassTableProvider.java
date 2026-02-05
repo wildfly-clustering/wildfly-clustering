@@ -175,16 +175,16 @@ enum DefaultClassTableProvider implements Supplier<ClassTable> {
 		MARSHALLING(List.of(ByteBufferMarshalledKey.class, ByteBufferMarshalledValue.class)),
 	;
 
-	private static List<Class<?>> findSerializableClasses(Class<?> targetClass) {
-		Class<?>[] childClasses = targetClass.getDeclaredClasses();
-		// Include any non-public serializable components/replacements
-		return (childClasses.length > 0) ? Stream.concat(Stream.of(targetClass), Stream.of(childClasses).filter(Serializable.class::isAssignableFrom)).toList() : List.of(targetClass);
-	}
-
 	private final ClassTable table;
 
 	DefaultClassTableProvider(List<Class<?>> classes) {
 		this.table = new IdentityClassTable(classes.stream().map(DefaultClassTableProvider::findSerializableClasses).flatMap(List::stream).toList());
+	}
+
+	private static List<Class<?>> findSerializableClasses(Class<?> targetClass) {
+		Class<?>[] childClasses = targetClass.getDeclaredClasses();
+		// Include any non-public serializable components/replacements
+		return (childClasses.length > 0) ? Stream.concat(Stream.of(targetClass), Stream.of(childClasses).filter(Serializable.class::isAssignableFrom)).toList() : List.of(targetClass);
 	}
 
 	@Override

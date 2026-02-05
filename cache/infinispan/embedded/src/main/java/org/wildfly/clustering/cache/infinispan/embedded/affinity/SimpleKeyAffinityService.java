@@ -17,7 +17,7 @@ import org.infinispan.remoting.transport.Address;
 public class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {
 
 	private final KeyGenerator<K> generator;
-	private volatile boolean started = false;
+	private volatile boolean started;
 
 	SimpleKeyAffinityService(KeyGenerator<K> generator) {
 		this.generator = generator;
