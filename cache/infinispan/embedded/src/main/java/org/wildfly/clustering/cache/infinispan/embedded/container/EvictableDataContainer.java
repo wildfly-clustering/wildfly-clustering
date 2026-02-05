@@ -16,6 +16,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
 import java.util.function.ObjIntConsumer;
 
+import com.github.benmanes.caffeine.cache.Cache;
+
 import io.reactivex.rxjava3.core.Flowable;
 
 import org.infinispan.commons.configuration.Builder;
@@ -35,8 +37,6 @@ import org.reactivestreams.Publisher;
 import org.wildfly.clustering.cache.caffeine.CacheConfiguration;
 import org.wildfly.clustering.cache.caffeine.CacheFactory;
 import org.wildfly.clustering.function.Supplier;
-
-import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Copy of {@link org.infinispan.container.impl.DefaultDataContainer} with support for time-based eviction.
@@ -99,6 +99,16 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 	}
 
 	@Override
+	public long capacity() {
+		return this.evictionCache.policy().eviction().get().getMaximum();
+	}
+
+	@Override
+	public void resize(long newSize) {
+		this.evictionCache.policy().eviction().get().setMaximum(newSize);
+	}
+
+	@Override
 	public int sizeIncludingExpired() {
 		return this.entries.size();
 	}
@@ -130,17 +140,17 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 
 	@Override
 	public Iterator<InternalCacheEntry<K, V>> iterator(IntSet segments) {
-		return new FilterIterator<>(this.iterator(), entry -> segments.contains(this.keyPartitioner.getSegment(entry.getKey())));
+		return new FilterIterator<>(this.iterator(), ice -> segments.contains(this.keyPartitioner.getSegment(ice.getKey())));
 	}
 
 	@Override
 	public Spliterator<InternalCacheEntry<K, V>> spliterator() {
-		return filterExpiredEntries(this.spliteratorIncludingExpired());
+		return this.filterExpiredEntries(this.spliteratorIncludingExpired());
 	}
 
 	@Override
 	public Spliterator<InternalCacheEntry<K, V>> spliterator(IntSet segments) {
-		return new FilterSpliterator<>(this.spliterator(), entry -> segments.contains(this.keyPartitioner.getSegment(entry.getKey())));
+		return new FilterSpliterator<>(this.spliterator(), ice -> segments.contains(this.keyPartitioner.getSegment(ice.getKey())));
 	}
 
 	@Override
@@ -151,7 +161,7 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 
 	@Override
 	public Spliterator<InternalCacheEntry<K, V>> spliteratorIncludingExpired(IntSet segments) {
-		return new FilterSpliterator<>(this.spliteratorIncludingExpired(), entry -> segments.contains(this.keyPartitioner.getSegment(entry.getKey())));
+		return new FilterSpliterator<>(this.spliteratorIncludingExpired(), ice -> segments.contains(this.keyPartitioner.getSegment(ice.getKey())));
 	}
 
 	@Override
@@ -161,12 +171,12 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 
 	@Override
 	public Iterator<InternalCacheEntry<K, V>> iteratorIncludingExpired(IntSet segments) {
-		return new FilterIterator<>(this.iteratorIncludingExpired(), entry -> segments.contains(this.keyPartitioner.getSegment(entry.getKey())));
+		return new FilterIterator<>(this.iteratorIncludingExpired(), ice -> segments.contains(this.keyPartitioner.getSegment(ice.getKey())));
 	}
 
 	@Override
-	public void forEachSegment(ObjIntConsumer<PeekableTouchableMap<K, V>> segmentMapConsumer) {
-		segmentMapConsumer.accept(this.entries, 0);
+	public long evictionSize() {
+		return this.evictionCache.policy().eviction().get().weightedSize().orElse(this.entries.size());
 	}
 
 	@Override
@@ -180,22 +190,14 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 	}
 
 	@Override
-	public long evictionSize() {
-		return this.evictionCache.policy().eviction().orElseThrow().weightedSize().orElse(this.entries.size());
-	}
-
-	@Override
-	public long capacity() {
-		return this.evictionCache.policy().eviction().orElseThrow().getMaximum();
-	}
-
-	@Override
-	public void resize(long newSize) {
-		this.evictionCache.policy().eviction().orElseThrow().setMaximum(newSize);
-	}
-
-	@Override
 	public void cleanUp() {
+		// Caffeine may not evict an entry right away if concurrent threads are writing, so this forces a cleanUp
 		this.evictionCache.cleanUp();
+	}
+
+
+	@Override
+	public void forEachSegment(ObjIntConsumer<PeekableTouchableMap<K, V>> segmentMapConsumer) {
+		segmentMapConsumer.accept(this.entries, 0);
 	}
 }
