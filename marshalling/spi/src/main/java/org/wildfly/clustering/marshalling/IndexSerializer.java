@@ -79,7 +79,7 @@ public enum IndexSerializer implements IntSerializer {
 		public void writeInt(DataOutput output, int index) throws IOException {
 			int i = index;
 			while ((i & ~0x7F) != 0) {
-				output.writeByte((byte) ((i & 0x7f) | 0x80));
+				output.writeByte((byte) ((i & 0x7F) | 0x80));
 				i >>>= 7;
 			}
 			output.writeByte((byte) i);

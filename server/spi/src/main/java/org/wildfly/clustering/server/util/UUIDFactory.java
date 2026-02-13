@@ -23,17 +23,17 @@ public enum UUIDFactory implements Supplier<UUID> {
 		public java.util.UUID get() {
 			byte[] data = new byte[16];
 			ThreadLocalRandom.current().nextBytes(data);
-			data[6] &= 0x0f; /* clear version */
+			data[6] &= 0x0F; /* clear version */
 			data[6] |= 0x40; /* set to version 4 */
-			data[8] &= 0x3f; /* clear variant */
+			data[8] &= 0x3F; /* clear variant */
 			data[8] |= 0x80; /* set to IETF variant */
 			long msb = 0;
 			long lsb = 0;
 			for (int i = 0; i < 8; i++) {
-				msb = (msb << 8) | (data[i] & 0xff);
+				msb = (msb << 8) | (data[i] & 0xFF);
 			}
 			for (int i = 8; i < 16; i++) {
-				lsb = (lsb << 8) | (data[i] & 0xff);
+				lsb = (lsb << 8) | (data[i] & 0xFF);
 			}
 			return new UUID(msb, lsb);
 		}
