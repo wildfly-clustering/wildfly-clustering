@@ -84,7 +84,7 @@ public class InfinispanSessionMetaDataFactory<C> implements SessionMetaDataFacto
 	}
 
 	private CompletionStage<Void> deleteAsync(Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<C>> cache, String id) {
-		return cache.removeAsync(new SessionMetaDataKey(id)).thenAccept(Consumer.empty());
+		return cache.removeAsync(new SessionMetaDataKey(id)).thenAccept(Consumer.of());
 	}
 
 	@Override

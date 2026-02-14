@@ -7,151 +7,92 @@ package org.wildfly.clustering.function;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.DoubleFunction;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.LongFunction;
 
 /**
  * An enhanced predicate.
  * @author Paul Ferraro
- * @param <T> the argument type
+ * @param <V> the test subject type
  */
-public interface Predicate<T> extends java.util.function.Predicate<T> {
+public interface Predicate<V> extends java.util.function.Predicate<V>, ObjectOperation<V>, ToBooleanOperation {
 
-	/**
-	 * Returns a new predicate that delegates to this predicate using the specified exception handler.
-	 * @param handler an exception handler
-	 * @return a new predicate that delegates to this predicate using the specified exception handler.
-	 */
-	default Predicate<T> handle(java.util.function.BiPredicate<T, RuntimeException> handler) {
-		return new Predicate<>() {
-			@Override
-			public boolean test(T value) {
-				try {
-					return Predicate.this.test(value);
-				} catch (RuntimeException e) {
-					return handler.test(value, e);
-				}
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping function
-	 * @param <V> the return type of the composed predicate
-	 * @return a composed predicate
-	 */
-	default <V> Predicate<V> compose(Function<V, T> function) {
-		return new Predicate<>() {
-			@Override
-			public boolean test(V test) {
-				return Predicate.this.test(function.apply(test));
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param <V1> the former parameter type
-	 * @param <V2> the latter parameter type
-	 * @param function a mapping function
-	 * @return a composed predicate
-	 */
-	default <V1, V2> BiPredicate<V1, V2> composeBinary(BiFunction<V1, V2, T> function) {
-		return new BiPredicate<>() {
-			@Override
-			public boolean test(V1 test1, V2 test2) {
-				return Predicate.this.test(function.apply(test1, test2));
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping function
-	 * @return a composed predicate
-	 */
-	default DoublePredicate composeDouble(DoubleFunction<T> function) {
-		return new DoublePredicate() {
-			@Override
-			public boolean test(double value) {
-				return Predicate.this.test(function.apply(value));
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping function
-	 * @return a composed predicate
-	 */
-	default IntPredicate composeInt(IntFunction<T> function) {
-		return new IntPredicate() {
-			@Override
-			public boolean test(int value) {
-				return Predicate.this.test(function.apply(value));
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping function
-	 * @return a composed predicate
-	 */
-	default LongPredicate composeLong(LongFunction<T> function) {
-		return new LongPredicate() {
-			@Override
-			public boolean test(long value) {
-				return Predicate.this.test(function.apply(value));
-			}
-		};
+	@Override
+	default Predicate<V> and(java.util.function.Predicate<? super V> other) {
+		return Predicate.and(this, other);
 	}
 
 	@Override
-	default Predicate<T> negate() {
-		return new Predicate<>() {
-			@Override
-			public boolean test(T test) {
-				return !Predicate.this.test(test);
-			}
-		};
+	default Predicate<V> negate() {
+		return Predicate.not(this);
 	}
 
 	@Override
-	default Predicate<T> and(java.util.function.Predicate<? super T> other) {
-		return new Predicate<>() {
-			@Override
-			public boolean test(T test) {
-				return Predicate.this.test(test) && other.test(test);
-			}
-		};
+	default Predicate<V> or(java.util.function.Predicate<? super V> other) {
+		return Predicate.or(this, other);
 	}
 
 	@Override
-	default Predicate<T> or(java.util.function.Predicate<? super T> other) {
-		return new Predicate<>() {
-			@Override
-			public boolean test(T test) {
-				return Predicate.this.test(test) || other.test(test);
-			}
-		};
+	default <T> Predicate<T> compose(java.util.function.Function<? super T, ? extends V> before) {
+		return Predicate.of(before, this);
 	}
 
-	/**
-	 * Returns a predicate returning the exclusive disjunction of this predicate with the specified predicate.
-	 * @param other another predicate
-	 * @return a predicate returning the exclusive disjunction of this predicate with the specified predicate.
-	 */
-	default Predicate<T> xor(java.util.function.Predicate<? super T> other) {
-		return new Predicate<>() {
-			@Override
-			public boolean test(T test) {
-				return Predicate.this.test(test) ^ other.test(test);
-			}
-		};
+	@Override
+	default <T1, T2> BiPredicate<T1, T2> composeBinary(java.util.function.BiFunction<? super T1, ? super T2, ? extends V> before) {
+		return BiPredicate.of(before, this);
+	}
+
+	@Override
+	default BooleanPredicate composeBoolean(BooleanFunction<? extends V> before) {
+		return BooleanPredicate.of(before, this);
+	}
+
+	@Override
+	default DoublePredicate composeDouble(java.util.function.DoubleFunction<? extends V> before) {
+		return DoublePredicate.of(before, this);
+	}
+
+	@Override
+	default IntPredicate composeInt(java.util.function.IntFunction<? extends V> before) {
+		return IntPredicate.of(before, this);
+	}
+
+	@Override
+	default LongPredicate composeLong(java.util.function.LongFunction<? extends V> before) {
+		return LongPredicate.of(before, this);
+	}
+
+	@Override
+	default Consumer<V> thenAccept(BooleanConsumer consumer) {
+		return Consumer.of(this, consumer);
+	}
+
+	@Override
+	default <R> Function<V, R> thenApply(BooleanFunction<? extends R> after) {
+		return Function.of(this, after);
+	}
+
+	@Override
+	default ToDoubleFunction<V> thenApplyAsDouble(BooleanToDoubleFunction after) {
+		return ToDoubleFunction.of(this, after);
+	}
+
+	@Override
+	default ToIntFunction<V> thenApplyAsInt(BooleanToIntFunction after) {
+		return ToIntFunction.of(this, after);
+	}
+
+	@Override
+	default ToLongFunction<V> thenApplyAsLong(BooleanToLongFunction after) {
+		return ToLongFunction.of(this, after);
+	}
+
+	@Override
+	default Function<V, Boolean> thenBox() {
+		return this.thenApply(BooleanPredicate.identity().thenBox());
+	}
+
+	@Override
+	default Predicate<V> thenTest(BooleanPredicate after) {
+		return Predicate.of(this, after);
 	}
 
 	/**
@@ -160,43 +101,139 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param result the fixed result
 	 * @return a predicate that always evaluates to the specified value.
 	 */
+	@SuppressWarnings("unchecked")
 	static <T> Predicate<T> of(boolean result) {
-		return result ? Predicate.always() : Predicate.never();
+		return (Predicate<T>) (result ? SimplePredicate.ALWAYS : SimplePredicate.NEVER);
 	}
 
 	/**
-	 * Returns a predicate that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
+	 * Composes a predicate from the specified operations.
 	 * @param <T> the predicate type
-	 * @param consumer the consumer of the predicate parameter
-	 * @param supplier the supplier of the predicate result
-	 * @return a predicate that accepts its parameter via the specified consumer and returns the value returned by the specified supplier.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	static <T> Predicate<T> of(java.util.function.Consumer<T> consumer, java.util.function.BooleanSupplier supplier) {
+	static <T> Predicate<T> of(java.util.function.Consumer<? super T> before, java.util.function.BooleanSupplier after) {
 		return new Predicate<>() {
 			@Override
 			public boolean test(T value) {
-				consumer.accept(value);
-				return supplier.getAsBoolean();
+				before.accept(value);
+				return after.getAsBoolean();
 			}
 		};
 	}
 
 	/**
-	 * Returns a predicate that always accepts its argument.
-	 * @param <T> the argument type
-	 * @return a predicate that always accepts its argument.
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the predicate type
+	 * @param <V> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	static <T> Predicate<T> always() {
-		return Predicates.ALWAYS.cast();
+	static <T, V> Predicate<T> of(java.util.function.Function<? super T, ? extends V> before, java.util.function.Predicate<? super V> after) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return after.test(before.apply(value));
+			}
+		};
 	}
 
 	/**
-	 * Returns a predicate that never accepts its argument.
-	 * @param <T> the argument type
-	 * @return a predicate that never accepts its argument.
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the predicate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	static <T> Predicate<T> never() {
-		return Predicates.NEVER.cast();
+	static <T> Predicate<T> of(java.util.function.Predicate<? super T> before, BooleanPredicate after) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return after.test(before.test(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the predicate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> Predicate<T> of(java.util.function.ToDoubleFunction<? super T> before, java.util.function.DoublePredicate after) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return after.test(before.applyAsDouble(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the predicate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> Predicate<T> of(java.util.function.ToIntFunction<? super T> before, java.util.function.IntPredicate after) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return after.test(before.applyAsInt(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the predicate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> Predicate<T> of(java.util.function.ToLongFunction<? super T> before, java.util.function.LongPredicate after) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return after.test(before.applyAsLong(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate that evaluates the conjunction of the specified predicates.
+	 * @param <T> the predicate type
+	 * @param predicate1 the former operation
+	 * @param predicate2 the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> Predicate<T> and(java.util.function.Predicate<? super T> predicate1, java.util.function.Predicate<? super T> predicate2) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return predicate1.test(value) && predicate2.test(value);
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate that evaluates the disjunction of the specified predicates.
+	 * @param <T> the predicate type
+	 * @param predicate1 the former operation
+	 * @param predicate2 the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> Predicate<T> or(java.util.function.Predicate<? super T> predicate1, java.util.function.Predicate<? super T> predicate2) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return predicate1.test(value) || predicate2.test(value);
+			}
+		};
 	}
 
 	/**
@@ -265,9 +302,13 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 	 * @param <T> the argument type
 	 * @return a predicate that evaluates to the negation of the specified predicate.
 	 */
-	@SuppressWarnings("unchecked")
-	static <T> Predicate<T> not(Predicate<? super T> predicate) {
-		return (Predicate<T>) predicate.negate();
+	static <T> Predicate<T> not(java.util.function.Predicate<? super T> predicate) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				return !predicate.test(value);
+			}
+		};
 	}
 
 	/**
@@ -285,5 +326,43 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 				return key.test(entry.getKey()) && value.test(entry.getValue());
 			}
 		};
+	}
+
+	/**
+	 * A predicate that always evaluates to a specified value.
+	 * @param <V> the test subject type
+	 */
+	class SimplePredicate<V> implements Predicate<V> {
+		static final Predicate<?> ALWAYS = new SimplePredicate<>(true);
+		static final Predicate<?> NEVER = new SimplePredicate<>(false);
+
+		private final boolean result;
+
+		SimplePredicate(boolean result) {
+			this.result = result;
+		}
+
+		@Override
+		public boolean test(V value) {
+			return this.result;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public Predicate<V> and(java.util.function.Predicate<? super V> other) {
+			return this.result ? ((other instanceof Predicate<?> predicate) ? (Predicate<V>) predicate : other::test) : (Predicate<V>) NEVER;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public Predicate<V> negate() {
+			return (Predicate<V>) (this.result ? NEVER : ALWAYS);
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public Predicate<V> or(java.util.function.Predicate<? super V> other) {
+			return this.result ? (Predicate<V>) ALWAYS : ((other instanceof Predicate<?> predicate) ? (Predicate<V>) predicate : other::test);
+		}
 	}
 }

@@ -22,7 +22,7 @@ import org.infinispan.commons.configuration.attributes.Matchable;
 public class DataContainerConfiguration implements Matchable<DataContainerConfiguration> {
 	/** Attribute defining a predicate used to determine whether a given cache entry is evictable. */
 	@SuppressWarnings("rawtypes")
-	static final AttributeDefinition<Predicate> EVICTABLE = AttributeDefinition.builder("evictable", org.wildfly.clustering.function.Predicate.always(), Predicate.class)
+	static final AttributeDefinition<Predicate> EVICTABLE = AttributeDefinition.builder("evictable", org.wildfly.clustering.function.Predicate.of(true), Predicate.class)
 			.copier(IdentityAttributeCopier.identityCopier())
 			.immutable()
 			.build();

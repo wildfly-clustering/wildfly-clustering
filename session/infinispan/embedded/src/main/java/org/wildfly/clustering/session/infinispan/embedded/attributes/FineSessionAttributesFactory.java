@@ -107,7 +107,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(Function.empty());
+		return this.getValueAsync(id).exceptionally(Function.of(null));
 	}
 
 	private CompletionStage<Map<String, Object>> getValueAsync(String id) {
@@ -138,7 +138,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	}
 
 	private CompletionStage<Void> deleteAsync(Cache<SessionAttributesKey, Map<String, V>> cache, String id) {
-		return cache.removeAsync(new SessionAttributesKey(id)).thenAccept(Consumer.empty());
+		return cache.removeAsync(new SessionAttributesKey(id)).thenAccept(Consumer.of());
 	}
 
 	@Override

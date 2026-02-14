@@ -45,7 +45,7 @@ public class HotRodSessionManager<C, MV, AV, SC> extends AbstractSessionManager<
 
 		@Override
 		default java.util.function.Consumer<ImmutableSession> getSessionCloseTask() {
-			return Consumer.empty();
+			return Consumer.of();
 		}
 	}
 

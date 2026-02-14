@@ -14,9 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
@@ -142,7 +142,7 @@ public enum CacheStrategy implements CacheFactory {
 						}
 						// If factory returned null, remove map entries (or decrement usage)
 						if (result == null) {
-							this.remove(key, Runner.empty());
+							this.remove(key, Runner.of());
 						}
 					}
 				}
@@ -165,7 +165,6 @@ public enum CacheStrategy implements CacheFactory {
 	},
 	;
 	private abstract static class AbstractFunction<K, V> implements BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>> {
-		static final Predicate<Integer> NOT_NULL = Objects::nonNull;
 		static final Integer INITIAL_INDEX = Integer.valueOf(0);
 
 		private final BiFunction<Integer, V, Map.Entry<Integer, V>> entryFactory;
@@ -188,19 +187,17 @@ public enum CacheStrategy implements CacheFactory {
 	}
 
 	private static class PutOrIncrementFunction<K, V> extends AbstractFunction<K, V> {
-		private static final UnaryOperator<Integer> INCREMENT = Math::incrementExact;
 		// If absent, use initial value, otherwise increment.
-		private static final UnaryOperator<Integer> PUT_OR_INCREMENT = INCREMENT.orDefault(NOT_NULL, Supplier.of(INITIAL_INDEX));
+		private static final UnaryOperator<Integer> PUT_OR_INCREMENT = UnaryOperator.when(Objects::nonNull, Math::incrementExact, UnaryOperator.of(INITIAL_INDEX));
 
 		PutOrIncrementFunction(BiFunction<Integer, V, Map.Entry<Integer, V>> entryFactory, Supplier<V> factory) {
-			super(entryFactory, PUT_OR_INCREMENT, UnaryOperator.<V>identity().orDefault(Objects::nonNull, factory));
+			super(entryFactory, PUT_OR_INCREMENT, UnaryOperator.when(Objects::nonNull, UnaryOperator.identity(), UnaryOperator.of(Consumer.of(), factory)));
 		}
 	}
 
 	private static class RemoveOrDecrementFunction<K, V> extends AbstractFunction<K, V> {
-		private static final UnaryOperator<Integer> DECREMENT = Math::decrementExact;
 		// If present and equal to initial value, return null (to remove mapping), otherwise decrement
-		private static final UnaryOperator<Integer> REMOVE_OR_DECREMENT = DECREMENT.orDefault(NOT_NULL.and(Predicate.not(INITIAL_INDEX::equals)), Supplier.empty());
+		private static final UnaryOperator<Integer> REMOVE_OR_DECREMENT = UnaryOperator.when(Predicate.and(Objects::nonNull, Predicate.not(INITIAL_INDEX::equals)), Math::decrementExact, UnaryOperator.of(null));
 
 		RemoveOrDecrementFunction(BiFunction<Integer, V, Map.Entry<Integer, V>> entryFactory) {
 			super(entryFactory, REMOVE_OR_DECREMENT, UnaryOperator.identity());

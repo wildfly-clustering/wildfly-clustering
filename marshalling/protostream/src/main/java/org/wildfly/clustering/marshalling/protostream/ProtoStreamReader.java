@@ -33,6 +33,19 @@ public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 	}
 
 	/**
+	 * Skips over the field of the specified wire type, returning the specified object.
+	 * @param <T> the return type
+	 * @param type the expected wire type of the field to skip.
+	 * @param value the value assumed by this skipped field
+	 * @return the specified object
+	 * @throws IOException if the stream does not conform to the wire type of the skipped field.
+	 */
+	default <T> T skipField(WireType type, T value) throws IOException {
+		this.skipField(type);
+		return value;
+	}
+
+	/**
 	 * Returns a reader for a field set whose fields start at the specified index.
 	 * @param <T> the field builder type
 	 * @param reader a field reader

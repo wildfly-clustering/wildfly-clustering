@@ -16,7 +16,6 @@ import java.util.concurrent.CompletionStage;
 import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.cache.Cache;
@@ -60,7 +59,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 		// If completed with null, return an invalid session that we can filter later
 		this.defaultSessionCreator = new SessionManagerFunction<>(manager::createSessionAsync);
 		this.sessionFinder = new SessionManagerFunction<>(manager::findSessionAsync);
-		this.sessionCache = cacheFactory.createCache(Consumer.empty(), new Consumer<CompletionStage<CacheableSession<C>>>() {
+		this.sessionCache = cacheFactory.createCache(Consumer.of(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
 			public void accept(CompletionStage<CacheableSession<C>> stage) {
 				try {
@@ -100,7 +99,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 
 		@Override
 		public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-			return this.operation.apply(id).handle((session, exception) -> new CachedSession<>((session != null) ? session : this, (exception != null) ? Runner.throwing(Supplier.of(new CompletionException(exception))).compose(closeTask) : closeTask));
+			return this.operation.apply(id).handle((session, exception) -> new CachedSession<>((session != null) ? session : this, (exception != null) ? Supplier.of(closeTask, Supplier.of(exception).thenThrow(CompletionException::new)).thenAccept(Consumer.of()) : closeTask));
 		}
 
 		@Override

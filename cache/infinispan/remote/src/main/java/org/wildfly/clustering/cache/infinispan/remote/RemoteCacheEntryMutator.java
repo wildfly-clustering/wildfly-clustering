@@ -38,6 +38,6 @@ public class RemoteCacheEntryMutator<K, V> extends AbstractCacheEntryMutator {
 		if (nanos > 0) {
 			seconds += 1;
 		}
-		return this.cache.putAsync(this.key, this.value, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS).thenAccept(Consumer.empty());
+		return this.cache.putAsync(this.key, this.value, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS).thenAccept(Consumer.of());
 	}
 }

@@ -85,7 +85,7 @@ public interface CacheConfiguration<K, V> {
 		 * @return a reference to this builder
 		 */
 		default Builder<K, V> evictableWhen(Predicate<K> evictable) {
-			return this.evictableWhen((evictable != org.wildfly.clustering.function.Predicate.always()) ? org.wildfly.clustering.function.BiPredicate.testFormer(evictable) : org.wildfly.clustering.function.BiPredicate.always());
+			return this.evictableWhen((evictable != org.wildfly.clustering.function.Predicate.of(true)) ? org.wildfly.clustering.function.BiPredicate.former(evictable) : org.wildfly.clustering.function.BiPredicate.of(true));
 		}
 
 		/**
@@ -94,7 +94,7 @@ public interface CacheConfiguration<K, V> {
 		 * @return a reference to this builder
 		 */
 		default Builder<K, V> evictableWhen(BiPredicate<K, V> evictable) {
-			return this.withWeigher((evictable != org.wildfly.clustering.function.BiPredicate.always()) ? new Weigher<K, V>() {
+			return this.withWeigher((evictable != org.wildfly.clustering.function.BiPredicate.of(true)) ? new Weigher<K, V>() {
 				@Override
 				public int weigh(K key, V value) {
 					return evictable.test(key, value) ? 1 : 0;
@@ -134,7 +134,7 @@ public interface CacheConfiguration<K, V> {
 		 * @return a reference to this builder
 		 */
 		default Builder<K, V> evictAfter(Function<V, Duration> idleTimeout) {
-			return this.evictAfter(org.wildfly.clustering.function.BiFunction.applyLatter(idleTimeout));
+			return this.evictAfter(org.wildfly.clustering.function.BiFunction.latter(idleTimeout));
 		}
 
 		/**

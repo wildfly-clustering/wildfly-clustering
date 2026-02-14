@@ -53,7 +53,7 @@ public class MutableUserSessions<K, D, S> implements UserSessions<D, S> {
 	public S removeSession(D deployment) {
 		S removed = this.sessions.remove(deployment);
 		if (removed != null) {
-			this.updates.reference(deployment).writer(Supplier.empty()).get();
+			this.updates.reference(deployment).writer(Supplier.of(null)).get();
 		}
 		return removed;
 	}

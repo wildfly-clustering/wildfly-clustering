@@ -5,104 +5,36 @@
 
 package org.wildfly.clustering.function;
 
-import java.util.function.IntFunction;
-import java.util.function.IntUnaryOperator;
+import java.util.List;
 
 /**
  * An enhanced integer consumer.
  * @author Paul Ferraro
  */
-public interface IntConsumer extends java.util.function.IntConsumer {
-	/** Consumer that discards its parameter */
-	IntConsumer EMPTY = value -> {};
+public interface IntConsumer extends java.util.function.IntConsumer, IntOperation, PrimitiveConsumer<Integer> {
 
 	@Override
 	default IntConsumer andThen(java.util.function.IntConsumer after) {
-		return new IntConsumer() {
-			@Override
-			public void accept(int value) {
-				IntConsumer.this.accept(value);
-				after.accept(value);
-			}
-		};
+		return of(List.of(this, after));
 	}
 
-	/**
-	 * Returns a boxed version of this consumer.
-	 * @return a boxed version of this consumer.
-	 */
-	default Consumer<Integer> boxed() {
-		return this.compose(Integer::intValue);
+	@Override
+	default Consumer<Integer> box() {
+		return this.compose(IntUnaryOperator.identity().box());
 	}
 
-	/**
-	 * Returns a consumer that conditionally invokes this consumer when allowed by the specified predicate.
-	 * @param predicate a predicate that determines whether or not to invoke this consumer
-	 * @return a consumer that conditionally invokes this consumer when allowed by the specified predicate.
-	 */
-	default IntConsumer when(java.util.function.IntPredicate predicate) {
-		return new IntConsumer() {
-			@Override
-			public void accept(int value) {
-				if (predicate.test(value)) {
-					IntConsumer.this.accept(value);
-				}
-			}
-		};
-	}
-
-	/**
-	 * Returns a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
-	 * @param predicate a predicate used to determine the parameter of this consumer
-	 * @param defaultValue a provider of the default parameter value
-	 * @return a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
-	 */
-	default IntConsumer withDefault(java.util.function.IntPredicate predicate, java.util.function.IntSupplier defaultValue) {
-		return new IntConsumer() {
-			@Override
-			public void accept(int value) {
-				IntConsumer.this.accept(predicate.test(value) ? value : defaultValue.getAsInt());
-			}
-		};
-	}
-
-	/**
-	 * Composes a consumer that invokes this consumer using result of the specified function.
-	 * @param composer a composing function
-	 * @return a composed consumer
-	 */
-	default IntConsumer composeAsInt(java.util.function.IntUnaryOperator composer) {
-		return new IntConsumer() {
-			@Override
-			public void accept(int value) {
-				IntConsumer.this.accept(composer.applyAsInt(value));
-			}
-		};
-	}
-
-	/**
-	 * Composes a consumer that invokes this consumer using result of the specified function.
-	 * @param <V> the mapped type
-	 * @param composer a composing function
-	 * @return a composed consumer
-	 */
-	default <V> Consumer<V> compose(java.util.function.ToIntFunction<V> composer) {
+	@Override
+	default <V> Consumer<V> compose(java.util.function.ToIntFunction<? super V> before) {
 		return new Consumer<>() {
 			@Override
 			public void accept(V value) {
-				IntConsumer.this.accept(composer.applyAsInt(value));
+				IntConsumer.this.accept(before.applyAsInt(value));
 			}
 		};
 	}
 
-	/**
-	 * Composes a binary consumer that invokes this consumer using result of the specified binary function.
-	 * @param <V1> the former parameter type
-	 * @param <V2> the latter parameter type
-	 * @param composer a composing function
-	 * @return a binary consumer that invokes this consumer using result of the specified binary function.
-	 */
-	default <V1, V2> BiConsumer<V1, V2> compose(java.util.function.ToIntBiFunction<V1, V2> composer) {
+	@Override
+	default <V1, V2> BiConsumer<V1, V2> composeBinary(java.util.function.ToIntBiFunction<? super V1, ? super V2> composer) {
 		return new BiConsumer<>() {
 			@Override
 			public void accept(V1 value1, V2 value2) {
@@ -111,33 +43,152 @@ public interface IntConsumer extends java.util.function.IntConsumer {
 		};
 	}
 
+	@Override
+	default BooleanConsumer composeBoolean(BooleanToIntFunction before) {
+		return BooleanConsumer.of(before, this);
+	}
+
+	@Override
+	default DoubleConsumer composeDouble(java.util.function.DoubleToIntFunction before) {
+		return DoubleConsumer.of(before, this);
+	}
+
+	@Override
+	default IntConsumer composeInt(java.util.function.IntUnaryOperator before) {
+		return IntConsumer.of(before, this);
+	}
+
+	@Override
+	default LongConsumer composeLong(java.util.function.LongToIntFunction before) {
+		return LongConsumer.of(before, this);
+	}
+
+	@Override
+	default <R> IntFunction<R> thenReturn(java.util.function.Supplier<? extends R> factory) {
+		return IntFunction.of(this, factory);
+	}
+
+	@Override
+	default IntPredicate thenReturnBoolean(java.util.function.BooleanSupplier after) {
+		return IntPredicate.of(this, after);
+	}
+
+	@Override
+	default IntToDoubleFunction thenReturnDouble(java.util.function.DoubleSupplier after) {
+		return IntToDoubleFunction.of(this, after);
+	}
+
+	@Override
+	default IntUnaryOperator thenReturnInt(java.util.function.IntSupplier after) {
+		return IntUnaryOperator.of(this, after);
+	}
+
+	@Override
+	default IntToLongFunction thenReturnLong(java.util.function.LongSupplier after) {
+		return IntToLongFunction.of(this, after);
+	}
+
+	@Override
+	default IntConsumer thenRun(Runnable after) {
+		return of(this, after);
+	}
+
 	/**
-	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 * @param factory a factory of the function return value
-	 * @param <R> the return type
-	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
+	 * Returns a consumer that ignores its parameter.
+	 * @return a consumer that ignores its parameter.
 	 */
-	default <R> IntFunction<R> thenReturn(java.util.function.Supplier<R> factory) {
-		return new IntFunction<>() {
+	static IntConsumer of() {
+		return EmptyIntConsumer.INSTANCE;
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static IntConsumer of(java.util.function.IntConsumer before, Runnable after) {
+		return new IntConsumer() {
 			@Override
-			public R apply(int value) {
-				IntConsumer.this.accept(value);
-				return factory.get();
+			public void accept(int value) {
+				before.accept(value);
+				after.run();
 			}
 		};
 	}
 
 	/**
-	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 * @param factory a factory of the function return value
-	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default IntUnaryOperator thenReturnInt(java.util.function.IntSupplier factory) {
-		return new IntUnaryOperator() {
+	static IntConsumer of(java.util.function.IntPredicate before, BooleanConsumer after) {
+		return new IntConsumer() {
 			@Override
-			public int applyAsInt(int value) {
-				IntConsumer.this.accept(value);
-				return factory.getAsInt();
+			public void accept(int value) {
+				after.accept(before.test(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> IntConsumer of(java.util.function.IntFunction<? extends T> before, java.util.function.Consumer<? super T> after) {
+		return new IntConsumer() {
+			@Override
+			public void accept(int value) {
+				after.accept(before.apply(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static IntConsumer of(java.util.function.IntToDoubleFunction before, java.util.function.DoubleConsumer after) {
+		return new IntConsumer() {
+			@Override
+			public void accept(int value) {
+				after.accept(before.applyAsDouble(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static IntConsumer of(java.util.function.IntUnaryOperator before, java.util.function.IntConsumer after) {
+		return new IntConsumer() {
+			@Override
+			public void accept(int value) {
+				after.accept(before.applyAsInt(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static IntConsumer of(java.util.function.IntToLongFunction before, java.util.function.LongConsumer after) {
+		return new IntConsumer() {
+			@Override
+			public void accept(int value) {
+				after.accept(before.applyAsLong(value));
 			}
 		};
 	}
@@ -147,14 +198,57 @@ public interface IntConsumer extends java.util.function.IntConsumer {
 	 * @param consumers a number of consumers
 	 * @return a composite consumer
 	 */
-	static IntConsumer acceptAll(Iterable<? extends IntConsumer> consumers) {
+	static IntConsumer of(Iterable<? extends java.util.function.IntConsumer> consumers) {
 		return new IntConsumer() {
 			@Override
 			public void accept(int value) {
-				for (IntConsumer consumer : consumers) {
+				for (java.util.function.IntConsumer consumer : consumers) {
 					consumer.accept(value);
 				}
 			}
 		};
+	}
+
+	/**
+	 * Returns a consumer that delegates to one of two consumers based on the specified predicate.
+	 * @param predicate a predicate
+	 * @param accepted the consumer to apply when accepted by the specified predicate
+	 * @param rejected the consumer to apply when rejected by the specified predicate
+	 * @return a consumer that delegates to one of two consumers based on the specified predicate.
+	 */
+	static IntConsumer when(java.util.function.IntPredicate predicate, java.util.function.IntConsumer accepted, java.util.function.IntConsumer rejected) {
+		return new IntConsumer() {
+			@Override
+			public void accept(int value) {
+				java.util.function.IntConsumer consumer = predicate.test(value) ? accepted : rejected;
+				consumer.accept(value);
+			}
+		};
+	}
+
+	/**
+	 * A consumer that does nothing, ignoring its parameter.
+	 */
+	class EmptyIntConsumer implements IntConsumer {
+		static final IntConsumer INSTANCE = new EmptyIntConsumer();
+
+		private EmptyIntConsumer() {
+			// Hide
+		}
+
+		@Override
+		public void accept(int value) {
+			// Do nothing
+		}
+
+		@Override
+		public IntConsumer andThen(java.util.function.IntConsumer after) {
+			return (after instanceof IntConsumer consumer) ? consumer : IntConsumer.of(after, Runner.of());
+		}
+
+		@Override
+		public Consumer<Integer> box() {
+			return Consumer.of();
+		}
 	}
 }

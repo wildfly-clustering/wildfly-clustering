@@ -29,14 +29,6 @@ public class IntPredicateTestCase {
 		int positive = this.random.nextInt(1, Integer.MAX_VALUE);
 		int negative = this.random.nextInt(Integer.MIN_VALUE, 0);
 
-		assertThat(IntPredicate.ALWAYS.test(negative)).isTrue();
-		assertThat(IntPredicate.ALWAYS.test(0)).isTrue();
-		assertThat(IntPredicate.ALWAYS.test(positive)).isTrue();
-
-		assertThat(IntPredicate.NEVER.test(negative)).isFalse();
-		assertThat(IntPredicate.NEVER.test(0)).isFalse();
-		assertThat(IntPredicate.NEVER.test(positive)).isFalse();
-
 		assertThat(IntPredicate.of(true).test(negative)).isTrue();
 		assertThat(IntPredicate.of(true).test(0)).isTrue();
 		assertThat(IntPredicate.of(true).test(positive)).isTrue();
@@ -94,8 +86,8 @@ public class IntPredicateTestCase {
 	@Test
 	public void negate() {
 		int value = this.random.nextInt();
-		assertThat(IntPredicate.ALWAYS.negate().test(value)).isFalse();
-		assertThat(IntPredicate.NEVER.negate().test(value)).isTrue();
+		assertThat(IntPredicate.of(true).negate().test(value)).isFalse();
+		assertThat(IntPredicate.of(false).negate().test(value)).isTrue();
 	}
 
 	@Test
@@ -168,25 +160,5 @@ public class IntPredicateTestCase {
 		doReturn(expected).when(predicate).test(mapped);
 
 		assertThat(predicate.composeLong(function).test(value)).isEqualTo(expected);
-	}
-
-	@Test
-	public void xor() {
-		IntPredicate predicate1 = mock(IntPredicate.class);
-		IntPredicate predicate2 = mock(IntPredicate.class);
-
-		doCallRealMethod().when(predicate1).xor(any());
-
-		IntPredicate predicate = predicate1.xor(predicate2);
-
-		int value = this.random.nextInt();
-
-		doReturn(false, true, false, true).when(predicate1).test(value);
-		doReturn(false, false, true, true).when(predicate2).test(value);
-
-		assertThat(predicate.test(value)).isFalse();
-		assertThat(predicate.test(value)).isTrue();
-		assertThat(predicate.test(value)).isTrue();
-		assertThat(predicate.test(value)).isFalse();
 	}
 }

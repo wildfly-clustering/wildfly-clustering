@@ -9,7 +9,7 @@ package org.wildfly.clustering.function;
  * Enhanced {@link java.util.function.IntSupplier}.
  * @author Paul Ferraro
  */
-public interface IntSupplier extends java.util.function.IntSupplier {
+public interface IntSupplier extends java.util.function.IntSupplier, PrimitiveSupplier<Integer>, ToIntOperation {
 	/** A supplier that always returns {@value Integer#MIN_VALUE}. */
 	IntSupplier MINIMUM = of(Integer.MIN_VALUE);
 	/** A supplier that always returns zero. */
@@ -17,110 +17,74 @@ public interface IntSupplier extends java.util.function.IntSupplier {
 	/** A supplier that always returns {@value Integer#MAX_VALUE}. */
 	IntSupplier MAXIMUM = of(Integer.MAX_VALUE);
 
-	/**
-	 * Returns a runner that accepts the value returned by this supplier via the specified consumer.
-	 * @param consumer a integer consumer
-	 * @return a runner that accepts the value returned by this supplier via the specified consumer.
-	 */
+	@Override
+	default IntSupplier compose(Runnable before) {
+		return IntSupplier.of(before, this);
+	}
+
+	@Override
+	default <T> ToIntFunction<T> compose(java.util.function.Consumer<? super T> before) {
+		return ToIntFunction.of(before, this);
+	}
+
+	@Override
+	default <T1, T2> ToIntBiFunction<T1, T2> composeBinary(java.util.function.BiConsumer<? super T1, ? super T2> before) {
+		return ToIntBiFunction.of(before, this);
+	}
+
+	@Override
+	default BooleanToIntFunction composeBoolean(BooleanConsumer before) {
+		return BooleanToIntFunction.of(before, this);
+	}
+
+	@Override
+	default DoubleToIntFunction composeDouble(java.util.function.DoubleConsumer before) {
+		return DoubleToIntFunction.of(before, this);
+	}
+
+	@Override
+	default IntUnaryOperator composeInt(java.util.function.IntConsumer before) {
+		return IntUnaryOperator.of(before, this);
+	}
+
+	@Override
+	default LongToIntFunction composeLong(java.util.function.LongConsumer before) {
+		return LongToIntFunction.of(before, this);
+	}
+
+	@Override
 	default Runner thenAccept(java.util.function.IntConsumer consumer) {
-		return Runner.accept(consumer, this);
+		return Runner.of(this, consumer);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified function to the value returned by this supplier.
-	 * @param <V> the mapped value type
-	 * @param function a mapping function
-	 * @return a supplier that applies the specified function to the value returned by this supplier.
-	 */
-	default <V> Supplier<V> thenApply(java.util.function.IntFunction<V> function) {
-		return new Supplier<>() {
-			@Override
-			public V get() {
-				return function.apply(IntSupplier.this.getAsInt());
-			}
-		};
+	@Override
+	default <V> Supplier<V> thenApply(java.util.function.IntFunction<? extends V> after) {
+		return Supplier.of(this, after);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified function to the value returned by this supplier.
-	 * @param function a mapping function
-	 * @return a supplier that applies the specified function to the value returned by this supplier.
-	 */
-	default DoubleSupplier thenApplyAsDouble(java.util.function.IntToDoubleFunction function) {
-		return new DoubleSupplier() {
-			@Override
-			public double getAsDouble() {
-				return function.applyAsDouble(IntSupplier.this.getAsInt());
-			}
-		};
+	@Override
+	default DoubleSupplier thenApplyAsDouble(java.util.function.IntToDoubleFunction after) {
+		return DoubleSupplier.of(this, after);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified operator to the value returned by this supplier.
-	 * @param operator a mapping operator
-	 * @return a supplier that applies the specified operator to the value returned by this supplier.
-	 */
-	default IntSupplier thenApplyAsInt(java.util.function.IntUnaryOperator operator) {
-		return new IntSupplier() {
-			@Override
-			public int getAsInt() {
-				return operator.applyAsInt(IntSupplier.this.getAsInt());
-			}
-		};
+	@Override
+	default IntSupplier thenApplyAsInt(java.util.function.IntUnaryOperator after) {
+		return IntSupplier.of(this, after);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified function to the value returned by this supplier.
-	 * @param function a mapping function
-	 * @return a supplier that applies the specified function to the value returned by this supplier.
-	 */
-	default LongSupplier thenApplyAsLong(java.util.function.IntToLongFunction function) {
-		return new LongSupplier() {
-			@Override
-			public long getAsLong() {
-				return function.applyAsLong(IntSupplier.this.getAsInt());
-			}
-		};
+	@Override
+	default LongSupplier thenApplyAsLong(java.util.function.IntToLongFunction after) {
+		return LongSupplier.of(this, after);
 	}
 
-	/**
-	 * Returns a supplier that applies the specified predicate to the value returned by this supplier.
-	 * @param predicate a integer predicate
-	 * @return a supplier that applies the specified predicate to the value returned by this supplier.
-	 */
-	default BooleanSupplier thenTest(java.util.function.IntPredicate predicate) {
-		return new BooleanSupplier() {
-			@Override
-			public boolean getAsBoolean() {
-				return predicate.test(IntSupplier.this.getAsInt());
-			}
-		};
+	@Override
+	default Supplier<Integer> thenBox() {
+		return this.thenApply(IntUnaryOperator.identity().thenBox());
 	}
 
-	/**
-	 * Returns a boxed version of this supplier.
-	 * @return a boxed version of this supplier.
-	 */
-	default Supplier<Integer> boxed() {
-		return thenApply(Integer::valueOf);
-	}
-
-	/**
-	 * Returns a new supplier that delegates to this supplier using the specified exception handler.
-	 * @param handler an exception handler
-	 * @return a new supplier that delegates to this supplier using the specified exception handler.
-	 */
-	default IntSupplier handle(java.util.function.ToIntFunction<RuntimeException> handler) {
-		return new IntSupplier() {
-			@Override
-			public int getAsInt() {
-				try {
-					return IntSupplier.this.getAsInt();
-				} catch (RuntimeException e) {
-					return handler.applyAsInt(e);
-				}
-			}
-		};
+	@Override
+	default BooleanSupplier thenTest(java.util.function.IntPredicate after) {
+		return BooleanSupplier.of(this, after);
 	}
 
 	/**
@@ -133,6 +97,103 @@ public interface IntSupplier extends java.util.function.IntSupplier {
 			@Override
 			public int getAsInt() {
 				return value;
+			}
+
+			@Override
+			public Supplier<Integer> thenBox() {
+				return Supplier.of(Integer.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static IntSupplier of(Runnable before, java.util.function.IntSupplier after) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				before.run();
+				return after.getAsInt();
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static <T> IntSupplier of(java.util.function.Supplier<? extends T> before, java.util.function.ToIntFunction<? super T> after) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				return after.applyAsInt(before.get());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static IntSupplier of(java.util.function.BooleanSupplier before, BooleanToIntFunction after) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				return after.applyAsInt(before.getAsBoolean());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static IntSupplier of(java.util.function.DoubleSupplier before, java.util.function.DoubleToIntFunction after) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				return after.applyAsInt(before.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static IntSupplier of(java.util.function.IntSupplier before, java.util.function.IntUnaryOperator after) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				return after.applyAsInt(before.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static IntSupplier of(java.util.function.LongSupplier before, java.util.function.LongToIntFunction after) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				return after.applyAsInt(before.getAsLong());
 			}
 		};
 	}

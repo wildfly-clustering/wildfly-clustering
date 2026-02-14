@@ -5,139 +5,180 @@
 
 package org.wildfly.clustering.function;
 
-import java.util.function.DoubleFunction;
-import java.util.function.DoubleUnaryOperator;
+import java.util.List;
 
 /**
- * An enhanced long consumer.
+ * A consumer accepting a double parameter.
  * @author Paul Ferraro
  */
-public interface DoubleConsumer extends java.util.function.DoubleConsumer {
-	/** Consumer that discards its parameter */
-	DoubleConsumer EMPTY = value -> {};
+public interface DoubleConsumer extends java.util.function.DoubleConsumer, DoubleOperation, PrimitiveConsumer<Double> {
 
 	@Override
 	default DoubleConsumer andThen(java.util.function.DoubleConsumer after) {
+		return of(List.of(this, after));
+	}
+
+	@Override
+	default Consumer<Double> box() {
+		return this.compose(DoubleUnaryOperator.identity().box());
+	}
+
+	@Override
+	default <V> Consumer<V> compose(java.util.function.ToDoubleFunction<? super V> before) {
+		return Consumer.of(before, this);
+	}
+
+	@Override
+	default <V1, V2> BiConsumer<V1, V2> composeBinary(java.util.function.ToDoubleBiFunction<? super V1, ? super V2> before) {
+		return BiConsumer.of(before, this);
+	}
+
+	@Override
+	default BooleanConsumer composeBoolean(BooleanToDoubleFunction before) {
+		return BooleanConsumer.of(before, this);
+	}
+
+	@Override
+	default DoubleConsumer composeDouble(java.util.function.DoubleUnaryOperator before) {
+		return DoubleConsumer.of(before, this);
+	}
+
+	@Override
+	default IntConsumer composeInt(java.util.function.IntToDoubleFunction before) {
+		return IntConsumer.of(before, this);
+	}
+
+	@Override
+	default LongConsumer composeLong(java.util.function.LongToDoubleFunction before) {
+		return LongConsumer.of(before, this);
+	}
+
+	@Override
+	default <R> DoubleFunction<R> thenReturn(java.util.function.Supplier<? extends R> after) {
+		return DoubleFunction.of(this, after);
+	}
+
+	@Override
+	default DoublePredicate thenReturnBoolean(java.util.function.BooleanSupplier after) {
+		return DoublePredicate.of(this, after);
+	}
+
+	@Override
+	default DoubleUnaryOperator thenReturnDouble(java.util.function.DoubleSupplier after) {
+		return DoubleUnaryOperator.of(this, after);
+	}
+
+	@Override
+	default DoubleToIntFunction thenReturnInt(java.util.function.IntSupplier after) {
+		return DoubleToIntFunction.of(this, after);
+	}
+
+	@Override
+	default DoubleToLongFunction thenReturnLong(java.util.function.LongSupplier after) {
+		return DoubleToLongFunction.of(this, after);
+	}
+
+	@Override
+	default DoubleConsumer thenRun(Runnable after) {
+		return DoubleConsumer.of(this, after);
+	}
+
+	/**
+	 * Returns a consumer that ignores its parameter.
+	 * @return a consumer that ignores its parameter.
+	 */
+	static DoubleConsumer of() {
+		return EmptyDoubleConsumer.INSTANCE;
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static DoubleConsumer of(java.util.function.DoubleConsumer before, Runnable after) {
 		return new DoubleConsumer() {
 			@Override
 			public void accept(double value) {
-				DoubleConsumer.this.accept(value);
-				after.accept(value);
+				before.accept(value);
+				after.run();
 			}
 		};
 	}
 
 	/**
-	 * Returns a boxed version of this consumer.
-	 * @return a boxed version of this consumer.
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default Consumer<Double> boxed() {
-		return this.compose(Double::doubleValue);
-	}
-
-	/**
-	 * Returns a consumer that conditionally invokes this consumer when allowed by the specified predicate.
-	 * @param predicate a predicate that determines whether or not to invoke this consumer
-	 * @return a consumer that conditionally invokes this consumer when allowed by the specified predicate.
-	 */
-	default DoubleConsumer when(java.util.function.DoublePredicate predicate) {
+	static DoubleConsumer of(java.util.function.DoublePredicate before, BooleanConsumer after) {
 		return new DoubleConsumer() {
 			@Override
 			public void accept(double value) {
-				if (predicate.test(value)) {
-					DoubleConsumer.this.accept(value);
-				}
+				after.accept(before.test(value));
 			}
 		};
 	}
 
 	/**
-	 * Returns a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
-	 * @param predicate a predicate used to determine the parameter of this consumer
-	 * @param defaultValue a provider of the default parameter value
-	 * @return a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default DoubleConsumer withDefault(java.util.function.DoublePredicate predicate, java.util.function.DoubleSupplier defaultValue) {
+	static <T> DoubleConsumer of(java.util.function.DoubleFunction<? extends T> before, java.util.function.Consumer<? super T> after) {
 		return new DoubleConsumer() {
 			@Override
 			public void accept(double value) {
-				DoubleConsumer.this.accept(predicate.test(value) ? value : defaultValue.getAsDouble());
+				after.accept(before.apply(value));
 			}
 		};
 	}
 
 	/**
-	 * Composes a consumer that invokes this consumer using result of the specified function.
-	 * @param composer a composing function
-	 * @return a composed consumer
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default DoubleConsumer composeAsDouble(java.util.function.DoubleUnaryOperator composer) {
+	static DoubleConsumer of(java.util.function.DoubleUnaryOperator before, java.util.function.DoubleConsumer after) {
 		return new DoubleConsumer() {
 			@Override
 			public void accept(double value) {
-				DoubleConsumer.this.accept(composer.applyAsDouble(value));
+				after.accept(before.applyAsDouble(value));
 			}
 		};
 	}
 
 	/**
-	 * Composes a consumer that invokes this consumer using result of the specified function.
-	 * @param <V> the mapped type
-	 * @param composer a composing function
-	 * @return a composed consumer
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default <V> Consumer<V> compose(java.util.function.ToDoubleFunction<V> composer) {
-		return new Consumer<>() {
+	static DoubleConsumer of(java.util.function.DoubleToIntFunction before, java.util.function.IntConsumer after) {
+		return new DoubleConsumer() {
 			@Override
-			public void accept(V value) {
-				DoubleConsumer.this.accept(composer.applyAsDouble(value));
+			public void accept(double value) {
+				after.accept(before.applyAsInt(value));
 			}
 		};
 	}
 
 	/**
-	 * Composes a binary consumer that invokes this consumer using result of the specified binary function.
-	 * @param <V1> the former parameter type
-	 * @param <V2> the latter parameter type
-	 * @param composer a composing function
-	 * @return a binary consumer that invokes this consumer using result of the specified binary function.
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default <V1, V2> BiConsumer<V1, V2> compose(java.util.function.ToDoubleBiFunction<V1, V2> composer) {
-		return new BiConsumer<>() {
+	static DoubleConsumer of(java.util.function.DoubleToLongFunction before, java.util.function.LongConsumer after) {
+		return new DoubleConsumer() {
 			@Override
-			public void accept(V1 value1, V2 value2) {
-				DoubleConsumer.this.accept(composer.applyAsDouble(value1, value2));
-			}
-		};
-	}
-
-	/**
-	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 * @param factory a factory of the function return value
-	 * @param <R> the return type
-	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 */
-	default <R> DoubleFunction<R> thenReturn(java.util.function.Supplier<R> factory) {
-		return new DoubleFunction<>() {
-			@Override
-			public R apply(double value) {
-				DoubleConsumer.this.accept(value);
-				return factory.get();
-			}
-		};
-	}
-
-	/**
-	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 * @param factory a factory of the function return value
-	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 */
-	default DoubleUnaryOperator thenReturnDouble(java.util.function.DoubleSupplier factory) {
-		return new DoubleUnaryOperator() {
-			@Override
-			public double applyAsDouble(double value) {
-				DoubleConsumer.this.accept(value);
-				return factory.getAsDouble();
+			public void accept(double value) {
+				after.accept(before.applyAsLong(value));
 			}
 		};
 	}
@@ -147,14 +188,57 @@ public interface DoubleConsumer extends java.util.function.DoubleConsumer {
 	 * @param consumers a number of consumers
 	 * @return a composite consumer
 	 */
-	static DoubleConsumer acceptAll(Iterable<? extends DoubleConsumer> consumers) {
+	static DoubleConsumer of(Iterable<? extends java.util.function.DoubleConsumer> consumers) {
 		return new DoubleConsumer() {
 			@Override
 			public void accept(double value) {
-				for (DoubleConsumer consumer : consumers) {
+				for (java.util.function.DoubleConsumer consumer : consumers) {
 					consumer.accept(value);
 				}
 			}
 		};
+	}
+
+	/**
+	 * Returns a consumer that delegates to one of two consumers based on the specified predicate.
+	 * @param predicate a predicate
+	 * @param accepted the consumer to apply when accepted by the specified predicate
+	 * @param rejected the consumer to apply when rejected by the specified predicate
+	 * @return a consumer that delegates to one of two consumers based on the specified predicate.
+	 */
+	static DoubleConsumer when(java.util.function.DoublePredicate predicate, java.util.function.DoubleConsumer accepted, java.util.function.DoubleConsumer rejected) {
+		return new DoubleConsumer() {
+			@Override
+			public void accept(double value) {
+				java.util.function.DoubleConsumer consumer = predicate.test(value) ? accepted : rejected;
+				consumer.accept(value);
+			}
+		};
+	}
+
+	/**
+	 * A consumer that does nothing, ignoring its parameter.
+	 */
+	class EmptyDoubleConsumer implements DoubleConsumer {
+		static final DoubleConsumer INSTANCE = new EmptyDoubleConsumer();
+
+		private EmptyDoubleConsumer() {
+			// Hide
+		}
+
+		@Override
+		public void accept(double value) {
+			// Do nothing
+		}
+
+		@Override
+		public DoubleConsumer andThen(java.util.function.DoubleConsumer after) {
+			return (after instanceof DoubleConsumer consumer) ? consumer : DoubleConsumer.of(after, Runner.of());
+		}
+
+		@Override
+		public Consumer<Double> box() {
+			return Consumer.of();
+		}
 	}
 }

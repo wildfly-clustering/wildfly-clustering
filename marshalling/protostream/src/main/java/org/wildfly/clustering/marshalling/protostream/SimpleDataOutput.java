@@ -118,16 +118,16 @@ public class SimpleDataOutput implements DataOutput {
 	 * Builds a simple data output.
 	 */
 	public static class Builder {
-		Consumer<String> stringConsumer = Consumer.empty();
-		Consumer<Character> charConsumer = Consumer.empty();
-		Consumer<ByteBuffer> bufferConsumer = Consumer.empty();
-		Consumer<Boolean> booleanConsumer = Consumer.empty();
-		Consumer<Byte> byteConsumer = Consumer.empty();
-		Consumer<Short> shortConsumer = Consumer.empty();
-		IntConsumer intConsumer = IntConsumer.EMPTY;
-		LongConsumer longConsumer = LongConsumer.EMPTY;
-		Consumer<Float> floatConsumer = Consumer.empty();
-		DoubleConsumer doubleConsumer = DoubleConsumer.EMPTY;
+		Consumer<String> stringConsumer = Consumer.of();
+		Consumer<Character> charConsumer = Consumer.of();
+		Consumer<ByteBuffer> bufferConsumer = Consumer.of();
+		Consumer<Boolean> booleanConsumer = Consumer.of();
+		Consumer<Byte> byteConsumer = Consumer.of();
+		Consumer<Short> shortConsumer = Consumer.of();
+		IntConsumer intConsumer = IntConsumer.of();
+		LongConsumer longConsumer = LongConsumer.of();
+		Consumer<Float> floatConsumer = Consumer.of();
+		DoubleConsumer doubleConsumer = DoubleConsumer.of();
 
 		/**
 		 * Creates a builder of a data output.

@@ -190,7 +190,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 		Metadata metadata = entry.getMetadata();
 		long lifespan = (metadata != null) ? metadata.lifespan() : 0L;
 		long maxIdle = (metadata != null) ? metadata.maxIdle() : 0L;
-		return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(key, value, lifespan, TimeUnit.MILLISECONDS, maxIdle, TimeUnit.MILLISECONDS).thenAcceptAsync(Consumer.empty(), this.executor);
+		return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(key, value, lifespan, TimeUnit.MILLISECONDS, maxIdle, TimeUnit.MILLISECONDS).thenAcceptAsync(Consumer.of(), this.executor);
 	}
 
 	@Override
@@ -203,7 +203,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 	private CompletionStage<Void> remove(int segment, Object key) {
 		RemoteCache<K, MarshalledValue> cache = this.segmentCache(segment);
 		if (cache == null) return CompletableFuture.completedStage(null);
-		return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).removeAsync(key).thenAcceptAsync(Consumer.empty(), this.executor);
+		return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).removeAsync(key).thenAcceptAsync(Consumer.of(), this.executor);
 	}
 
 	@Override
@@ -369,7 +369,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 			RemoteCache<K, MarshalledValue> cache = this.caches.get(segment);
 			if (cache != null) {
 				this.caches.set(segment, null);
-				result = CompletableFuture.allOf(result, this.blockingManager.thenRunBlocking(cache.clearAsync().thenAcceptAsync(Consumer.empty(), this.executor), cache::stop, "hotrod-store-remove-segments").toCompletableFuture());
+				result = CompletableFuture.allOf(result, this.blockingManager.thenRunBlocking(cache.clearAsync().thenAcceptAsync(Consumer.of(), this.executor), cache::stop, "hotrod-store-remove-segments").toCompletableFuture());
 			}
 		}
 		return result;
@@ -382,7 +382,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 
 	@Override
 	public CompletionStage<Void> prepareWithModifications(Transaction transaction, int publisherCount, Publisher<SegmentedPublisher<Object>> removePublisher, Publisher<SegmentedPublisher<MarshallableEntry<K, V>>> writePublisher) {
-		SuspendedBatch suspended = this.transactions.computeIfAbsent(transaction, org.wildfly.clustering.function.Function.of(Consumer.empty(), this.batchFactory.thenApply(Batch::suspend)));
+		SuspendedBatch suspended = this.transactions.computeIfAbsent(transaction, org.wildfly.clustering.function.Function.of(Consumer.of(), this.batchFactory.thenApply(Batch::suspend)));
 		CompletableTransformer batcher = upstream -> observer -> {
 			try (Context<Batch> context = suspended.resumeWithContext()) {
 				upstream.subscribe(observer);
@@ -393,7 +393,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 
 	@Override
 	public CompletionStage<Void> commit(Transaction transaction) {
-		return this.close(transaction, Consumer.empty(), "hotrod-store-commit");
+		return this.close(transaction, Consumer.of(), "hotrod-store-commit");
 	}
 
 	@Override

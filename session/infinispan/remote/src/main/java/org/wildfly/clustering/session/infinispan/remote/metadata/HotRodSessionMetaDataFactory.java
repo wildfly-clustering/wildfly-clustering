@@ -96,7 +96,7 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 	public CompletionStage<Void> removeAsync(String id) {
 		CompletableFuture<?> creationMetaData = this.writeCreationMetaDataCache.removeAsync(new SessionCreationMetaDataKey(id));
 		CompletableFuture<?> accessMetaData = this.writeAccessMetaDataCache.removeAsync(new SessionAccessMetaDataKey(id));
-		return CompletableFuture.allOf(creationMetaData, accessMetaData).thenAccept(Consumer.empty());
+		return CompletableFuture.allOf(creationMetaData, accessMetaData).thenAccept(Consumer.of());
 	}
 
 	@Override

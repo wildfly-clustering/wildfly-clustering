@@ -50,7 +50,7 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 	}
 
 	public EmbeddedCacheManagerContext(JChannel channel) {
-		this(Context.of(channel, Runner.empty()));
+		this(Context.of(channel, Runner.of()));
 	}
 
 	private EmbeddedCacheManagerContext(Context<JChannel> channel) {

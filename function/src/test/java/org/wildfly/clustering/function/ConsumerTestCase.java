@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.mockito.InOrder;
  * @author Paul Ferraro
  */
 public class ConsumerTestCase {
+	private final Random random = new Random();
 
 	@Test
 	public void thenReturn() {
@@ -31,72 +33,94 @@ public class ConsumerTestCase {
 
 		doCallRealMethod().when(consumer).thenReturn(any());
 
-		Object result = consumer.thenReturn(supplier).apply(value);
+		assertThat(consumer.thenReturn(supplier).apply(value)).isSameAs(expected);
 
-		assertThat(result).isSameAs(expected);
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnBoolean() {
+		Object value = new Object();
+		boolean expected = this.random.nextBoolean();
+		Consumer<Object> consumer = mock(Consumer.class);
+		BooleanSupplier supplier = mock(BooleanSupplier.class);
+		doReturn(expected).when(supplier).getAsBoolean();
+
+		doCallRealMethod().when(consumer).thenReturnBoolean(any());
+
+		assertThat(consumer.thenReturnBoolean(supplier).test(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnDouble() {
+		Object value = new Object();
+		double expected = this.random.nextDouble();
+		Consumer<Object> consumer = mock(Consumer.class);
+		DoubleSupplier supplier = mock(DoubleSupplier.class);
+		doReturn(expected).when(supplier).getAsDouble();
+
+		doCallRealMethod().when(consumer).thenReturnDouble(any());
+
+		assertThat(consumer.thenReturnDouble(supplier).applyAsDouble(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnInt() {
+		Object value = new Object();
+		int expected = this.random.nextInt();
+		Consumer<Object> consumer = mock(Consumer.class);
+		IntSupplier supplier = mock(IntSupplier.class);
+		doReturn(expected).when(supplier).getAsInt();
+
+		doCallRealMethod().when(consumer).thenReturnInt(any());
+
+		assertThat(consumer.thenReturnInt(supplier).applyAsInt(value)).isEqualTo(expected);
+
+		verify(consumer).accept(value);
+	}
+
+	@Test
+	public void thenReturnLong() {
+		Object value = new Object();
+		long expected = this.random.nextLong();
+		Consumer<Object> consumer = mock(Consumer.class);
+		LongSupplier supplier = mock(LongSupplier.class);
+		doReturn(expected).when(supplier).getAsLong();
+
+		doCallRealMethod().when(consumer).thenReturnLong(any());
+
+		assertThat(consumer.thenReturnLong(supplier).applyAsLong(value)).isEqualTo(expected);
+
 		verify(consumer).accept(value);
 	}
 
 	@Test
 	public void when() {
-		UUID allowed = UUID.randomUUID();
-		UUID disallowed = UUID.randomUUID();
+		UUID accepted = UUID.randomUUID();
+		UUID rejected = UUID.randomUUID();
 		Predicate<UUID> predicate = mock(Predicate.class);
 
-		doReturn(true).when(predicate).test(allowed);
-		doReturn(false).when(predicate).test(disallowed);
+		doReturn(true).when(predicate).test(accepted);
+		doReturn(false).when(predicate).test(rejected);
 
-		Consumer<UUID> consumer = mock(Consumer.class);
+		Consumer<UUID> whenAccepted = mock(Consumer.class);
+		Consumer<UUID> whenRejected = mock(Consumer.class);
 
-		doCallRealMethod().when(consumer).when(any());
+		Consumer<UUID> consumer = Consumer.when(predicate, whenAccepted, whenRejected);
 
-		Consumer<UUID> conditional = consumer.when(predicate);
+		consumer.accept(accepted);
 
-		conditional.accept(disallowed);
+		verify(whenAccepted, only()).accept(accepted);
+		verifyNoInteractions(whenRejected);
 
-		verify(consumer, never()).accept(disallowed);
+		consumer.accept(rejected);
 
-		conditional.accept(allowed);
-
-		verify(consumer).accept(allowed);
-	}
-
-	@Test
-	public void withDefault() {
-		UUID allowed = UUID.randomUUID();
-		UUID disallowed = UUID.randomUUID();
-		UUID defaultValue = UUID.randomUUID();
-
-		Predicate<UUID> predicate = mock(Predicate.class);
-
-		doReturn(true).when(predicate).test(allowed);
-		doReturn(false).when(predicate).test(disallowed);
-
-		Consumer<UUID> consumer = mock(Consumer.class);
-		Supplier<UUID> defaultProvider = mock(Supplier.class);
-
-		doCallRealMethod().when(consumer).withDefault(any(), any());
-		doReturn(defaultValue).when(defaultProvider).get();
-
-		Consumer<UUID> conditional = consumer.withDefault(predicate, defaultProvider);
-
-		conditional.accept(allowed);
-
-		verify(consumer).accept(allowed);
-		verifyNoInteractions(defaultProvider);
-
-		conditional.accept(disallowed);
-
-		verify(consumer, never()).accept(disallowed);
-		verify(consumer).accept(defaultValue);
-	}
-
-	@Test
-	public void throwing() {
-		java.io.IOException cause = new java.io.IOException();
-		Consumer<java.io.IOException> consumer = Consumer.throwing(java.io.UncheckedIOException::new);
-
-		assertThatThrownBy(() -> consumer.accept(cause)).isExactlyInstanceOf(java.io.UncheckedIOException.class).cause().isSameAs(cause);
+		verify(whenRejected, only()).accept(rejected);
+		verifyNoMoreInteractions(whenAccepted);
 	}
 
 	@Test
@@ -116,45 +140,23 @@ public class ConsumerTestCase {
 	@Test
 	public void composeBinary() {
 		Consumer<Object> consumer = mock(Consumer.class);
-		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<BiFunction<Object, Object, Object>>any());
+		doCallRealMethod().when(consumer).composeBinary(ArgumentMatchers.<BiFunction<Object, Object, Object>>any());
 		BiFunction<Object, Object, Object> mapper = mock(BiFunction.class);
 		Object key = new Object();
 		Object value = new Object();
 		Object result = new Object();
 		doReturn(result).when(mapper).apply(key, value);
 
-		consumer.compose(mapper).accept(key, value);
+		consumer.composeBinary(mapper).accept(key, value);
 
 		verify(consumer).accept(result);
 	}
 
 	@Test
 	public void empty() {
-		Consumer<Object> consumer = Consumer.empty();
+		Consumer<Object> consumer = Consumer.of();
 		consumer.accept(new Object());
 		consumer.accept(null);
-	}
-
-	@Test
-	public void handle() {
-		Consumer<Object> consumer = mock(Consumer.class);
-		BiConsumer<Object, RuntimeException> handler = mock(BiConsumer.class);
-		doCallRealMethod().when(consumer).handle(any());
-		Object goodValue = new Object();
-		Object badValue = new Object();
-		RuntimeException exception = new RuntimeException();
-
-		doNothing().when(consumer).accept(goodValue);
-		doThrow(exception).when(consumer).accept(badValue);
-
-		consumer.handle(handler).accept(goodValue);
-
-		verify(consumer).accept(goodValue);
-		verify(handler, never()).accept(any(), any());
-
-		consumer.handle(handler).accept(badValue);
-
-		verify(handler).accept(badValue, exception);
 	}
 
 	@Test
@@ -189,7 +191,7 @@ public class ConsumerTestCase {
 	public void ofRunnable() {
 		Object value = new Object();
 		Runnable runnable = mock(Runnable.class);
-		Consumer<Object> consumer = Consumer.run(runnable);
+		Consumer<Object> consumer = Consumer.of(Consumer.of(), runnable);
 
 		consumer.accept(value);
 
@@ -218,7 +220,7 @@ public class ConsumerTestCase {
 		Consumer<Object> consumer3 = mock(Consumer.class);
 		InOrder order = inOrder(consumer1, consumer2, consumer3);
 
-		Consumer<Object> consumer = Consumer.acceptAll(List.of(consumer1, consumer2, consumer3));
+		Consumer<Object> consumer = Consumer.of(List.of(consumer1, consumer2, consumer3));
 
 		consumer.accept(value);
 

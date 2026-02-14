@@ -16,80 +16,43 @@ import java.util.Map;
 public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, Function<T, T> {
 
 	/**
-	 * Returns an operator that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
-	 * @param predicate a predicate used to determine the parameter of this function
-	 * @param defaultResult a provider of the default operation result
-	 * @return an operator that applies this function to the value returned by the specified provider if its value does not match the specified predicate.
-	 */
-	@Override
-	default UnaryOperator<T> orDefault(java.util.function.Predicate<T> predicate, java.util.function.Supplier<T> defaultResult) {
-		return new UnaryOperator<>() {
-			@Override
-			public T apply(T value) {
-				return predicate.test(value) ? UnaryOperator.this.apply(value) : defaultResult.get();
-			}
-		};
-	}
-
-	/**
-	 * Returns an operator that applies this function if its parameter matches the specified predicate, or returns the value provided by the specified supplier otherwise.
-	 * @param predicate a predicate used to determine the parameter of this function
-	 * @param defaultValue a provider of the default parameter value
-	 * @return an operator that applies this function if its parameter matches the specified predicate, or returns the value provided by the specified supplier otherwise.
-	 */
-	@Override
-	default UnaryOperator<T> withDefault(java.util.function.Predicate<T> predicate, java.util.function.Supplier<T> defaultValue) {
-		return new UnaryOperator<>() {
-			@Override
-			public T apply(T value) {
-				return UnaryOperator.this.apply(predicate.test(value) ? value : defaultValue.get());
-			}
-		};
-	}
-
-	/**
 	 * Returns an operator that applies the specified operator to the result of this operator.
-	 * @param operator an operator to apply to the result of this operation
+	 * @param after an operator to apply to the result of this operation
 	 * @return an operator that applies the specified operator to the result of this operator.
 	 */
-	default UnaryOperator<T> andThen(java.util.function.UnaryOperator<T> operator) {
+	default UnaryOperator<T> andThen(java.util.function.UnaryOperator<T> after) {
 		return new UnaryOperator<>() {
 			@Override
 			public T apply(T value) {
-				return operator.apply(UnaryOperator.this.apply(value));
+				return after.apply(UnaryOperator.this.apply(value));
 			}
 		};
 	}
 
 	/**
 	 * Returns an operator that applies this operator to the result of the specified operator.
-	 * @param operator an operator to apply to the result of this operation
+	 * @param before an operator to apply to the result of this operation
 	 * @return an operator that applies this operator to the result of the specified operator.
 	 */
-	default UnaryOperator<T> compose(java.util.function.UnaryOperator<T> operator) {
+	default UnaryOperator<T> compose(java.util.function.UnaryOperator<T> before) {
 		return new UnaryOperator<>() {
 			@Override
 			public T apply(T value) {
-				return UnaryOperator.this.apply(operator.apply(value));
+				return UnaryOperator.this.apply(before.apply(value));
 			}
 		};
 	}
 
 	/**
-	 * Returns a new operator that delegates to this operator using the specified exception handler.
-	 * @param handler an exception handler
-	 * @return a new operator that delegates to this operator using the specified exception handler.
+	 * Returns an operator that applies this operator to the result of the specified operator.
+	 * @param before an operator to apply to the result of this operation
+	 * @return an operator that applies this operator to the result of the specified operator.
 	 */
-	@Override
-	default UnaryOperator<T> handle(java.util.function.BiFunction<T, RuntimeException, T> handler) {
-		return new UnaryOperator<>() {
+	default BinaryOperator<T> compose(java.util.function.BinaryOperator<T> before) {
+		return new BinaryOperator<>() {
 			@Override
-			public T apply(T value) {
-				try {
-					return UnaryOperator.this.apply(value);
-				} catch (RuntimeException e) {
-					return handler.apply(value, e);
-				}
+			public T apply(T value1, T value2) {
+				return UnaryOperator.this.apply(before.apply(value1, value2));
 			}
 		};
 	}
@@ -99,17 +62,9 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param <T> the operating type
 	 * @return an operator that returns its value.
 	 */
+	@SuppressWarnings("unchecked")
 	static <T> UnaryOperator<T> identity() {
-		return UnaryOperators.IDENTITY.cast();
-	}
-
-	/**
-	 * Returns an operator that always returns null, ignoring its parameter.
-	 * @param <T> the operating type
-	 * @return an operator that always returns null, ignoring its parameter.
-	 */
-	static <T> UnaryOperator<T> empty() {
-		return UnaryOperators.NULL.cast();
+		return (UnaryOperator<T>) IdentityUnaryOperator.INSTANCE;
 	}
 
 	/**
@@ -118,8 +73,9 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	 * @param value the value returned by the operator
 	 * @return an operator that always returns the specified value, ignoring its parameter.
 	 */
+	@SuppressWarnings("unchecked")
 	static <T> UnaryOperator<T> of(T value) {
-		return (value != null) ? of(Consumer.empty(), Supplier.of(value)) : empty();
+		return (value != null) ? new SimpleUnaryOperator<>(value) : (UnaryOperator<T>) SimpleUnaryOperator.NULL;
 	}
 
 	/**
@@ -140,18 +96,21 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	}
 
 	/**
-	 * Returns an operator view of the specified function.
-	 * @param <T> the operating type
-	 * @param function the delegating function
-	 * @return an operator view of the specified function.
+	 * Returns a function that delegates to one of two functions based on the specified predicate.
+	 * @param <T> the operator type
+	 * @param predicate a predicate
+	 * @param accepted the function to apply when accepted by the specified predicate
+	 * @param rejected the function to apply when rejected by the specified predicate
+	 * @return a function that delegates to one of two functions based on the specified predicate.
 	 */
-	static <T> UnaryOperator<T> apply(java.util.function.Function<? super T, T> function) {
-		return (function != null) && (function != Function.empty()) ? new UnaryOperator<>() {
+	static <T> UnaryOperator<T> when(java.util.function.Predicate<? super T> predicate, java.util.function.UnaryOperator<T> accepted, java.util.function.UnaryOperator<T> rejected) {
+		return new UnaryOperator<>() {
 			@Override
 			public T apply(T value) {
+				java.util.function.UnaryOperator<T> function = predicate.test(value) ? accepted : rejected;
 				return function.apply(value);
 			}
-		} : empty();
+		};
 	}
 
 	/**
@@ -169,5 +128,29 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 				return new AbstractMap.SimpleImmutableEntry<>(keyFunction.apply(entry.getKey()), valueFunction.apply(entry.getValue()));
 			}
 		};
+	}
+
+	/**
+	 * A function that returns a fixed value.
+	 * @param <T> the operator type
+	 */
+	class SimpleUnaryOperator<T> extends SimpleFunction<T, T> implements UnaryOperator<T> {
+		static final UnaryOperator<?> NULL = new SimpleUnaryOperator<>(null);
+
+		private SimpleUnaryOperator(T value) {
+			super(value);
+		}
+	}
+
+	/**
+	 * A function that returns its parameter.
+	 * @param <T> the operator type
+	 */
+	class IdentityUnaryOperator<T> extends IdentityFunction<T, T> implements UnaryOperator<T> {
+		static final UnaryOperator<?> INSTANCE = new IdentityUnaryOperator<>();
+
+		private IdentityUnaryOperator() {
+			// Hide
+		}
 	}
 }

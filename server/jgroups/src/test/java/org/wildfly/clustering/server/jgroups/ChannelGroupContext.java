@@ -22,7 +22,7 @@ public class ChannelGroupContext extends AbstractContext<ChannelGroup> {
 	}
 
 	public ChannelGroupContext(JChannel channel) {
-		this(Context.of(channel, Runner.empty()));
+		this(Context.of(channel, Runner.of()));
 	}
 
 	private ChannelGroupContext(Context<JChannel> channel) {

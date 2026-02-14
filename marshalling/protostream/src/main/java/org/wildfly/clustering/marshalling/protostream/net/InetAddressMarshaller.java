@@ -11,8 +11,6 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -46,7 +44,7 @@ public enum InetAddressMarshaller implements FieldSetMarshaller.Simple<InetAddre
 		return switch (index) {
 			case HOST_NAME_INDEX -> InetAddress.getByName(reader.readString());
 			case ADDRESS_INDEX -> InetAddress.getByAddress(reader.readByteArray());
-			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(address)).get();
+			default -> reader.skipField(type, address);
 		};
 	}
 

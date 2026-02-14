@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -44,7 +42,7 @@ public enum UUIDMarshaller implements FieldSetMarshaller.Simple<UUID> {
 		return switch (index) {
 			case MOST_SIGNIFICANT_BITS_INDEX -> new UUID(reader.readSFixed64(), id.getLeastSignificantBits());
 			case LEAST_SIGNIFICANT_BITS_INDEX -> new UUID(id.getMostSignificantBits(), reader.readSFixed64());
-			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(id)).get();
+			default -> reader.skipField(type, id);
 		};
 	}
 

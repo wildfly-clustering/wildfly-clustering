@@ -11,7 +11,6 @@ import static org.mockito.Mockito.*;
 import java.util.UUID;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ public class BiFunctionTestCase {
 
 	@Test
 	public void test() {
-		assertThat(BiFunction.empty().apply(this.value1, this.value2)).isNull();
+		assertThat(BiFunction.of(null).apply(this.value1, this.value2)).isNull();
 		assertThat(BiFunction.of(this.result).apply(this.value1, this.value2)).isSameAs(this.result);
 		assertThat(BiFunction.of(null).apply(this.value1, this.value2)).isNull();
 		assertThat(BiFunction.former().apply(this.value1, this.value2)).isSameAs(this.value1);
@@ -109,47 +108,15 @@ public class BiFunctionTestCase {
 	}
 
 	@Test
-	public void withDefault() {
-		BiFunction<UUID, UUID, UUID> function = mock(BiFunction.class);
-		doCallRealMethod().when(function).withDefault(any(), any(), any(), any());
-		Predicate<UUID> predicate1 = mock(Predicate.class);
-		Predicate<UUID> predicate2 = mock(Predicate.class);
-		Supplier<UUID> supplier1 = mock(Supplier.class);
-		Supplier<UUID> supplier2 = mock(Supplier.class);
-		UUID expectedWhenDefaultValue1 = UUID.randomUUID();
-		UUID expectedWhenDefaultValue2 = UUID.randomUUID();
-		UUID expectedWhenDefaultValues = UUID.randomUUID();
-		UUID defaultValue1 = UUID.randomUUID();
-		UUID defaultValue2 = UUID.randomUUID();
-
-		doReturn(false, false, true, true).when(predicate1).test(this.value1);
-		doReturn(false, true, false, true).when(predicate2).test(this.value2);
-		doReturn(defaultValue1).when(supplier1).get();
-		doReturn(defaultValue2).when(supplier2).get();
-		doReturn(this.result).when(function).apply(this.value1, this.value2);
-		doReturn(expectedWhenDefaultValues).when(function).apply(defaultValue1, defaultValue2);
-		doReturn(expectedWhenDefaultValue1).when(function).apply(defaultValue1, this.value2);
-		doReturn(expectedWhenDefaultValue2).when(function).apply(this.value1, defaultValue2);
-
-		assertThat(function.withDefault(predicate1, supplier1, predicate2, supplier2).apply(this.value1, this.value2)).isSameAs(expectedWhenDefaultValues);
-		assertThat(function.withDefault(predicate1, supplier1, predicate2, supplier2).apply(this.value1, this.value2)).isSameAs(expectedWhenDefaultValue1);
-		assertThat(function.withDefault(predicate1, supplier1, predicate2, supplier2).apply(this.value1, this.value2)).isSameAs(expectedWhenDefaultValue2);
-		assertThat(function.withDefault(predicate1, supplier1, predicate2, supplier2).apply(this.value1, this.value2)).isSameAs(this.result);
-	}
-
-	@Test
-	public void orDefault() {
-		BiFunction<UUID, UUID, UUID> function = mock(BiFunction.class);
-		doCallRealMethod().when(function).orDefault(any(), any());
+	public void when() {
 		BiPredicate<UUID, UUID> predicate = mock(BiPredicate.class);
-		Supplier<UUID> supplier = mock(Supplier.class);
-		UUID defaultValue = UUID.randomUUID();
+		UUID otherwise = UUID.randomUUID();
 
 		doReturn(false, true).when(predicate).test(this.value1, this.value2);
-		doReturn(defaultValue).when(supplier).get();
-		doReturn(this.result).when(function).apply(this.value1, this.value2);
 
-		assertThat(function.orDefault(predicate, supplier).apply(this.value1, this.value2)).isSameAs(defaultValue);
-		assertThat(function.orDefault(predicate, supplier).apply(this.value1, this.value2)).isSameAs(this.result);
+		BiFunction<UUID, UUID, UUID> function = BiFunction.when(predicate, BiFunction.of(this.result), BiFunction.of(otherwise));
+
+		assertThat(function.apply(this.value1, this.value2)).isSameAs(otherwise);
+		assertThat(function.apply(this.value1, this.value2)).isSameAs(this.result);
 	}
 }

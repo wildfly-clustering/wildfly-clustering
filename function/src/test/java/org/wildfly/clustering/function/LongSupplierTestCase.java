@@ -14,7 +14,6 @@ import java.util.function.LongFunction;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.LongUnaryOperator;
-import java.util.function.ToLongFunction;
 
 import org.junit.jupiter.api.Test;
 
@@ -66,33 +65,6 @@ public class LongSupplierTestCase {
 		supplier.thenAccept(consumer).run();
 
 		verify(consumer).accept(value);
-	}
-
-	@Test
-	public void handle() {
-		long value = this.random.nextLong();
-
-		LongSupplier supplier = mock(LongSupplier.class);
-
-		doCallRealMethod().when(supplier).handle(any());
-		doReturn(value).when(supplier).getAsLong();
-
-		ToLongFunction<RuntimeException> handler = mock(ToLongFunction.class);
-		long handled = this.random.nextLong();
-		RuntimeException exception = new RuntimeException();
-
-		assertThat(supplier.handle(handler).getAsLong()).isEqualTo(value);
-
-		verify(supplier).getAsLong();
-		verify(handler, never()).applyAsLong(any());
-
-		doThrow(exception).when(supplier).getAsLong();
-		doReturn(handled).when(handler).applyAsLong(exception);
-
-		assertThat(supplier.handle(handler).getAsLong()).isEqualTo(handled);
-
-		verify(supplier, times(2)).getAsLong();
-		verify(handler).applyAsLong(any());
 	}
 
 	@Test

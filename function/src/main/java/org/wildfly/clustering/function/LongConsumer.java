@@ -5,139 +5,180 @@
 
 package org.wildfly.clustering.function;
 
-import java.util.function.LongFunction;
-import java.util.function.LongUnaryOperator;
+import java.util.List;
 
 /**
  * An enhanced long consumer.
  * @author Paul Ferraro
  */
-public interface LongConsumer extends java.util.function.LongConsumer {
-	/** Consumer that discards its parameter */
-	LongConsumer EMPTY = value -> {};
+public interface LongConsumer extends java.util.function.LongConsumer, LongOperation, PrimitiveConsumer<Long> {
 
 	@Override
 	default LongConsumer andThen(java.util.function.LongConsumer after) {
+		return of(List.of(this, after));
+	}
+
+	@Override
+	default Consumer<Long> box() {
+		return this.compose(LongUnaryOperator.identity().box());
+	}
+
+	@Override
+	default <V> Consumer<V> compose(java.util.function.ToLongFunction<? super V> before) {
+		return Consumer.of(before, this);
+	}
+
+	@Override
+	default <V1, V2> BiConsumer<V1, V2> composeBinary(java.util.function.ToLongBiFunction<? super V1, ? super V2> before) {
+		return BiConsumer.of(before, this);
+	}
+
+	@Override
+	default BooleanConsumer composeBoolean(BooleanToLongFunction before) {
+		return BooleanConsumer.of(before, this);
+	}
+
+	@Override
+	default DoubleConsumer composeDouble(java.util.function.DoubleToLongFunction before) {
+		return DoubleConsumer.of(before, this);
+	}
+
+	@Override
+	default IntConsumer composeInt(java.util.function.IntToLongFunction before) {
+		return IntConsumer.of(before, this);
+	}
+
+	@Override
+	default LongConsumer composeLong(java.util.function.LongUnaryOperator before) {
+		return LongConsumer.of(before, this);
+	}
+
+	@Override
+	default <R> LongFunction<R> thenReturn(java.util.function.Supplier<? extends R> after) {
+		return LongFunction.of(this, after);
+	}
+
+	@Override
+	default LongPredicate thenReturnBoolean(java.util.function.BooleanSupplier after) {
+		return LongPredicate.of(this, after);
+	}
+
+	@Override
+	default LongToDoubleFunction thenReturnDouble(java.util.function.DoubleSupplier after) {
+		return LongToDoubleFunction.of(this, after);
+	}
+
+	@Override
+	default LongToIntFunction thenReturnInt(java.util.function.IntSupplier after) {
+		return LongToIntFunction.of(this, after);
+	}
+
+	@Override
+	default LongUnaryOperator thenReturnLong(java.util.function.LongSupplier after) {
+		return LongUnaryOperator.of(this, after);
+	}
+
+	@Override
+	default LongConsumer thenRun(Runnable after) {
+		return LongConsumer.of(this, after);
+	}
+
+	/**
+	 * Returns a consumer that ignores its parameter.
+	 * @return a consumer that ignores its parameter.
+	 */
+	static LongConsumer of() {
+		return EmptyLongConsumer.INSTANCE;
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static LongConsumer of(java.util.function.LongConsumer before, Runnable after) {
 		return new LongConsumer() {
 			@Override
 			public void accept(long value) {
-				LongConsumer.this.accept(value);
-				after.accept(value);
+				before.accept(value);
+				after.run();
 			}
 		};
 	}
 
 	/**
-	 * Returns a boxed version of this consumer.
-	 * @return a boxed version of this consumer.
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default Consumer<Long> boxed() {
-		return this.compose(Long::longValue);
-	}
-
-	/**
-	 * Returns a consumer that conditionally invokes this consumer when allowed by the specified predicate.
-	 * @param predicate a predicate that determines whether or not to invoke this consumer
-	 * @return a consumer that conditionally invokes this consumer when allowed by the specified predicate.
-	 */
-	default LongConsumer when(java.util.function.LongPredicate predicate) {
+	static LongConsumer of(java.util.function.LongPredicate before, BooleanConsumer after) {
 		return new LongConsumer() {
 			@Override
 			public void accept(long value) {
-				if (predicate.test(value)) {
-					LongConsumer.this.accept(value);
-				}
+				after.accept(before.test(value));
 			}
 		};
 	}
 
 	/**
-	 * Returns a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
-	 * @param predicate a predicate used to determine the parameter of this consumer
-	 * @param defaultValue a provider of the default parameter value
-	 * @return a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default LongConsumer withDefault(java.util.function.LongPredicate predicate, java.util.function.LongSupplier defaultValue) {
+	static <T> LongConsumer of(java.util.function.LongFunction<? extends T> before, java.util.function.Consumer<? super T> after) {
 		return new LongConsumer() {
 			@Override
 			public void accept(long value) {
-				LongConsumer.this.accept(predicate.test(value) ? value : defaultValue.getAsLong());
+				after.accept(before.apply(value));
 			}
 		};
 	}
 
 	/**
-	 * Composes a consumer that invokes this consumer using result of the specified function.
-	 * @param composer a composing function
-	 * @return a composed consumer
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default LongConsumer composeAsLong(java.util.function.LongUnaryOperator composer) {
+	static LongConsumer of(java.util.function.LongToDoubleFunction before, java.util.function.DoubleConsumer after) {
 		return new LongConsumer() {
 			@Override
 			public void accept(long value) {
-				LongConsumer.this.accept(composer.applyAsLong(value));
+				after.accept(before.applyAsDouble(value));
 			}
 		};
 	}
 
 	/**
-	 * Composes a consumer that invokes this consumer using result of the specified function.
-	 * @param <V> the mapped type
-	 * @param composer a composing function
-	 * @return a composed consumer
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default <V> Consumer<V> compose(java.util.function.ToLongFunction<V> composer) {
-		return new Consumer<>() {
+	static LongConsumer of(java.util.function.LongToIntFunction before, java.util.function.IntConsumer after) {
+		return new LongConsumer() {
 			@Override
-			public void accept(V value) {
-				LongConsumer.this.accept(composer.applyAsLong(value));
+			public void accept(long value) {
+				after.accept(before.applyAsInt(value));
 			}
 		};
 	}
 
 	/**
-	 * Composes a binary consumer that invokes this consumer using result of the specified binary function.
-	 * @param <V1> the former parameter type
-	 * @param <V2> the latter parameter type
-	 * @param composer a composing function
-	 * @return a binary consumer that invokes this consumer using result of the specified binary function.
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	default <V1, V2> BiConsumer<V1, V2> compose(java.util.function.ToLongBiFunction<V1, V2> composer) {
-		return new BiConsumer<>() {
+	static LongConsumer of(java.util.function.LongUnaryOperator before, java.util.function.LongConsumer after) {
+		return new LongConsumer() {
 			@Override
-			public void accept(V1 value1, V2 value2) {
-				LongConsumer.this.accept(composer.applyAsLong(value1, value2));
-			}
-		};
-	}
-
-	/**
-	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 * @param factory a factory of the function return value
-	 * @param <R> the return type
-	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 */
-	default <R> LongFunction<R> thenReturn(java.util.function.Supplier<R> factory) {
-		return new LongFunction<>() {
-			@Override
-			public R apply(long value) {
-				LongConsumer.this.accept(value);
-				return factory.get();
-			}
-		};
-	}
-
-	/**
-	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 * @param factory a factory of the function return value
-	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 */
-	default LongUnaryOperator thenReturnLong(java.util.function.LongSupplier factory) {
-		return new LongUnaryOperator() {
-			@Override
-			public long applyAsLong(long value) {
-				LongConsumer.this.accept(value);
-				return factory.getAsLong();
+			public void accept(long value) {
+				after.accept(before.applyAsLong(value));
 			}
 		};
 	}
@@ -147,14 +188,57 @@ public interface LongConsumer extends java.util.function.LongConsumer {
 	 * @param consumers a number of consumers
 	 * @return a composite consumer
 	 */
-	static LongConsumer acceptAll(Iterable<? extends LongConsumer> consumers) {
+	static LongConsumer of(Iterable<? extends java.util.function.LongConsumer> consumers) {
 		return new LongConsumer() {
 			@Override
 			public void accept(long value) {
-				for (LongConsumer consumer : consumers) {
+				for (java.util.function.LongConsumer consumer : consumers) {
 					consumer.accept(value);
 				}
 			}
 		};
+	}
+
+	/**
+	 * Returns a consumer that delegates to one of two consumers based on the specified predicate.
+	 * @param predicate a predicate
+	 * @param accepted the consumer to apply when accepted by the specified predicate
+	 * @param rejected the consumer to apply when rejected by the specified predicate
+	 * @return a consumer that delegates to one of two consumers based on the specified predicate.
+	 */
+	static LongConsumer when(java.util.function.LongPredicate predicate, java.util.function.LongConsumer accepted, java.util.function.LongConsumer rejected) {
+		return new LongConsumer() {
+			@Override
+			public void accept(long value) {
+				java.util.function.LongConsumer consumer = predicate.test(value) ? accepted : rejected;
+				consumer.accept(value);
+			}
+		};
+	}
+
+	/**
+	 * A consumer that does nothing, ignoring its parameter.
+	 */
+	class EmptyLongConsumer implements LongConsumer {
+		static final LongConsumer INSTANCE = new EmptyLongConsumer();
+
+		private EmptyLongConsumer() {
+			// Hide
+		}
+
+		@Override
+		public void accept(long value) {
+			// Do nothing
+		}
+
+		@Override
+		public LongConsumer andThen(java.util.function.LongConsumer after) {
+			return (after instanceof LongConsumer consumer) ? consumer : LongConsumer.of(after, Runner.of());
+		}
+
+		@Override
+		public Consumer<Long> box() {
+			return Consumer.of();
+		}
 	}
 }

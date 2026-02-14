@@ -25,6 +25,6 @@ public interface InfinispanSessionManagerParameters extends SessionManagerParame
 	}
 
 	default Runnable persistence(GlobalConfiguration global, PersistenceConfigurationBuilder builder) {
-		return Runner.empty();
+		return Runner.of();
 	}
 }

@@ -14,7 +14,6 @@ import java.util.function.DoubleFunction;
 import java.util.function.DoubleToIntFunction;
 import java.util.function.DoubleToLongFunction;
 import java.util.function.DoubleUnaryOperator;
-import java.util.function.ToDoubleFunction;
 
 import org.junit.jupiter.api.Test;
 
@@ -66,33 +65,6 @@ public class DoubleSupplierTestCase {
 		supplier.thenAccept(consumer).run();
 
 		verify(consumer).accept(value);
-	}
-
-	@Test
-	public void handle() {
-		double value = this.random.nextDouble();
-
-		DoubleSupplier supplier = mock(DoubleSupplier.class);
-
-		doCallRealMethod().when(supplier).handle(any());
-		doReturn(value).when(supplier).getAsDouble();
-
-		ToDoubleFunction<RuntimeException> handler = mock(ToDoubleFunction.class);
-		double handled = this.random.nextDouble();
-		RuntimeException exception = new RuntimeException();
-
-		assertThat(supplier.handle(handler).getAsDouble()).isEqualTo(value);
-
-		verify(supplier).getAsDouble();
-		verify(handler, never()).applyAsDouble(any());
-
-		doThrow(exception).when(supplier).getAsDouble();
-		doReturn(handled).when(handler).applyAsDouble(exception);
-
-		assertThat(supplier.handle(handler).getAsDouble()).isEqualTo(handled);
-
-		verify(supplier, times(2)).getAsDouble();
-		verify(handler).applyAsDouble(any());
 	}
 
 	@Test

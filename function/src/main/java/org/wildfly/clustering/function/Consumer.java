@@ -11,133 +11,75 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An enhanced unary consumer.
+ * A consumer accepting a single parameter.
  * @author Paul Ferraro
- * @param <T> the accepted type
+ * @param <V> the accepted type
  */
-public interface Consumer<T> extends java.util.function.Consumer<T> {
+public interface Consumer<V> extends java.util.function.Consumer<V>, ObjectOperation<V>, ToVoidOperation {
 
 	@Override
-	default Consumer<T> andThen(java.util.function.Consumer<? super T> after) {
-		return acceptAll(List.<java.util.function.Consumer<? super T>>of(this, after));
+	default Consumer<V> andThen(java.util.function.Consumer<? super V> after) {
+		return new CompositeConsumer<V>(List.of(this, after));
 	}
 
-	/**
-	 * Returns a consumer that conditionally invokes this consumer when allowed by the specified predicate.
-	 * @param predicate a predicate that determines whether or not to invoke this consumer
-	 * @return a consumer that conditionally invokes this consumer when allowed by the specified predicate.
-	 */
-	default Consumer<T> when(java.util.function.Predicate<T> predicate) {
-		return new Consumer<>() {
-			@Override
-			public void accept(T value) {
-				if (predicate.test(value)) {
-					Consumer.this.accept(value);
-				}
-			}
-		};
+	@Override
+	default <T> Consumer<T> compose(java.util.function.Function<? super T, ? extends V> before) {
+		return Consumer.of(before, this);
 	}
 
-	/**
-	 * Returns a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
-	 * @param predicate a predicate used to determine the parameter of this consumer
-	 * @param defaultValue a provider of the default parameter value
-	 * @return a consumer that accepts the value returned by the specified default provider if its value does not match the specified predicate.
-	 */
-	default Consumer<T> withDefault(java.util.function.Predicate<T> predicate, java.util.function.Supplier<T> defaultValue) {
-		return new Consumer<>() {
-			@Override
-			public void accept(T value) {
-				Consumer.this.accept(predicate.test(value) ? value : defaultValue.get());
-			}
-		};
+	@Override
+	default <T1, T2> BiConsumer<T1, T2> composeBinary(java.util.function.BiFunction<? super T1, ? super T2, ? extends V> before) {
+		return BiConsumer.of(before, this);
 	}
 
-	/**
-	 * Composes a consumer that invokes this consumer using result of the specified function.
-	 * @param <V> the mapped type
-	 * @param mapper a mapping function
-	 * @return a mapped consumer
-	 */
-	default <V> Consumer<V> compose(java.util.function.Function<V, T> mapper) {
-		return new Consumer<>() {
-			@Override
-			public void accept(V value) {
-				Consumer.this.accept(mapper.apply(value));
-			}
-		};
+	@Override
+	default BooleanConsumer composeBoolean(BooleanFunction<? extends V> before) {
+		return BooleanConsumer.of(before, this);
 	}
 
-	/**
-	 * Composes a binary consumer that invokes this consumer using result of the specified binary function.
-	 * @param <V1> the former parameter type
-	 * @param <V2> the latter parameter type
-	 * @param mapper a mapping function
-	 * @return a binary consumer that invokes this consumer using result of the specified binary function.
-	 */
-	default <V1, V2> BiConsumer<V1, V2> compose(java.util.function.BiFunction<V1, V2, T> mapper) {
-		return new BiConsumer<>() {
-			@Override
-			public void accept(V1 value1, V2 value2) {
-				Consumer.this.accept(mapper.apply(value1, value2));
-			}
-		};
+	@Override
+	default DoubleConsumer composeDouble(java.util.function.DoubleFunction<? extends V> before) {
+		return DoubleConsumer.of(before, this);
 	}
 
-	/**
-	 * Returns a new consumer that delegates to the specified handler in the event of an exception.
-	 * @param handler an exception handler
-	 * @return a new consumer that delegates to the specified handler in the event of an exception.
-	 */
-	default Consumer<T> handle(java.util.function.BiConsumer<T, RuntimeException> handler) {
-		return new Consumer<>() {
-			@Override
-			public void accept(T value) {
-				try {
-					Consumer.this.accept(value);
-				} catch (RuntimeException e) {
-					handler.accept(value, e);
-				}
-			}
-		};
+	@Override
+	default IntConsumer composeInt(java.util.function.IntFunction<? extends V> before) {
+		return IntConsumer.of(before, this);
 	}
 
-	/**
-	 * Returns a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 * @param factory a factory of the function return value
-	 * @param <R> the return type
-	 * @return a function that returns the value from the specified supplier after accepting its parameter via this consumer.
-	 */
-	default <R> Function<T, R> thenReturn(java.util.function.Supplier<R> factory) {
-		return new Function<>() {
-			@Override
-			public R apply(T value) {
-				Consumer.this.accept(value);
-				return factory.get();
-			}
-		};
+	@Override
+	default LongConsumer composeLong(java.util.function.LongFunction<? extends V> before) {
+		return LongConsumer.of(before, this);
 	}
 
-	/**
-	 * Returns a new consumer that accepts its value while holding the monitor returned by the specified function.
-	 * @param <M> a function returning an object monitor
-	 * @param monitorFunction a function returning an object monitor.
-	 * @return a new consumer that accepts its value while holding the monitor returned by the specified function.
-	 */
-	default <M> Consumer<T> withMonitor(java.util.function.Function<T, M> monitorFunction) {
-		return new Consumer<>() {
-			@Override
-			public void accept(T value) {
-				M monitor = monitorFunction.apply(value);
-				if (monitor != null) {
-					synchronized (monitor) {
-						Consumer.this.accept(value);
-					}
-				} else {
-					Consumer.this.accept(value);
-				}
-			}
-		};
+	@Override
+	default <R> Function<V, R> thenReturn(java.util.function.Supplier<? extends R> factory) {
+		return Function.of(this, factory);
+	}
+
+	@Override
+	default Predicate<V> thenReturnBoolean(java.util.function.BooleanSupplier after) {
+		return Predicate.of(this, after);
+	}
+
+	@Override
+	default ToDoubleFunction<V> thenReturnDouble(java.util.function.DoubleSupplier after) {
+		return ToDoubleFunction.of(this, after);
+	}
+
+	@Override
+	default ToIntFunction<V> thenReturnInt(java.util.function.IntSupplier after) {
+		return ToIntFunction.of(this, after);
+	}
+
+	@Override
+	default ToLongFunction<V> thenReturnLong(java.util.function.LongSupplier after) {
+		return ToLongFunction.of(this, after);
+	}
+
+	@Override
+	default Consumer<V> thenRun(Runnable after) {
+		return Consumer.of(this, after);
 	}
 
 	/**
@@ -145,8 +87,9 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param <V> the consumed type
 	 * @return an empty consumer
 	 */
-	static <V> Consumer<V> empty() {
-		return Consumers.EMPTY.cast();
+	@SuppressWarnings("unchecked")
+	static <V> Consumer<V> of() {
+		return (Consumer<V>) EmptyConsumer.INSTANCE;
 	}
 
 	/**
@@ -154,8 +97,29 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param <V> the auto-closeable type
 	 * @return an closing consumer
 	 */
+	@SuppressWarnings("unchecked")
 	static <V extends AutoCloseable> Consumer<V> close() {
-		return close(warning());
+		return (Consumer<V>) AutoCloseableConsumer.WARN;
+	}
+
+	/**
+	 * Returns a consumer that silently closes its object using the specified exception handler.
+	 * @param <V> the auto-closeable type
+	 * @param handler an exception handler
+	 * @return a silent closing consumer
+	 */
+	static <V extends AutoCloseable> Consumer<V> close(java.util.function.Consumer<? super Exception> handler) {
+		return new AutoCloseableConsumer<>(handler);
+	}
+
+	/**
+	 * Returns a consumer that silently closes its object using the specified exception handler.
+	 * @param <V> the auto-closeable type
+	 * @param handler an exception handler
+	 * @return a silent closing consumer
+	 */
+	static <V extends AutoCloseable> Consumer<V> close(java.util.function.BiConsumer<? super V, ? super Exception> handler) {
+		return new AutoCloseableConsumer<>(handler);
 	}
 
 	/**
@@ -205,37 +169,99 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	}
 
 	/**
-	 * Returns a consumer that silently closes its object using the specified exception handler.
-	 * @param <V> the auto-closeable type
-	 * @param handler an exception handler
-	 * @return a silent closing consumer
+	 * Returns a consumer combining the specified operations.
+	 * @param <V> the consumed type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
 	 */
-	static <V extends AutoCloseable> Consumer<V> close(java.util.function.Consumer<Exception> handler) {
+	static <V> Consumer<V> of(java.util.function.Consumer<? super V> before, java.lang.Runnable after) {
 		return new Consumer<>() {
 			@Override
-			public void accept(AutoCloseable object) {
-				if (object != null) {
-					try {
-						object.close();
-					} catch (Exception e) {
-						handler.accept(e);
-					}
-				}
+			public void accept(V value) {
+				before.accept(value);
+				after.run();
 			}
 		};
 	}
 
 	/**
-	 * Returns a consumer that runs the specified task, ignoring its parameter.
-	 * @param <V> the ignored parameter type
-	 * @param task a runnable task
-	 * @return a consumer that runs the specified task, ignoring its parameter.
+	 * Returns a consumer combining the specified operations.
+	 * @param <V> the consumed type
+	 * @param <R> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
 	 */
-	static <V> Consumer<V> run(java.lang.Runnable task) {
+	static <V, R> Consumer<V> of(java.util.function.Function<? super V, ? extends R> before, java.util.function.Consumer<? super R> after) {
 		return new Consumer<>() {
 			@Override
-			public void accept(V ignored) {
-				task.run();
+			public void accept(V value) {
+				after.accept(before.apply(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer combining the specified operations.
+	 * @param <V> the consumed type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
+	 */
+	static <V> Consumer<V> of(java.util.function.Predicate<? super V> before, BooleanConsumer after) {
+		return new Consumer<>() {
+			@Override
+			public void accept(V value) {
+				after.accept(before.test(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer combining the specified operations.
+	 * @param <V> the consumed type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
+	 */
+	static <V> Consumer<V> of(java.util.function.ToDoubleFunction<? super V> before, java.util.function.DoubleConsumer after) {
+		return new Consumer<>() {
+			@Override
+			public void accept(V value) {
+				after.accept(before.applyAsDouble(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer combining the specified operations.
+	 * @param <V> the consumed type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
+	 */
+	static <V> Consumer<V> of(java.util.function.ToIntFunction<? super V> before, java.util.function.IntConsumer after) {
+		return new Consumer<>() {
+			@Override
+			public void accept(V value) {
+				after.accept(before.applyAsInt(value));
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer combining the specified operations.
+	 * @param <V> the consumed type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
+	 */
+	static <V> Consumer<V> of(java.util.function.ToLongFunction<? super V> before, java.util.function.LongConsumer after) {
+		return new Consumer<>() {
+			@Override
+			public void accept(V value) {
+				after.accept(before.applyAsLong(value));
 			}
 		};
 	}
@@ -246,7 +272,7 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	 * @param consumers zero or more consumers
 	 * @return a composite consumer
 	 */
-	static <V> Consumer<V> acceptAll(Iterable<? extends java.util.function.Consumer<? super V>> consumers) {
+	static <V> Consumer<V> of(Iterable<? extends java.util.function.Consumer<? super V>> consumers) {
 		return new Consumer<>() {
 			@Override
 			public void accept(V value) {
@@ -258,16 +284,19 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 	}
 
 	/**
-	 * Returns a consumer that wraps an exception as a runtime exception via the specified factory.
-	 * @param <E> the exception type
-	 * @param exceptionFactory a runtime exception wrapper
-	 * @return a consumer that wraps an exception as a runtime exception via the specified factory.
+	 * Returns a consumer that delegates to one of two consumers based on the specified predicate.
+	 * @param <T> the consumer parameter type
+	 * @param predicate a predicate
+	 * @param accepted the consumer to apply when accepted by the specified predicate
+	 * @param rejected the consumer to apply when rejected by the specified predicate
+	 * @return a consumer that delegates to one of two consumers based on the specified predicate.
 	 */
-	static <E extends Throwable> Consumer<E> throwing(java.util.function.Function<E, ? extends RuntimeException> exceptionFactory) {
+	static <T> Consumer<T> when(java.util.function.Predicate<? super T> predicate, java.util.function.Consumer<? super T> accepted, java.util.function.Consumer<? super T> rejected) {
 		return new Consumer<>() {
 			@Override
-			public void accept(E exception) {
-				throw exceptionFactory.apply(exception);
+			public void accept(T value) {
+				java.util.function.Consumer<? super T> consumer = predicate.test(value) ? accepted : rejected;
+				consumer.accept(value);
 			}
 		};
 	}
@@ -300,6 +329,77 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 		public void accept(E exception) {
 			if (exception != null) {
 				LOGGER.log(this.level, exception.getLocalizedMessage(), exception);
+			}
+		}
+	}
+
+	/**
+	 * A consumer that does nothing, ignoring its parameter.
+	 * @param <T> the consumed type
+	 */
+	class EmptyConsumer<T> implements Consumer<T> {
+		static final Consumer<?> INSTANCE = new EmptyConsumer<>();
+
+		private EmptyConsumer() {
+			// Hide
+		}
+
+		@Override
+		public void accept(T ignore) {
+			// Do nothing
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public Consumer<T> andThen(java.util.function.Consumer<? super T> after) {
+			return (after instanceof Consumer<? super T> consumer) ? (Consumer<T>) consumer : after::accept;
+		}
+	}
+
+	/**
+	 * An auto-closing consumer.
+	 * @param <T> the auto-closable type
+	 */
+	class AutoCloseableConsumer<T extends AutoCloseable> implements Consumer<T> {
+		static final Consumer<AutoCloseable> WARN = new AutoCloseableConsumer<>(warning());
+
+		private final java.util.function.BiConsumer<? super T, ? super Exception> handler;
+
+		AutoCloseableConsumer(java.util.function.Consumer<? super Exception> handler) {
+			this.handler = BiConsumer.of(Consumer.of(), handler);
+		}
+
+		AutoCloseableConsumer(java.util.function.BiConsumer<? super T, ? super Exception> handler) {
+			this.handler = handler;
+		}
+
+		@Override
+		public void accept(T value) {
+			if (value != null) {
+				try {
+					value.close();
+				} catch (Exception e) {
+					this.handler.accept(value, e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * A composite consumer.
+	 * @param <T> the consumed type
+	 */
+	class CompositeConsumer<T> implements Consumer<T> {
+		private final Iterable<? extends java.util.function.Consumer<? super T>> consumers;
+
+		CompositeConsumer(Iterable<? extends java.util.function.Consumer<? super T>> consumers) {
+			this.consumers = consumers;
+		}
+
+		@Override
+		public void accept(T value) {
+			for (java.util.function.Consumer<? super T> consumer : this.consumers) {
+				consumer.accept(value);
 			}
 		}
 	}

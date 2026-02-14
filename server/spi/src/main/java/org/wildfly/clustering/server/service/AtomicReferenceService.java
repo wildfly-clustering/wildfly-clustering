@@ -35,7 +35,7 @@ public class AtomicReferenceService<T extends AutoCloseable> implements Service 
 	 * @param reference a reference to the service value
 	 */
 	public AtomicReferenceService(Supplier<T> factory, AtomicReference<T> reference) {
-		this.update = UnaryOperator.<T>identity().orDefault(Objects::nonNull, factory);
+		this.update = UnaryOperator.when(Objects::nonNull, UnaryOperator.identity(), UnaryOperator.of(Consumer.of(), factory));
 		this.reference = reference;
 	}
 

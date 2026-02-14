@@ -17,10 +17,10 @@ import org.wildfly.clustering.function.Supplier;
  */
 public interface Context<T> extends Supplier<T>, AutoCloseable {
 	/** An empty context */
-	Context<?> EMPTY = of(null, Runner.empty());
+	Context<?> EMPTY = of(null, Runner.of());
 
 	@Override
-	default <R> Context<R> thenApply(Function<T, R> function) {
+	default <R> Context<R> thenApply(Function<? super T, ? extends R> function) {
 		return new Context<>() {
 			@Override
 			public R get() {

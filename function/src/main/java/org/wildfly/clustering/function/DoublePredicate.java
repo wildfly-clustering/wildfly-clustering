@@ -6,14 +6,10 @@
 package org.wildfly.clustering.function;
 
 /**
- * An enhanced double predicate.
+ * A predicate for a double value.
  * @author Paul Ferraro
  */
-public interface DoublePredicate extends java.util.function.DoublePredicate {
-	/** A predicate that always returns true */
-	DoublePredicate ALWAYS = of(DoubleConsumer.EMPTY, BooleanSupplier.TRUE);
-	/** A predicate that always returns false */
-	DoublePredicate NEVER = of(DoubleConsumer.EMPTY, BooleanSupplier.FALSE);
+public interface DoublePredicate extends java.util.function.DoublePredicate, DoubleOperation, PrimitivePredicate<Double, java.util.function.DoublePredicate> {
 	/** A predicate that returns true if its parameter is greater than zero. */
 	DoublePredicate POSITIVE = greaterThan(0d);
 	/** A predicate that returns true if its parameter is zero. */
@@ -21,61 +17,9 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
 	/** A predicate that returns true if its parameter is less than zero. */
 	DoublePredicate NEGATIVE = lessThan(0d);
 
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param <V> the mapped type
-	 * @param function a mapping function
-	 * @return a mapped predicate
-	 */
-	default <V> Predicate<V> compose(java.util.function.ToDoubleFunction<V> function) {
-		return new Predicate<>() {
-			@Override
-			public boolean test(V value) {
-				return DoublePredicate.this.test(function.applyAsDouble(value));
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping operator
-	 * @return a mapped predicate
-	 */
-	default DoublePredicate composeDouble(java.util.function.DoubleUnaryOperator function) {
-		return new DoublePredicate() {
-			@Override
-			public boolean test(double value) {
-				return DoublePredicate.this.test(function.applyAsDouble(value));
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping function
-	 * @return a mapped predicate
-	 */
-	default IntPredicate composeInt(java.util.function.IntToDoubleFunction function) {
-		return new IntPredicate() {
-			@Override
-			public boolean test(int value) {
-				return DoublePredicate.this.test(function.applyAsDouble(value));
-			}
-		};
-	}
-
-	/**
-	 * Returns a predicate that applies the specified function to its argument before evaluating.
-	 * @param function a mapping function
-	 * @return a mapped predicate
-	 */
-	default LongPredicate composeLong(java.util.function.LongToDoubleFunction function) {
-		return new LongPredicate() {
-			@Override
-			public boolean test(long value) {
-				return DoublePredicate.this.test(function.applyAsDouble(value));
-			}
-		};
+	@Override
+	default Predicate<Double> box() {
+		return this.compose(DoubleUnaryOperator.identity().box());
 	}
 
 	@Override
@@ -108,18 +52,69 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
 		};
 	}
 
-	/**
-	 * Returns a predicate returning the exclusive disjunction of this predicate with the specified predicate.
-	 * @param other another predicate
-	 * @return a predicate returning the exclusive disjunction of this predicate with the specified predicate.
-	 */
-	default DoublePredicate xor(java.util.function.DoublePredicate other) {
-		return new DoublePredicate() {
-			@Override
-			public boolean test(double value) {
-				return DoublePredicate.this.test(value) ^ other.test(value);
-			}
-		};
+	@Override
+	default <V> Predicate<V> compose(java.util.function.ToDoubleFunction<? super V> before) {
+		return Predicate.of(before, this);
+	}
+
+	@Override
+	default <V1, V2> BiPredicate<V1, V2> composeBinary(java.util.function.ToDoubleBiFunction<? super V1, ? super V2> before) {
+		return BiPredicate.of(before, this);
+	}
+
+	@Override
+	default BooleanPredicate composeBoolean(BooleanToDoubleFunction before) {
+		return BooleanPredicate.of(before, this);
+	}
+
+	@Override
+	default DoublePredicate composeDouble(java.util.function.DoubleUnaryOperator before) {
+		return DoublePredicate.of(before, this);
+	}
+
+	@Override
+	default IntPredicate composeInt(java.util.function.IntToDoubleFunction before) {
+		return IntPredicate.of(before, this);
+	}
+
+	@Override
+	default LongPredicate composeLong(java.util.function.LongToDoubleFunction before) {
+		return LongPredicate.of(before, this);
+	}
+
+	@Override
+	default DoubleConsumer thenAccept(BooleanConsumer after) {
+		return DoubleConsumer.of(this, after);
+	}
+
+	@Override
+	default <R> DoubleFunction<R> thenApply(BooleanFunction<? extends R> after) {
+		return DoubleFunction.of(this, after);
+	}
+
+	@Override
+	default DoubleUnaryOperator thenApplyAsDouble(BooleanToDoubleFunction after) {
+		return DoubleUnaryOperator.of(this, after);
+	}
+
+	@Override
+	default DoubleToIntFunction thenApplyAsInt(BooleanToIntFunction after) {
+		return DoubleToIntFunction.of(this, after);
+	}
+
+	@Override
+	default DoubleToLongFunction thenApplyAsLong(BooleanToLongFunction after) {
+		return DoubleToLongFunction.of(this, after);
+	}
+
+	@Override
+	default DoubleFunction<Boolean> thenBox() {
+		return this.thenApply(BooleanPredicate.identity().thenBox());
+	}
+
+	@Override
+	default DoublePredicate thenTest(BooleanPredicate after) {
+		return DoublePredicate.of(this, after);
 	}
 
 	/**
@@ -128,21 +123,97 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
 	 * @return a predicate that always evaluates to the specified value.
 	 */
 	static DoublePredicate of(boolean result) {
-		return result ? DoublePredicate.ALWAYS : DoublePredicate.NEVER;
+		return result ? SimpleDoublePredicate.ALWAYS : SimpleDoublePredicate.NEVER;
 	}
 
 	/**
-	 * Returns a predicate that accepts its parameter via the specified consumer and returns the result of the specified supplier.
-	 * @param consumer the predicate parameter consumer
-	 * @param supplier the predicate result supplier
-	 * @return a predicate that accepts its parameter via the specified consumer and returns the result of the specified supplier.
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
 	 */
-	static DoublePredicate of(java.util.function.DoubleConsumer consumer, java.util.function.BooleanSupplier supplier) {
+	static DoublePredicate of(java.util.function.DoubleConsumer before, java.util.function.BooleanSupplier after) {
 		return new DoublePredicate() {
 			@Override
 			public boolean test(double value) {
-				consumer.accept(value);
-				return supplier.getAsBoolean();
+				before.accept(value);
+				return after.getAsBoolean();
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static DoublePredicate of(java.util.function.DoublePredicate before, BooleanPredicate after) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				return after.test(before.test(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> DoublePredicate of(java.util.function.DoubleFunction<? extends T> before, java.util.function.Predicate<? super T> after) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				return after.test(before.apply(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static DoublePredicate of(java.util.function.DoubleUnaryOperator before, java.util.function.DoublePredicate after) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				return after.test(before.applyAsDouble(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static DoublePredicate of(java.util.function.DoubleToIntFunction before, java.util.function.IntPredicate after) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				return after.test(before.applyAsInt(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static DoublePredicate of(java.util.function.DoubleToLongFunction before, java.util.function.LongPredicate after) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				return after.test(before.applyAsLong(value));
 			}
 		};
 	}
@@ -187,5 +258,49 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
 				return Double.compare(value, base) > 0;
 			}
 		};
+	}
+
+	/**
+	 * A predicate that evaluates to a fixed value.
+	 */
+	class SimpleDoublePredicate implements DoublePredicate {
+		static final DoublePredicate ALWAYS = new SimpleDoublePredicate(true);
+		static final DoublePredicate NEVER = new SimpleDoublePredicate(false);
+
+		private final boolean result;
+
+		private SimpleDoublePredicate(boolean result) {
+			this.result = result;
+		}
+
+		@Override
+		public boolean test(double value) {
+			return this.result;
+		}
+
+		@Override
+		public DoublePredicate and(java.util.function.DoublePredicate other) {
+			return this.result ? ((other instanceof DoublePredicate predicate) ? predicate : other::test) : NEVER;
+		}
+
+		@Override
+		public DoublePredicate negate() {
+			return this.result ? NEVER : ALWAYS;
+		}
+
+		@Override
+		public DoublePredicate or(java.util.function.DoublePredicate other) {
+			return this.result ? ALWAYS : ((other instanceof DoublePredicate predicate) ? predicate : other::test);
+		}
+
+		@Override
+		public Predicate<Double> box() {
+			return Predicate.of(this.result);
+		}
+
+		@Override
+		public DoubleFunction<Boolean> thenBox() {
+			return DoubleFunction.of(Boolean.valueOf(this.result));
+		}
 	}
 }

@@ -12,8 +12,6 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -58,7 +56,7 @@ public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
 			case NEGATIVE_SECONDS_INDEX -> duration.withSeconds(0 - reader.readUInt64());
 			case MILLIS_INDEX -> withMillis(duration, reader.readUInt32());
 			case NANOS_INDEX -> withNanos(duration, reader.readUInt32());
-			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(duration)).get();
+			default -> reader.skipField(type, duration);
 		};
 	}
 

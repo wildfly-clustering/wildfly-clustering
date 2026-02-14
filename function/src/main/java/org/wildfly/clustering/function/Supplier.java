@@ -9,117 +9,85 @@ import java.util.AbstractMap;
 import java.util.Map;
 
 /**
- * An enhanced supplier.
+ * A supplier of a value.
  * @author Paul Ferraro
- * @param <T> the supplied type
+ * @param <V> the supplied type
  */
-public interface Supplier<T> extends java.util.function.Supplier<T> {
+public interface Supplier<V> extends java.util.function.Supplier<V>, VoidOperation, ToObjectOperation<V> {
 
-	/**
-	 * Returns a {@link Runnable} that consumes the supplied value.
-	 * @param consumer a consumer of the supplied value
-	 * @return a {@link Runnable} that consumes the supplied value.
-	 */
-	default Runner thenAccept(Consumer<T> consumer) {
-		return Runner.accept(consumer, this);
+	@Override
+	default Supplier<V> compose(Runnable before) {
+		return Supplier.of(before, this);
 	}
 
-	/**
-	 * Returns a supplier that returns the value this supplier mapped via the specified function.
-	 * @param <R> the mapped value type
-	 * @param function a mapping function
-	 * @return a supplier that returns the value this supplier mapped via the specified function.
-	 */
-	default <R> Supplier<R> thenApply(java.util.function.Function<T, R> function) {
+	@Override
+	default <T> Function<T, V> compose(java.util.function.Consumer<? super T> before) {
+		return Function.of(before, this);
+	}
+
+	@Override
+	default <T1, T2> BiFunction<T1, T2, V> composeBinary(java.util.function.BiConsumer<? super T1, ? super T2> before) {
+		return BiFunction.of(before, this);
+	}
+
+	@Override
+	default BooleanFunction<V> composeBoolean(BooleanConsumer before) {
+		return BooleanFunction.of(before, this);
+	}
+
+	@Override
+	default DoubleFunction<V> composeDouble(java.util.function.DoubleConsumer before) {
+		return DoubleFunction.of(before, this);
+	}
+
+	@Override
+	default IntFunction<V> composeInt(java.util.function.IntConsumer before) {
+		return IntFunction.of(before, this);
+	}
+
+	@Override
+	default LongFunction<V> composeLong(java.util.function.LongConsumer before) {
+		return LongFunction.of(before, this);
+	}
+
+	@Override
+	default Runner thenAccept(java.util.function.Consumer<? super V> after) {
+		return Runner.of(this, after);
+	}
+
+	@Override
+	default <R> Supplier<R> thenApply(java.util.function.Function<? super V, ? extends R> after) {
+		return of(this, after);
+	}
+
+	@Override
+	default DoubleSupplier thenApplyAsDouble(java.util.function.ToDoubleFunction<? super V> after) {
+		return DoubleSupplier.of(this, after);
+	}
+
+	@Override
+	default IntSupplier thenApplyAsInt(java.util.function.ToIntFunction<? super V> after) {
+		return IntSupplier.of(this, after);
+	}
+
+	@Override
+	default LongSupplier thenApplyAsLong(java.util.function.ToLongFunction<? super V> after) {
+		return LongSupplier.of(this, after);
+	}
+
+	@Override
+	default BooleanSupplier thenTest(java.util.function.Predicate<? super V> after) {
+		return BooleanSupplier.of(this, after);
+	}
+
+	@Override
+	default Supplier<V> thenThrow(java.util.function.Function<? super V, ? extends RuntimeException> exception) {
 		return new Supplier<>() {
 			@Override
-			public R get() {
-				return function.apply(Supplier.this.get());
+			public V get() {
+				throw exception.apply(Supplier.this.get());
 			}
 		};
-	}
-
-	/**
-	 * Returns a supplier that returns the value this supplier mapped via the specified function.
-	 * @param mapper a mapping function
-	 * @return a supplier that returns the value this supplier mapped via the specified function.
-	 */
-	default DoubleSupplier thenApplyAsDouble(java.util.function.ToDoubleFunction<T> mapper) {
-		return new DoubleSupplier() {
-			@Override
-			public double getAsDouble() {
-				return mapper.applyAsDouble(Supplier.this.get());
-			}
-		};
-	}
-
-	/**
-	 * Returns a supplier that returns the value this supplier mapped via the specified function.
-	 * @param mapper a mapping function
-	 * @return a supplier that returns the value this supplier mapped via the specified function.
-	 */
-	default IntSupplier thenApplyAsInt(java.util.function.ToIntFunction<T> mapper) {
-		return new IntSupplier() {
-			@Override
-			public int getAsInt() {
-				return mapper.applyAsInt(Supplier.this.get());
-			}
-		};
-	}
-
-	/**
-	 * Returns a supplier that returns the value this supplier mapped via the specified function.
-	 * @param mapper a mapping function
-	 * @return a supplier that returns the value this supplier mapped via the specified function.
-	 */
-	default LongSupplier thenApplyAsLong(java.util.function.ToLongFunction<T> mapper) {
-		return new LongSupplier() {
-			@Override
-			public long getAsLong() {
-				return mapper.applyAsLong(Supplier.this.get());
-			}
-		};
-	}
-
-	/**
-	 * Returns a supplier that returns the value this supplier mapped via the specified predicate.
-	 * @param predicate a mapping predicate
-	 * @return a supplier that returns the value this supplier mapped via the specified predicate.
-	 */
-	default BooleanSupplier thenTest(java.util.function.Predicate<T> predicate) {
-		return new BooleanSupplier() {
-			@Override
-			public boolean getAsBoolean() {
-				return predicate.test(Supplier.this.get());
-			}
-		};
-	}
-
-	/**
-	 * Returns a new supplier that delegates to this supplier using the specified exception handler.
-	 * @param handler an exception handler
-	 * @return a new supplier that delegates to this supplier using the specified exception handler.
-	 */
-	default Supplier<T> handle(java.util.function.Function<RuntimeException, T> handler) {
-		return new Supplier<>() {
-			@Override
-			public T get() {
-				try {
-					return Supplier.this.get();
-				} catch (RuntimeException e) {
-					return handler.apply(e);
-				}
-			}
-		};
-	}
-
-	/**
-	 * Returns a supplier that always returns the specified value.
-	 * @param <T> the supplied type
-	 * @return a supplier that always returns the specified value.
-	 */
-	static <T> Supplier<T> empty() {
-		return Suppliers.NULL.cast();
 	}
 
 	/**
@@ -128,49 +96,107 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 	 * @param value the supplied value
 	 * @return a supplier that always returns the specified value.
 	 */
+	@SuppressWarnings("unchecked")
 	static <T> Supplier<T> of(T value) {
-		return (value != null) ? new Supplier<>() {
-			@Override
-			public T get() {
-				return value;
-			}
-		} : empty();
+		return (value != null) ? new SimpleSupplier<>(value) : (Supplier<T>) SimpleSupplier.NULL;
 	}
 
 	/**
-	 * Returns a supplier that returns null after invoking the specified task.
-	 * @param <T> the supplied type
-	 * @param task the task to run
-	 * @return a supplier that returns null after invoking the specified task.
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
 	 */
-	static <T> Supplier<T> run(java.lang.Runnable task) {
-		return (task != null) ? new Supplier<>() {
+	static <T> Supplier<T> of(Runnable before, java.util.function.Supplier<? extends T> after) {
+		return new Supplier<>() {
 			@Override
 			public T get() {
-				task.run();
-				return null;
+				before.run();
+				return after.get();
 			}
-		} : empty();
+		};
 	}
 
 	/**
-	 * Returns a supplier that delegates to the specified caller using the specified exception handler.
-	 * @param <T> the supplied type
-	 * @param caller the caller to call
-	 * @param handler an exception handler
-	 * @return a supplier that delegates to the specified caller using the specified exception handler.
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the intermediate type
+	 * @param <R> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
 	 */
-	static <T> Supplier<T> call(java.util.concurrent.Callable<T> caller, java.util.function.Function<Exception, T> handler) {
-		return (caller != null) ? new Supplier<>() {
+	static <T, R> Supplier<R> of(java.util.function.Supplier<? extends T> before, java.util.function.Function<? super T, ? extends R> after) {
+		return new Supplier<>() {
+			@Override
+			public R get() {
+				return after.apply(before.get());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static <T> Supplier<T> of(java.util.function.BooleanSupplier before, BooleanFunction<? extends T> after) {
+		return new Supplier<>() {
 			@Override
 			public T get() {
-				try {
-					return caller.call();
-				} catch (Exception e) {
-					return handler.apply(e);
-				}
+				return after.apply(before.getAsBoolean());
 			}
-		} : empty();
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static <T> Supplier<T> of(java.util.function.DoubleSupplier before, java.util.function.DoubleFunction<? extends T> after) {
+		return new Supplier<>() {
+			@Override
+			public T get() {
+				return after.apply(before.getAsDouble());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static <T> Supplier<T> of(java.util.function.IntSupplier before, java.util.function.IntFunction<? extends T> after) {
+		return new Supplier<>() {
+			@Override
+			public T get() {
+				return after.apply(before.getAsInt());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static <T> Supplier<T> of(java.util.function.LongSupplier before, java.util.function.LongFunction<? extends T> after) {
+		return new Supplier<>() {
+			@Override
+			public T get() {
+				return after.apply(before.getAsLong());
+			}
+		};
 	}
 
 	/**
@@ -188,5 +214,24 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 				return new AbstractMap.SimpleImmutableEntry<>(key.get(), value.get());
 			}
 		};
+	}
+
+	/**
+	 * A supplier returning a fixed value.
+	 * @param <T> the return type
+	 */
+	class SimpleSupplier<T> implements Supplier<T> {
+		static final Supplier<?> NULL = new SimpleSupplier<>(null);
+
+		private final T value;
+
+		SimpleSupplier(T value) {
+			this.value = value;
+		}
+
+		@Override
+		public T get() {
+			return this.value;
+		}
 	}
 }

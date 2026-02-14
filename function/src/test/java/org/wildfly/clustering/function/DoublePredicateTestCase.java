@@ -28,13 +28,6 @@ public class DoublePredicateTestCase {
 	public void test() {
 		double positive = this.random.nextDouble() + 1d;
 		double negative = this.random.nextDouble() - 1d;
-		assertThat(DoublePredicate.ALWAYS.test(negative)).isTrue();
-		assertThat(DoublePredicate.ALWAYS.test(0d)).isTrue();
-		assertThat(DoublePredicate.ALWAYS.test(positive)).isTrue();
-
-		assertThat(DoublePredicate.NEVER.test(negative)).isFalse();
-		assertThat(DoublePredicate.NEVER.test(0d)).isFalse();
-		assertThat(DoublePredicate.NEVER.test(positive)).isFalse();
 
 		assertThat(DoublePredicate.of(true).test(negative)).isTrue();
 		assertThat(DoublePredicate.of(true).test(0d)).isTrue();
@@ -93,8 +86,8 @@ public class DoublePredicateTestCase {
 	@Test
 	public void negate() {
 		double value = this.random.nextDouble();
-		assertThat(DoublePredicate.ALWAYS.negate().test(value)).isFalse();
-		assertThat(DoublePredicate.NEVER.negate().test(value)).isTrue();
+		assertThat(DoublePredicate.of(true).negate().test(value)).isFalse();
+		assertThat(DoublePredicate.of(false).negate().test(value)).isTrue();
 	}
 
 	@Test
@@ -167,25 +160,5 @@ public class DoublePredicateTestCase {
 		doReturn(expected).when(predicate).test(mapped);
 
 		assertThat(predicate.composeLong(function).test(value)).isEqualTo(expected);
-	}
-
-	@Test
-	public void xor() {
-		DoublePredicate predicate1 = mock(DoublePredicate.class);
-		DoublePredicate predicate2 = mock(DoublePredicate.class);
-
-		doCallRealMethod().when(predicate1).xor(any());
-
-		DoublePredicate predicate = predicate1.xor(predicate2);
-
-		double value = this.random.nextDouble();
-
-		doReturn(false, true, false, true).when(predicate1).test(value);
-		doReturn(false, false, true, true).when(predicate2).test(value);
-
-		assertThat(predicate.test(value)).isFalse();
-		assertThat(predicate.test(value)).isTrue();
-		assertThat(predicate.test(value)).isTrue();
-		assertThat(predicate.test(value)).isFalse();
 	}
 }

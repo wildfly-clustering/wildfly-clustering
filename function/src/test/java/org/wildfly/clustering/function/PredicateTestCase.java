@@ -16,6 +16,7 @@ import java.util.function.IntFunction;
 import java.util.function.LongFunction;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 /**
  * Unit test for {@link Predicate}.
@@ -27,10 +28,6 @@ public class PredicateTestCase {
 	@Test
 	public void test() {
 		UUID value = UUID.randomUUID();
-		assertThat(Predicate.always().test(value)).isTrue();
-		assertThat(Predicate.always().test(null)).isTrue();
-		assertThat(Predicate.never().test(value)).isFalse();
-		assertThat(Predicate.never().test(null)).isFalse();
 		assertThat(Predicate.of(true).test(value)).isTrue();
 		assertThat(Predicate.of(true).test(null)).isTrue();
 		assertThat(Predicate.of(false).test(value)).isFalse();
@@ -98,7 +95,7 @@ public class PredicateTestCase {
 	public void compose() {
 		Predicate<UUID> predicate = mock(Predicate.class);
 
-		doCallRealMethod().when(predicate).compose(any());
+		doCallRealMethod().when(predicate).compose(ArgumentMatchers.<Function<UUID, UUID>>any());
 
 		UUID value = UUID.randomUUID();
 		UUID mapped = UUID.randomUUID();
@@ -116,7 +113,7 @@ public class PredicateTestCase {
 	public void composeDouble() {
 		Predicate<UUID> predicate = mock(Predicate.class);
 
-		doCallRealMethod().when(predicate).composeDouble(any());
+		doCallRealMethod().when(predicate).composeDouble(ArgumentMatchers.<DoubleFunction<UUID>>any());
 
 		double value = this.random.nextDouble();
 		UUID mapped = UUID.randomUUID();
@@ -134,7 +131,7 @@ public class PredicateTestCase {
 	public void composeInt() {
 		Predicate<UUID> predicate = mock(Predicate.class);
 
-		doCallRealMethod().when(predicate).composeInt(any());
+		doCallRealMethod().when(predicate).composeInt(ArgumentMatchers.<IntFunction<UUID>>any());
 
 		int value = this.random.nextInt();
 		UUID mapped = UUID.randomUUID();
@@ -152,7 +149,7 @@ public class PredicateTestCase {
 	public void composeLong() {
 		Predicate<UUID> predicate = mock(Predicate.class);
 
-		doCallRealMethod().when(predicate).composeLong(any());
+		doCallRealMethod().when(predicate).composeLong(ArgumentMatchers.<LongFunction<UUID>>any());
 
 		long value = this.random.nextLong();
 		UUID mapped = UUID.randomUUID();
@@ -170,7 +167,7 @@ public class PredicateTestCase {
 	public void composeBinary() {
 		Predicate<UUID> predicate = mock(Predicate.class);
 
-		doCallRealMethod().when(predicate).composeBinary(any());
+		doCallRealMethod().when(predicate).composeBinary(ArgumentMatchers.<BiFunction<UUID, UUID, UUID>>any());
 
 		UUID value1 = UUID.randomUUID();
 		UUID value2 = UUID.randomUUID();
@@ -183,48 +180,6 @@ public class PredicateTestCase {
 		doReturn(expected).when(predicate).test(mapped);
 
 		assertThat(predicate.composeBinary(function).test(value1, value2)).isEqualTo(expected);
-	}
-
-	@Test
-	public void handle() {
-		Predicate<UUID> predicate = mock(Predicate.class);
-		BiPredicate<UUID, RuntimeException> handler = mock(BiPredicate.class);
-		doCallRealMethod().when(predicate).handle(any());
-
-		UUID goodValue = UUID.randomUUID();
-		UUID badValue = UUID.randomUUID();
-		RuntimeException exception = new RuntimeException();
-
-		doReturn(false).when(predicate).test(goodValue);
-		doThrow(exception).when(predicate).test(badValue);
-		doReturn(true).when(handler).test(badValue, exception);
-
-		assertThat(predicate.handle(handler).test(goodValue)).isFalse();
-		assertThat(predicate.handle(handler).test(badValue)).isTrue();
-
-		verify(predicate).test(goodValue);
-		verify(predicate).test(badValue);
-		verify(handler).test(badValue, exception);
-	}
-
-	@Test
-	public void xor() {
-		Predicate<UUID> predicate1 = mock(Predicate.class);
-		Predicate<UUID> predicate2 = mock(Predicate.class);
-
-		doCallRealMethod().when(predicate1).xor(any());
-
-		Predicate<UUID> predicate = predicate1.xor(predicate2);
-
-		UUID value = UUID.randomUUID();
-
-		doReturn(false, true, false, true).when(predicate1).test(value);
-		doReturn(false, false, true, true).when(predicate2).test(value);
-
-		assertThat(predicate.test(value)).isFalse();
-		assertThat(predicate.test(value)).isTrue();
-		assertThat(predicate.test(value)).isTrue();
-		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@Test

@@ -10,8 +10,6 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoField;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -54,7 +52,7 @@ public enum LocalTimeMarshaller implements FieldSetMarshaller.Simple<LocalTime> 
 			case SECONDS_OF_DAY_INDEX -> time.with(ChronoField.SECOND_OF_DAY, reader.readUInt32());
 			case MILLIS_INDEX -> time.with(ChronoField.MILLI_OF_SECOND, reader.readUInt32());
 			case NANOS_INDEX -> time.withNano(reader.readUInt32());
-			default -> Supplier.call(() -> reader.skipField(type), null).thenApply(Function.of(time)).get();
+			default -> reader.skipField(type, time);
 		};
 	}
 

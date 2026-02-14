@@ -78,7 +78,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		Object result = this.attributes.remove(name);
 
 		if (result != null) {
-			this.updates.reference(name).writer(Supplier.empty()).get();
+			this.updates.reference(name).writer(Supplier.of(null)).get();
 		}
 
 		return result;
