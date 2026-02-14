@@ -590,8 +590,8 @@
 			</reporting>
 		</profile>
 		<profile>
+			<!-- Additional test executions using older LTS java versions -->
 			<id>lts</id>
-			<!-- Adds test executions against older LTS java versions -->
 			<build>
 				<plugins>
 					<plugin>

@@ -17,7 +17,7 @@ This project serves as upstream to the following projects:
 
 Building this project requires the following software:
 
-* JDK 11+
+* JDK 25
 * Maven 3.9+
 
 Additionally, the integration tests contained in this project require a Docker-API compatible container runtime.
@@ -56,4 +56,17 @@ By default, remote Infinispan integration tests will use the Infinispan server d
 You can override this to use an arbitrary Infinispan server docker image and user via system properties.
 e.g.
 
-		$ mvn clean install -Dinfinispan.server.image=quay.io/infinispan/server:14.0 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
+		$ mvn clean install -Dinfinispan.server.image=quay.io/infinispan/server:16.1 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
+
+#### Testing with alternate Java versions
+
+The "lts" profile adds surefire and failsafe test executions for older LTS java releases starting with Java 17.
+e.g.
+
+		$ mvn verify -P lts
+
+This requires that maven toolchains configuration exists for these java versions.
+These can be auto-configured, if necessary.
+e.g.
+
+		$ mvn toolchains:generate-jdk-toolchains-xml -Dtoolchain.file=~/.m2/toolchains.xml
