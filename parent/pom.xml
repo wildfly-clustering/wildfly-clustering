@@ -16,7 +16,11 @@
 		<java.util.logging.manager>java.util.logging.LogManager</java.util.logging.manager>
 		<java.runtime.parameters>-Djava.util.logging.manager=${java.util.logging.manager} --enable-native-access=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</java.runtime.parameters>
 		<argLine>${java.runtime.parameters}</argLine>
-		<java.compiler.version>17</java.compiler.version>
+		<!-- JRE compatibility -->
+		<maven.compiler.release>17</maven.compiler.release>
+		<maven.compiler.testRelease>${maven.compiler.release}</maven.compiler.testRelease>
+		<!-- Require latest LTS toolchain -->
+		<toolchain.jdk.version>[25,26)</toolchain.jdk.version>
 		<!-- Sets encoding for compiler/resources plugins -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -65,7 +69,6 @@
 		<connection>scm:git:https://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
 		<developerConnection>scm:git:git@${project.repository.host}:${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
 		<url>${project.repository.url}</url>
-		<tag>9.0.0.CR2</tag>
 	</scm>
 
 	<build>
@@ -79,7 +82,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>11.1.0</version>
+							<version>13.2.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -165,6 +168,11 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-toolchains-plugin</artifactId>
+					<version>3.2.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-verifier-plugin</artifactId>
 					<version>1.1</version>
 				</plugin>
@@ -184,9 +192,9 @@
 					<version>0.8.14</version>
 				</plugin>
 				<plugin>
-					<groupId>org.sonatype.plugins</groupId>
-					<artifactId>nxrm3-maven-plugin</artifactId>
-					<version>1.0.13</version>
+					<groupId>org.sonatype.central</groupId>
+					<artifactId>central-maven-deployment-plugin</artifactId>
+					<version>0.10.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -234,6 +242,7 @@
 								<module name="EqualsHashCode"/>
 								<module name="ExplicitInitialization"/>
 								<module name="GenericWhitespace"/>
+								<module name="HexLiteralCase"/>
 								<module name="HideUtilityClassConstructor"/>
 								<module name="IllegalIdentifierName"/>
 								<module name="IllegalImport"/>
@@ -263,6 +272,7 @@
 									<property name="format" value="^[A-Z][0-9A-Z]?$"/>
 								</module>
 								<module name="MissingDeprecated"/>
+								<module name="MissingOverrideOnRecordAccessor"/>
 								<module name="ModifiedControlVariable"/>
 								<module name="ModifierOrder"/>
 								<module name="MultipleVariableDeclarations"/>
@@ -289,6 +299,7 @@
 								<module name="StringLiteralEquality"/>
 								<module name="StaticVariableName"/>
 								<module name="SuppressionCommentFilter"/>
+								<module name="TextBlockGoogleStyleFormatting"/>
 								<module name="TypecastParenPad"/>
 								<module name="TypeName"/>
 								<module name="UnnecessaryNullCheckWithInstanceOf"/>
@@ -325,12 +336,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<release>${java.compiler.version}</release>
-					<source>${java.compiler.version}</source>
-					<target>${java.compiler.version}</target>
-					<testRelease>${java.compiler.version}</testRelease>
-					<testSource>${java.compiler.version}</testSource>
-					<testTarget>${java.compiler.version}</testTarget>
 					<showDeprecation>true</showDeprecation>
 				</configuration>
 				<executions>
@@ -506,6 +511,25 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-toolchains-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-toolchain</id>
+						<goals>
+							<goal>toolchain</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<toolchains>
+						<jdk>
+							<version>25</version>
+						</jdk>
+					</toolchains>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
 				<executions>
@@ -520,16 +544,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nxrm3-maven-plugin</artifactId>
-				<configuration>
-					<nexusUrl>https://repository.jboss.org/nexus/</nexusUrl>
-					<repository>releases</repository>
-					<serverId>jboss</serverId>
-					<tag>${project.groupId}-${project.version}</tag>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -576,6 +590,80 @@
 			</reporting>
 		</profile>
 		<profile>
+			<id>lts</id>
+			<!-- Adds test executions against older LTS java versions -->
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>java17-integration-test</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+								<configuration>
+									<jdkToolchain>
+										<version>17</version>
+									</jdkToolchain>
+									<reportsDirectory>${project.build.directory}/failsafe-reports-java17</reportsDirectory>
+								</configuration>
+							</execution>
+							<execution>
+								<id>java21-integration-test</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+								<configuration>
+									<jdkToolchain>
+										<version>21</version>
+									</jdkToolchain>
+									<reportsDirectory>${project.build.directory}/failsafe-reports-java21</reportsDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>java17-test</id>
+								<phase>test</phase>
+								<goals>
+									<goal>test</goal>
+								</goals>
+								<configuration>
+									<jdkToolchain>
+										<version>17</version>
+									</jdkToolchain>
+									<reportsDirectory>${project.build.directory}/surefire-reports-java17</reportsDirectory>
+								</configuration>
+							</execution>
+							<execution>
+								<id>java21-test</id>
+								<phase>test</phase>
+								<goals>
+									<goal>test</goal>
+								</goals>
+								<configuration>
+									<jdkToolchain>
+										<version>21</version>
+									</jdkToolchain>
+									<reportsDirectory>${project.build.directory}/surefire-reports-java21</reportsDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
 			<id>quickly</id>
 			<properties>
 				<checkstyle.skip>true</checkstyle.skip>
@@ -614,17 +702,13 @@
 						</executions>
 					</plugin>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nxrm3-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>default-deploy</id>
-								<phase>deploy</phase>
-								<goals>
-									<goal>staging-deploy</goal>
-								</goals>
-							</execution>
-						</executions>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-maven-deployment-plugin</artifactId>
+						<configuration>
+							<autoPublish>true</autoPublish>
+							<deploymentName>${project.groupId}-${project.version}</deploymentName>
+							<publishingServerId>central</publishingServerId>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>
