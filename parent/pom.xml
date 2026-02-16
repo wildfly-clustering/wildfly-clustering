@@ -8,7 +8,7 @@
 
 	<groupId>org.wildfly.clustering</groupId>
 	<artifactId>wildfly-clustering-parent</artifactId>
-	<version>10.0.0.Beta1-SNAPSHOT</version>
+	<version>10.0.0.Beta1</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -69,7 +69,8 @@
 		<connection>scm:git:https://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
 		<developerConnection>scm:git:git@${project.repository.host}:${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
 		<url>${project.repository.url}</url>
-	</scm>
+	  <tag>10.0.0.Beta1</tag>
+  </scm>
 
 	<build>
 		<pluginManagement>
@@ -205,115 +206,115 @@
 				<configuration>
 					<checkstyleRules>
 						<module name="Checker">
-							<module name="NewlineAtEndOfFile"/>
+							<module name="NewlineAtEndOfFile" />
 							<module name="RegexpSingleline">
-								<property name="format" value="^\t*(?! \*) "/>
-								<property name="message" value="Non-tab indentation detected"/>
-								<property name="fileExtensions" value="java"/>
+								<property name="format" value="^\t*(?! \*) " />
+								<property name="message" value="Non-tab indentation detected" />
+								<property name="fileExtensions" value="java" />
 							</module>
 							<module name="RegexpSingleline">
-								<property name="format" value="^\t* "/>
-								<property name="message" value="Non-tab indentation detected"/>
-								<property name="fileExtensions" value="proto xml"/>
+								<property name="format" value="^\t* " />
+								<property name="message" value="Non-tab indentation detected" />
+								<property name="fileExtensions" value="proto xml" />
 							</module>
 							<module name="RegexpSingleline">
-								<property name="format" value="\s+$"/>
-								<property name="message" value="Tailing whitespace detected"/>
+								<property name="format" value="\s+$" />
+								<property name="message" value="Tailing whitespace detected" />
 							</module>
 							<module name="TreeWalker">
-								<module name="AbstractClassName"/>
-								<module name="ArrayTypeStyle"/>
-								<module name="AvoidDoubleBraceInitialization"/>
-								<module name="AvoidNestedBlocks"/>
-								<module name="AvoidNoArgumentSuperConstructorCall"/>
+								<module name="AbstractClassName" />
+								<module name="ArrayTypeStyle" />
+								<module name="AvoidDoubleBraceInitialization" />
+								<module name="AvoidNestedBlocks" />
+								<module name="AvoidNoArgumentSuperConstructorCall" />
 								<module name="AvoidStarImport">
-									<property name="allowStaticMemberImports" value="true"/>
+									<property name="allowStaticMemberImports" value="true" />
 								</module>
-								<module name="CatchParameterName"/>
+								<module name="CatchParameterName" />
 								<module name="ClassTypeParameterName">
-									<property name="format" value="^[A-Z][0-9A-Z]?$"/>
+									<property name="format" value="^[A-Z][0-9A-Z]?$" />
 								</module>
-								<module name="ConstantName"/>
-								<module name="ConstructorsDeclarationGrouping"/>
-								<module name="DeclarationOrder"/>
-								<module name="DefaultComesLast"/>
-								<module name="EmptyCatchBlock"/>
-								<module name="EmptyStatement"/>
-								<module name="EqualsHashCode"/>
-								<module name="ExplicitInitialization"/>
-								<module name="GenericWhitespace"/>
-								<module name="HexLiteralCase"/>
-								<module name="HideUtilityClassConstructor"/>
-								<module name="IllegalIdentifierName"/>
-								<module name="IllegalImport"/>
-								<module name="IllegalInstantiation"/>
-								<module name="IllegalThrows"/>
+								<module name="ConstantName" />
+								<module name="ConstructorsDeclarationGrouping" />
+								<module name="DeclarationOrder" />
+								<module name="DefaultComesLast" />
+								<module name="EmptyCatchBlock" />
+								<module name="EmptyStatement" />
+								<module name="EqualsHashCode" />
+								<module name="ExplicitInitialization" />
+								<module name="GenericWhitespace" />
+								<module name="HexLiteralCase" />
+								<module name="HideUtilityClassConstructor" />
+								<module name="IllegalIdentifierName" />
+								<module name="IllegalImport" />
+								<module name="IllegalInstantiation" />
+								<module name="IllegalThrows" />
 								<module name="ImportOrder">
-									<property name="groups" value="java,javax,jakarta,com,io,org"/>
-									<property name="option" value="top"/>
-									<property name="separated" value="true"/>
-									<property name="separatedStaticGroups" value="true"/>
-									<property name="sortStaticImportsAlphabetically" value="true"/>
+									<property name="groups" value="java,javax,jakarta,com,io,org" />
+									<property name="option" value="top" />
+									<property name="separated" value="true" />
+									<property name="separatedStaticGroups" value="true" />
+									<property name="sortStaticImportsAlphabetically" value="true" />
 								</module>
-								<module name="InnerAssignment"/>
-								<module name="InterfaceIsType"/>
+								<module name="InnerAssignment" />
+								<module name="InterfaceIsType" />
 								<module name="InterfaceTypeParameterName">
-									<property name="format" value="^[A-Z][0-9A-Z]?$"/>
+									<property name="format" value="^[A-Z][0-9A-Z]?$" />
 								</module>
-								<module name="InvalidJavadocPosition"/>
-								<module name="LambdaParameterName"/>
-								<module name="LeftCurly"/>
-								<module name="LocalFinalVariableName"/>
-								<module name="LocalVariableName"/>
-								<module name="MemberName"/>
-								<module name="MethodName"/>
-								<module name="MethodParamPad"/>
+								<module name="InvalidJavadocPosition" />
+								<module name="LambdaParameterName" />
+								<module name="LeftCurly" />
+								<module name="LocalFinalVariableName" />
+								<module name="LocalVariableName" />
+								<module name="MemberName" />
+								<module name="MethodName" />
+								<module name="MethodParamPad" />
 								<module name="MethodTypeParameterName">
-									<property name="format" value="^[A-Z][0-9A-Z]?$"/>
+									<property name="format" value="^[A-Z][0-9A-Z]?$" />
 								</module>
-								<module name="MissingDeprecated"/>
-								<module name="MissingOverrideOnRecordAccessor"/>
-								<module name="ModifiedControlVariable"/>
-								<module name="ModifierOrder"/>
-								<module name="MultipleVariableDeclarations"/>
-								<module name="OneStatementPerLine"/>
-								<module name="OneTopLevelClass"/>
-								<module name="OuterTypeFilename"/>
-								<module name="PackageDeclaration"/>
-								<module name="PackageName"/>
-								<module name="ParameterAssignment"/>
-								<module name="ParameterName"/>
-								<module name="ParenPad"/>
-								<module name="PatternVariableAssignment"/>
-								<module name="RecordComponentName"/>
+								<module name="MissingDeprecated" />
+								<module name="MissingOverrideOnRecordAccessor" />
+								<module name="ModifiedControlVariable" />
+								<module name="ModifierOrder" />
+								<module name="MultipleVariableDeclarations" />
+								<module name="OneStatementPerLine" />
+								<module name="OneTopLevelClass" />
+								<module name="OuterTypeFilename" />
+								<module name="PackageDeclaration" />
+								<module name="PackageName" />
+								<module name="ParameterAssignment" />
+								<module name="ParameterName" />
+								<module name="ParenPad" />
+								<module name="PatternVariableAssignment" />
+								<module name="RecordComponentName" />
 								<module name="RecordTypeParameterName">
-									<property name="format" value="^[A-Z][0-9A-Z]?$"/>
+									<property name="format" value="^[A-Z][0-9A-Z]?$" />
 								</module>
-								<module name="RedundantImport"/>
-								<module name="RedundantModifier"/>
-								<module name="RequireThis"/>
-								<module name="RightCurly"/>
-								<module name="SimplifyBooleanExpression"/>
-								<module name="SimplifyBooleanReturn"/>
-								<module name="SingleSpaceSeparator"/>
-								<module name="StringLiteralEquality"/>
-								<module name="StaticVariableName"/>
-								<module name="SuppressionCommentFilter"/>
-								<module name="TextBlockGoogleStyleFormatting"/>
-								<module name="TypecastParenPad"/>
-								<module name="TypeName"/>
-								<module name="UnnecessaryNullCheckWithInstanceOf"/>
-								<module name="UnnecessarySemicolonAfterOuterTypeDeclaration"/>
-								<module name="UnnecessarySemicolonAfterTypeMemberDeclaration"/>
-								<module name="UnnecessarySemicolonInEnumeration"/>
-								<module name="UnnecessarySemicolonInTryWithResources"/>
-								<module name="UnusedImports"/>
-								<module name="UnusedLocalVariable"/>
-								<module name="UpperEll"/>
-								<module name="WhenShouldBeUsed"/>
-								<module name="WhitespaceAfter"/>
+								<module name="RedundantImport" />
+								<module name="RedundantModifier" />
+								<module name="RequireThis" />
+								<module name="RightCurly" />
+								<module name="SimplifyBooleanExpression" />
+								<module name="SimplifyBooleanReturn" />
+								<module name="SingleSpaceSeparator" />
+								<module name="StringLiteralEquality" />
+								<module name="StaticVariableName" />
+								<module name="SuppressionCommentFilter" />
+								<module name="TextBlockGoogleStyleFormatting" />
+								<module name="TypecastParenPad" />
+								<module name="TypeName" />
+								<module name="UnnecessaryNullCheckWithInstanceOf" />
+								<module name="UnnecessarySemicolonAfterOuterTypeDeclaration" />
+								<module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
+								<module name="UnnecessarySemicolonInEnumeration" />
+								<module name="UnnecessarySemicolonInTryWithResources" />
+								<module name="UnusedImports" />
+								<module name="UnusedLocalVariable" />
+								<module name="UpperEll" />
+								<module name="WhenShouldBeUsed" />
+								<module name="WhitespaceAfter" />
 							</module>
-							<module name="UniqueProperties"/>
+							<module name="UniqueProperties" />
 						</module>
 					</checkstyleRules>
 					<logViolationsToConsole>true</logViolationsToConsole>
