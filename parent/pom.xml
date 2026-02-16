@@ -193,7 +193,7 @@
 				</plugin>
 				<plugin>
 					<groupId>org.sonatype.central</groupId>
-					<artifactId>central-maven-deployment-plugin</artifactId>
+					<artifactId>central-publishing-maven-plugin</artifactId>
 					<version>0.10.0</version>
 				</plugin>
 			</plugins>
@@ -678,12 +678,9 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-deploy-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>default-deploy</id>
-								<phase>none</phase>
-							</execution>
-						</executions>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -699,12 +696,21 @@
 					</plugin>
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
-						<artifactId>central-maven-deployment-plugin</artifactId>
-						<configuration>
-							<autoPublish>true</autoPublish>
-							<deploymentName>${project.groupId}-${project.version}</deploymentName>
-							<publishingServerId>central</publishingServerId>
-						</configuration>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>default-publish</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>publish</goal>
+								</goals>
+								<configuration>
+									<autoPublish>true</autoPublish>
+									<deploymentName>${project.groupId}-${project.version}</deploymentName>
+									<publishingServerId>central</publishingServerId>
+								</configuration>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
 			</build>
