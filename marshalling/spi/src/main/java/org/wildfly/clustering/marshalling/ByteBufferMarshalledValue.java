@@ -42,7 +42,17 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	 * @param buffer a byte buffer
 	 */
 	public ByteBufferMarshalledValue(ByteBuffer buffer) {
-		this.buffer = (buffer != null) ? buffer.duplicate() : null;
+		this.buffer = (buffer != null) ? duplicate(buffer) : null;
+	}
+
+	private static ByteBuffer duplicate(ByteBuffer buffer) {
+		if (buffer.hasArray()) {
+			return buffer.duplicate();
+		}
+		// If direct buffer, copy buffer contents
+		byte[] bytes = new byte[buffer.remaining()];
+		buffer.get(bytes);
+		return ByteBuffer.wrap(bytes);
 	}
 
 	// Used for testing purposes only
@@ -64,10 +74,9 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	 * @throws IOException if the value could not be marshalled
 	 */
 	public synchronized ByteBuffer getBuffer() throws IOException {
-		ByteBuffer buffer = this.buffer;
-		if ((buffer == null) && (this.object != null)) {
-			// Since the wrapped object is likely mutable, we cannot cache the generated buffer
-			buffer = this.marshaller.write(this.object);
+		// Since the wrapped object is likely mutable, we cannot cache a generated buffer
+		ByteBuffer buffer = (this.buffer != null) ? this.buffer.duplicate() : (this.object != null) ? this.marshaller.write(this.object) : null;
+		if ((buffer != null) && (this.buffer == null) && (this.object != null)) {
 			// N.B. Refrain from logging wrapped object
 			// If wrapped object contains an EJB proxy, toString() will trigger an EJB invocation!
 			Logger.INSTANCE.log(System.Logger.Level.TRACE, "Marshalled size of {0} object = {1} bytes", this.object.getClass().getCanonicalName(), buffer.remaining());
