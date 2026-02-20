@@ -8,11 +8,13 @@ package org.wildfly.clustering.session.cache.attributes.fine;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
-import java.util.function.Predicate;
 
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.cache.CacheProperties;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.util.BlockingReferenceMap;
@@ -31,7 +33,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 	private final Map<String, Object> attributes;
 	private final Marshaller<Object, V> marshaller;
 	private final CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory;
-	private final Predicate<Object> immutable;
+	private final java.util.function.Predicate<Object> immutable;
 	private final CacheProperties properties;
 	private final SessionAttributeActivationNotifier notifier;
 	private final BlockingReferenceMap<String, Object> updates = BlockingReferenceMap.of(new TreeMap<>());
@@ -46,7 +48,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 	 * @param properties the properties of the associated cache
 	 * @param notifier a notifier of session attribute activation/passivation
 	 */
-	public FineSessionAttributes(K key, Map<String, Object> attributes, CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory, Marshaller<Object, V> marshaller, Predicate<Object> immutable, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
+	public FineSessionAttributes(K key, Map<String, Object> attributes, CacheEntryMutatorFactory<K, Map<String, V>> mutatorFactory, Marshaller<Object, V> marshaller, java.util.function.Predicate<Object> immutable, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
 		super(attributes);
 		this.key = key;
 		this.attributes = attributes;
@@ -66,7 +68,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		if (value != null) {
 			// If the object is mutable, we need to mutate this value on close
 			// Bypass immutability check if attribute already updates on close
-			this.updates.reference(name).writer(value).when(v -> (v == null) && !this.immutable.test(value)).get();
+			this.updates.reference(name).getWriter(Predicate.and(Objects::isNull, Predicate.not(this.immutable).compose(Function.of(value)))).write(Supplier.of(value));
 		}
 
 		return value;
@@ -78,7 +80,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		Object result = this.attributes.remove(name);
 
 		if (result != null) {
-			this.updates.reference(name).writer(Supplier.of(null)).get();
+			this.updates.reference(name).getWriter().write(Supplier.of(null));
 		}
 
 		return result;
@@ -97,14 +99,14 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		Object result = this.attributes.put(name, value);
 
 		// Always trigger attribute update, even if called with an existing reference
-		this.updates.reference(name).writer(value).get();
+		this.updates.reference(name).getWriter().write(Supplier.of(value));
 		return result;
 	}
 
 	@Override
 	public void close() {
 		this.attributes.values().forEach(this.notifier::prePassivate);
-		this.updates.reader().consume(map -> {
+		this.updates.getReader().consume(map -> {
 			if (!map.isEmpty()) {
 				Map<String, V> updates = new TreeMap<>();
 				for (Map.Entry<String, Object> entry : map.entrySet()) {

@@ -53,7 +53,7 @@ public class MutableUserSessions<K, D, S> implements UserSessions<D, S> {
 	public S removeSession(D deployment) {
 		S removed = this.sessions.remove(deployment);
 		if (removed != null) {
-			this.updates.reference(deployment).writer(Supplier.of(null)).get();
+			this.updates.reference(deployment).getWriter().write(Supplier.of(null));
 		}
 		return removed;
 	}
@@ -62,14 +62,14 @@ public class MutableUserSessions<K, D, S> implements UserSessions<D, S> {
 	public boolean addSession(D deployment, S session) {
 		boolean added = this.sessions.put(deployment, session) == null;
 		if (added) {
-			this.updates.reference(deployment).writer(session).get();
+			this.updates.reference(deployment).getWriter().write(Supplier.of(session));
 		}
 		return added;
 	}
 
 	@Override
 	public void close() {
-		this.updates.reader().consume(map -> {
+		this.updates.getReader().consume(map -> {
 			if (!map.isEmpty()) {
 				this.mutatorFactory.createMutator(this.key, map).run();
 			}

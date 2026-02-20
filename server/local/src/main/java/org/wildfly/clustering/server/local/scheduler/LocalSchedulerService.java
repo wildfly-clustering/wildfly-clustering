@@ -80,10 +80,13 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 	private final ScheduledEntries<K, Instant> entries;
 	private final Predicate<K> task;
 	private final Duration closeTimeout;
-	private final Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> schedule;
-	private final Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> scheduleIfAbsent;
-	private final BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel;
-	private final BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule;
+
+	private final BlockingReference<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntryReference = BlockingReference.of(null);
+	private final BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> ifAbsentFutureEntryWriter = this.futureEntryReference.getWriter(Objects::isNull);
+
+	private final Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> schedule = this::scheduleFirst;
+	private final UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel;
+	private final UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule;
 
 	/**
 	 * Creates a local scheduler using the specified configuration.
@@ -100,17 +103,12 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 		this.executor = executor;
 		this.task = configuration.getTask();
 		this.closeTimeout = configuration.getCloseTimeout();
+
 		Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> scheduleFirst = this::scheduleFirst;
 		Consumer<Future<?>> cancelFuture = future -> future.cancel(true);
 		Consumer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancelEntry = Consumer.when(Objects::nonNull, cancelFuture.compose(Map.Entry::getValue), Consumer.of());
-		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel = UnaryOperator.of(cancelEntry, Supplier.of(null));
-		UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule = UnaryOperator.of(cancelEntry, scheduleFirst);
-		BlockingReference<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntry = BlockingReference.of(null);
-		BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntryWriter = futureEntry.writer(scheduleFirst);
-		this.schedule = futureEntryWriter;
-		this.scheduleIfAbsent = futureEntryWriter.when(Objects::isNull);
-		this.cancel = futureEntry.writer(cancel);
-		this.reschedule = futureEntry.writer(reschedule);
+		this.cancel = UnaryOperator.of(cancelEntry, Supplier.of(null));
+		this.reschedule = UnaryOperator.of(cancelEntry, scheduleFirst);
 	}
 
 	@Override
@@ -153,7 +151,7 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 
 	@Override
 	public void stop() {
-		this.cancel.get();
+		this.futureEntryReference.getWriter().write(this.cancel);
 		super.stop();
 	}
 
@@ -219,15 +217,15 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 	}
 
 	private void scheduleIfAbsent() {
-		this.scheduleIfAbsent.get();
+		this.ifAbsentFutureEntryWriter.write(this.schedule);
 	}
 
 	private void rescheduleIfEarlier(Instant instant) {
-		this.reschedule.when(entry -> (entry != null) && instant.isBefore(entry.getKey().getValue())).get();
+		this.futureEntryReference.getWriter(entry -> (entry != null) && instant.isBefore(entry.getKey().getValue())).write(this.reschedule);
 	}
 
 	private void cancelIfPresent(K id) {
-		this.cancel.when(entry -> (entry != null) && entry.getKey().getKey().equals(id)).get();
+		this.futureEntryReference.getWriter(entry -> (entry != null) && entry.getKey().getKey().equals(id)).write(this.cancel);
 	}
 
 	@Override
