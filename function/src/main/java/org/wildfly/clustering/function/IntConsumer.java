@@ -93,6 +93,11 @@ public interface IntConsumer extends java.util.function.IntConsumer, IntOperatio
 		return of(this, after);
 	}
 
+	@Override
+	default IntConsumer thenThrow(java.util.function.Supplier<? extends RuntimeException> exception) {
+		return this.thenRun(Runner.of().thenThrow(exception));
+	}
+
 	/**
 	 * Returns a consumer that ignores its parameter.
 	 * @return a consumer that ignores its parameter.

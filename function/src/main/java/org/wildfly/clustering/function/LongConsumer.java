@@ -83,6 +83,11 @@ public interface LongConsumer extends java.util.function.LongConsumer, LongOpera
 		return LongConsumer.of(this, after);
 	}
 
+	@Override
+	default LongConsumer thenThrow(java.util.function.Supplier<? extends RuntimeException> exception) {
+		return this.thenRun(Runner.of().thenThrow(exception));
+	}
+
 	/**
 	 * Returns a consumer that ignores its parameter.
 	 * @return a consumer that ignores its parameter.

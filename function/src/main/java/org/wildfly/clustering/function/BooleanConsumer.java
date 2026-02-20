@@ -92,6 +92,11 @@ public interface BooleanConsumer extends BooleanOperation, ToVoidOperation {
 		return BooleanConsumer.of(this, after);
 	}
 
+	@Override
+	default BooleanConsumer thenThrow(java.util.function.Supplier<? extends RuntimeException> exception) {
+		return this.thenRun(Runner.of().thenThrow(exception));
+	}
+
 	/**
 	 * Returns a consumer that does nothing, ignoring its parameter.
 	 * @return a consumer that does nothing, ignoring its parameter.

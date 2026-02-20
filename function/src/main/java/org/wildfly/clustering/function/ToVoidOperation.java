@@ -52,4 +52,11 @@ interface ToVoidOperation {
 	 * @return an operation that runs the specified {@link Runnable} after this operation.
 	 */
 	ToVoidOperation thenRun(Runnable after);
+
+	/**
+	 * Returns an operation that throws an exception.
+	 * @param exception an exception provider
+	 * @return an operation that throws an exception.
+	 */
+	ToVoidOperation thenThrow(java.util.function.Supplier<? extends RuntimeException> exception);
 }

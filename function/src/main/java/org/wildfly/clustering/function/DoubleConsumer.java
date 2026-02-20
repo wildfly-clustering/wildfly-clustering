@@ -83,6 +83,11 @@ public interface DoubleConsumer extends java.util.function.DoubleConsumer, Doubl
 		return DoubleConsumer.of(this, after);
 	}
 
+	@Override
+	default DoubleConsumer thenThrow(java.util.function.Supplier<? extends RuntimeException> exception) {
+		return this.thenRun(Runner.of().thenThrow(exception));
+	}
+
 	/**
 	 * Returns a consumer that ignores its parameter.
 	 * @return a consumer that ignores its parameter.

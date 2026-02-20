@@ -78,6 +78,16 @@ public interface Runner extends Runnable, VoidOperation, ToVoidOperation {
 		return Runner.of(this, after);
 	}
 
+	@Override
+	default Runner thenThrow(java.util.function.Supplier<? extends RuntimeException> exception) {
+		return new Runner() {
+			@Override
+			public void run() {
+				throw exception.get();
+			}
+		};
+	}
+
 	/**
 	 * Returns an empty runner.
 	 * @return an empty runner.
