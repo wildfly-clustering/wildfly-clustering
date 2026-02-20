@@ -73,7 +73,7 @@ public class FunctionTestCase {
 	}
 
 	@Test
-	public void orDefault() {
+	public void when() {
 		UUID accepted = UUID.randomUUID();
 		UUID acceptedResult = UUID.randomUUID();
 		UUID rejected = UUID.randomUUID();
@@ -103,7 +103,7 @@ public class FunctionTestCase {
 		doReturn(resultKey).when(keyFunction).apply(sourceKey);
 		doReturn(resultValue).when(valueFunction).apply(sourceValue);
 
-		Function<Map.Entry<UUID, UUID>, Map.Entry<UUID, UUID>> function = Function.entry(keyFunction, valueFunction);
+		Function<Map.Entry<UUID, UUID>, Map.Entry<UUID, UUID>> function = Function.entry(Function.of(Map.Entry::getKey, keyFunction), Function.of(Map.Entry::getValue, valueFunction));
 
 		Map.Entry<UUID, UUID> result = function.apply(Map.entry(sourceKey, sourceValue));
 
