@@ -8,6 +8,8 @@ package org.wildfly.clustering.session.infinispan.embedded.attributes;
 import java.util.Map;
 
 import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.server.util.Reference;
+import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.cache.attributes.ContainerSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
@@ -55,7 +57,8 @@ public class CompositeContainerSessionAttributeActivationNotifier<CC, S, L, SC> 
 		for (Map.Entry<CC, SessionManager<SC>> entry : this.managers) {
 			CC context = entry.getKey();
 			SessionManager<SC> manager = entry.getValue();
-			S session = this.provider.getDetachedSession(manager, this.sessionId, context);
+			Reference<Session<SC>> reference = manager.getSessionReference(this.sessionId);
+			S session = this.provider.getSession(reference, this.sessionId, context);
 			if (session != null) {
 				notification.accept(new ContainerSessionAttributeActivationNotifier<>(this.provider, session), value);
 			}

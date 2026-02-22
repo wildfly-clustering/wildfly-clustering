@@ -12,13 +12,14 @@ import jakarta.servlet.http.HttpSessionEvent;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.container.ContainerProvider;
 
 /**
- * Jakarta Servlet 5.0 container provider.
+ * Jakarta Servlet 6.0 container provider.
  * @author Paul Ferraro
  * @param <C> the session context type
  */
@@ -36,15 +37,18 @@ public class ServletContainerProvider<C> implements ContainerProvider.SessionAtt
 	}
 
 	@Override
-	public HttpSession getDetachableSession(SessionManager<C> manager, ImmutableSession session, ServletContext context) {
-		HttpSession detached = this.getDetachedSession(manager, session.getId(), context);
-		return (detached != null) ? new DetachableHttpSession(new ImmutableHttpSession(session, context), detached) : null;
+	public HttpSession getSession(SessionManager<C> manager, ImmutableSession session, ServletContext context) {
+		return new ImmutableHttpSession(session, context);
 	}
 
 	@Override
-	public HttpSession getDetachedSession(SessionManager<C> manager, String id, ServletContext context) {
-		Session<C> detached = manager.getDetachedSession(id);
-		return (detached != null) ? new MutableHttpSession(detached, context) : null;
+	public HttpSession getSession(SessionManager<C> manager, Session<C> session, ServletContext context) {
+		return new MutableHttpSession(session, context);
+	}
+
+	@Override
+	public HttpSession getSession(Reference<Session<C>> reference, String id, ServletContext context) {
+		return new ReferencedHttpSession<>(reference, id, context);
 	}
 
 	@Override

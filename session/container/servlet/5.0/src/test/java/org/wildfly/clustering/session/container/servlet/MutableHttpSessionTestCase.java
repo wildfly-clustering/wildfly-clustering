@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
@@ -27,7 +28,7 @@ public class MutableHttpSessionTestCase extends AbstractHttpSessionTestCase<Sess
 		super((Class<Session<Void>>) (Class<?>) Session.class, SessionMetaData.class, MutableHttpSession::new);
 	}
 
-	@Override
+	@Test
 	public void setMaxInactiveInterval() {
 		int timeout = this.random.nextInt(Short.MAX_VALUE);
 		ArgumentCaptor<Duration> capturedTimeout = ArgumentCaptor.forClass(Duration.class);
@@ -41,7 +42,7 @@ public class MutableHttpSessionTestCase extends AbstractHttpSessionTestCase<Sess
 		assertThat(capturedTimeout.getValue()).hasSeconds(timeout);
 	}
 
-	@Override
+	@Test
 	public void setAttribute() {
 		String key = "foo";
 		Object value = UUID.randomUUID();
@@ -54,7 +55,7 @@ public class MutableHttpSessionTestCase extends AbstractHttpSessionTestCase<Sess
 		verify(attributes).put(key, value);
 	}
 
-	@Override
+	@Test
 	public void removeAttribute() {
 		String key = "foo";
 		Map<String, Object> attributes = mock(Map.class);
@@ -66,7 +67,7 @@ public class MutableHttpSessionTestCase extends AbstractHttpSessionTestCase<Sess
 		verify(attributes).remove(key);
 	}
 
-	@Override
+	@Test
 	public void invalidate() {
 		this.subject.invalidate();
 

@@ -5,17 +5,24 @@
 
 package org.wildfly.clustering.session.container.servlet;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
 
 /**
- * Abstract {@link HttpSession} facade implementing deprecated methods.
+ * Abstract {@link HttpSession} facade implementing basic methods.
  * @author Paul Ferraro
  */
 public abstract class AbstractHttpSession implements HttpSession {
-	/**
-	 * Creates a new session facade.
-	 */
-	protected AbstractHttpSession() {
+
+	private final ServletContext context;
+
+	AbstractHttpSession(ServletContext context) {
+		this.context = context;
+	}
+
+	@Override
+	public ServletContext getServletContext() {
+		return this.context;
 	}
 
 	@Override

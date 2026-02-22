@@ -8,7 +8,9 @@ package org.wildfly.clustering.session;
 import java.time.Instant;
 import java.util.concurrent.CompletionStage;
 
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.manager.Manager;
+import org.wildfly.clustering.server.util.Reference;
 
 /**
  * Manager of the sessions of an application.
@@ -100,16 +102,45 @@ public interface SessionManager<C> extends Manager<String> {
 	CompletionStage<ImmutableSession> findImmutableSessionAsync(String id);
 
 	/**
-	 * Returns a detached session with the specified identifier.
-	 * A detached session is only valid if a session exists for the given identifier.
+	 * Returns a reference to the session with the specified identifier.
 	 * @param id the session identifier of the detached session
-	 * @return a detached session
+	 * @return a session reference
 	 */
-	Session<C> getDetachedSession(String id);
+	default Reference<Session<C>> getSessionReference(String id) {
+		return new SessionReference<>(this, id);
+	}
 
 	/**
 	 * Returns statistics for this session manager.
 	 * @return an object from which statistics can be obtained.
 	 */
 	SessionStatistics getStatistics();
+
+	/**
+	 * A reference to a session.
+	 * @param <C> the session context type
+	 */
+	class SessionReference<C> implements Reference<Session<C>>, Reference.Reader<Session<C>> {
+		private final SessionManager<C> manager;
+		private final String id;
+
+		SessionReference(SessionManager<C> manager, String id) {
+			this.manager = manager;
+			this.id = id;
+		}
+
+		@Override
+		public Reader<Session<C>> getReader() {
+			return this;
+		}
+
+		@Override
+		public <R> R read(java.util.function.Function<Session<C>, R> reader) {
+			try (Batch batch = this.manager.getBatchFactory().get()) {
+				try (Session<C> session = this.manager.findSession(this.id)) {
+					return reader.apply(session);
+				}
+			}
+		}
+	}
 }

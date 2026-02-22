@@ -8,29 +8,53 @@ package org.wildfly.clustering.session.container.servlet;
 import java.util.Collections;
 import java.util.Enumeration;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionContext;
 
 /**
- * Abstract {@link HttpSession} facade implementing deprecated methods.
+ * Abstract {@link HttpSession} facade implementing basic methods.
  * @author Paul Ferraro
  */
 public abstract class AbstractHttpSession implements HttpSession {
-	/**
-	 * Creates a new session facade.
-	 */
-	protected AbstractHttpSession() {
+
+	private final ServletContext context;
+
+	AbstractHttpSession(ServletContext context) {
+		this.context = context;
+	}
+
+	@Override
+	public ServletContext getServletContext() {
+		return this.context;
 	}
 
 	@Deprecated
 	@Override
-	public String[] getValueNames() {
-		return Collections.list(this.getAttributeNames()).toArray(new String[0]);
+	public HttpSessionContext getSessionContext() {
+		return new HttpSessionContext() {
+			@Override
+			public HttpSession getSession(String sessionId) {
+				return null;
+			}
+
+			@Override
+			public Enumeration<String> getIds() {
+				return Collections.emptyEnumeration();
+			}
+		};
 	}
 
 	@Deprecated
 	@Override
 	public Object getValue(String name) {
 		return this.getAttribute(name);
+	}
+
+	@Deprecated
+	@Override
+	public String[] getValueNames() {
+		return Collections.list(this.getAttributeNames()).toArray(String[]::new);
 	}
 
 	@Deprecated
@@ -43,22 +67,6 @@ public abstract class AbstractHttpSession implements HttpSession {
 	@Override
 	public void removeValue(String name) {
 		this.removeAttribute(name);
-	}
-
-	@Deprecated
-	@Override
-	public javax.servlet.http.HttpSessionContext getSessionContext() {
-		return new javax.servlet.http.HttpSessionContext() {
-			@Override
-			public Enumeration<String> getIds() {
-				return Collections.enumeration(Collections.<String>emptyList());
-			}
-
-			@Override
-			public HttpSession getSession(String sessionId) {
-				return null;
-			}
-		};
 	}
 
 	@Override

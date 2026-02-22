@@ -15,14 +15,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.BiFunction;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.session.Session;
+import org.wildfly.clustering.session.SessionManager;
 
 /**
  * @author Paul Ferraro
@@ -31,17 +33,23 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
  */
 public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M extends ImmutableSessionMetaData> {
 
+	interface HttpSessionFactory<S extends ImmutableSession> {
+		HttpSession createHttpSession(SessionManager<Void> manager, S session, ServletContext context);
+	}
+
+	final SessionManager<Void> manager;
 	final S session;
 	final M metaData;
 	final ServletContext context;
 	final HttpSession subject;
 	final Random random = new Random();
 
-	AbstractHttpSessionTestCase(Class<S> sessionClass, Class<M> metaDataClass, BiFunction<S, ServletContext, HttpSession> factory) {
+	AbstractHttpSessionTestCase(Class<S> sessionClass, Class<M> metaDataClass, HttpSessionFactory<S> factory) {
 		this.session = mock(sessionClass);
 		this.metaData = mock(metaDataClass);
 		this.context = mock(ServletContext.class);
-		this.subject = factory.apply(this.session, this.context);
+		this.manager = mock(SessionManager.class);
+		this.subject = factory.createHttpSession(this.manager, this.session, this.context);
 	}
 
 	@Test
@@ -56,6 +64,19 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 		doReturn(expected).when(this.session).getId();
 
 		assertThat(this.subject.getId()).isSameAs(expected);
+	}
+
+	@Test
+	public void getAccessor() {
+		Reference<Session<Void>> reference = mock(Reference.class);
+		String expected = "foo";
+
+		doReturn(expected).when(this.session).getId();
+		doReturn(reference).when(this.manager).getSessionReference(expected);
+
+		this.subject.getAccessor();
+
+		verify(this.manager).getSessionReference(expected);
 	}
 
 	@Test
@@ -120,37 +141,5 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 			assertThat(this.subject.getAttribute(entry.getKey())).isSameAs(entry.getValue());
 		}
 		assertThat(this.subject.getAttribute("baz")).isNull();
-	}
-
-	@Test
-	public void setMaxInactiveInterval() {
-		this.subject.setMaxInactiveInterval(this.random.nextInt(Short.MAX_VALUE));
-
-		verifyNoInteractions(this.session);
-		verifyNoInteractions(this.context);
-	}
-
-	@Test
-	public void setAttribute() {
-		this.subject.setAttribute("foo", UUID.randomUUID());
-
-		verifyNoInteractions(this.session);
-		verifyNoInteractions(this.context);
-	}
-
-	@Test
-	public void removeAttribute() {
-		this.subject.removeAttribute("foo");
-
-		verifyNoInteractions(this.session);
-		verifyNoInteractions(this.context);
-	}
-
-	@Test
-	public void invalidate() {
-		this.subject.invalidate();
-
-		verifyNoInteractions(this.session);
-		verifyNoInteractions(this.context);
 	}
 }

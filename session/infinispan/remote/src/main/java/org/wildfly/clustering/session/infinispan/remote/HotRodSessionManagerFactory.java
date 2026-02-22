@@ -24,13 +24,11 @@ import org.wildfly.clustering.server.listener.ConsumerRegistry;
 import org.wildfly.clustering.server.local.manager.SimpleIdentifierFactoryService;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.cache.CachedSessionManager;
-import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.ContainerSessionAttributeActivationNotifier;
 import org.wildfly.clustering.session.cache.attributes.MarshalledValueMarshallerSessionAttributesFactoryConfiguration;
@@ -145,7 +143,6 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 		RemoteCacheConfiguration cacheConfiguration = this.configuration;
 		SessionFactory<CC, SessionMetaDataEntry<SC>, Object, SC> sessionFactory = this.sessionFactory;
 		IdentifierFactoryService<String> identifierFactory = new SimpleIdentifierFactoryService<>(configuration.getIdentifierFactory());
-		BiFunction<String, SC, Session<SC>> detachedSessionFactory = (id, context) -> Optional.ofNullable(this.findSessionManager(configuration.getContext())).map(manager -> new DetachedSession<>(manager, id, context)).orElse(null);
 		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
 		SessionManager<SC> manager = new CachedSessionManager<>(new HotRodSessionManager<>(new HotRodSessionManager.Configuration<CC, SessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
@@ -156,11 +153,6 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 			@Override
 			public SessionFactory<CC, SessionMetaDataEntry<SC>, Object, SC> getSessionFactory() {
 				return sessionFactory;
-			}
-
-			@Override
-			public BiFunction<String, SC, Session<SC>> getDetachedSessionFactory() {
-				return detachedSessionFactory;
 			}
 
 			@Override
@@ -209,7 +201,7 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 	}
 
 	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider) {
-		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> notifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(null);
+		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> notifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getSession(manager, session, context))).orElse(null);
 		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
 			case FINE -> {
 				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), notifierFactory, configuration.getCacheConfiguration());

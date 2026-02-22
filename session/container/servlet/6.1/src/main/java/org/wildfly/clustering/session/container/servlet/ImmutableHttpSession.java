@@ -11,7 +11,9 @@ import java.util.Enumeration;
 
 import jakarta.servlet.ServletContext;
 
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.SessionManager;
 
 /**
  * An immutable {@link jakarta.servlet.http.HttpSession} facade.
@@ -19,27 +21,39 @@ import org.wildfly.clustering.session.ImmutableSession;
  */
 public class ImmutableHttpSession extends AbstractHttpSession {
 
+	private final Supplier<Accessor> accessor;
 	private final ImmutableSession session;
-	private final ServletContext context;
 
 	/**
-	 * Creates a specification facade for a session.
+	 * Creates an immutable {@link jakarta.servlet.http.HttpSession}.
+	 * @param <C> the session context type
+	 * @param manager the manager of the specified session
 	 * @param session the decorated session
 	 * @param context the associated servlet context
 	 */
-	ImmutableHttpSession(ImmutableSession session, ServletContext context) {
-		this.session = session;
-		this.context = context;
+	public <C> ImmutableHttpSession(SessionManager<C> manager, ImmutableSession session, ServletContext context) {
+		this(new Supplier<>() {
+			@Override
+			public Accessor get() {
+				return new HttpSessionAccessor<>(manager.getSessionReference(session.getId()), context);
+			}
+		}, session, context);
 	}
 
-	@Override
-	public ServletContext getServletContext() {
-		return this.context;
+	ImmutableHttpSession(Supplier<Accessor> accessor, ImmutableSession session, ServletContext context) {
+		super(context);
+		this.accessor = accessor;
+		this.session = session;
 	}
 
 	@Override
 	public String getId() {
 		return this.session.getId();
+	}
+
+	@Override
+	public Accessor getAccessor() {
+		return this.accessor.get();
 	}
 
 	@Override
@@ -77,17 +91,21 @@ public class ImmutableHttpSession extends AbstractHttpSession {
 
 	@Override
 	public void setMaxInactiveInterval(int interval) {
+		throw new IllegalStateException();
 	}
 
 	@Override
 	public void setAttribute(String name, Object value) {
+		throw new IllegalStateException();
 	}
 
 	@Override
 	public void removeAttribute(String name) {
+		throw new IllegalStateException();
 	}
 
 	@Override
 	public void invalidate() {
+		throw new IllegalStateException();
 	}
 }

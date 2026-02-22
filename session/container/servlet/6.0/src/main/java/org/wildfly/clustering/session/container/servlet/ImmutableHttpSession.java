@@ -20,21 +20,15 @@ import org.wildfly.clustering.session.ImmutableSession;
 public class ImmutableHttpSession extends AbstractHttpSession {
 
 	private final ImmutableSession session;
-	private final ServletContext context;
 
 	/**
-	 * Creates a specification facade for a session.
+	 * Creates an immutable {@link jakarta.servlet.http.HttpSession}.
 	 * @param session the decorated session
 	 * @param context the associated servlet context
 	 */
-	ImmutableHttpSession(ImmutableSession session, ServletContext context) {
+	public ImmutableHttpSession(ImmutableSession session, ServletContext context) {
+		super(context);
 		this.session = session;
-		this.context = context;
-	}
-
-	@Override
-	public ServletContext getServletContext() {
-		return this.context;
 	}
 
 	@Override
@@ -77,17 +71,21 @@ public class ImmutableHttpSession extends AbstractHttpSession {
 
 	@Override
 	public void setMaxInactiveInterval(int interval) {
+		throw new IllegalStateException();
 	}
 
 	@Override
 	public void setAttribute(String name, Object value) {
+		throw new IllegalStateException();
 	}
 
 	@Override
 	public void removeAttribute(String name) {
+		throw new IllegalStateException();
 	}
 
 	@Override
 	public void invalidate() {
+		throw new IllegalStateException();
 	}
 }
