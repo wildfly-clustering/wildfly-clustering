@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.server.manager.DecoratedManager;
+import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -48,8 +49,8 @@ public class DecoratedSessionManager<C> extends DecoratedManager<String> impleme
 	}
 
 	@Override
-	public Session<C> getDetachedSession(String id) {
-		return this.manager.getDetachedSession(id);
+	public Reference<Session<C>> getSessionReference(String id) {
+		return this.manager.getSessionReference(id);
 	}
 
 	@Override

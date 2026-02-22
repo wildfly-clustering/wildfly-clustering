@@ -45,14 +45,12 @@ import org.wildfly.clustering.server.manager.IdentifierFactoryService;
 import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.server.scheduler.SchedulerService;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.cache.CachedSessionManager;
 import org.wildfly.clustering.session.cache.CompositeSessionFactory;
-import org.wildfly.clustering.session.cache.DetachedSession;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.SessionFactoryConfiguration;
 import org.wildfly.clustering.session.cache.attributes.ContainerSessionAttributeActivationNotifier;
@@ -251,7 +249,6 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 		IdentifierFactoryService<String> identifierFactory = new AffinityIdentifierFactoryService<>(configuration.getIdentifierFactory(), cacheConfiguration.getCache());
 		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
 		SchedulerService<String, ExpirationMetaData> scheduler = this.scheduler;
-		BiFunction<String, SC, Session<SC>> detachedSessionFactory = (id, context) -> Optional.ofNullable(this.findSessionManager(configuration.getContext())).map(manager -> new DetachedSession<>(manager, id, context)).orElse(null);
 		SessionManager<SC> manager = new CachedSessionManager<>(new InfinispanSessionManager<>(new InfinispanSessionManager.Configuration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public IdentifierFactoryService<String> getIdentifierFactory() {
@@ -261,11 +258,6 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 			@Override
 			public SessionFactory<CC, ContextualSessionMetaDataEntry<SC>, Object, SC> getSessionFactory() {
 				return sessionFactory;
-			}
-
-			@Override
-			public BiFunction<String, SC, Session<SC>> getDetachedSessionFactory() {
-				return detachedSessionFactory;
 			}
 
 			@Override
@@ -324,7 +316,7 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 
 	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider) {
 		boolean marshalling = configuration.getCacheConfiguration().getCacheProperties().isMarshalling();
-		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> persistenceNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).<SessionAttributeActivationNotifier>map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getDetachableSession(manager, session, context))).orElse(SessionAttributeActivationNotifier.SILENT);
+		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> persistenceNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).<SessionAttributeActivationNotifier>map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getSession(manager, session, context))).orElse(SessionAttributeActivationNotifier.SILENT);
 		Function<String, SessionAttributeActivationNotifier> passivationNotifierFactory = sessionId -> new CompositeContainerSessionAttributeActivationNotifier<>(provider, this.managers.values(), sessionId);
 		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
 			case FINE -> {

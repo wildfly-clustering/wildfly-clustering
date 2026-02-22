@@ -82,6 +82,11 @@ public interface Consumer<V> extends java.util.function.Consumer<V>, ObjectOpera
 		return Consumer.of(this, after);
 	}
 
+	@Override
+	default Consumer<V> thenThrow(java.util.function.Supplier<? extends RuntimeException> exception) {
+		return this.thenRun(Runner.of().thenThrow(exception));
+	}
+
 	/**
 	 * Returns a consumer that performs no action.
 	 * @param <V> the consumed type

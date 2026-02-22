@@ -5,15 +5,15 @@
 
 package org.wildfly.clustering.server.util;
 
-import java.util.concurrent.locks.StampedLock;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 
 /**
- * Encapsulates thread-safe reading of an object reference.
+ * Encapsulates a read-only reference.
  * @author Paul Ferraro
- * @param <T> the type of this reference
+ * @param <T> the reference type
  */
 public interface Reference<T> {
 
@@ -21,87 +21,64 @@ public interface Reference<T> {
 	 * Returns a thread-safe reader of this reference.
 	 * @return a thread-safe reader of this reference.
 	 */
-	Reader<T> reader();
+	Reader<T> getReader();
 
 	/**
-	 * A reader of an object reference.
-	 * @param <T> the referenced object type
+	 * Returns a reference to the specified value.
+	 * @param <T> the reference type
+	 * @param value the reference value
+	 * @return a reference to the specified value.
 	 */
-	interface Reader<T> extends Supplier<T> {
-		/**
-		 * Consumes the referenced value while holding a pessimistic read lock.
-		 * @param consumer a consumer of the referenced value
-		 */
-		void consume(Consumer<T> consumer);
-
-		/**
-		 * Maps this referenced value using the specified mapping function while holding a read lock.
-		 * @param <R> the mapped type
-		 * @param mapper a mapping function
-		 * @return a reader of the mapped reference.
-		 */
-		<R> Reader<R> map(Function<T, R> mapper);
+	static <T> Reference<T> of(T value) {
+		return new SimpleReference<>(value);
 	}
 
 	/**
 	 * A reader of an object reference.
 	 * @param <T> the referenced object type
-	 * @param <V> the mapped value type
 	 */
-	class ReferenceReader<T, V> implements Reader<V> {
-		private final StampedLock lock;
-		private final Supplier<T> reader;
-		private final Function<T, V> mapper;
+	interface Reader<T> {
+		/**
+		 * Consumes the referenced value.
+		 * @param reader a consumer of the referenced value
+		 */
+		default void consume(java.util.function.Consumer<T> reader) {
+			this.read(Function.of(reader, Supplier.of(null)));
+		}
 
-		ReferenceReader(StampedLock lock, Supplier<T> reader, Function<T, V> mapper) {
-			this.lock = lock;
-			this.reader = reader;
-			this.mapper = mapper;
+		/**
+		 * Applies a function to the referenced value.
+		 * @param <R> the function return type
+		 * @param reader a function applied to the referenced value
+		 * @return the result of the specified function
+		 */
+		<R> R read(java.util.function.Function<T, R> reader);
+	}
+
+	/**
+	 * A reference to a fixed value.
+	 * @param <T> the reference type
+	 */
+	class SimpleReference<T> implements Reference<T>, Reference.Reader<T> {
+		private final T value;
+
+		SimpleReference(T value) {
+			this.value = value;
 		}
 
 		@Override
-		public <R> Reader<R> map(Function<V, R> mapper) {
-			return new ReferenceReader<>(this.lock, this.reader, this.mapper.andThen(mapper));
+		public void consume(Consumer<T> reader) {
+			reader.accept(this.value);
 		}
 
 		@Override
-		public void consume(Consumer<V> consumer) {
-			long stamp = this.lock.readLock();
-			try {
-				T value = this.reader.get();
-				V result = this.mapper.apply(value);
-				consumer.accept(result);
-			} finally {
-				this.lock.unlockRead(stamp);
-			}
+		public <R> R read(java.util.function.Function<T, R> reader) {
+			return reader.apply(this.value);
 		}
 
 		@Override
-		public V get() {
-			T value = null;
-			V result = null;
-			// Try optimistic read first
-			long stamp = this.lock.tryOptimisticRead();
-			try {
-				if (StampedLock.isOptimisticReadStamp(stamp)) {
-					// Read optimistically, but validate later
-					value = this.reader.get();
-					result = this.mapper.apply(value);
-				}
-				if (!this.lock.validate(stamp)) {
-					// Optimistic read invalid
-					// Acquire pessimistic read lock
-					stamp = this.lock.readLock();
-					// Re-read with read lock
-					value = this.reader.get();
-					result = this.mapper.apply(value);
-				}
-				return result;
-			} finally {
-				if (StampedLock.isReadLockStamp(stamp)) {
-					this.lock.unlockRead(stamp);
-				}
-			}
+		public Reader<T> getReader() {
+			return this;
 		}
 	}
 }

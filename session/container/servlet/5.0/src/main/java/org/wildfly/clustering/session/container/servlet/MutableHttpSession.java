@@ -19,7 +19,12 @@ public class MutableHttpSession extends ImmutableHttpSession {
 
 	private final Session<?> session;
 
-	MutableHttpSession(Session<?> session, ServletContext context) {
+	/**
+	 * Creates an immutable {@link jakarta.servlet.http.HttpSession}.
+	 * @param session the decorated session
+	 * @param context the associated servlet context
+	 */
+	public MutableHttpSession(Session<?> session, ServletContext context) {
 		super(session, context);
 		this.session = session;
 	}

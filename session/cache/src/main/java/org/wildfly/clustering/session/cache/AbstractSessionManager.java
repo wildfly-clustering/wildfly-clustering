@@ -14,7 +14,6 @@ import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.cache.CacheConfiguration;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.expiration.Expiration;
 import org.wildfly.clustering.server.manager.IdentifierFactoryService;
@@ -38,7 +37,6 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 	protected final System.Logger logger = System.getLogger(this.getClass().getName());
 
 	private final SessionFactory<CC, MV, AV, SC> sessionFactory;
-	private final BiFunction<String, SC, Session<SC>> detachedSessionFactory;
 	private final Consumer<ImmutableSession> expiredSessionHandler;
 	private final Expiration expiration;
 	private final IdentifierFactoryService<String> identifierFactory;
@@ -70,12 +68,6 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 		SessionFactory<CC, MV, AV, SC> getSessionFactory();
 
 		/**
-		 * Returns a factory for creating a detached session.
-		 * @return a factory for creating a detached session.
-		 */
-		BiFunction<String, SC, Session<SC>> getDetachedSessionFactory();
-
-		/**
 		 * Returns a task to invoke on session close.
 		 * @return a task to invoke on session close.
 		 */
@@ -99,13 +91,11 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 		this.expiration = configuration;
 		this.expiredSessionHandler = configuration.getExpiredSessionHandler();
 		this.sessionFactory = configuration.getSessionFactory();
-		this.detachedSessionFactory = configuration.getDetachedSessionFactory();
 		Consumer<ImmutableSession> sessionCloseTask = configuration.getSessionCloseTask();
-		BiFunction<String, SC, Session<SC>> detachedSessionFactory = this.detachedSessionFactory;
 		this.wrapper = new UnaryOperator<>() {
 			@Override
 			public Session<SC> apply(Session<SC> session) {
-				return new ManagedSession<>(new AttachedSession<>(session, sessionCloseTask), detachedSessionFactory.apply(session.getId(), session.getContext()));
+				return new AttachedSession<>(session, sessionCloseTask);
 			}
 		};
 	}
@@ -162,11 +152,6 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 	@Override
 	public CompletionStage<ImmutableSession> findImmutableSessionAsync(String id) {
 		return this.sessionFactory.findValueAsync(id).thenApply(entry -> (entry != null) ? new SimpleImmutableSession(this.sessionFactory.createImmutableSession(id, entry)) : null);
-	}
-
-	@Override
-	public Session<SC> getDetachedSession(String id) {
-		return this.detachedSessionFactory.apply(id, this.sessionFactory.getSessionContextFactory().get());
 	}
 
 	@Override

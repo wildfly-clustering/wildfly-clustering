@@ -238,20 +238,19 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Objec
 	}
 
 	/**
-	 * Returns a {@link java.util.Map.Entry} function from the specified key and value functions.
-	 * @param <K> the entry key type
-	 * @param <V> the entry value type
-	 * @param <KR> the mapped entry key type
-	 * @param <VR> the mapped entry value type
-	 * @param keyFunction an entry key function
-	 * @param valueFunction an entry value function
-	 * @return a {@link java.util.Map.Entry} function from the specified key and value functions.
+	 * Returns a function returning a {@link java.util.Map.Entry} function from the specified key and value functions.
+	 * @param <T> the parameter type
+	 * @param <K> the result entry key type
+	 * @param <V> the result entry value type
+	 * @param key a function returning the map entry key
+	 * @param value a function returning the map entry value
+	 * @return a function returning a {@link java.util.Map.Entry} function from the specified key and value functions.
 	 */
-	static <K, V, KR, VR> Function<Map.Entry<K, V>, Map.Entry<KR, VR>> entry(Function<? super K, ? extends KR> keyFunction, Function<? super V, ? extends VR> valueFunction) {
+	static <T, K, V> Function<T, Map.Entry<K, V>> entry(java.util.function.Function<? super T, ? extends K> key, java.util.function.Function<? super T, ? extends V> value) {
 		return new Function<>() {
 			@Override
-			public Map.Entry<KR, VR> apply(Map.Entry<K, V> entry) {
-				return new AbstractMap.SimpleImmutableEntry<>(keyFunction.apply(entry.getKey()), valueFunction.apply(entry.getValue()));
+			public Map.Entry<K, V> apply(T object) {
+				return new AbstractMap.SimpleImmutableEntry<>(key.apply(object), value.apply(object));
 			}
 		};
 	}

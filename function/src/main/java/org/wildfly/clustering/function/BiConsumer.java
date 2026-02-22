@@ -90,6 +90,11 @@ public interface BiConsumer<T1, T2> extends java.util.function.BiConsumer<T1, T2
 		return BiConsumer.of(this, after);
 	}
 
+	@Override
+	default BiConsumer<T1, T2> thenThrow(java.util.function.Supplier<? extends RuntimeException> exception) {
+		return this.thenRun(Runner.of().thenThrow(exception));
+	}
+
 	/**
 	 * Returns a consumer that performs no action.
 	 * @param <T> the first consumed type

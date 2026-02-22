@@ -7,10 +7,9 @@ package org.wildfly.clustering.server.util;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.StampedLock;
+import java.util.function.Predicate;
 
 import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 
@@ -18,54 +17,42 @@ import org.wildfly.clustering.function.UnaryOperator;
  * Encapsulates thread-safe reading/writing on an object reference.
  * Analogous to {@link AtomicReference}, but uses read/write locks instead of CAS operations.
  * @author Paul Ferraro
- * @param <T> the referenced type
+ * @param <T> the reference type
  */
 public interface BlockingReference<T> extends Reference<T> {
 
 	/**
 	 * Returns a thread-safe writer of this reference.
-	 * @param value the target value of this reference
-	 * @return a thread-safe reader of this reference.
+	 * @return a thread-safe writer of this reference.
 	 */
-	default Writer<T> writer(T value) {
-		return this.writer(Supplier.of(value));
-	}
+	Writer<T> getWriter();
 
 	/**
-	 * Returns a thread-safe writer of this reference.
-	 * @param supplier supplier of the target value of this reference
-	 * @return a thread-safe reader of this reference.
+	 * Returns a conditional thread-safe writer of this reference.
+	 * The returned writer will only perform updates when the specified predicate is met, avoid the need for unnecessary write lock acquisition.
+	 * @param when a predicate that must be met for a given write operation to proceed.
+	 * @return a conditional thread-safe writer of this reference.
 	 */
-	default Writer<T> writer(java.util.function.Supplier<T> supplier) {
-		return this.writer(UnaryOperator.of(Consumer.of(), supplier));
-	}
-
-	/**
-	 * Returns a thread-safe writer of this reference.
-	 * @param updater operator returning the target value of this reference based on the current value
-	 * @return a thread-safe reader of this reference.
-	 */
-	Writer<T> writer(UnaryOperator<T> updater);
+	Writer<T> getWriter(Predicate<T> when);
 
 	/**
 	 * Describes the writer of a reference.
-	 * @param <T> the referenced type
+	 * @param <T> the reference type
 	 */
-	interface Writer<T> extends Supplier<T> {
+	interface Writer<T> {
 		/**
-		 * Returns a mapped writer, whose mapping function is invoked while holding a lock.
-		 * @param <R> the type of the mapped writer
-		 * @param mapper a mapping function
-		 * @return a mapped writer
+		 * Updates the value of this reference using the result of the specified supplier.
+		 * @param writer a supplier of the new value
 		 */
-		<R> Writer<R> map(Function<T, R> mapper);
+		default void write(java.util.function.Supplier<T> writer) {
+			this.write(UnaryOperator.of(Consumer.of(), writer));
+		}
 
 		/**
-		 * Returns a supplier whose {@link Supplier#get()} will update the reference only when the specified condition (invoked while holding a lock) is met.
-		 * @param condition a condition for which this reference should be updated
-		 * @return a supplier for updating this reference.
+		 * Updates the value of this reference based on its current value.
+		 * @param writer a function that returns the new value given its current value.
 		 */
-		Supplier<T> when(Predicate<T> condition);
+		void write(java.util.function.UnaryOperator<T> writer);
 	}
 
 	/**
@@ -79,88 +66,129 @@ public interface BlockingReference<T> extends Reference<T> {
 		StampedLock lock = new StampedLock();
 		Supplier<T> reader = reference::getPlain;
 		Consumer<T> writer = reference::setPlain;
+		Reader<T> blockingReader = new BlockingReferenceReader<>(lock, reader);
+		Writer<T> blockingWriter = new BlockingReferenceWriter<>(lock, reader, writer);
 		return new BlockingReference<>() {
 			@Override
-			public Reader<T> reader() {
-				return new ReferenceReader<>(lock, reader, Function.identity());
+			public Reader<T> getReader() {
+				return blockingReader;
 			}
 
 			@Override
-			public Writer<T> writer(UnaryOperator<T> updater) {
-				return new ReferenceWriter<>(lock, reader, writer, Function.identity(), updater);
+			public Writer<T> getWriter() {
+				return blockingWriter;
+			}
+
+			@Override
+			public Writer<T> getWriter(Predicate<T> when) {
+				return new ConditionalReferenceWriter<>(lock, reader, writer, when);
 			}
 		};
 	}
 
 	/**
-	 * A writer implementation for a reference.
-	 * @param <T> the referenced object type
-	 * @param <V> the mapped type
+	 * A reader of an blocking reference.
+	 * {@link #consume(java.util.function.Consumer)} uses a pessimistic read lock.
+	 * {@link #read(java.util.function.Function)} uses an optimistic read lock, when possible.
+	 * @param <T> the reference type
 	 */
-	class ReferenceWriter<T, V> implements Writer<V> {
+	class BlockingReferenceReader<T> implements Reader<T> {
 		private final StampedLock lock;
 		private final Supplier<T> reader;
-		private final Consumer<T> writer;
-		private final Function<T, V> mapper;
-		private final UnaryOperator<T> updater;
 
-		ReferenceWriter(StampedLock lock, Supplier<T> reader, Consumer<T> writer, Function<T, V> mapper, UnaryOperator<T> updater) {
+		BlockingReferenceReader(StampedLock lock, Supplier<T> reader) {
 			this.lock = lock;
 			this.reader = reader;
-			this.writer = writer;
-			this.mapper = mapper;
-			this.updater = updater;
 		}
 
 		@Override
-		public V get() {
-			long stamp = this.lock.writeLock();
+		public void consume(java.util.function.Consumer<T> consumer) {
+			long stamp = this.lock.readLock();
 			try {
 				T value = this.reader.get();
-				this.writer.accept(this.updater.apply(value));
-				return this.mapper.apply(value);
+				consumer.accept(value);
 			} finally {
-				this.lock.unlockWrite(stamp);
+				this.lock.unlockRead(stamp);
 			}
 		}
 
 		@Override
-		public <R> Writer<R> map(Function<V, R> mapper) {
-			return new ReferenceWriter<>(this.lock, this.reader, this.writer, this.mapper.andThen(mapper), this.updater);
-		}
-
-		@Override
-		public Supplier<V> when(Predicate<V> condition) {
-			return new ConditionalReferenceWriter<>(this.lock, this.reader, this.writer, this.mapper, condition, this.updater);
+		public <R> R read(java.util.function.Function<T, R> reader) {
+			R result = null;
+			// Try optimistic read first
+			long stamp = this.lock.tryOptimisticRead();
+			try {
+				if (StampedLock.isOptimisticReadStamp(stamp)) {
+					// Read optimistically, but validate later
+					T value = this.reader.get();
+					result = reader.apply(value);
+				}
+				if (!this.lock.validate(stamp)) {
+					// Optimistic read invalid
+					// Acquire pessimistic read lock
+					stamp = this.lock.readLock();
+					// Re-read with read lock
+					T value = this.reader.get();
+					result = reader.apply(value);
+				}
+				return result;
+			} finally {
+				if (StampedLock.isReadLockStamp(stamp)) {
+					this.lock.unlockRead(stamp);
+				}
+			}
 		}
 	}
 
 	/**
-	 * A conditional writer implementation for a reference.
-	 * @param <T> the referenced object type
-	 * @param <V> the mapped type
+	 * A writer of a blocking reference.
+	 * All write operations require write locks.
+	 * @param <T> the reference type
 	 */
-	class ConditionalReferenceWriter<T, V> implements Supplier<V> {
+	class BlockingReferenceWriter<T> implements Writer<T> {
 		private final StampedLock lock;
 		private final Supplier<T> reader;
 		private final Consumer<T> writer;
-		private final Function<T, V> mapper;
-		private final Predicate<V> condition;
-		private final UnaryOperator<T> updater;
 
-		ConditionalReferenceWriter(StampedLock lock, Supplier<T> reader, Consumer<T> writer, Function<T, V> mapper, Predicate<V> condition, UnaryOperator<T> updater) {
+		BlockingReferenceWriter(StampedLock lock, Supplier<T> reader, Consumer<T> writer) {
 			this.lock = lock;
 			this.reader = reader;
 			this.writer = writer;
-			this.mapper = mapper;
-			this.condition = condition;
-			this.updater = updater;
 		}
 
 		@Override
-		public V get() {
+		public void write(java.util.function.UnaryOperator<T> writer) {
+			long stamp = this.lock.writeLock();
+			try {
+				T value = this.reader.get();
+				this.writer.accept(writer.apply(value));
+			} finally {
+				this.lock.unlockWrite(stamp);
+			}
+		}
+	}
+
+	/**
+	 * A conditional writer of a blocking reference.
+	 * Attempts to evaluate condition using an optimistic read, when possible.
+	 * @param <T> the reference type
+	 */
+	class ConditionalReferenceWriter<T> implements Writer<T> {
+		private final StampedLock lock;
+		private final Supplier<T> reader;
+		private final Consumer<T> writer;
+		private final Predicate<T> condition;
+
+		ConditionalReferenceWriter(StampedLock lock, Supplier<T> reader, Consumer<T> writer, Predicate<T> condition) {
+			this.lock = lock;
+			this.reader = reader;
+			this.writer = writer;
+			this.condition = condition;
+		}
+
+		@Override
+		public void write(java.util.function.UnaryOperator<T> writer) {
 			T value = null;
-			V result = null;
 			boolean update = false;
 			// Try optimistic read first
 			long stamp = this.lock.tryOptimisticRead();
@@ -168,8 +196,7 @@ public interface BlockingReference<T> extends Reference<T> {
 				if (StampedLock.isOptimisticReadStamp(stamp)) {
 					// Read optimistically, and validate later
 					value = this.reader.get();
-					result = this.mapper.apply(value);
-					update = this.condition.test(result);
+					update = this.condition.test(value);
 				}
 				if (!this.lock.validate(stamp)) {
 					// Optimistic read unsuccessful or invalid
@@ -177,13 +204,13 @@ public interface BlockingReference<T> extends Reference<T> {
 					stamp = this.lock.readLock();
 					// Re-read with read lock
 					value = this.reader.get();
-					result = this.mapper.apply(value);
-					update = this.condition.test(result);
+					update = this.condition.test(value);
 				}
 				if (update) {
+					// Attempt lock conversion
 					long conversionStamp = this.lock.tryConvertToWriteLock(stamp);
 					if (StampedLock.isWriteLockStamp(conversionStamp)) {
-						// Conversion successful
+						// Conversion successful, no need to re-read
 						stamp = conversionStamp;
 					} else {
 						// Conversion unsuccessful, release any pessimistic read lock and acquire write lock
@@ -193,14 +220,12 @@ public interface BlockingReference<T> extends Reference<T> {
 						stamp = this.lock.writeLock();
 						// Re-read with write lock
 						value = this.reader.get();
-						result = this.mapper.apply(value);
-						update = this.condition.test(result);
+						update = this.condition.test(value);
 					}
 					if (update) {
-						this.writer.accept(this.updater.apply(value));
+						this.writer.accept(writer.apply(value));
 					}
 				}
-				return result;
 			} finally {
 				if (StampedLock.isLockStamp(stamp)) {
 					this.lock.unlock(stamp);
