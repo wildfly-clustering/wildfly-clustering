@@ -47,7 +47,7 @@ public abstract class AbstractMemberMarshaller<T, H> implements ProtoStreamMarsh
 
 	static <T, R> R invoke(MethodHandle handle, T parameter) {
 		try {
-			return (R) handle.invokeExact(parameter);
+			return (R) handle.invoke(parameter);
 		} catch (RuntimeException | Error e) {
 			throw e;
 		} catch (Throwable e) {
