@@ -56,7 +56,7 @@ public class FieldMarshaller<T> implements ProtoStreamMarshaller<T> {
 			@Override
 			public T get() {
 				try {
-					return (T) handle.invokeExact();
+					return (T) handle.invoke();
 				} catch (RuntimeException | Error e) {
 					throw e;
 				} catch (Throwable e) {

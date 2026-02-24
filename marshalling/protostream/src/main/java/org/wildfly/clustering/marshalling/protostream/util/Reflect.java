@@ -61,7 +61,7 @@ final class Reflect {
 
 	static <T> T invoke(MethodHandle handle, Object source, Class<T> fieldType) {
 		try {
-			return fieldType.cast(handle.invokeExact(source));
+			return fieldType.cast(handle.invoke(source));
 		} catch (RuntimeException | Error e) {
 			throw e;
 		} catch (Throwable e) {
