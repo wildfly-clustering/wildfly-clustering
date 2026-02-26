@@ -56,7 +56,7 @@ By default, remote Infinispan integration tests will use the Infinispan server d
 You can override this to use an arbitrary Infinispan server docker image and user via system properties.
 e.g.
 
-		$ mvn clean install -Dinfinispan.server.image=quay.io/infinispan/server:16.1 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
+		$ mvn clean install -Dinfinispan.server.image=quay.io/infinispan/server:16.0 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
 
 #### Testing with alternate Java versions
 
