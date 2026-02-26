@@ -9,7 +9,6 @@ import java.time.Instant;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.server.manager.DecoratedManager;
-import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -46,11 +45,6 @@ public class DecoratedSessionManager<C> extends DecoratedManager<String> impleme
 	@Override
 	public CompletionStage<ImmutableSession> findImmutableSessionAsync(String id) {
 		return this.manager.findImmutableSessionAsync(id);
-	}
-
-	@Override
-	public Reference<Session<C>> getSessionReference(String id) {
-		return this.manager.getSessionReference(id);
 	}
 
 	@Override
