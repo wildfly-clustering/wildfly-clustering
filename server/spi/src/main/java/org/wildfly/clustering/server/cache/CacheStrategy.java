@@ -68,7 +68,7 @@ public enum CacheStrategy implements CacheFactory {
 				private final Map<K, Map.Entry<Integer, StampedLock>> locks = new ConcurrentHashMap<>();
 				// N.B. We use AtomicReference solely as an object wrapper, updated via getPlain()/setPlain()
 				// Thread-safety of plain reference guarded by the corresponding stamped lock
-				// StampedLock for a given key needs to be stored in separate map, as its lifecycle may include multiple the reference lifecycles
+				// StampedLock for a given key needs to be stored in separate map, as its lifecycle may include multiple reference lifecycles
 				private final Map<K, Map.Entry<Integer, AtomicReference<V>>> references = new ConcurrentHashMap<>();
 
 				@Override

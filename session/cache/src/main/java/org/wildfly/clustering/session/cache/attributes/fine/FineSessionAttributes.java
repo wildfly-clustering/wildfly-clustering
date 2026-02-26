@@ -68,7 +68,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		if (value != null) {
 			// If the object is mutable, we need to mutate this value on close
 			// Bypass immutability check if attribute already updates on close
-			this.updates.reference(name).getWriter(Predicate.and(Objects::isNull, Predicate.not(this.immutable).compose(Function.of(value)))).write(Supplier.of(value));
+			this.updates.getReference(name).getWriter(Predicate.and(Objects::isNull, Predicate.not(this.immutable).compose(Function.of(value)))).write(Supplier.of(value));
 		}
 
 		return value;
@@ -80,7 +80,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		Object result = this.attributes.remove(name);
 
 		if (result != null) {
-			this.updates.reference(name).getWriter().write(Supplier.of(null));
+			this.updates.getReference(name).getWriter().write(Supplier.of(null));
 		}
 
 		return result;
@@ -99,7 +99,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 		Object result = this.attributes.put(name, value);
 
 		// Always trigger attribute update, even if called with an existing reference
-		this.updates.reference(name).getWriter().write(Supplier.of(value));
+		this.updates.getReference(name).getWriter().write(Supplier.of(value));
 		return result;
 	}
 

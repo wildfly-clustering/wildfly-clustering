@@ -16,6 +16,7 @@ import java.util.concurrent.CompletionStage;
 import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.cache.Cache;
@@ -65,6 +66,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 				try {
 					Optional.ofNullable(stage.toCompletableFuture().join()).map(CacheableSession::get).ifPresent(Session::close);
 				} catch (CompletionException | CancellationException e) {
+					// This would already have been handled
 					LOGGER.log(System.Logger.Level.DEBUG, e.getLocalizedMessage(), e);
 				}
 			}
@@ -99,7 +101,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 
 		@Override
 		public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-			return this.operation.apply(id).handle((session, exception) -> new CachedSession<>((session != null) ? session : this, (exception != null) ? Supplier.of(closeTask, Supplier.of(exception).thenThrow(CompletionException::new)).thenAccept(Consumer.of()) : closeTask));
+			return this.operation.apply(id).handle((session, exception) -> new CachedSession<>((session != null) ? session : this, (exception != null) ? Runner.of(closeTask, Supplier.of(exception).thenThrow(CompletionException::new).thenAccept(Consumer.of())) : closeTask));
 		}
 
 		@Override

@@ -28,7 +28,7 @@ public interface BlockingReferenceMap<K, V> extends Reference<Map<K, V>> {
 	 * @param key a map key
 	 * @return a reference to the map entry for the specified key.
 	 */
-	BlockingReference<V> reference(K key);
+	BlockingReference<V> getReference(K key);
 
 	/**
 	 * Returns a thread-safe map of the specified map.
@@ -42,7 +42,7 @@ public interface BlockingReferenceMap<K, V> extends Reference<Map<K, V>> {
 		Supplier<Map<K, V>> reader = Supplier.of(map).thenApply(Collections::unmodifiableMap);
 		return new BlockingReferenceMap<>() {
 			@Override
-			public BlockingReference<V> reference(K key) {
+			public BlockingReference<V> getReference(K key) {
 				Supplier<V> reader = Supplier.of(key).thenApply(map::get);
 				Consumer<V> writer = BiConsumer.of(map::put, Runner.of()).composeUnary(Function.of(key), Function.identity());
 				BlockingReference.Reader<V> blockingReader = new BlockingReference.BlockingReferenceReader<>(lock, reader);
