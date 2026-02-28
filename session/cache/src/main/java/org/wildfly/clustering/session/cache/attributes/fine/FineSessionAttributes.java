@@ -17,7 +17,7 @@ import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.Marshaller;
-import org.wildfly.clustering.server.util.BlockingReferenceMap;
+import org.wildfly.clustering.server.util.BlockingMapReference;
 import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 
@@ -36,7 +36,7 @@ public class FineSessionAttributes<K, V> extends AbstractSessionAttributes {
 	private final java.util.function.Predicate<Object> immutable;
 	private final CacheProperties properties;
 	private final SessionAttributeActivationNotifier notifier;
-	private final BlockingReferenceMap<String, Object> updates = BlockingReferenceMap.of(new TreeMap<>());
+	private final BlockingMapReference<String, Object> updates = BlockingMapReference.of(new TreeMap<>());
 
 	/**
 	 * Creates a fine-granularity session attributes implementation.

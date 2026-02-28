@@ -22,7 +22,7 @@ import org.wildfly.clustering.function.Supplier;
  * @param <K> the key type
  * @param <V> the value type
  */
-public interface BlockingReferenceMap<K, V> extends Reference<Map<K, V>> {
+public interface BlockingMapReference<K, V> extends Reference<Map<K, V>> {
 	/**
 	 * Returns a reference to the map entry for the specified key.
 	 * @param key a map key
@@ -37,10 +37,10 @@ public interface BlockingReferenceMap<K, V> extends Reference<Map<K, V>> {
 	 * @param map a non-thread-safe map
 	 * @return a thread-safe map of the specified map.
 	 */
-	static <K, V> BlockingReferenceMap<K, V> of(Map<K, V> map) {
+	static <K, V> BlockingMapReference<K, V> of(Map<K, V> map) {
 		StampedLock lock = new StampedLock();
 		Supplier<Map<K, V>> reader = Supplier.of(map).thenApply(Collections::unmodifiableMap);
-		return new BlockingReferenceMap<>() {
+		return new BlockingMapReference<>() {
 			@Override
 			public BlockingReference<V> getReference(K key) {
 				Supplier<V> reader = Supplier.of(key).thenApply(map::get);

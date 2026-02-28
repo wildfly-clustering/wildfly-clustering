@@ -11,7 +11,7 @@ import java.util.TreeMap;
 
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
 import org.wildfly.clustering.function.Supplier;
-import org.wildfly.clustering.server.util.BlockingReferenceMap;
+import org.wildfly.clustering.server.util.BlockingMapReference;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
@@ -25,7 +25,7 @@ public class MutableUserSessions<K, D, S> implements UserSessions<D, S> {
 	private final K key;
 	private final Map<D, S> sessions;
 	private final CacheEntryMutatorFactory<K, Map<D, S>> mutatorFactory;
-	private final BlockingReferenceMap<D, S> updates = BlockingReferenceMap.of(new TreeMap<>());
+	private final BlockingMapReference<D, S> updates = BlockingMapReference.of(new TreeMap<>());
 
 	/**
 	 * Creates a mutable user sessions.
