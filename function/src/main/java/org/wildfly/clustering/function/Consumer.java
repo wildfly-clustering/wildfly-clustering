@@ -19,7 +19,7 @@ public interface Consumer<V> extends java.util.function.Consumer<V>, ObjectOpera
 
 	@Override
 	default Consumer<V> andThen(java.util.function.Consumer<? super V> after) {
-		return new CompositeConsumer<V>(List.of(this, after));
+		return Consumer.<V>of(List.of(this, after));
 	}
 
 	@Override

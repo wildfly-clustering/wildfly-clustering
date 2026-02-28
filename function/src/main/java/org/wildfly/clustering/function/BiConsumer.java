@@ -22,7 +22,7 @@ public interface BiConsumer<T1, T2> extends java.util.function.BiConsumer<T1, T2
 
 	@Override
 	default BiConsumer<T1, T2> andThen(java.util.function.BiConsumer<? super T1, ? super T2> after) {
-		return of(List.<java.util.function.BiConsumer<? super T1, ? super T2>>of(this, after));
+		return BiConsumer.<T1, T2>of(List.of(this, after));
 	}
 
 	@Override
