@@ -34,7 +34,7 @@ public class HttpSessionAccessor<C> implements HttpSession.Accessor {
 
 	@Override
 	public void access(java.util.function.Consumer<HttpSession> consumer) {
-		this.reference.getReader().consume(Consumer.of(this::wrap, consumer));
+		this.reference.getReader().read(Consumer.of(this::wrap, consumer));
 	}
 
 	private HttpSession wrap(Session<C> session) {

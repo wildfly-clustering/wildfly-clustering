@@ -7,13 +7,14 @@ package org.wildfly.clustering.server.util;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.Predicate;
 
 import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiPredicate;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
 
 /**
@@ -40,12 +41,14 @@ public interface BlockingMapReference<K, V> extends Reference<Map<K, V>> {
 	static <K, V> BlockingMapReference<K, V> of(Map<K, V> map) {
 		StampedLock lock = new StampedLock();
 		Supplier<Map<K, V>> reader = Supplier.of(map).thenApply(Collections::unmodifiableMap);
+		Reader<Map<K, V>> referenceReader = new BlockingReference.BlockingReferenceReader<>(lock, reader, Function.identity());
 		return new BlockingMapReference<>() {
 			@Override
 			public BlockingReference<V> getReference(K key) {
 				Supplier<V> reader = Supplier.of(key).thenApply(map::get);
-				Consumer<V> writer = BiConsumer.of(map::put, Runner.of()).composeUnary(Function.of(key), Function.identity());
-				BlockingReference.Reader<V> blockingReader = new BlockingReference.BlockingReferenceReader<>(lock, reader);
+				// Remove if null, put otherwise.
+				Consumer<V> writer = BiConsumer.<K, V>when(BiPredicate.latter(Objects::nonNull), map::put, BiConsumer.<K, V>of(map::remove, Consumer.of())).composeUnary(Function.of(key), Function.identity());
+				BlockingReference.Reader<V> blockingReader = new BlockingReference.BlockingReferenceReader<>(lock, reader, Function.identity());
 				BlockingReference.Writer<V> blockingWriter = new BlockingReference.BlockingReferenceWriter<>(lock, reader, writer);
 				return new BlockingReference<>() {
 					@Override
@@ -67,7 +70,7 @@ public interface BlockingMapReference<K, V> extends Reference<Map<K, V>> {
 
 			@Override
 			public Reader<Map<K, V>> getReader() {
-				return new BlockingReference.BlockingReferenceReader<>(lock, reader);
+				return referenceReader;
 			}
 		};
 	}

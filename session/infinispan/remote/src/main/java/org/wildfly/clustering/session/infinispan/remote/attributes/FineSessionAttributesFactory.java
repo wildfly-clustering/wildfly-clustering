@@ -8,9 +8,9 @@ package org.wildfly.clustering.session.infinispan.remote.attributes;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.infinispan.client.hotrod.RemoteCache;
@@ -68,7 +68,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public Map<String, Object> createValue(String id, Void context) {
-		return new ConcurrentHashMap<>();
+		return new TreeMap<>();
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 	@Override
 	public SessionAttributes createSessionAttributes(String id, Map<String, Object> attributes, ImmutableSessionMetaData metaData, C context) {
 		SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? this.notifierFactory.apply(new CompositeImmutableSession(id, metaData, attributes), context) : null;
-		return new FineSessionAttributes<>(new SessionAttributesKey(id), attributes, this.mutatorFactory, this.marshaller, this.immutability, this.properties, notifier);
+		return new FineSessionAttributes<>(new SessionAttributesKey(id), attributes, this.mutatorFactory, this.marshaller, this.immutability, notifier);
 	}
 
 	@Override

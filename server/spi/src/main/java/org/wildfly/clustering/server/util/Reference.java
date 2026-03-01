@@ -8,7 +8,6 @@ package org.wildfly.clustering.server.util;
 import java.util.function.Consumer;
 
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
 
 /**
  * Encapsulates a read-only reference.
@@ -30,55 +29,73 @@ public interface Reference<T> {
 	 * @return a reference to the specified value.
 	 */
 	static <T> Reference<T> of(T value) {
-		return new SimpleReference<>(value);
+		return of(new SimpleReferenceReader<>(value, Function.identity()));
+	}
+
+	/**
+	 * Returns a reference with the specified reader.
+	 * @param <T> the reference type
+	 * @param reader the reference reader
+	 * @return a reference with the specified reader.
+	 */
+	static <T> Reference<T> of(Reader<T> reader) {
+		return new Reference<>() {
+			@Override
+			public Reader<T> getReader() {
+				return reader;
+			}
+		};
 	}
 
 	/**
 	 * A reader of an object reference.
-	 * @param <T> the referenced object type
+	 * @param <V> the reader type
 	 */
-	interface Reader<T> {
+	interface Reader<V> extends java.util.function.Supplier<V> {
 		/**
 		 * Consumes the referenced value.
 		 * @param reader a consumer of the referenced value
 		 */
-		default void consume(java.util.function.Consumer<T> reader) {
-			this.read(Function.of(reader, Supplier.of(null)));
+		default void read(java.util.function.Consumer<? super V> reader) {
+			reader.accept(this.get());
 		}
 
 		/**
-		 * Applies a function to the referenced value.
-		 * @param <R> the function return type
-		 * @param reader a function applied to the referenced value
-		 * @return the result of the specified function
+		 * Returns a mapped reader of this reference.
+		 * @param <R> the mapped type
+		 * @param mapper a mapping function
+		 * @return a mapped reader of this reference.
 		 */
-		<R> R read(java.util.function.Function<T, R> reader);
+		<R> Reader<R> map(java.util.function.Function<? super V, ? extends R> mapper);
 	}
 
 	/**
 	 * A reference to a fixed value.
 	 * @param <T> the reference type
+	 * @param <V> the reader type
 	 */
-	class SimpleReference<T> implements Reference<T>, Reference.Reader<T> {
+	class SimpleReferenceReader<T, V> implements Reference.Reader<V> {
 		private final T value;
+		private final java.util.function.Function<? super T, ? extends V> mapper;
 
-		SimpleReference(T value) {
+		SimpleReferenceReader(T value, java.util.function.Function<? super T, ? extends V> mapper) {
 			this.value = value;
+			this.mapper = mapper;
 		}
 
 		@Override
-		public void consume(Consumer<T> reader) {
-			reader.accept(this.value);
+		public void read(Consumer<? super V> reader) {
+			reader.accept(this.mapper.apply(this.value));
 		}
 
 		@Override
-		public <R> R read(java.util.function.Function<T, R> reader) {
-			return reader.apply(this.value);
+		public <R> Reader<R> map(java.util.function.Function<? super V, ? extends R> mapper) {
+			return new SimpleReferenceReader<>(this.value, this.mapper.andThen(mapper));
 		}
 
 		@Override
-		public Reader<T> getReader() {
-			return this;
+		public V get() {
+			return this.mapper.apply(this.value);
 		}
 	}
 }

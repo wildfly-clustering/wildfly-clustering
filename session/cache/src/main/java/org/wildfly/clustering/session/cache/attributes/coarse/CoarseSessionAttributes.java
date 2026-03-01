@@ -6,9 +6,16 @@ package org.wildfly.clustering.session.cache.attributes.coarse;
 
 import java.io.NotSerializableException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 
+import org.wildfly.clustering.function.BooleanSupplier;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Predicate;
+import org.wildfly.clustering.function.Runner;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
+import org.wildfly.clustering.server.util.BlockingMapReference;
 import org.wildfly.clustering.session.cache.attributes.AbstractSessionAttributes;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
 
@@ -17,12 +24,15 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivatio
  * @author Paul Ferraro
  */
 public class CoarseSessionAttributes extends AbstractSessionAttributes {
-	private final Map<String, Object> attributes;
+	private final BlockingMapReference<String, Object> attributes;
 	private final Runnable mutator;
-	private final Predicate<Object> marshallable;
-	private final Predicate<Object> immutable;
+	private final java.util.function.Predicate<Object> marshallable;
+	private final java.util.function.Predicate<Object> mutable;
 	private final SessionAttributeActivationNotifier notifier;
-	private final AtomicBoolean dirty = new AtomicBoolean(false);
+	private final BooleanSupplier isDirty;
+	private final Runner setDirty;
+	private final UnaryOperator<Object> setDirtyOnMutableRead;
+	private final UnaryOperator<Object> setDirtyOnRemove;
 
 	/**
 	 * Creates a coarse-granularity session attributes object.
@@ -32,56 +42,60 @@ public class CoarseSessionAttributes extends AbstractSessionAttributes {
 	 * @param immutable a predicate used to determine whether a given session attribute is immutable.
 	 * @param notifier a notifier of session activation/passivation
 	 */
-	public CoarseSessionAttributes(Map<String, Object> attributes, Runnable mutator, Predicate<Object> marshallable, Predicate<Object> immutable, SessionAttributeActivationNotifier notifier) {
-		super(attributes);
-		this.attributes = attributes;
-		this.mutator = mutator;
-		this.marshallable = marshallable;
-		this.immutable = immutable;
-		this.notifier = notifier;
+	public CoarseSessionAttributes(Map<String, Object> attributes, Runnable mutator, java.util.function.Predicate<Object> marshallable, java.util.function.Predicate<Object> immutable, SessionAttributeActivationNotifier notifier) {
+		this(BlockingMapReference.of(attributes), mutator, marshallable, immutable, notifier);
 		attributes.values().forEach(this.notifier::postActivate);
 	}
 
-	@Override
-	public Object remove(Object key) {
-		Object value = this.attributes.remove(key);
-		if (value != null) {
-			this.dirty.set(true);
-		}
-		return value;
-	}
-
-	@Override
-	public Object put(String key, Object value) {
-		if (value == null) {
-			return this.remove(key);
-		}
-		if (!this.marshallable.test(value)) {
-			throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
-		}
-		Object old = this.attributes.put(key, value);
-		// Always trigger mutation, even if this is an immutable object that was previously retrieved via getAttribute(...)
-		this.dirty.set(true);
-		return old;
+	private CoarseSessionAttributes(BlockingMapReference<String, Object> attributes, Runnable mutator, java.util.function.Predicate<Object> marshallable, java.util.function.Predicate<Object> immutable, SessionAttributeActivationNotifier notifier) {
+		super(attributes);
+		this.attributes = attributes;
+		this.marshallable = marshallable;
+		this.notifier = notifier;
+		AtomicBoolean dirty = new AtomicBoolean(false);
+		this.mutator = mutator;
+		this.isDirty = dirty::get;
+		this.setDirty = BooleanSupplier.of(true).thenAccept(dirty::set);
+		// Bypass immutability check if session is already dirty
+		this.mutable = Predicate.and(Predicate.and(Objects::nonNull, Predicate.of(Consumer.of(), this.isDirty).negate()), Predicate.not(immutable));
+		this.setDirtyOnMutableRead = UnaryOperator.when(Objects::nonNull, UnaryOperator.identity().thenRun(this.setDirty), UnaryOperator.identity());
+		this.setDirtyOnRemove = UnaryOperator.when(Objects::nonNull, UnaryOperator.of(null).compose(this.setDirty), UnaryOperator.of(null));
 	}
 
 	@Override
 	public Object get(Object key) {
-		Object value = this.attributes.get(key);
-		if (value != null) {
-			// Bypass immutability check if session is already dirty
-			if (!this.dirty.get() && !this.immutable.test(value)) {
-				this.dirty.set(true);
-			}
+		if (!(key instanceof String name)) return null;
+
+		// If the object is mutable, we need to mutate this value on close
+		return this.attributes.getReference(name).getWriter(this.mutable).getAndUpdate(this.setDirtyOnMutableRead);
+	}
+
+	@Override
+	public Object remove(Object key) {
+		if (!(key instanceof String name)) return null;
+
+		return this.attributes.getReference(name).getWriter().getAndUpdate(this.setDirtyOnRemove);
+	}
+
+	@Override
+	public Object put(String name, Object value) {
+		if (value == null) return this.remove(name);
+
+		if (!this.marshallable.test(value)) {
+			throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
 		}
-		return value;
+
+		// Always mark as dirty, even if called with an existing reference
+		return this.attributes.getReference(name).getWriter().getAndSet(this.setDirty.thenReturn(Supplier.of(value)));
 	}
 
 	@Override
 	public void close() {
-		this.attributes.values().forEach(this.notifier::prePassivate);
-		if (this.dirty.compareAndSet(true, false)) {
-			this.mutator.run();
-		}
+		this.attributes.getReader().read(attributes -> {
+			attributes.values().forEach(this.notifier::prePassivate);
+			if (this.isDirty.getAsBoolean()) {
+				this.mutator.run();
+			}
+		});
 	}
 }

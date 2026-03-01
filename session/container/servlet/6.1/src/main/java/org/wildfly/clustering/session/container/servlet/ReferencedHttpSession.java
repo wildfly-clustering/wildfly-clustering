@@ -10,15 +10,15 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import jakarta.servlet.ServletContext;
 
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Supplier;
-import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
@@ -29,12 +29,23 @@ import org.wildfly.clustering.session.SessionMetaData;
  * @param <C> the session context type
  */
 public class ReferencedHttpSession<C> extends AbstractHttpSession {
-	private final UnaryOperator<Session<C>> session = UnaryOperator.when(Objects::nonNull, UnaryOperator.identity(), UnaryOperator.of(Consumer.<Session<C>>of().thenThrow(IllegalStateException::new), Supplier.of(null)));
-	private final Function<Session<C>, SessionMetaData> metaData = this.session.thenApply(Session::getMetaData);
-	private final Function<Session<C>, Map<String, Object>> attributes = this.session.thenApply(Session::getAttributes);
+	private static final Function<Set<String>, Set<String>> COPY_SET = Set::copyOf;
+	private static final Function<Session<?>, SessionMetaData> METADATA = Session::getMetaData;
+	private static final Function<Session<?>, Map<String, Object>> ATTRIBUTES = Session::getAttributes;
+	private static final Consumer<Session<?>> INVALIDATE = Session::invalidate;
+	private static final Function<SessionMetaData, Instant> CREATION_TIME = SessionMetaData::getCreationTime;
+	private static final Function<SessionMetaData, Optional<Instant>> LAST_ACCESS_TIME = SessionMetaData::getLastAccessStartTime;
+	private static final Function<SessionMetaData, Map.Entry<Instant, Optional<Instant>>> CREATION_LAST_ACCESS_TIME = Function.entry(CREATION_TIME, LAST_ACCESS_TIME);
+	private static final Function<SessionMetaData, Optional<Duration>> MAX_IDLE = SessionMetaData::getMaxIdle;
+	private static final BiConsumer<SessionMetaData, Duration> SET_MAX_IDLE = SessionMetaData::setMaxIdle;
+	private static final BiFunction<Map<String, Object>, String, Object> GET_ATTRIBUTE = Map::get;
+	private static final BiFunction<Map<String, Object>, String, Object> REMOVE_ATTRIBUTE = Map::remove;
+	private static final Function<Map<String, Object>, Set<String>> ATTRIBUTE_NAMES = Function.of(Map::keySet, COPY_SET);
 
 	private final String id;
 	private final Reference<Session<C>> reference;
+	private final Reference.Reader<SessionMetaData> metaDataReader;
+	private final Reference.Reader<Map<String, Object>> attributesReader;
 
 	/**
 	 * Constructs a new detached {@link jakarta.servlet.http.HttpSession}.
@@ -46,6 +57,8 @@ public class ReferencedHttpSession<C> extends AbstractHttpSession {
 		super(context);
 		this.reference = reference;
 		this.id = id;
+		this.metaDataReader = reference.getReader().map(METADATA);
+		this.attributesReader = reference.getReader().map(ATTRIBUTES);
 	}
 
 	@Override
@@ -60,52 +73,53 @@ public class ReferencedHttpSession<C> extends AbstractHttpSession {
 
 	@Override
 	public boolean isNew() {
-		return this.reference.getReader().read(this.metaData.thenApply(SessionMetaData::getLastAccessTime)).isEmpty();
+		return this.metaDataReader.map(LAST_ACCESS_TIME).get().isEmpty();
 	}
 
 	@Override
 	public long getCreationTime() {
-		return this.reference.getReader().read(this.metaData.thenApply(SessionMetaData::getCreationTime)).toEpochMilli();
+		return this.metaDataReader.map(CREATION_TIME).get().toEpochMilli();
 	}
 
 	@Override
 	public long getLastAccessedTime() {
-		Map.Entry<Optional<Instant>, Instant> entry = this.reference.getReader().read(this.metaData.thenApply(Function.entry(SessionMetaData::getLastAccessStartTime, SessionMetaData::getCreationTime)));
-		return entry.getKey().orElse(entry.getValue()).toEpochMilli();
+		Map.Entry<Instant, Optional<Instant>> entry = this.metaDataReader.map(CREATION_LAST_ACCESS_TIME).get();
+		return entry.getValue().orElse(entry.getKey()).toEpochMilli();
 	}
 
 	@Override
 	public void setMaxInactiveInterval(int interval) {
-		this.reference.getReader().consume(this.metaData.thenAccept(metaData -> metaData.setMaxIdle(Duration.ofSeconds(interval))));
+		Duration maxIdle = interval > 0 ? Duration.ofSeconds(interval) : Duration.ZERO;
+		this.metaDataReader.read(SET_MAX_IDLE.composeUnary(Function.identity(), Function.of(maxIdle)));
 	}
 
 	@Override
 	public int getMaxInactiveInterval() {
-		return (int) this.reference.getReader().read(this.metaData.thenApply(SessionMetaData::getMaxIdle)).orElse(Duration.ZERO).getSeconds();
+		return (int) this.metaDataReader.map(MAX_IDLE).get().orElse(Duration.ZERO).getSeconds();
 	}
 
 	@Override
 	public Object getAttribute(String name) {
-		return this.reference.getReader().read(this.attributes.thenApply(map -> map.get(name)));
+		return this.attributesReader.map(GET_ATTRIBUTE.composeUnary(Function.identity(), Function.of(name))).get();
 	}
 
 	@Override
 	public Enumeration<String> getAttributeNames() {
-		return Collections.enumeration(this.reference.getReader().read(this.attributes.thenApply(Map::keySet)));
+		return Collections.enumeration(this.attributesReader.map(ATTRIBUTE_NAMES).get());
 	}
 
 	@Override
 	public void setAttribute(String name, Object value) {
-		this.reference.getReader().consume(this.attributes.thenAccept(map -> map.put(name, value)));
+		this.attributesReader.read(map -> map.put(name, value));
 	}
 
 	@Override
 	public void removeAttribute(String name) {
-		this.reference.getReader().consume(this.attributes.thenAccept(map -> map.remove(name)));
+		this.attributesReader.map(REMOVE_ATTRIBUTE.composeUnary(Function.identity(), Function.of(name)));
 	}
 
 	@Override
 	public void invalidate() {
-		this.reference.getReader().consume(this.session.thenAccept(Session::invalidate));
+		this.reference.getReader().read(INVALIDATE);
 	}
 }

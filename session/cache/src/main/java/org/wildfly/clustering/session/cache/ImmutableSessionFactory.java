@@ -36,7 +36,7 @@ public interface ImmutableSessionFactory<MV, AV> extends ImmutableSessionFactory
 		CompletionStage<MV> metaDataStage = this.getSessionMetaDataFactory().tryValueAsync(id);
 		ImmutableSessionAttributesFactory<AV> attributesFactory = this.getSessionAttributesFactory();
 		// If cache locks on read, find meta data first
-		CompletionStage<AV> attributesStage = this.getCacheProperties().isLockOnRead() ? metaDataStage.thenCompose(metaData -> (metaData != null) ? attributesFactory.findValueAsync(id) : CompletableFuture.completedStage(null)) : attributesFactory.tryValueAsync(id);
+		CompletionStage<AV> attributesStage = this.getCacheProperties().isLockOnRead() ? metaDataStage.thenCompose(metaData -> (metaData != null) ? attributesFactory.tryValueAsync(id) : CompletableFuture.completedStage(null)) : attributesFactory.tryValueAsync(id);
 		return Map.entry(metaDataStage, attributesStage);
 	}
 

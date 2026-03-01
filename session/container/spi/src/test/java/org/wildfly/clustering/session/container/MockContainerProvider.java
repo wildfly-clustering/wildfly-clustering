@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.function.Consumer;
@@ -115,27 +114,27 @@ public class MockContainerProvider<SC> implements ContainerProvider.SessionAttri
 
 			@Override
 			public boolean isValid() {
-				return reference.getReader().read(Function.identity()).isValid();
+				return reference.getReader().get().isValid();
 			}
 
 			@Override
 			public Map<String, Object> getAttributes() {
-				return reference.getReader().read(Function.identity()).getAttributes();
+				return reference.getReader().get().getAttributes();
 			}
 
 			@Override
 			public SessionMetaData getMetaData() {
-				return reference.getReader().read(Function.identity()).getMetaData();
+				return reference.getReader().get().getMetaData();
 			}
 
 			@Override
 			public void invalidate() {
-				reference.getReader().read(Function.identity()).invalidate();
+				reference.getReader().get().invalidate();
 			}
 
 			@Override
 			public SC getContext() {
-				return reference.getReader().read(Function.identity()).getContext();
+				return reference.getReader().get().getContext();
 			}
 
 			@Override

@@ -8,8 +8,8 @@ package org.wildfly.clustering.session.infinispan.embedded.attributes;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -87,7 +87,7 @@ public class CoarseSessionAttributesFactory<C, V> implements SessionAttributesFa
 
 	@Override
 	public CompletionStage<Map<String, Object>> createValueAsync(String id, Void context) {
-		Map<String, Object> attributes = new ConcurrentHashMap<>();
+		Map<String, Object> attributes = new TreeMap<>();
 		try {
 			V value = this.marshaller.write(attributes);
 			return this.writeCache.putAsync(new SessionAttributesKey(id), value).thenApply(Function.of(attributes));

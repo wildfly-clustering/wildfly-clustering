@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
-import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.Marshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributeActivationNotifier;
@@ -34,13 +33,10 @@ public class FineSessionAttributesTestCase {
 	private final CacheEntryMutatorFactory<String, Map<String, Object>> mutatorFactory = mock(CacheEntryMutatorFactory.class);
 	private final Marshaller<Object, Object> marshaller = mock(Marshaller.class);
 	private final Immutability immutability = mock(Immutability.class);
-	private final CacheProperties properties = mock(CacheProperties.class);
 	private final SessionAttributeActivationNotifier notifier = mock(SessionAttributeActivationNotifier.class);
 
 	private SessionAttributes createSessionAttributes(String id, Map<String, Object> map) {
-		doReturn(true).when(this.properties).isMarshalling();
-
-		SessionAttributes attribute = new FineSessionAttributes<>(this.id, new TreeMap<>(map), this.mutatorFactory, this.marshaller, this.immutability, this.properties, this.notifier);
+		SessionAttributes attribute = new FineSessionAttributes<>(this.id, new TreeMap<>(map), this.mutatorFactory, this.marshaller, this.immutability, this.notifier);
 
 		for (Object value : map.values()) {
 			verify(this.notifier).postActivate(value);
@@ -52,7 +48,7 @@ public class FineSessionAttributesTestCase {
 
 	@AfterEach
 	public void resetMocks() {
-		reset(this.mutatorFactory, this.marshaller, this.immutability, this.properties, this.notifier);
+		reset(this.mutatorFactory, this.marshaller, this.immutability, this.notifier);
 	}
 
 	@Test
@@ -67,7 +63,6 @@ public class FineSessionAttributesTestCase {
 		}
 
 		verifyNoMoreInteractions(this.notifier);
-		verifyNoInteractions(this.properties);
 		verifyNoInteractions(this.marshaller);
 		verifyNoInteractions(this.mutatorFactory);
 	}

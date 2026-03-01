@@ -6,9 +6,9 @@
 package org.wildfly.clustering.session.infinispan.remote.user;
 
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
@@ -48,7 +48,7 @@ public class HotRodUserSessionsFactory<D, S> implements UserSessionsFactory<Map<
 
 	@Override
 	public Map<D, S> createValue(String id, Void context) {
-		return new ConcurrentHashMap<>();
+		return new TreeMap<>();
 	}
 
 	@Override

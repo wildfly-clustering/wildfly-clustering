@@ -6,9 +6,9 @@
 package org.wildfly.clustering.session.infinispan.embedded.user;
 
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
@@ -48,7 +48,7 @@ public class InfinispanUserSessionsFactory<D, S> implements UserSessionsFactory<
 
 	@Override
 	public Map<D, S> createValue(String id, Void context) {
-		return new ConcurrentHashMap<>();
+		return new TreeMap<>();
 	}
 
 	@Override
