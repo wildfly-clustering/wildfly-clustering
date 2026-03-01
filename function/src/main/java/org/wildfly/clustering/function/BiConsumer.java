@@ -36,6 +36,11 @@ public interface BiConsumer<T1, T2> extends java.util.function.BiConsumer<T1, T2
 	}
 
 	@Override
+	default BiConsumer<T1, T2> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default Consumer<Map.Entry<T1, T2>> composeEntry() {
 		return this.composeUnary(Map.Entry::getKey, Map.Entry::getValue);
 	}
@@ -58,6 +63,11 @@ public interface BiConsumer<T1, T2> extends java.util.function.BiConsumer<T1, T2
 				BiConsumer.this.accept(value2, value1);
 			}
 		};
+	}
+
+	@Override
+	default BiFunction<T1, T2, Void> thenBox() {
+		return this.thenReturn(Supplier.of(null));
 	}
 
 	@Override
@@ -138,6 +148,24 @@ public interface BiConsumer<T1, T2> extends java.util.function.BiConsumer<T1, T2
 			public void accept(T1 value1, T2 value2) {
 				before.accept(value1, value2);
 				after.run();
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer combining the specified operations.
+	 * @param <T1> the first consumed type
+	 * @param <T2> the second consumed type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
+	 */
+	static <T1, T2> BiConsumer<T1, T2> of(Runnable before, java.util.function.BiConsumer<? super T1, ? super T2> after) {
+		return new BiConsumer<>() {
+			@Override
+			public void accept(T1 value1, T2 value2) {
+				before.run();
+				after.accept(value1, value2);
 			}
 		};
 	}

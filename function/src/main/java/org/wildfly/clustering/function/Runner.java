@@ -49,6 +49,11 @@ public interface Runner extends Runnable, VoidOperation, ToVoidOperation {
 	}
 
 	@Override
+	default Supplier<Void> thenBox() {
+		return this.thenReturn(Supplier.of(null));
+	}
+
+	@Override
 	default <T> Supplier<T> thenReturn(java.util.function.Supplier<? extends T> after) {
 		return Supplier.of(this, after);
 	}

@@ -23,6 +23,11 @@ public interface LongFunction<V> extends java.util.function.LongFunction<V>, Lon
 	}
 
 	@Override
+	default LongFunction<V> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> BiFunction<T1, T2, V> composeBinary(java.util.function.ToLongBiFunction<? super T1, ? super T2> before) {
 		return BiFunction.of(before, this);
 	}
@@ -73,6 +78,11 @@ public interface LongFunction<V> extends java.util.function.LongFunction<V>, Lon
 	}
 
 	@Override
+	default LongFunction<V> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default LongPredicate thenTest(java.util.function.Predicate<? super V> after) {
 		return LongPredicate.of(this, after);
 	}
@@ -96,6 +106,41 @@ public interface LongFunction<V> extends java.util.function.LongFunction<V>, Lon
 	@SuppressWarnings("unchecked")
 	static <R> LongFunction<R> of(R result) {
 		return (result != null) ? new SimpleLongFunction<>(result) : (LongFunction<R>) SimpleLongFunction.NULL;
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> LongFunction<T> of(java.util.function.LongFunction<? extends T> before, Runnable after) {
+		return new LongFunction<>() {
+			@Override
+			public T apply(long value) {
+				T result = before.apply(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> LongFunction<T> of(Runnable before, java.util.function.LongFunction<? extends T> after) {
+		return new LongFunction<>() {
+			@Override
+			public T apply(long value) {
+				before.run();
+				return after.apply(value);
+			}
+		};
 	}
 
 	/**

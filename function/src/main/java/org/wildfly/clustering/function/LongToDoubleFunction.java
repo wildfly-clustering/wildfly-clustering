@@ -22,6 +22,11 @@ public interface LongToDoubleFunction extends java.util.function.LongToDoubleFun
 	}
 
 	@Override
+	default LongToDoubleFunction compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> ToDoubleBiFunction<T1, T2> composeBinary(java.util.function.ToLongBiFunction<? super T1, ? super T2> before) {
 		return ToDoubleBiFunction.of(before, this);
 	}
@@ -77,6 +82,11 @@ public interface LongToDoubleFunction extends java.util.function.LongToDoubleFun
 	}
 
 	@Override
+	default LongToDoubleFunction thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default LongPredicate thenTest(java.util.function.DoublePredicate after) {
 		return LongPredicate.of(this, after);
 	}
@@ -109,6 +119,39 @@ public interface LongToDoubleFunction extends java.util.function.LongToDoubleFun
 			@Override
 			public LongFunction<Double> thenBox() {
 				return LongFunction.of(Double.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static LongToDoubleFunction of(java.util.function.LongToDoubleFunction before, Runnable after) {
+		return new LongToDoubleFunction() {
+			@Override
+			public double applyAsDouble(long value) {
+				double result = before.applyAsDouble(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static LongToDoubleFunction of(Runnable before, java.util.function.LongToDoubleFunction after) {
+		return new LongToDoubleFunction() {
+			@Override
+			public double applyAsDouble(long value) {
+				before.run();
+				return after.applyAsDouble(value);
 			}
 		};
 	}

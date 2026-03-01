@@ -22,6 +22,11 @@ public interface LongUnaryOperator extends java.util.function.LongUnaryOperator,
 	}
 
 	@Override
+	default LongUnaryOperator compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> ToLongBiFunction<T1, T2> composeBinary(java.util.function.ToLongBiFunction<? super T1, ? super T2> before) {
 		return ToLongBiFunction.of(before, this);
 	}
@@ -77,6 +82,11 @@ public interface LongUnaryOperator extends java.util.function.LongUnaryOperator,
 	}
 
 	@Override
+	default LongUnaryOperator thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default LongPredicate thenTest(java.util.function.LongPredicate after) {
 		return LongPredicate.of(this, after);
 	}
@@ -109,6 +119,39 @@ public interface LongUnaryOperator extends java.util.function.LongUnaryOperator,
 			@Override
 			public LongFunction<Long> thenBox() {
 				return LongFunction.of(Long.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static LongUnaryOperator of(java.util.function.LongUnaryOperator before, Runnable after) {
+		return new LongUnaryOperator() {
+			@Override
+			public long applyAsLong(long value) {
+				long result = before.applyAsLong(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static LongUnaryOperator of(Runnable before, java.util.function.LongUnaryOperator after) {
+		return new LongUnaryOperator() {
+			@Override
+			public long applyAsLong(long value) {
+				before.run();
+				return after.applyAsLong(value);
 			}
 		};
 	}

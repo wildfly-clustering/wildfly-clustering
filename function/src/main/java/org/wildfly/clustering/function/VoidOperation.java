@@ -11,13 +11,6 @@ package org.wildfly.clustering.function;
  */
 interface VoidOperation {
 	/**
-	 * Composes an operation that runs the specified {@link Runnable} before this operation.
-	 * @param before a runnable task to run before this operation
-	 * @return an operation that runs the specified {@link Runnable} before this operation.
-	 */
-	VoidOperation compose(Runnable before);
-
-	/**
 	 * Composes an operation that consumes an object before invoking this operation.
 	 * @param before a consumer to accept a value before invoking this operation
 	 * @return an operation that consumes an object before invoking this operation.

@@ -57,6 +57,16 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 		};
 	}
 
+	@Override
+	default UnaryOperator<T> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
+	default UnaryOperator<T> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
 	/**
 	 * Returns an operator that returns its value.
 	 * @param <T> the operating type
@@ -76,6 +86,41 @@ public interface UnaryOperator<T> extends java.util.function.UnaryOperator<T>, F
 	@SuppressWarnings("unchecked")
 	static <T> UnaryOperator<T> of(T value) {
 		return (value != null) ? new SimpleUnaryOperator<>(value) : (UnaryOperator<T>) SimpleUnaryOperator.NULL;
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the operator type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> UnaryOperator<T> of(java.util.function.UnaryOperator<T> before, Runnable after) {
+		return new UnaryOperator<>() {
+			@Override
+			public T apply(T value) {
+				T result = before.apply(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the operator type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> UnaryOperator<T> of(Runnable before, java.util.function.UnaryOperator<T> after) {
+		return new UnaryOperator<>() {
+			@Override
+			public T apply(T value) {
+				before.run();
+				return after.apply(value);
+			}
+		};
 	}
 
 	/**

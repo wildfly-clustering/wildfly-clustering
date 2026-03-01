@@ -58,6 +58,11 @@ public interface IntPredicate extends java.util.function.IntPredicate, IntOperat
 	}
 
 	@Override
+	default IntPredicate compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> BiPredicate<V1, V2> composeBinary(java.util.function.ToIntBiFunction<? super V1, ? super V2> before) {
 		return BiPredicate.of(before, this);
 	}
@@ -113,6 +118,11 @@ public interface IntPredicate extends java.util.function.IntPredicate, IntOperat
 	}
 
 	@Override
+	default IntPredicate thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default IntPredicate thenTest(BooleanPredicate after) {
 		return IntPredicate.of(this, after);
 	}
@@ -138,6 +148,39 @@ public interface IntPredicate extends java.util.function.IntPredicate, IntOperat
 			public boolean test(int value) {
 				before.accept(value);
 				return after.getAsBoolean();
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static IntPredicate of(java.util.function.IntPredicate before, Runnable after) {
+		return new IntPredicate() {
+			@Override
+			public boolean test(int value) {
+				boolean result = before.test(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static IntPredicate of(Runnable before, java.util.function.IntPredicate after) {
+		return new IntPredicate() {
+			@Override
+			public boolean test(int value) {
+				before.run();
+				return after.test(value);
 			}
 		};
 	}

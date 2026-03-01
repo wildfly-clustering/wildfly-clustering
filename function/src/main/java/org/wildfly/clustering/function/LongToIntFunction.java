@@ -22,6 +22,16 @@ public interface LongToIntFunction extends java.util.function.LongToIntFunction,
 	}
 
 	@Override
+	default LongToIntFunction compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
+	default LongToIntFunction thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default <T1, T2> ToIntBiFunction<T1, T2> composeBinary(java.util.function.ToLongBiFunction<? super T1, ? super T2> before) {
 		return ToIntBiFunction.of(before, this);
 	}
@@ -109,6 +119,39 @@ public interface LongToIntFunction extends java.util.function.LongToIntFunction,
 			@Override
 			public LongFunction<Integer> thenBox() {
 				return LongFunction.of(Integer.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static LongToIntFunction of(java.util.function.LongToIntFunction before, Runnable after) {
+		return new LongToIntFunction() {
+			@Override
+			public int applyAsInt(long value) {
+				int result = before.applyAsInt(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static LongToIntFunction of(Runnable before, java.util.function.LongToIntFunction after) {
+		return new LongToIntFunction() {
+			@Override
+			public int applyAsInt(long value) {
+				before.run();
+				return after.applyAsInt(value);
 			}
 		};
 	}

@@ -28,6 +28,16 @@ public interface BooleanToDoubleFunction extends BooleanOperation, ToDoubleOpera
 	}
 
 	@Override
+	default BooleanToDoubleFunction compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
+	default BooleanToDoubleFunction thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default <V1, V2> ToDoubleBiFunction<V1, V2> composeBinary(java.util.function.BiPredicate<? super V1, ? super V2> before) {
 		return ToDoubleBiFunction.of(before, this);
 	}
@@ -107,6 +117,39 @@ public interface BooleanToDoubleFunction extends BooleanOperation, ToDoubleOpera
 			@Override
 			public BooleanFunction<Double> thenBox() {
 				return BooleanFunction.of(Double.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static BooleanToDoubleFunction of(BooleanToDoubleFunction before, Runnable after) {
+		return new BooleanToDoubleFunction() {
+			@Override
+			public double applyAsDouble(boolean value) {
+				double result = before.applyAsDouble(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static BooleanToDoubleFunction of(Runnable before, BooleanToDoubleFunction after) {
+		return new BooleanToDoubleFunction() {
+			@Override
+			public double applyAsDouble(boolean value) {
+				before.run();
+				return after.applyAsDouble(value);
 			}
 		};
 	}

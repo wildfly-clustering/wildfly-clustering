@@ -17,22 +17,27 @@ public interface Predicate<V> extends java.util.function.Predicate<V>, ObjectOpe
 
 	@Override
 	default Predicate<V> and(java.util.function.Predicate<? super V> other) {
-		return Predicate.and(this, other);
+		return and(this, other);
 	}
 
 	@Override
 	default Predicate<V> negate() {
-		return Predicate.not(this);
+		return not(this);
 	}
 
 	@Override
 	default Predicate<V> or(java.util.function.Predicate<? super V> other) {
-		return Predicate.or(this, other);
+		return or(this, other);
 	}
 
 	@Override
 	default <T> Predicate<T> compose(java.util.function.Function<? super T, ? extends V> before) {
-		return Predicate.of(before, this);
+		return of(before, this);
+	}
+
+	@Override
+	default Predicate<V> compose(Runnable before) {
+		return of(before, this);
 	}
 
 	@Override
@@ -88,6 +93,11 @@ public interface Predicate<V> extends java.util.function.Predicate<V>, ObjectOpe
 	@Override
 	default Function<V, Boolean> thenBox() {
 		return this.thenApply(BooleanPredicate.identity().thenBox());
+	}
+
+	@Override
+	default Predicate<V> thenRun(Runnable after) {
+		return of(this, after);
 	}
 
 	@Override
@@ -152,6 +162,41 @@ public interface Predicate<V> extends java.util.function.Predicate<V>, ObjectOpe
 			@Override
 			public boolean test(T value) {
 				return after.test(before.test(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the predicate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> Predicate<T> of(java.util.function.Predicate<? super T> before, Runnable after) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				boolean result = before.test(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T> the predicate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static <T> Predicate<T> of(Runnable before, java.util.function.Predicate<? super T> after) {
+		return new Predicate<>() {
+			@Override
+			public boolean test(T value) {
+				before.run();
+				return after.test(value);
 			}
 		};
 	}

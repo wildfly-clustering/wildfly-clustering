@@ -22,6 +22,16 @@ public interface DoubleToIntFunction extends java.util.function.DoubleToIntFunct
 	}
 
 	@Override
+	default DoubleToIntFunction compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
+	default DoubleToIntFunction thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default <T1, T2> ToIntBiFunction<T1, T2> composeBinary(java.util.function.ToDoubleBiFunction<? super T1, ? super T2> before) {
 		return ToIntBiFunction.of(before, this);
 	}
@@ -109,6 +119,39 @@ public interface DoubleToIntFunction extends java.util.function.DoubleToIntFunct
 			@Override
 			public DoubleFunction<Integer> thenBox() {
 				return DoubleFunction.of(Integer.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static DoubleToIntFunction of(java.util.function.DoubleToIntFunction before, Runnable after) {
+		return new DoubleToIntFunction() {
+			@Override
+			public int applyAsInt(double value) {
+				int result = before.applyAsInt(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static DoubleToIntFunction of(Runnable before, java.util.function.DoubleToIntFunction after) {
+		return new DoubleToIntFunction() {
+			@Override
+			public int applyAsInt(double value) {
+				before.run();
+				return after.applyAsInt(value);
 			}
 		};
 	}

@@ -10,7 +10,7 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  * @param <B> the boxed primitive type
  */
-interface ToPrimitiveOperation<B> {
+interface ToPrimitiveOperation<B> extends Operation {
 	/**
 	 * Returns a boxed version of this operation.
 	 * @return a boxed version of this operation.

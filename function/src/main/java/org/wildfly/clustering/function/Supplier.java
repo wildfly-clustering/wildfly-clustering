@@ -76,6 +76,11 @@ public interface Supplier<V> extends java.util.function.Supplier<V>, VoidOperati
 	}
 
 	@Override
+	default Supplier<V> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default BooleanSupplier thenTest(java.util.function.Predicate<? super V> after) {
 		return BooleanSupplier.of(this, after);
 	}
@@ -114,6 +119,24 @@ public interface Supplier<V> extends java.util.function.Supplier<V>, VoidOperati
 			public T get() {
 				before.run();
 				return after.get();
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static <T> Supplier<T> of(java.util.function.Supplier<? extends T> before, Runnable after) {
+		return new Supplier<>() {
+			@Override
+			public T get() {
+				T result = before.get();
+				after.run();
+				return result;
 			}
 		};
 	}

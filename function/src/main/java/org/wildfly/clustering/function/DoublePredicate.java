@@ -58,6 +58,11 @@ public interface DoublePredicate extends java.util.function.DoublePredicate, Dou
 	}
 
 	@Override
+	default DoublePredicate compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> BiPredicate<V1, V2> composeBinary(java.util.function.ToDoubleBiFunction<? super V1, ? super V2> before) {
 		return BiPredicate.of(before, this);
 	}
@@ -113,6 +118,11 @@ public interface DoublePredicate extends java.util.function.DoublePredicate, Dou
 	}
 
 	@Override
+	default DoublePredicate thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default DoublePredicate thenTest(BooleanPredicate after) {
 		return DoublePredicate.of(this, after);
 	}
@@ -138,6 +148,39 @@ public interface DoublePredicate extends java.util.function.DoublePredicate, Dou
 			public boolean test(double value) {
 				before.accept(value);
 				return after.getAsBoolean();
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static DoublePredicate of(java.util.function.DoublePredicate before, Runnable after) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				boolean result = before.test(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static DoublePredicate of(Runnable before, java.util.function.DoublePredicate after) {
+		return new DoublePredicate() {
+			@Override
+			public boolean test(double value) {
+				before.run();
+				return after.test(value);
 			}
 		};
 	}

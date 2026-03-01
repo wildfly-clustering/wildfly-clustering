@@ -24,7 +24,12 @@ public interface Consumer<V> extends java.util.function.Consumer<V>, ObjectOpera
 
 	@Override
 	default <T> Consumer<T> compose(java.util.function.Function<? super T, ? extends V> before) {
-		return Consumer.of(before, this);
+		return of(before, this);
+	}
+
+	@Override
+	default Consumer<V> compose(Runnable before) {
+		return of(before, this);
 	}
 
 	@Override
@@ -50,6 +55,11 @@ public interface Consumer<V> extends java.util.function.Consumer<V>, ObjectOpera
 	@Override
 	default LongConsumer composeLong(java.util.function.LongFunction<? extends V> before) {
 		return LongConsumer.of(before, this);
+	}
+
+	@Override
+	default Function<V, Void> thenBox() {
+		return this.thenReturn(Supplier.of(null));
 	}
 
 	@Override
@@ -180,12 +190,29 @@ public interface Consumer<V> extends java.util.function.Consumer<V>, ObjectOpera
 	 * @param after the latter operation
 	 * @return a composite consumer
 	 */
-	static <V> Consumer<V> of(java.util.function.Consumer<? super V> before, java.lang.Runnable after) {
+	static <V> Consumer<V> of(java.util.function.Consumer<? super V> before, Runnable after) {
 		return new Consumer<>() {
 			@Override
 			public void accept(V value) {
 				before.accept(value);
 				after.run();
+			}
+		};
+	}
+
+	/**
+	 * Returns a consumer combining the specified operations.
+	 * @param <V> the consumed type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
+	 */
+	static <V> Consumer<V> of(Runnable before, java.util.function.Consumer<? super V> after) {
+		return new Consumer<>() {
+			@Override
+			public void accept(V value) {
+				before.run();
+				after.accept(value);
 			}
 		};
 	}

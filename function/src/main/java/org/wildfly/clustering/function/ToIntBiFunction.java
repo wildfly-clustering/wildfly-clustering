@@ -26,6 +26,11 @@ public interface ToIntBiFunction<V1, V2> extends java.util.function.ToIntBiFunct
 	}
 
 	@Override
+	default ToIntBiFunction<V1, V2> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default ToIntFunction<Map.Entry<V1, V2>> composeEntry() {
 		return this.composeUnary(Map.Entry::getKey, Map.Entry::getValue);
 	}
@@ -81,6 +86,11 @@ public interface ToIntBiFunction<V1, V2> extends java.util.function.ToIntBiFunct
 	}
 
 	@Override
+	default ToIntBiFunction<V1, V2> thenRun(Runnable after) {
+		return of(after, this);
+	}
+
+	@Override
 	default BiPredicate<V1, V2> thenTest(java.util.function.IntPredicate after) {
 		return BiPredicate.of(this, after);
 	}
@@ -102,6 +112,43 @@ public interface ToIntBiFunction<V1, V2> extends java.util.function.ToIntBiFunct
 			@Override
 			public BiFunction<T1, T2, Integer> thenBox() {
 				return BiFunction.of(Integer.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T1, T2> ToIntBiFunction<T1, T2> of(java.util.function.ToIntBiFunction<? super T1, ? super T2> before, Runnable after) {
+		return new ToIntBiFunction<>() {
+			@Override
+			public int applyAsInt(T1 value1, T2 value2) {
+				int result = before.applyAsInt(value1, value2);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T1, T2> ToIntBiFunction<T1, T2> of(Runnable before, java.util.function.ToIntBiFunction<? super T1, ? super T2> after) {
+		return new ToIntBiFunction<>() {
+			@Override
+			public int applyAsInt(T1 value1, T2 value2) {
+				before.run();
+				return after.applyAsInt(value1, value2);
 			}
 		};
 	}

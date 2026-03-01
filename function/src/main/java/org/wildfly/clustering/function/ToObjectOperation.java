@@ -10,7 +10,7 @@ package org.wildfly.clustering.function;
  * @author Paul Ferraro
  * @param <T> the return value type
  */
-interface ToObjectOperation<T> extends MappableToObjectOperation<T> {
+interface ToObjectOperation<T> extends Operation, MappableToObjectOperation<T> {
 
 	/**
 	 * Returns an operation that consumes the result of this operation.
