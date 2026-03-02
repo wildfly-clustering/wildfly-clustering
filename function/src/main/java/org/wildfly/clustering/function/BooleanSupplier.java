@@ -77,8 +77,13 @@ public interface BooleanSupplier extends java.util.function.BooleanSupplier, Pri
 	}
 
 	@Override
+	default BooleanSupplier thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default BooleanSupplier thenTest(BooleanPredicate after) {
-		return BooleanSupplier.of(this, after);
+		return of(this, after);
 	}
 
 	/**
@@ -133,6 +138,23 @@ public interface BooleanSupplier extends java.util.function.BooleanSupplier, Pri
 			@Override
 			public boolean getAsBoolean() {
 				return after.test(before.getAsBoolean());
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static BooleanSupplier of(java.util.function.BooleanSupplier before, Runnable after) {
+		return new BooleanSupplier() {
+			@Override
+			public boolean getAsBoolean() {
+				boolean result = before.getAsBoolean();
+				after.run();
+				return result;
 			}
 		};
 	}

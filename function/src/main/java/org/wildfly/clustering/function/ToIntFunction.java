@@ -18,6 +18,11 @@ public interface ToIntFunction<V> extends java.util.function.ToIntFunction<V>, T
 	}
 
 	@Override
+	default ToIntFunction<V> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> ToIntBiFunction<T1, T2> composeBinary(java.util.function.BiFunction<? super T1, ? super T2, ? extends V> before) {
 		return ToIntBiFunction.of(before, this);
 	}
@@ -73,6 +78,11 @@ public interface ToIntFunction<V> extends java.util.function.ToIntFunction<V>, T
 	}
 
 	@Override
+	default ToIntFunction<V> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default Function<V, Integer> thenBox() {
 		return this.thenApply(IntUnaryOperator.identity().thenBox());
 	}
@@ -93,6 +103,41 @@ public interface ToIntFunction<V> extends java.util.function.ToIntFunction<V>, T
 			@Override
 			public Function<T, Integer> thenBox() {
 				return Function.of(Integer.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> ToIntFunction<T> of(java.util.function.ToIntFunction<? super T> before, Runnable after) {
+		return new ToIntFunction<>() {
+			@Override
+			public int applyAsInt(T value) {
+				int result = before.applyAsInt(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> ToIntFunction<T> of(Runnable before, java.util.function.ToIntFunction<? super T> after) {
+		return new ToIntFunction<>() {
+			@Override
+			public int applyAsInt(T value) {
+				before.run();
+				return after.applyAsInt(value);
 			}
 		};
 	}

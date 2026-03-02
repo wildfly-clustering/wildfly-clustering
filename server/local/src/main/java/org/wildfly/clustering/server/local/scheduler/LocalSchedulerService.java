@@ -151,7 +151,7 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 
 	@Override
 	public void stop() {
-		this.futureEntryReference.getWriter().write(this.cancel);
+		this.futureEntryReference.getWriter().updateAndGet(this.cancel);
 		super.stop();
 	}
 
@@ -217,15 +217,15 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 	}
 
 	private void scheduleIfAbsent() {
-		this.ifAbsentFutureEntryWriter.write(this.schedule);
+		this.ifAbsentFutureEntryWriter.setAndGet(this.schedule);
 	}
 
 	private void rescheduleIfEarlier(Instant instant) {
-		this.futureEntryReference.getWriter(entry -> (entry != null) && instant.isBefore(entry.getKey().getValue())).write(this.reschedule);
+		this.futureEntryReference.getWriter(entry -> (entry != null) && instant.isBefore(entry.getKey().getValue())).updateAndGet(this.reschedule);
 	}
 
 	private void cancelIfPresent(K id) {
-		this.futureEntryReference.getWriter(entry -> (entry != null) && entry.getKey().getKey().equals(id)).write(this.cancel);
+		this.futureEntryReference.getWriter(entry -> (entry != null) && entry.getKey().getKey().equals(id)).updateAndGet(this.cancel);
 	}
 
 	@Override

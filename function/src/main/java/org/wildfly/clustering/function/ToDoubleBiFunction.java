@@ -26,10 +26,14 @@ public interface ToDoubleBiFunction<V1, V2> extends java.util.function.ToDoubleB
 	}
 
 	@Override
+	default ToDoubleBiFunction<V1, V2> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default ToDoubleFunction<Map.Entry<V1, V2>> composeEntry() {
 		return this.composeUnary(Map.Entry::getKey, Map.Entry::getValue);
 	}
-
 
 	@Override
 	default <T> ToDoubleFunction<T> composeUnary(java.util.function.Function<? super T, ? extends V1> mapper1, java.util.function.Function<? super T, ? extends V2> mapper2) {
@@ -82,6 +86,11 @@ public interface ToDoubleBiFunction<V1, V2> extends java.util.function.ToDoubleB
 	}
 
 	@Override
+	default ToDoubleBiFunction<V1, V2> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default BiPredicate<V1, V2> thenTest(java.util.function.DoublePredicate after) {
 		return BiPredicate.of(this, after);
 	}
@@ -103,6 +112,43 @@ public interface ToDoubleBiFunction<V1, V2> extends java.util.function.ToDoubleB
 			@Override
 			public BiFunction<T1, T2, Double> thenBox() {
 				return BiFunction.of(Double.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T1, T2> ToDoubleBiFunction<T1, T2> of(java.util.function.ToDoubleBiFunction<? super T1, ? super T2> before, Runnable after) {
+		return new ToDoubleBiFunction<>() {
+			@Override
+			public double applyAsDouble(T1 value1, T2 value2) {
+				double result = before.applyAsDouble(value1, value2);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T1, T2> ToDoubleBiFunction<T1, T2> of(Runnable before, java.util.function.ToDoubleBiFunction<? super T1, ? super T2> after) {
+		return new ToDoubleBiFunction<>() {
+			@Override
+			public double applyAsDouble(T1 value1, T2 value2) {
+				before.run();
+				return after.applyAsDouble(value1, value2);
 			}
 		};
 	}

@@ -25,22 +25,17 @@ public interface IntConsumer extends java.util.function.IntConsumer, IntOperatio
 
 	@Override
 	default <V> Consumer<V> compose(java.util.function.ToIntFunction<? super V> before) {
-		return new Consumer<>() {
-			@Override
-			public void accept(V value) {
-				IntConsumer.this.accept(before.applyAsInt(value));
-			}
-		};
+		return Consumer.of(before, this);
 	}
 
 	@Override
-	default <V1, V2> BiConsumer<V1, V2> composeBinary(java.util.function.ToIntBiFunction<? super V1, ? super V2> composer) {
-		return new BiConsumer<>() {
-			@Override
-			public void accept(V1 value1, V2 value2) {
-				IntConsumer.this.accept(composer.applyAsInt(value1, value2));
-			}
-		};
+	default IntConsumer compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
+	default <V1, V2> BiConsumer<V1, V2> composeBinary(java.util.function.ToIntBiFunction<? super V1, ? super V2> before) {
+		return BiConsumer.of(before, this);
 	}
 
 	@Override
@@ -61,6 +56,11 @@ public interface IntConsumer extends java.util.function.IntConsumer, IntOperatio
 	@Override
 	default LongConsumer composeLong(java.util.function.LongToIntFunction before) {
 		return LongConsumer.of(before, this);
+	}
+
+	@Override
+	default IntFunction<Void> thenBox() {
+		return this.thenReturn(Supplier.of(null));
 	}
 
 	@Override
@@ -118,6 +118,22 @@ public interface IntConsumer extends java.util.function.IntConsumer, IntOperatio
 			public void accept(int value) {
 				before.accept(value);
 				after.run();
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static IntConsumer of(Runnable before, java.util.function.IntConsumer after) {
+		return new IntConsumer() {
+			@Override
+			public void accept(int value) {
+				before.run();
+				after.accept(value);
 			}
 		};
 	}

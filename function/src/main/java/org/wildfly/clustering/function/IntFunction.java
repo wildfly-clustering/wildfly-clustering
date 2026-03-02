@@ -23,6 +23,11 @@ public interface IntFunction<V> extends java.util.function.IntFunction<V>, IntOp
 	}
 
 	@Override
+	default IntFunction<V> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> BiFunction<T1, T2, V> composeBinary(java.util.function.ToIntBiFunction<? super T1, ? super T2> before) {
 		return BiFunction.of(before, this);
 	}
@@ -73,6 +78,11 @@ public interface IntFunction<V> extends java.util.function.IntFunction<V>, IntOp
 	}
 
 	@Override
+	default IntFunction<V> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default IntPredicate thenTest(java.util.function.Predicate<? super V> after) {
 		return IntPredicate.of(this, after);
 	}
@@ -96,6 +106,41 @@ public interface IntFunction<V> extends java.util.function.IntFunction<V>, IntOp
 	@SuppressWarnings("unchecked")
 	static <R> IntFunction<R> of(R result) {
 		return (result != null) ? new SimpleIntFunction<>(result) : (IntFunction<R>) SimpleIntFunction.NULL;
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> IntFunction<T> of(java.util.function.IntFunction<? extends T> before, Runnable after) {
+		return new IntFunction<>() {
+			@Override
+			public T apply(int value) {
+				T result = before.apply(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> IntFunction<T> of(Runnable before, java.util.function.IntFunction<? extends T> after) {
+		return new IntFunction<>() {
+			@Override
+			public T apply(int value) {
+				before.run();
+				return after.apply(value);
+			}
+		};
 	}
 
 	/**

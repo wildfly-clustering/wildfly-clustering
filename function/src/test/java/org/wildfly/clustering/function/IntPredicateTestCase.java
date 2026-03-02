@@ -16,6 +16,7 @@ import java.util.function.LongToIntFunction;
 import java.util.function.ToIntFunction;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 /**
  * Unit test for {@link IntPredicate}.
@@ -94,7 +95,7 @@ public class IntPredicateTestCase {
 	public void compose() {
 		IntPredicate predicate = mock(IntPredicate.class);
 
-		doCallRealMethod().when(predicate).compose(any());
+		doCallRealMethod().when(predicate).compose(ArgumentMatchers.<ToIntFunction<UUID>>any());
 
 		UUID value = UUID.randomUUID();
 		int mapped = this.random.nextInt();

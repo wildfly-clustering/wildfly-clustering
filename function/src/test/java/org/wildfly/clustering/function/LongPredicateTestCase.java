@@ -16,6 +16,7 @@ import java.util.function.LongUnaryOperator;
 import java.util.function.ToLongFunction;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 /**
  * Unit test for {@link LongPredicate}.
@@ -94,7 +95,7 @@ public class LongPredicateTestCase {
 	public void compose() {
 		LongPredicate predicate = mock(LongPredicate.class);
 
-		doCallRealMethod().when(predicate).compose(any());
+		doCallRealMethod().when(predicate).compose(ArgumentMatchers.<ToLongFunction<UUID>>any());
 
 		UUID value = UUID.randomUUID();
 		long mapped = this.random.nextLong();

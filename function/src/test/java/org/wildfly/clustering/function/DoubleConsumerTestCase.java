@@ -15,6 +15,7 @@ import java.util.function.ToDoubleBiFunction;
 import java.util.function.ToDoubleFunction;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 
 /**
@@ -127,7 +128,7 @@ public class DoubleConsumerTestCase {
 	@Test
 	public void compose() {
 		DoubleConsumer consumer = mock(DoubleConsumer.class);
-		doCallRealMethod().when(consumer).compose(any());
+		doCallRealMethod().when(consumer).compose(ArgumentMatchers.<ToDoubleFunction<Object>>any());
 		ToDoubleFunction<Object> composer = mock(ToDoubleFunction.class);
 		Object value = new Object();
 		double result = this.random.nextDouble();

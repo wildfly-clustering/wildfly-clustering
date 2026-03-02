@@ -27,6 +27,11 @@ public interface BiFunction<V1, V2, R> extends java.util.function.BiFunction<V1,
 	}
 
 	@Override
+	default BiFunction<V1, V2, R> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default Function<Map.Entry<V1, V2>, R> composeEntry() {
 		return this.composeUnary(Map.Entry::getKey, Map.Entry::getValue);
 	}
@@ -69,6 +74,11 @@ public interface BiFunction<V1, V2, R> extends java.util.function.BiFunction<V1,
 	@Override
 	default ToLongBiFunction<V1, V2> thenApplyAsLong(java.util.function.ToLongFunction<? super R> after) {
 		return ToLongBiFunction.of(this, after);
+	}
+
+	@Override
+	default BiFunction<V1, V2, R> thenRun(Runnable after) {
+		return of(this, after);
 	}
 
 	@Override
@@ -136,6 +146,45 @@ public interface BiFunction<V1, V2, R> extends java.util.function.BiFunction<V1,
 	@SuppressWarnings("unchecked")
 	static <T, U, R> BiFunction<T, U, R> of(R result) {
 		return (result != null) ? of(BiConsumer.of(), Supplier.of(result)) : (BiFunction<T, U, R>) SimpleBiFunction.NULL;
+	}
+
+	/**
+	 * Returns a composite function that combines the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param <V> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function that combines the specified operations.
+	 */
+	static <T1, T2, V> BiFunction<T1, T2, V> of(java.util.function.BiFunction<? super T1, ? super T2, ? extends V> before, Runnable after) {
+		return new BiFunction<>() {
+			@Override
+			public V apply(T1 value1, T2 value2) {
+				V result = before.apply(value1, value2);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Returns a composite function that combines the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param <V> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function that combines the specified operations.
+	 */
+	static <T1, T2, V> BiFunction<T1, T2, V> of(Runnable before, java.util.function.BiFunction<? super T1, ? super T2, ? extends V> after) {
+		return new BiFunction<>() {
+			@Override
+			public V apply(T1 value1, T2 value2) {
+				before.run();
+				return after.apply(value1, value2);
+			}
+		};
 	}
 
 	/**

@@ -23,6 +23,11 @@ public interface DoubleFunction<V> extends java.util.function.DoubleFunction<V>,
 	}
 
 	@Override
+	default DoubleFunction<V> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> BiFunction<T1, T2, V> composeBinary(java.util.function.ToDoubleBiFunction<? super T1, ? super T2> before) {
 		return BiFunction.of(before, this);
 	}
@@ -34,7 +39,7 @@ public interface DoubleFunction<V> extends java.util.function.DoubleFunction<V>,
 
 	@Override
 	default DoubleFunction<V> composeDouble(java.util.function.DoubleUnaryOperator before) {
-		return DoubleFunction.of(before, this);
+		return of(before, this);
 	}
 
 	@Override
@@ -54,7 +59,7 @@ public interface DoubleFunction<V> extends java.util.function.DoubleFunction<V>,
 
 	@Override
 	default <R> DoubleFunction<R> thenApply(java.util.function.Function<? super V, ? extends R> after) {
-		return DoubleFunction.of(this, after);
+		return of(this, after);
 	}
 
 	@Override
@@ -70,6 +75,11 @@ public interface DoubleFunction<V> extends java.util.function.DoubleFunction<V>,
 	@Override
 	default DoubleToLongFunction thenApplyAsLong(java.util.function.ToLongFunction<? super V> after) {
 		return DoubleToLongFunction.of(this, after);
+	}
+
+	@Override
+	default DoubleFunction<V> thenRun(Runnable after) {
+		return of(this, after);
 	}
 
 	@Override
@@ -96,6 +106,41 @@ public interface DoubleFunction<V> extends java.util.function.DoubleFunction<V>,
 	@SuppressWarnings("unchecked")
 	static <R> DoubleFunction<R> of(R result) {
 		return (result != null) ? new SimpleDoubleFunction<>(result) : (DoubleFunction<R>) SimpleDoubleFunction.NULL;
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> DoubleFunction<T> of(java.util.function.DoubleFunction<? extends T> before, Runnable after) {
+		return new DoubleFunction<>() {
+			@Override
+			public T apply(double value) {
+				T result = before.apply(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> DoubleFunction<T> of(Runnable before, java.util.function.DoubleFunction<? extends T> after) {
+		return new DoubleFunction<>() {
+			@Override
+			public T apply(double value) {
+				before.run();
+				return after.apply(value);
+			}
+		};
 	}
 
 	/**

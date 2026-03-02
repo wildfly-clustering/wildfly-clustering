@@ -69,7 +69,7 @@ public interface IntSupplier extends java.util.function.IntSupplier, PrimitiveSu
 
 	@Override
 	default IntSupplier thenApplyAsInt(java.util.function.IntUnaryOperator after) {
-		return IntSupplier.of(this, after);
+		return of(this, after);
 	}
 
 	@Override
@@ -80,6 +80,11 @@ public interface IntSupplier extends java.util.function.IntSupplier, PrimitiveSu
 	@Override
 	default Supplier<Integer> thenBox() {
 		return this.thenApply(IntUnaryOperator.identity().thenBox());
+	}
+
+	@Override
+	default IntSupplier thenRun(Runnable after) {
+		return of(this, after);
 	}
 
 	@Override
@@ -118,6 +123,23 @@ public interface IntSupplier extends java.util.function.IntSupplier, PrimitiveSu
 			public int getAsInt() {
 				before.run();
 				return after.getAsInt();
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static IntSupplier of(java.util.function.IntSupplier before, Runnable after) {
+		return new IntSupplier() {
+			@Override
+			public int getAsInt() {
+				int result = before.getAsInt();
+				after.run();
+				return result;
 			}
 		};
 	}

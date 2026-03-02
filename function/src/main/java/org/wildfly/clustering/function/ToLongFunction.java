@@ -18,6 +18,11 @@ public interface ToLongFunction<V> extends java.util.function.ToLongFunction<V>,
 	}
 
 	@Override
+	default ToLongFunction<V> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> ToLongBiFunction<V1, V2> composeBinary(java.util.function.BiFunction<? super V1, ? super V2, ? extends V> before) {
 		return ToLongBiFunction.of(before, this);
 	}
@@ -77,6 +82,11 @@ public interface ToLongFunction<V> extends java.util.function.ToLongFunction<V>,
 		return this.thenApply(LongUnaryOperator.identity().thenBox());
 	}
 
+	@Override
+	default ToLongFunction<V> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
 	/**
 	 * Returns a function returning the specified value, ignoring its parameter.
 	 * @param <T> the parameter type
@@ -93,6 +103,41 @@ public interface ToLongFunction<V> extends java.util.function.ToLongFunction<V>,
 			@Override
 			public Function<T, Long> thenBox() {
 				return Function.of(Long.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> ToLongFunction<T> of(java.util.function.ToLongFunction<? super T> before, Runnable after) {
+		return new ToLongFunction<>() {
+			@Override
+			public long applyAsLong(T value) {
+				long result = before.applyAsLong(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> ToLongFunction<T> of(Runnable before, java.util.function.ToLongFunction<? super T> after) {
+		return new ToLongFunction<>() {
+			@Override
+			public long applyAsLong(T value) {
+				before.run();
+				return after.applyAsLong(value);
 			}
 		};
 	}

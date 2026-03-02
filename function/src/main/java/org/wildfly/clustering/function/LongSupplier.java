@@ -83,6 +83,11 @@ public interface LongSupplier extends java.util.function.LongSupplier, Primitive
 	}
 
 	@Override
+	default LongSupplier thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default BooleanSupplier thenTest(java.util.function.LongPredicate after) {
 		return BooleanSupplier.of(this, after);
 	}
@@ -118,6 +123,23 @@ public interface LongSupplier extends java.util.function.LongSupplier, Primitive
 			public long getAsLong() {
 				before.run();
 				return after.getAsLong();
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static LongSupplier of(java.util.function.LongSupplier before, Runnable after) {
+		return new LongSupplier() {
+			@Override
+			public long getAsLong() {
+				long result = before.getAsLong();
+				after.run();
+				return result;
 			}
 		};
 	}

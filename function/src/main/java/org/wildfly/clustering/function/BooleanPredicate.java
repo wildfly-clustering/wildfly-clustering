@@ -58,6 +58,11 @@ public interface BooleanPredicate extends BooleanOperation, PrimitivePredicate<B
 	}
 
 	@Override
+	default BooleanPredicate compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> BiPredicate<V1, V2> composeBinary(java.util.function.BiPredicate<? super V1, ? super V2> before) {
 		return BiPredicate.of(before, this);
 	}
@@ -110,6 +115,11 @@ public interface BooleanPredicate extends BooleanOperation, PrimitivePredicate<B
 	@Override
 	default BooleanFunction<Boolean> thenBox() {
 		return this.thenApply(IdentityBooleanPredicate.INSTANCE.thenBox());
+	}
+
+	@Override
+	default BooleanPredicate thenRun(Runnable after) {
+		return of(this, after);
 	}
 
 	@Override
@@ -168,6 +178,39 @@ public interface BooleanPredicate extends BooleanOperation, PrimitivePredicate<B
 			@Override
 			public boolean test(boolean value) {
 				return after.test(before.test(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static BooleanPredicate of(BooleanPredicate before, Runnable after) {
+		return new BooleanPredicate() {
+			@Override
+			public boolean test(boolean value) {
+				boolean result = before.test(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static BooleanPredicate of(Runnable before, BooleanPredicate after) {
+		return new BooleanPredicate() {
+			@Override
+			public boolean test(boolean value) {
+				before.run();
+				return after.test(value);
 			}
 		};
 	}

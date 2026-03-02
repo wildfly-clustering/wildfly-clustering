@@ -29,6 +29,11 @@ public interface DoubleConsumer extends java.util.function.DoubleConsumer, Doubl
 	}
 
 	@Override
+	default DoubleConsumer compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> BiConsumer<V1, V2> composeBinary(java.util.function.ToDoubleBiFunction<? super V1, ? super V2> before) {
 		return BiConsumer.of(before, this);
 	}
@@ -51,6 +56,11 @@ public interface DoubleConsumer extends java.util.function.DoubleConsumer, Doubl
 	@Override
 	default LongConsumer composeLong(java.util.function.LongToDoubleFunction before) {
 		return LongConsumer.of(before, this);
+	}
+
+	@Override
+	default DoubleFunction<Void> thenBox() {
+		return this.thenReturn(Supplier.of(null));
 	}
 
 	@Override
@@ -108,6 +118,22 @@ public interface DoubleConsumer extends java.util.function.DoubleConsumer, Doubl
 			public void accept(double value) {
 				before.accept(value);
 				after.run();
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static DoubleConsumer of(Runnable before, java.util.function.DoubleConsumer after) {
+		return new DoubleConsumer() {
+			@Override
+			public void accept(double value) {
+				before.run();
+				after.accept(value);
 			}
 		};
 	}

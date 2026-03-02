@@ -12,7 +12,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ public class BlockingReferenceTestCase {
 		for (int i = 0; i < ITERATIONS; ++i) {
 			int increment = random.nextInt(0, 10);
 			expected += increment;
-			tasks.add(() -> writer.write(value -> value + increment));
+			tasks.add(() -> writer.update(value -> value + increment));
 		}
 		ExecutorService executor = Executors.newFixedThreadPool(CONCURRENCY);
 		try {
@@ -46,7 +45,7 @@ public class BlockingReferenceTestCase {
 			for (Future<?> future : futures) {
 				future.get();
 			}
-			Assertions.assertThat(reference.getReader().read(Function.identity())).isEqualTo(expected);
+			Assertions.assertThat(reference.getReader().get()).isEqualTo(expected);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} finally {

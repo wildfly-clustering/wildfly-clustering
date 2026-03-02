@@ -4,14 +4,12 @@
  */
 package org.wildfly.clustering.session.cache.user;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
-import org.wildfly.clustering.function.Supplier;
-import org.wildfly.clustering.server.util.BlockingReferenceMap;
+import org.wildfly.clustering.server.util.BlockingMapReference;
 import org.wildfly.clustering.session.user.UserSessions;
 
 /**
@@ -23,9 +21,10 @@ import org.wildfly.clustering.session.user.UserSessions;
 public class MutableUserSessions<K, D, S> implements UserSessions<D, S> {
 
 	private final K key;
-	private final Map<D, S> sessions;
+	private final BlockingMapReference<D, S> sessions;
 	private final CacheEntryMutatorFactory<K, Map<D, S>> mutatorFactory;
-	private final BlockingReferenceMap<D, S> updates = BlockingReferenceMap.of(new TreeMap<>());
+	// Guarded by sessions
+	private final Map<D, S> updates = new TreeMap<>();
 
 	/**
 	 * Creates a mutable user sessions.
@@ -35,43 +34,41 @@ public class MutableUserSessions<K, D, S> implements UserSessions<D, S> {
 	 */
 	public MutableUserSessions(K key, Map<D, S> sessions, CacheEntryMutatorFactory<K, Map<D, S>> mutatorFactory) {
 		this.key = key;
-		this.sessions = sessions;
+		this.sessions = BlockingMapReference.of(sessions);
 		this.mutatorFactory = mutatorFactory;
 	}
 
 	@Override
-	public Set<D> getDeployments() {
-		return Collections.unmodifiableSet(this.sessions.keySet());
+	public Map<D, S> getSessions() {
+		return this.sessions.getReader().map(Map::copyOf).get();
 	}
 
 	@Override
 	public S getSession(D deployment) {
-		return this.sessions.get(deployment);
-	}
-
-	@Override
-	public S removeSession(D deployment) {
-		S removed = this.sessions.remove(deployment);
-		if (removed != null) {
-			this.updates.getReference(deployment).getWriter().write(Supplier.of(null));
-		}
-		return removed;
+		return this.sessions.getReference(deployment).getReader().get();
 	}
 
 	@Override
 	public boolean addSession(D deployment, S session) {
-		boolean added = this.sessions.put(deployment, session) == null;
-		if (added) {
-			this.updates.getReference(deployment).getWriter().write(Supplier.of(session));
-		}
-		return added;
+		return this.sessions.getReference(deployment).getWriter(Objects::isNull).getAndSet(() -> {
+			this.updates.put(deployment, session);
+			return session;
+		}) == null;
+	}
+
+	@Override
+	public S removeSession(D deployment) {
+		return this.sessions.getReference(deployment).getWriter(Objects::nonNull).getAndSet(() -> {
+			this.updates.put(deployment, null);
+			return null;
+		});
 	}
 
 	@Override
 	public void close() {
-		this.updates.getReader().consume(map -> {
-			if (!map.isEmpty()) {
-				this.mutatorFactory.createMutator(this.key, map).run();
+		this.sessions.getReader().read(sessions -> {
+			if (!this.updates.isEmpty()) {
+				this.mutatorFactory.createMutator(this.key, this.updates).run();
 			}
 		});
 	}

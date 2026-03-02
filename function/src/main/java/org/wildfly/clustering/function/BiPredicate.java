@@ -51,6 +51,11 @@ public interface BiPredicate<V1, V2> extends java.util.function.BiPredicate<V1, 
 	}
 
 	@Override
+	default BiPredicate<V1, V2> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default Predicate<Map.Entry<V1, V2>> composeEntry() {
 		return this.composeUnary(Map.Entry::getKey, Map.Entry::getValue);
 	}
@@ -96,8 +101,13 @@ public interface BiPredicate<V1, V2> extends java.util.function.BiPredicate<V1, 
 	}
 
 	@Override
+	default BiPredicate<V1, V2> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default BiPredicate<V1, V2> thenTest(BooleanPredicate after) {
-		return BiPredicate.of(this, after);
+		return of(this, after);
 	}
 
 	/**
@@ -143,6 +153,43 @@ public interface BiPredicate<V1, V2> extends java.util.function.BiPredicate<V1, 
 			@Override
 			public boolean test(T1 value1, T2 value2) {
 				return after.test(before.test(value1, value2));
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param before the former parameter
+	 * @param after the latter parameter
+	 * @return a composed predicate
+	 */
+	static <T1, T2> BiPredicate<T1, T2> of(java.util.function.BiPredicate<? super T1, ? super T2> before, Runnable after) {
+		return new BiPredicate<>() {
+			@Override
+			public boolean test(T1 value1, T2 value2) {
+				boolean result = before.test(value1, value2);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param before the former parameter
+	 * @param after the latter parameter
+	 * @return a composed predicate
+	 */
+	static <T1, T2> BiPredicate<T1, T2> of(Runnable before, java.util.function.BiPredicate<? super T1, ? super T2> after) {
+		return new BiPredicate<>() {
+			@Override
+			public boolean test(T1 value1, T2 value2) {
+				before.run();
+				return after.test(value1, value2);
 			}
 		};
 	}

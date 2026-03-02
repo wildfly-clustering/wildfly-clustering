@@ -28,6 +28,11 @@ public interface BooleanToLongFunction extends BooleanOperation, ToLongOperation
 	}
 
 	@Override
+	default BooleanToLongFunction compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> ToLongBiFunction<V1, V2> composeBinary(java.util.function.BiPredicate<? super V1, ? super V2> before) {
 		return ToLongBiFunction.of(before, this);
 	}
@@ -83,6 +88,11 @@ public interface BooleanToLongFunction extends BooleanOperation, ToLongOperation
 	}
 
 	@Override
+	default BooleanToLongFunction thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default BooleanPredicate thenTest(java.util.function.LongPredicate after) {
 		return BooleanPredicate.of(this, after);
 	}
@@ -107,6 +117,39 @@ public interface BooleanToLongFunction extends BooleanOperation, ToLongOperation
 			@Override
 			public BooleanFunction<Long> thenBox() {
 				return BooleanFunction.of(Long.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static BooleanToLongFunction of(BooleanToLongFunction before, Runnable after) {
+		return new BooleanToLongFunction() {
+			@Override
+			public long applyAsLong(boolean value) {
+				long result = before.applyAsLong(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static BooleanToLongFunction of(Runnable before, BooleanToLongFunction after) {
+		return new BooleanToLongFunction() {
+			@Override
+			public long applyAsLong(boolean value) {
+				before.run();
+				return after.applyAsLong(value);
 			}
 		};
 	}

@@ -22,6 +22,11 @@ public interface DoubleUnaryOperator extends java.util.function.DoubleUnaryOpera
 	}
 
 	@Override
+	default DoubleUnaryOperator compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> ToDoubleBiFunction<T1, T2> composeBinary(java.util.function.ToDoubleBiFunction<? super T1, ? super T2> before) {
 		return ToDoubleBiFunction.of(before, this);
 	}
@@ -77,6 +82,11 @@ public interface DoubleUnaryOperator extends java.util.function.DoubleUnaryOpera
 	}
 
 	@Override
+	default DoubleUnaryOperator thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default DoublePredicate thenTest(java.util.function.DoublePredicate after) {
 		return DoublePredicate.of(this, after);
 	}
@@ -109,6 +119,39 @@ public interface DoubleUnaryOperator extends java.util.function.DoubleUnaryOpera
 			@Override
 			public DoubleFunction<Double> thenBox() {
 				return DoubleFunction.of(Double.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static DoubleUnaryOperator of(java.util.function.DoubleUnaryOperator before, Runnable after) {
+		return new DoubleUnaryOperator() {
+			@Override
+			public double applyAsDouble(double value) {
+				double result = before.applyAsDouble(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static DoubleUnaryOperator of(Runnable before, java.util.function.DoubleUnaryOperator after) {
+		return new DoubleUnaryOperator() {
+			@Override
+			public double applyAsDouble(double value) {
+				before.run();
+				return after.applyAsDouble(value);
 			}
 		};
 	}

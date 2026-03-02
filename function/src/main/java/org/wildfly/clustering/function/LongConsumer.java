@@ -24,6 +24,11 @@ public interface LongConsumer extends java.util.function.LongConsumer, LongOpera
 	}
 
 	@Override
+	default LongConsumer compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V> Consumer<V> compose(java.util.function.ToLongFunction<? super V> before) {
 		return Consumer.of(before, this);
 	}
@@ -50,7 +55,12 @@ public interface LongConsumer extends java.util.function.LongConsumer, LongOpera
 
 	@Override
 	default LongConsumer composeLong(java.util.function.LongUnaryOperator before) {
-		return LongConsumer.of(before, this);
+		return of(before, this);
+	}
+
+	@Override
+	default LongFunction<Void> thenBox() {
+		return this.thenReturn(Supplier.of(null));
 	}
 
 	@Override
@@ -80,7 +90,7 @@ public interface LongConsumer extends java.util.function.LongConsumer, LongOpera
 
 	@Override
 	default LongConsumer thenRun(Runnable after) {
-		return LongConsumer.of(this, after);
+		return of(this, after);
 	}
 
 	@Override
@@ -108,6 +118,22 @@ public interface LongConsumer extends java.util.function.LongConsumer, LongOpera
 			public void accept(long value) {
 				before.accept(value);
 				after.run();
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static LongConsumer of(Runnable before, java.util.function.LongConsumer after) {
+		return new LongConsumer() {
+			@Override
+			public void accept(long value) {
+				before.run();
+				after.accept(value);
 			}
 		};
 	}

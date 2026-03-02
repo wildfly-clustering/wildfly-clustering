@@ -29,6 +29,11 @@ public interface BooleanFunction<V> extends BooleanOperation, PrimitiveFunction<
 	}
 
 	@Override
+	default BooleanFunction<V> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> BiFunction<T1, T2, V> composeBinary(java.util.function.BiPredicate<? super T1, ? super T2> before) {
 		return BiFunction.of(before, this);
 	}
@@ -59,7 +64,7 @@ public interface BooleanFunction<V> extends BooleanOperation, PrimitiveFunction<
 
 	@Override
 	default <R> BooleanFunction<R> thenApply(java.util.function.Function<? super V, ? extends R> after) {
-		return BooleanFunction.of(this, after);
+		return of(this, after);
 	}
 
 	@Override
@@ -75,6 +80,11 @@ public interface BooleanFunction<V> extends BooleanOperation, PrimitiveFunction<
 	@Override
 	default BooleanToLongFunction thenApplyAsLong(java.util.function.ToLongFunction<? super V> after) {
 		return BooleanToLongFunction.of(this, after);
+	}
+
+	@Override
+	default BooleanFunction<V> thenRun(Runnable after) {
+		return of(this, after);
 	}
 
 	@Override
@@ -103,6 +113,41 @@ public interface BooleanFunction<V> extends BooleanOperation, PrimitiveFunction<
 			@Override
 			public R apply(boolean value) {
 				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> BooleanFunction<T> of(BooleanFunction<? extends T> before, Runnable after) {
+		return new BooleanFunction<>() {
+			@Override
+			public T apply(boolean value) {
+				T result = before.apply(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the return type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> BooleanFunction<T> of(Runnable before, BooleanFunction<? extends T> after) {
+		return new BooleanFunction<>() {
+			@Override
+			public T apply(boolean value) {
+				before.run();
+				return after.apply(value);
 			}
 		};
 	}

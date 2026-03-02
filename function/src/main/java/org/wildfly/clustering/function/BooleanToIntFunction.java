@@ -28,6 +28,11 @@ public interface BooleanToIntFunction extends BooleanOperation, ToIntOperation {
 	}
 
 	@Override
+	default BooleanToIntFunction compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> ToIntBiFunction<V1, V2> composeBinary(java.util.function.BiPredicate<? super V1, ? super V2> before) {
 		return ToIntBiFunction.of(before, this);
 	}
@@ -83,6 +88,11 @@ public interface BooleanToIntFunction extends BooleanOperation, ToIntOperation {
 	}
 
 	@Override
+	default BooleanToIntFunction thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default BooleanPredicate thenTest(java.util.function.IntPredicate after) {
 		return BooleanPredicate.of(this, after);
 	}
@@ -107,6 +117,39 @@ public interface BooleanToIntFunction extends BooleanOperation, ToIntOperation {
 			@Override
 			public BooleanFunction<Integer> thenBox() {
 				return BooleanFunction.of(Integer.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static BooleanToIntFunction of(BooleanToIntFunction before, Runnable after) {
+		return new BooleanToIntFunction() {
+			@Override
+			public int applyAsInt(boolean value) {
+				int result = before.applyAsInt(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static BooleanToIntFunction of(Runnable before, BooleanToIntFunction after) {
+		return new BooleanToIntFunction() {
+			@Override
+			public int applyAsInt(boolean value) {
+				before.run();
+				return after.applyAsInt(value);
 			}
 		};
 	}

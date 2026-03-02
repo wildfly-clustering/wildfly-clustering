@@ -16,6 +16,7 @@ import java.util.function.LongToDoubleFunction;
 import java.util.function.ToDoubleFunction;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 /**
  * Unit test for {@link DoublePredicate}.
@@ -94,7 +95,7 @@ public class DoublePredicateTestCase {
 	public void compose() {
 		DoublePredicate predicate = mock(DoublePredicate.class);
 
-		doCallRealMethod().when(predicate).compose(any());
+		doCallRealMethod().when(predicate).compose(ArgumentMatchers.<ToDoubleFunction<UUID>>any());
 
 		UUID value = UUID.randomUUID();
 		double mapped = this.random.nextDouble();

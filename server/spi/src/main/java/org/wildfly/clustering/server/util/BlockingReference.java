@@ -5,11 +5,14 @@
 
 package org.wildfly.clustering.server.util;
 
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.Predicate;
 
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
 
@@ -40,19 +43,58 @@ public interface BlockingReference<T> extends Reference<T> {
 	 * @param <T> the reference type
 	 */
 	interface Writer<T> {
+
 		/**
 		 * Updates the value of this reference using the result of the specified supplier.
 		 * @param writer a supplier of the new value
+		 * @return the old value
 		 */
-		default void write(java.util.function.Supplier<T> writer) {
-			this.write(UnaryOperator.of(Consumer.of(), writer));
+		default T getAndSet(java.util.function.Supplier<T> writer) {
+			return this.set(writer).getKey();
 		}
 
 		/**
 		 * Updates the value of this reference based on its current value.
 		 * @param writer a function that returns the new value given its current value.
+		 * @return the old value
 		 */
-		void write(java.util.function.UnaryOperator<T> writer);
+		default T getAndUpdate(java.util.function.UnaryOperator<T> writer) {
+			return this.update(writer).getKey();
+		}
+
+		/**
+		 * Updates the value of this reference using the result of the specified supplier.
+		 * @param writer a supplier of the new value
+		 * @return the new value
+		 */
+		default T setAndGet(java.util.function.Supplier<T> writer) {
+			return this.set(writer).getValue();
+		}
+
+		/**
+		 * Updates the value of this reference based on its current value.
+		 * @param writer a function that returns the new value given its current value.
+		 * @return the new value
+		 */
+		default T updateAndGet(java.util.function.UnaryOperator<T> writer) {
+			return this.update(writer).getValue();
+		}
+
+		/**
+		 * Updates the value of this reference using the result of the specified supplier.
+		 * @param writer a supplier of the new value
+		 * @return a map entry containing the previous and current values of this reference
+		 */
+		default Map.Entry<T, T> set(java.util.function.Supplier<T> writer) {
+			return this.update(UnaryOperator.of(Consumer.of(), writer));
+		}
+
+		/**
+		 * Returns a map entry containing the previous and current value after applying the specified update function.
+		 * @param writer a function that returns the new value given its current value.
+		 * @return a map entry containing the previous and current values of this reference
+		 */
+		Map.Entry<T, T> update(java.util.function.UnaryOperator<T> writer);
 	}
 
 	/**
@@ -66,7 +108,7 @@ public interface BlockingReference<T> extends Reference<T> {
 		StampedLock lock = new StampedLock();
 		Supplier<T> reader = reference::getPlain;
 		Consumer<T> writer = reference::setPlain;
-		Reader<T> blockingReader = new BlockingReferenceReader<>(lock, reader);
+		Reader<T> blockingReader = new BlockingReferenceReader<>(lock, reader, Function.identity());
 		Writer<T> blockingWriter = new BlockingReferenceWriter<>(lock, reader, writer);
 		return new BlockingReference<>() {
 			@Override
@@ -88,40 +130,44 @@ public interface BlockingReference<T> extends Reference<T> {
 
 	/**
 	 * A reader of an blocking reference.
-	 * {@link #consume(java.util.function.Consumer)} uses a pessimistic read lock.
-	 * {@link #read(java.util.function.Function)} uses an optimistic read lock, when possible.
+	 * {@link #read(java.util.function.Consumer)} consumes the referenced value while holding a pessimistic read lock.
+	 * {@link #get()} reads the reference using an optimistic read lock, when possible.
 	 * @param <T> the reference type
+	 * @param <V> the reader type
 	 */
-	class BlockingReferenceReader<T> implements Reader<T> {
+	class BlockingReferenceReader<T, V> implements Reader<V> {
 		private final StampedLock lock;
 		private final Supplier<T> reader;
+		private final java.util.function.Function<? super T, ? extends V> mapper;
 
-		BlockingReferenceReader(StampedLock lock, Supplier<T> reader) {
+		BlockingReferenceReader(StampedLock lock, Supplier<T> reader, java.util.function.Function<? super T, ? extends V> mapper) {
 			this.lock = lock;
 			this.reader = reader;
+			this.mapper = mapper;
 		}
 
 		@Override
-		public void consume(java.util.function.Consumer<T> consumer) {
+		public void read(java.util.function.Consumer<? super V> consumer) {
 			long stamp = this.lock.readLock();
 			try {
 				T value = this.reader.get();
-				consumer.accept(value);
+				V mapped = this.mapper.apply(value);
+				consumer.accept(mapped);
 			} finally {
 				this.lock.unlockRead(stamp);
 			}
 		}
 
 		@Override
-		public <R> R read(java.util.function.Function<T, R> reader) {
-			R result = null;
+		public V get() {
+			V result = null;
 			// Try optimistic read first
 			long stamp = this.lock.tryOptimisticRead();
 			try {
 				if (StampedLock.isOptimisticReadStamp(stamp)) {
 					// Read optimistically, but validate later
 					T value = this.reader.get();
-					result = reader.apply(value);
+					result = this.mapper.apply(value);
 				}
 				if (!this.lock.validate(stamp)) {
 					// Optimistic read invalid
@@ -129,7 +175,7 @@ public interface BlockingReference<T> extends Reference<T> {
 					stamp = this.lock.readLock();
 					// Re-read with read lock
 					T value = this.reader.get();
-					result = reader.apply(value);
+					result = this.mapper.apply(value);
 				}
 				return result;
 			} finally {
@@ -137,6 +183,11 @@ public interface BlockingReference<T> extends Reference<T> {
 					this.lock.unlockRead(stamp);
 				}
 			}
+		}
+
+		@Override
+		public <R> Reader<R> map(java.util.function.Function<? super V, ? extends R> mapper) {
+			return new BlockingReferenceReader<>(this.lock, this.reader, this.mapper.andThen(mapper));
 		}
 	}
 
@@ -157,11 +208,13 @@ public interface BlockingReference<T> extends Reference<T> {
 		}
 
 		@Override
-		public void write(java.util.function.UnaryOperator<T> writer) {
+		public Map.Entry<T, T> update(java.util.function.UnaryOperator<T> writer) {
 			long stamp = this.lock.writeLock();
 			try {
 				T value = this.reader.get();
-				this.writer.accept(writer.apply(value));
+				T updated = writer.apply(value);
+				this.writer.accept(updated);
+				return new AbstractMap.SimpleImmutableEntry<>(value, updated);
 			} finally {
 				this.lock.unlockWrite(stamp);
 			}
@@ -187,7 +240,7 @@ public interface BlockingReference<T> extends Reference<T> {
 		}
 
 		@Override
-		public void write(java.util.function.UnaryOperator<T> writer) {
+		public Map.Entry<T, T> update(java.util.function.UnaryOperator<T> writer) {
 			T value = null;
 			boolean update = false;
 			// Try optimistic read first
@@ -206,6 +259,7 @@ public interface BlockingReference<T> extends Reference<T> {
 					value = this.reader.get();
 					update = this.condition.test(value);
 				}
+				T updated = value;
 				if (update) {
 					// Attempt lock conversion
 					long conversionStamp = this.lock.tryConvertToWriteLock(stamp);
@@ -223,9 +277,12 @@ public interface BlockingReference<T> extends Reference<T> {
 						update = this.condition.test(value);
 					}
 					if (update) {
-						this.writer.accept(writer.apply(value));
+						// Compute new value while holding write lock
+						updated = writer.apply(value);
+						this.writer.accept(updated);
 					}
 				}
+				return new AbstractMap.SimpleImmutableEntry<>(value, updated);
 			} finally {
 				if (StampedLock.isLockStamp(stamp)) {
 					this.lock.unlock(stamp);

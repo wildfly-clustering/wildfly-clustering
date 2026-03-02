@@ -23,7 +23,12 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Objec
 
 	@Override
 	default <V> Function<V, R> compose(java.util.function.Function<? super V, ? extends T> before) {
-		return Function.of(before, this);
+		return of(before, this);
+	}
+
+	@Override
+	default Function<T, R> compose(Runnable before) {
+		return of(before, this);
 	}
 
 	@Override
@@ -77,6 +82,11 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Objec
 	}
 
 	@Override
+	default Function<T, R> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default Predicate<T> thenTest(java.util.function.Predicate<? super R> after) {
 		return Predicate.of(this, after);
 	}
@@ -112,6 +122,43 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Objec
 	@SuppressWarnings("unchecked")
 	static <T, R> Function<T, R> of(R result) {
 		return (result != null) ? new SimpleFunction<>(result) : (Function<T, R>) SimpleFunction.NULL;
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the function parameter type
+	 * @param <V> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T, V> Function<T, V> of(java.util.function.Function<? super T, ? extends V> before, Runnable after) {
+		return new Function<>() {
+			@Override
+			public V apply(T value) {
+				V result = before.apply(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the function parameter type
+	 * @param <V> the intermediate type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T, V> Function<T, V> of(Runnable before, java.util.function.Function<? super T, ? extends V> after) {
+		return new Function<>() {
+			@Override
+			public V apply(T value) {
+				before.run();
+				return after.apply(value);
+			}
+		};
 	}
 
 	/**

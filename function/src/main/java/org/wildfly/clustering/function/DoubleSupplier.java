@@ -60,7 +60,7 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier, Primi
 
 	@Override
 	default DoubleSupplier thenApplyAsDouble(java.util.function.DoubleUnaryOperator after) {
-		return DoubleSupplier.of(this, after);
+		return of(this, after);
 	}
 
 	@Override
@@ -76,6 +76,11 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier, Primi
 	@Override
 	default Supplier<Double> thenBox() {
 		return this.thenApply(DoubleUnaryOperator.identity().thenBox());
+	}
+
+	@Override
+	default DoubleSupplier thenRun(Runnable after) {
+		return of(this, after);
 	}
 
 	@Override
@@ -114,6 +119,23 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier, Primi
 			public double getAsDouble() {
 				before.run();
 				return after.getAsDouble();
+			}
+		};
+	}
+
+	/**
+	 * Composes a supplier from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite supplier
+	 */
+	static DoubleSupplier of(java.util.function.DoubleSupplier before, Runnable after) {
+		return new DoubleSupplier() {
+			@Override
+			public double getAsDouble() {
+				double result = before.getAsDouble();
+				after.run();
+				return result;
 			}
 		};
 	}

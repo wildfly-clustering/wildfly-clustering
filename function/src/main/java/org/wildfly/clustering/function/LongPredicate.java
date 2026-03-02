@@ -59,6 +59,11 @@ public interface LongPredicate extends java.util.function.LongPredicate, LongOpe
 	}
 
 	@Override
+	default LongPredicate compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> BiPredicate<V1, V2> composeBinary(java.util.function.ToLongBiFunction<? super V1, ? super V2> before) {
 		return BiPredicate.of(before, this);
 	}
@@ -109,6 +114,11 @@ public interface LongPredicate extends java.util.function.LongPredicate, LongOpe
 	}
 
 	@Override
+	default LongPredicate thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default LongPredicate thenTest(BooleanPredicate after) {
 		return LongPredicate.of(this, after);
 	}
@@ -139,6 +149,39 @@ public interface LongPredicate extends java.util.function.LongPredicate, LongOpe
 			public boolean test(long value) {
 				before.accept(value);
 				return after.getAsBoolean();
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static LongPredicate of(java.util.function.LongPredicate before, Runnable after) {
+		return new LongPredicate() {
+			@Override
+			public boolean test(long value) {
+				boolean result = before.test(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a predicate from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite predicate
+	 */
+	static LongPredicate of(Runnable before, java.util.function.LongPredicate after) {
+		return new LongPredicate() {
+			@Override
+			public boolean test(long value) {
+				before.run();
+				return after.test(value);
 			}
 		};
 	}

@@ -38,6 +38,11 @@ public interface BooleanConsumer extends BooleanOperation, ToVoidOperation {
 	}
 
 	@Override
+	default BooleanConsumer compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <V1, V2> BiConsumer<V1, V2> composeBinary(java.util.function.BiPredicate<? super V1, ? super V2> before) {
 		return BiConsumer.of(before, this);
 	}
@@ -60,6 +65,11 @@ public interface BooleanConsumer extends BooleanOperation, ToVoidOperation {
 	@Override
 	default LongConsumer composeLong(java.util.function.LongPredicate before) {
 		return LongConsumer.of(before, this);
+	}
+
+	@Override
+	default BooleanFunction<Void> thenBox() {
+		return this.thenReturn(Supplier.of(null));
 	}
 
 	@Override
@@ -117,6 +127,22 @@ public interface BooleanConsumer extends BooleanOperation, ToVoidOperation {
 			public void accept(boolean value) {
 				before.accept(value);
 				after.run();
+			}
+		};
+	}
+
+	/**
+	 * Composes a consumer from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite consumer
+	 */
+	static BooleanConsumer of(Runnable before, BooleanConsumer after) {
+		return new BooleanConsumer() {
+			@Override
+			public void accept(boolean value) {
+				before.run();
+				after.accept(value);
 			}
 		};
 	}

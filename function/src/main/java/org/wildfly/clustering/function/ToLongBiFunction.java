@@ -26,6 +26,16 @@ public interface ToLongBiFunction<V1, V2> extends java.util.function.ToLongBiFun
 	}
 
 	@Override
+	default ToLongBiFunction<V1, V2> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
+	default ToLongBiFunction<V1, V2> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default ToLongFunction<Map.Entry<V1, V2>> composeEntry() {
 		return this.composeUnary(Map.Entry::getKey, Map.Entry::getValue);
 	}
@@ -102,6 +112,43 @@ public interface ToLongBiFunction<V1, V2> extends java.util.function.ToLongBiFun
 			@Override
 			public BiFunction<T1, T2, Long> thenBox() {
 				return BiFunction.of(Long.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T1, T2> ToLongBiFunction<T1, T2> of(java.util.function.ToLongBiFunction<? super T1, ? super T2> before, Runnable after) {
+		return new ToLongBiFunction<>() {
+			@Override
+			public long applyAsLong(T1 value1, T2 value2) {
+				long result = before.applyAsLong(value1, value2);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T1, T2> ToLongBiFunction<T1, T2> of(Runnable before, java.util.function.ToLongBiFunction<? super T1, ? super T2> after) {
+		return new ToLongBiFunction<>() {
+			@Override
+			public long applyAsLong(T1 value1, T2 value2) {
+				before.run();
+				return after.applyAsLong(value1, value2);
 			}
 		};
 	}

@@ -18,6 +18,11 @@ public interface ToDoubleFunction<V> extends java.util.function.ToDoubleFunction
 	}
 
 	@Override
+	default ToDoubleFunction<V> compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> ToDoubleBiFunction<T1, T2> composeBinary(java.util.function.BiFunction<? super T1, ? super T2, ? extends V> before) {
 		return ToDoubleBiFunction.of(before, this);
 	}
@@ -73,6 +78,11 @@ public interface ToDoubleFunction<V> extends java.util.function.ToDoubleFunction
 	}
 
 	@Override
+	default ToDoubleFunction<V> thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default Predicate<V> thenTest(java.util.function.DoublePredicate after) {
 		return Predicate.of(this, after);
 	}
@@ -93,6 +103,41 @@ public interface ToDoubleFunction<V> extends java.util.function.ToDoubleFunction
 			@Override
 			public Function<T, Double> thenBox() {
 				return Function.of(Double.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> ToDoubleFunction<T> of(java.util.function.ToDoubleFunction<? super T> before, Runnable after) {
+		return new ToDoubleFunction<>() {
+			@Override
+			public double applyAsDouble(T value) {
+				double result = before.applyAsDouble(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param <T> the parameter type
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static <T> ToDoubleFunction<T> of(Runnable before, java.util.function.ToDoubleFunction<? super T> after) {
+		return new ToDoubleFunction<>() {
+			@Override
+			public double applyAsDouble(T value) {
+				before.run();
+				return after.applyAsDouble(value);
 			}
 		};
 	}

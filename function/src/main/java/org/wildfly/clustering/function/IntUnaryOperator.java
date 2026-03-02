@@ -22,6 +22,11 @@ public interface IntUnaryOperator extends java.util.function.IntUnaryOperator, I
 	}
 
 	@Override
+	default IntUnaryOperator compose(Runnable before) {
+		return of(before, this);
+	}
+
+	@Override
 	default <T1, T2> ToIntBiFunction<T1, T2> composeBinary(java.util.function.ToIntBiFunction<? super T1, ? super T2> before) {
 		return ToIntBiFunction.of(before, this);
 	}
@@ -77,6 +82,11 @@ public interface IntUnaryOperator extends java.util.function.IntUnaryOperator, I
 	}
 
 	@Override
+	default IntUnaryOperator thenRun(Runnable after) {
+		return of(this, after);
+	}
+
+	@Override
 	default IntPredicate thenTest(java.util.function.IntPredicate after) {
 		return IntPredicate.of(this, after);
 	}
@@ -109,6 +119,39 @@ public interface IntUnaryOperator extends java.util.function.IntUnaryOperator, I
 			@Override
 			public IntFunction<Integer> thenBox() {
 				return IntFunction.of(Integer.valueOf(value));
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static IntUnaryOperator of(java.util.function.IntUnaryOperator before, Runnable after) {
+		return new IntUnaryOperator() {
+			@Override
+			public int applyAsInt(int value) {
+				int result = before.applyAsInt(value);
+				after.run();
+				return result;
+			}
+		};
+	}
+
+	/**
+	 * Composes a function from the specified operations.
+	 * @param before the former operation
+	 * @param after the latter operation
+	 * @return a composite function
+	 */
+	static IntUnaryOperator of(Runnable before, java.util.function.IntUnaryOperator after) {
+		return new IntUnaryOperator() {
+			@Override
+			public int applyAsInt(int value) {
+				before.run();
+				return after.applyAsInt(value);
 			}
 		};
 	}

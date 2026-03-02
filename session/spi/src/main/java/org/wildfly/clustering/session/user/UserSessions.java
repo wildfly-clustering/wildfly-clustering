@@ -4,7 +4,7 @@
  */
 package org.wildfly.clustering.session.user;
 
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Represents an index of user sessions.
@@ -14,22 +14,22 @@ import java.util.Set;
  */
 public interface UserSessions<D, S> extends AutoCloseable {
 	/**
-	 * Returns the set of deployments for which the associated user is authenticated.
-	 * @return a set of deployment identifiers.
+	 * Returns an immutable map of sessions per deployment for which the associated user is authenticated.
+	 * @return a n immutable map of sessions per deployment.
 	 */
-	Set<D> getDeployments();
+	Map<D, S> getSessions();
 
 	/**
-	 * Returns the corresponding session identifier for the specified deployment.
-	 * @param deployment a deployment identifier
-	 * @return the session identifier of the user for the specified deployment, or null, if no session exists for the associated user.
+	 * Returns the session of the specified deployment for which the associated user is authenticated.
+	 * @param deployment a deployment
+	 * @return the session of the user for the specified deployment, or null, if no session exists for the associated user.
 	 */
 	S getSession(D deployment);
 
 	/**
-	 * Removes the specified deployment from the set of deployments for which the associated user is authenticated.
-	 * @param deployment a deployment identifier
-	 * @return the session identifier of the user for the specified deployment, or null, if no session exists for the associated user.
+	 * Removes and returns the session of the specified deployment for which the associated user is no longer authenticated.
+	 * @param deployment a deployment
+	 * @return the session of the specified deployment for which the associated user is no longer authenticated.
 	 */
 	S removeSession(D deployment);
 

@@ -9,8 +9,10 @@ import java.time.Instant;
 import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.server.manager.Manager;
 import org.wildfly.clustering.server.util.Reference;
+import org.wildfly.clustering.server.util.Reference.Reader;
 
 /**
  * Manager of the sessions of an application.
@@ -107,7 +109,7 @@ public interface SessionManager<C> extends Manager<String> {
 	 * @return a session reference
 	 */
 	default Reference<Session<C>> getSessionReference(String id) {
-		return new SessionReference<>(this, id);
+		return Reference.of(new SessionReferenceReader<>(this, id, Function.identity()));
 	}
 
 	/**
@@ -119,28 +121,34 @@ public interface SessionManager<C> extends Manager<String> {
 	/**
 	 * A reference to a session.
 	 * @param <C> the session context type
+	 * @param <V> the reader type
 	 */
-	class SessionReference<C> implements Reference<Session<C>>, Reference.Reader<Session<C>> {
+	class SessionReferenceReader<C, V> implements Reference.Reader<V> {
 		private final SessionManager<C> manager;
 		private final String id;
+		private final java.util.function.Function<Session<C>, V> mapper;
 
-		SessionReference(SessionManager<C> manager, String id) {
+		SessionReferenceReader(SessionManager<C> manager, String id, java.util.function.Function<Session<C>, V> mapper) {
 			this.manager = manager;
 			this.id = id;
+			this.mapper = mapper;
 		}
 
 		@Override
-		public Reader<Session<C>> getReader() {
-			return this;
-		}
-
-		@Override
-		public <R> R read(java.util.function.Function<Session<C>, R> reader) {
+		public V get() {
 			try (Batch batch = this.manager.getBatchFactory().get()) {
 				try (Session<C> session = this.manager.findSession(this.id)) {
-					return reader.apply(session);
+					if (session == null) {
+						throw new IllegalStateException(this.id);
+					}
+					return this.mapper.apply(session);
 				}
 			}
+		}
+
+		@Override
+		public <R> Reader<R> map(java.util.function.Function<? super V, ? extends R> mapper) {
+			return new SessionReferenceReader<>(this.manager, this.id, this.mapper.andThen(mapper));
 		}
 	}
 }
