@@ -98,7 +98,7 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Map<String, Object>> findValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(e -> {
+		return this.cache.getAsync(new SessionAttributesKey(id)).thenApply(this::readAttributes).exceptionally(e -> {
 			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			this.removeAsync(id);
 			return null;
@@ -107,24 +107,22 @@ public class FineSessionAttributesFactory<C, V> implements SessionAttributesFact
 
 	@Override
 	public CompletionStage<Map<String, Object>> tryValueAsync(String id) {
-		return this.getValueAsync(id).exceptionally(Function.of(null));
+		return this.cache.getAsync(new SessionAttributesKey(id)).thenApply(this::readAttributes).exceptionally(Function.of(null));
 	}
 
-	private CompletionStage<Map<String, Object>> getValueAsync(String id) {
-		return this.cache.getAsync(new SessionAttributesKey(id)).thenApply(value -> {
-			Map<String, Object> attributes = this.createValue(id, null);
-			if (value != null) {
-				for (Map.Entry<String, V> entry : value.entrySet()) {
-					String attributeName = entry.getKey();
-					try {
-						attributes.put(attributeName, this.marshaller.read(entry.getValue()));
-					} catch (IOException e) {
-						throw new UncheckedIOException(attributeName, e);
-					}
+	private Map<String, Object> readAttributes(Map<String, V> attributes) {
+		Map<String, Object> result = this.createValue(null, null);
+		if (attributes != null) {
+			for (Map.Entry<String, V> entry : attributes.entrySet()) {
+				String attributeName = entry.getKey();
+				try {
+					result.put(attributeName, this.marshaller.read(entry.getValue()));
+				} catch (IOException e) {
+					throw new UncheckedIOException(attributeName, e);
 				}
 			}
-			return attributes;
-		});
+		}
+		return result;
 	}
 
 	@Override

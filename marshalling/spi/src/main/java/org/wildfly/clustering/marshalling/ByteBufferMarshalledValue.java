@@ -161,12 +161,14 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 			ByteBuffer buffer = this.buffer;
 			boolean unmarshal = (result == null) && (buffer != null);
 			if (!this.lock.validate(stamp)) {
+				// Retry with pessimistic read lock
 				stamp = this.lock.readLock();
-				// Re-read with read lock
+				// Re-read while holding read lock
 				result = this.object;
 				buffer = this.buffer;
 				unmarshal = (result == null) && (buffer != null);
 			}
+			// If unmarshalling, we need a write lock
 			if (unmarshal) {
 				long conversionStamp = this.lock.tryConvertToWriteLock(stamp);
 				if (StampedLock.isWriteLockStamp(conversionStamp)) {
