@@ -79,8 +79,7 @@ public class RemoteStoreSessionManagerITCase extends AbstractSessionManagerITCas
 
 								builder.persistence().addStore(RemoteCacheStoreConfigurationBuilder.class)
 										.container(container)
-										.configuration(
-"""
+										.configuration("""
 {
 	"local-cache" : {
 		"encoding" : {

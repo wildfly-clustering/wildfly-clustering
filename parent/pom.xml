@@ -332,7 +332,6 @@
 								<module name="StringLiteralEquality"/>
 								<module name="StaticVariableName"/>
 								<module name="SuppressionCommentFilter"/>
-								<module name="TextBlockGoogleStyleFormatting"/>
 								<module name="TypecastParenPad"/>
 								<module name="TypeName"/>
 								<module name="UnnecessaryNullCheckWithInstanceOf"/>
