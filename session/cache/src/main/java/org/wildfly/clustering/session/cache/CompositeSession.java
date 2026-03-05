@@ -59,7 +59,6 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 	public void invalidate() {
 		if (this.metaData.invalidate()) {
 			LOGGER.log(System.Logger.Level.DEBUG, "Invalidating session {0}", this.getId());
-			this.remover.remove(this.getId());
 		}
 	}
 
@@ -74,6 +73,8 @@ public class CompositeSession<C> extends CompositeImmutableSession implements Se
 			LOGGER.log(System.Logger.Level.TRACE, "Closing session {0}", this.getId());
 			this.attributes.close();
 			this.metaData.close();
+		} else {
+			this.remover.remove(this.getId());
 		}
 	}
 

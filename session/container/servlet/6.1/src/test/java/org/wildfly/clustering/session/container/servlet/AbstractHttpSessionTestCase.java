@@ -20,11 +20,10 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.SessionManager;
 
 /**
  * @author Paul Ferraro
@@ -34,13 +33,14 @@ import org.wildfly.clustering.session.SessionManager;
 public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M extends ImmutableSessionMetaData> {
 
 	interface HttpSessionFactory<S extends ImmutableSession> {
-		HttpSession createHttpSession(SessionManager<Void> manager, S session, ServletContext context);
+		HttpSession createHttpSession(java.util.function.Supplier<String> identifier, Reference<S> reference, ServletContext context, java.util.function.Supplier<HttpSession.Accessor> accessor);
 	}
 
-	final SessionManager<Void> manager;
+	final String sessionId = "foo";
 	final S session;
 	final M metaData;
 	final ServletContext context;
+	final HttpSession.Accessor accessor = mock(HttpSession.Accessor.class);
 	final HttpSession subject;
 	final Random random = new Random();
 
@@ -48,8 +48,9 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 		this.session = mock(sessionClass);
 		this.metaData = mock(metaDataClass);
 		this.context = mock(ServletContext.class);
-		this.manager = mock(SessionManager.class);
-		this.subject = factory.createHttpSession(this.manager, this.session, this.context);
+		this.subject = factory.createHttpSession(Supplier.of(this.sessionId), Reference.of(this.session), this.context, Supplier.of(this.accessor));
+
+		doReturn(true).when(this.session).isValid();
 	}
 
 	@Test
@@ -59,24 +60,12 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 
 	@Test
 	public void getId() {
-		String expected = "foo";
-
-		doReturn(expected).when(this.session).getId();
-
-		assertThat(this.subject.getId()).isSameAs(expected);
+		assertThat(this.subject.getId()).isSameAs(this.sessionId);
 	}
 
 	@Test
 	public void getAccessor() {
-		Reference<Session<Void>> reference = mock(Reference.class);
-		String expected = "foo";
-
-		doReturn(expected).when(this.session).getId();
-		doReturn(reference).when(this.manager).getSessionReference(expected);
-
-		this.subject.getAccessor();
-
-		verify(this.manager).getSessionReference(expected);
+		assertThat(this.subject.getAccessor()).isSameAs(this.accessor);
 	}
 
 	@Test
@@ -116,7 +105,7 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 	@Test
 	public void isNew() {
 		doReturn(this.metaData).when(this.session).getMetaData();
-		doReturn(Optional.empty(), Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+		doReturn(Optional.empty(), Optional.of(Instant.now())).when(this.metaData).getLastAccessStartTime();
 
 		assertThat(this.subject.isNew()).isTrue();
 		assertThat(this.subject.isNew()).isFalse();

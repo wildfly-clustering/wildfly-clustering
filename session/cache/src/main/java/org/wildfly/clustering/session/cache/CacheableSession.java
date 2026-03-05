@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.cache;
 
 import java.util.function.Supplier;
 
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.session.Session;
 
 /**
@@ -14,5 +15,5 @@ import org.wildfly.clustering.session.Session;
  * @param <C> the context type
  * @author Paul Ferraro
  */
-public interface CacheableSession<C> extends Session<C>, Supplier<Session<C>> {
+public interface CacheableSession<C> extends Session<C>, Supplier<Session<C>>, SuspendedBatch {
 }

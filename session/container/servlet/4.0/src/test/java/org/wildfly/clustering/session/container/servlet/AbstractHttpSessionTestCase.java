@@ -20,6 +20,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
@@ -31,9 +33,10 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
 public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M extends ImmutableSessionMetaData> {
 
 	interface HttpSessionFactory<S extends ImmutableSession> {
-		HttpSession createHttpSession(S session, ServletContext context);
+		HttpSession createHttpSession(java.util.function.Supplier<String> identifier, Reference<S> reference, ServletContext context);
 	}
 
+	final String sessionId = "foo";
 	final S session;
 	final M metaData;
 	final ServletContext context;
@@ -44,7 +47,9 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 		this.session = mock(sessionClass);
 		this.metaData = mock(metaDataClass);
 		this.context = mock(ServletContext.class);
-		this.subject = factory.createHttpSession(this.session, this.context);
+		this.subject = factory.createHttpSession(Supplier.of(this.sessionId), Reference.of(this.session), this.context);
+
+		doReturn(true).when(this.session).isValid();
 	}
 
 	@Test
@@ -54,11 +59,7 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 
 	@Test
 	public void getId() {
-		String expected = "foo";
-
-		doReturn(expected).when(this.session).getId();
-
-		assertThat(this.subject.getId()).isSameAs(expected);
+		assertThat(this.subject.getId()).isSameAs(this.sessionId);
 	}
 
 	@Test
@@ -98,7 +99,7 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 	@Test
 	public void isNew() {
 		doReturn(this.metaData).when(this.session).getMetaData();
-		doReturn(Optional.empty(), Optional.of(Instant.now())).when(this.metaData).getLastAccessTime();
+		doReturn(Optional.empty(), Optional.of(Instant.now())).when(this.metaData).getLastAccessStartTime();
 
 		assertThat(this.subject.isNew()).isTrue();
 		assertThat(this.subject.isNew()).isFalse();

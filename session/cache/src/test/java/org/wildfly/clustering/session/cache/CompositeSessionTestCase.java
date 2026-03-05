@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.util.Supplied;
@@ -47,11 +48,10 @@ public class CompositeSessionTestCase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void invalidate() {
-		when(this.metaData.invalidate()).thenReturn(true);
+		doReturn(false).when(this.metaData).invalidate();
 
 		this.session.invalidate();
 
-		verify(this.remover).remove(this.id);
 		reset(this.remover);
 
 		when(this.metaData.invalidate()).thenReturn(false);
@@ -74,22 +74,24 @@ public class CompositeSessionTestCase {
 
 	@Test
 	public void close() {
-		when(this.metaData.isValid()).thenReturn(true);
+		doReturn(true, false).when(this.metaData).isValid();
 
+		InOrder order = inOrder(this.metaData, this.attributes, this.remover);
+
+		// Verify that session is mutated when closed
 		this.session.close();
 
-		verify(this.attributes).close();
-		verify(this.metaData).close();
+		order.verify(this.metaData).isValid();
+		order.verify(this.attributes).close();
+		order.verify(this.metaData).close();
+		verifyNoInteractions(this.remover);
 
-		reset(this.metaData, this.attributes);
-
-		// Verify that session is not mutated if invalid
-		when(this.metaData.isValid()).thenReturn(false);
-
+		// Verify that session is removed if invalid
 		this.session.close();
 
-		verify(this.attributes, never()).close();
-		verify(this.metaData, never()).close();
+		order.verify(this.metaData).isValid();
+		order.verify(this.remover).remove(this.id);
+		verifyNoMoreInteractions(this.metaData, this.attributes);
 	}
 
 	@Test

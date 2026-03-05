@@ -6,7 +6,6 @@
 package org.wildfly.clustering.session.cache;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionMetaData;
@@ -16,70 +15,65 @@ import org.wildfly.clustering.session.SessionMetaData;
  * @param <C> the session context type
  * @author Paul Ferraro
  */
-public class DecoratedSession<C> implements Session<C>, Supplier<Session<C>> {
+public class DecoratedSession<C> implements Session<C> {
 
-	private final Supplier<Session<C>> reference;
+	private final Session<C> session;
 
 	/**
 	 * Creates a session decorator.
-	 * @param reference a provider of the decorated session
+	 * @param session the decorated session
 	 */
-	public DecoratedSession(Supplier<Session<C>> reference) {
-		this.reference = reference;
-	}
-
-	@Override
-	public Session<C> get() {
-		return this.reference.get();
+	public DecoratedSession(Session<C> session) {
+		this.session = session;
 	}
 
 	@Override
 	public String getId() {
-		return this.reference.get().getId();
+		return this.session.getId();
 	}
 
 	@Override
 	public C getContext() {
-		return this.reference.get().getContext();
+		return this.session.getContext();
 	}
 
 	@Override
 	public SessionMetaData getMetaData() {
-		return this.reference.get().getMetaData();
+		return this.session.getMetaData();
 	}
 
 	@Override
 	public Map<String, Object> getAttributes() {
-		return this.reference.get().getAttributes();
+		return this.session.getAttributes();
 	}
 
 	@Override
 	public boolean isValid() {
-		return this.reference.get().isValid();
+		return this.session.isValid();
 	}
 
 	@Override
 	public void invalidate() {
-		this.reference.get().invalidate();
+		this.session.invalidate();
 	}
 
 	@Override
 	public void close() {
-		this.reference.get().close();
+		this.session.close();
 	}
 
 	@Override
 	public int hashCode() {
-		return this.reference.get().hashCode();
+		return this.session.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object object) {
-		return this.reference.get().equals(object);
+		return this.session.equals(object);
 	}
 
 	@Override
 	public String toString() {
-		return this.reference.get().toString();
+		return this.session.toString();
 	}
 }

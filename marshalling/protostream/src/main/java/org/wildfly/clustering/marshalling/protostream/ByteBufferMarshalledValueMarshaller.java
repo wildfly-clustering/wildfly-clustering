@@ -38,8 +38,8 @@ public enum ByteBufferMarshalledValueMarshaller implements ProtoStreamMarshaller
 	}
 
 	@Override
-	public void writeTo(ProtoStreamWriter writer, ByteBufferMarshalledValue<Object> key) throws IOException {
-		ByteBuffer buffer = key.getBuffer();
+	public void writeTo(ProtoStreamWriter writer, ByteBufferMarshalledValue<Object> value) throws IOException {
+		ByteBuffer buffer = value.getBuffer();
 		if (buffer != null) {
 			writer.writeBytes(BUFFER_INDEX, buffer);
 		}

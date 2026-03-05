@@ -6,12 +6,19 @@
 package org.wildfly.clustering.session.container.servlet;
 
 import java.time.Duration;
+import java.util.Map;
 
 import jakarta.servlet.ServletContext;
 
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiFunction;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
+import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.SessionMetaData;
 
 /**
  * A mutable {@link jakarta.servlet.http.HttpSession} facade.
@@ -19,42 +26,42 @@ import org.wildfly.clustering.session.SessionManager;
  * @param <C> the session context type
  */
 public class MutableHttpSession<C> extends ImmutableHttpSession {
+	private static final UnaryOperator<Session<?>> REQUIRE_VALID = UnaryOperator.when(Session::isValid, UnaryOperator.identity(), UnaryOperator.of(Consumer.<Session<?>>of().thenThrow(IllegalStateException::new), Supplier.of(null)));
+	private static final Function<Session<?>, SessionMetaData> METADATA = REQUIRE_VALID.thenApply(Session::getMetaData);
+	private static final Function<Session<?>, Map<String, Object>> ATTRIBUTES = REQUIRE_VALID.thenApply(Session::getAttributes);
+	private static final Consumer<Session<?>> INVALIDATE = REQUIRE_VALID.thenAccept(Session::invalidate);
+	private static final BiConsumer<SessionMetaData, Duration> MAX_IDLE = SessionMetaData::setMaxIdle;
+	private static final BiFunction<Map<String, Object>, String, Object> REMOVE_ATTRIBUTE = Map::remove;
 
-	private final Session<C> session;
+	private final Reference.Reader<Session<C>> reader;
+	private final Reference.Reader<SessionMetaData> metaDataReader;
+	private final Reference.Reader<Map<String, Object>> attributesReader;
 
-	/**
-	 * Creates an immutable {@link jakarta.servlet.http.HttpSession}.
-	 * @param manager the manager of the specified session
-	 * @param session the decorated session
-	 * @param context the associated servlet context
-	 */
-	public MutableHttpSession(SessionManager<C> manager, Session<C> session, ServletContext context) {
-		super(manager, session, context);
-		this.session = session;
-	}
-
-	MutableHttpSession(Accessor accessor, Session<C> session, ServletContext context) {
-		super(Supplier.of(accessor), session, context);
-		this.session = session;
+	MutableHttpSession(java.util.function.Supplier<String> identifier, Reference<Session<C>> reference, ServletContext context, java.util.function.Supplier<Accessor> accessor) {
+		super(identifier, reference, context, accessor);
+		this.reader = reference.getReader();
+		this.attributesReader = this.reader.map(ATTRIBUTES);
+		this.metaDataReader = this.reader.map(METADATA);
 	}
 
 	@Override
 	public void setMaxInactiveInterval(int interval) {
-		this.session.getMetaData().setMaxIdle(Duration.ofSeconds(interval));
+		Duration maxIdle = interval > 0 ? Duration.ofSeconds(interval) : Duration.ZERO;
+		this.metaDataReader.read(MAX_IDLE.composeUnary(Function.identity(), Function.of(maxIdle)));
 	}
 
 	@Override
 	public void setAttribute(String name, Object value) {
-		this.session.getAttributes().put(name, value);
+		this.attributesReader.read(map -> map.put(name, value));
 	}
 
 	@Override
 	public void removeAttribute(String name) {
-		this.session.getAttributes().remove(name);
+		this.attributesReader.read(REMOVE_ATTRIBUTE.composeUnary(Function.identity(), Function.of(name)).thenAccept(Consumer.of()));
 	}
 
 	@Override
 	public void invalidate() {
-		this.session.invalidate();
+		this.reader.read(INVALIDATE);
 	}
 }

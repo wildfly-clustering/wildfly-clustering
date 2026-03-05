@@ -8,7 +8,6 @@ package org.wildfly.clustering.session.container;
 import java.util.Optional;
 
 import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -74,6 +73,15 @@ public interface ContainerProvider<CC, S, L, SC> {
 	String getId(CC context);
 
 	/**
+	 * Returns a container facade to a session reference.
+	 * @param manager a session manager
+	 * @param id a session identifier
+	 * @param context a container context
+	 * @return a container facade to a detached session.
+	 */
+	S getSession(SessionManager<SC> manager, String id, CC context);
+
+	/**
 	 * Returns a container facade to an immutable session.
 	 * @param manager a session manager
 	 * @param session an immutable session
@@ -90,15 +98,6 @@ public interface ContainerProvider<CC, S, L, SC> {
 	 * @return a container facade to a detached session.
 	 */
 	S getSession(SessionManager<SC> manager, Session<SC> session, CC context);
-
-	/**
-	 * Returns a container facade to a session reference.
-	 * @param reference a session reference
-	 * @param id a session identifier
-	 * @param context a container context
-	 * @return a container facade to a detached session.
-	 */
-	S getSession(Reference<Session<SC>> reference, String id, CC context);
 
 	/**
 	 * Returns the container specific activation/passivation listener for the specified attribute of the specified session, if one exists.
