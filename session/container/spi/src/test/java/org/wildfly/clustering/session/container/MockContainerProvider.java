@@ -105,7 +105,8 @@ public class MockContainerProvider<SC> implements ContainerProvider.SessionAttri
 	}
 
 	@Override
-	public Session<SC> getSession(Reference<Session<SC>> reference, String id, String context) {
+	public Session<SC> getSession(SessionManager<SC> manager, String id, String context) {
+		Reference<Session<SC>> reference = manager.getSessionReference(id);
 		return new Session<>() {
 			@Override
 			public String getId() {

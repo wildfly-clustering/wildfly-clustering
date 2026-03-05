@@ -72,6 +72,8 @@ public class CompositeSessionMetaData extends CompositeImmutableSessionMetaData 
 
 	@Override
 	public void close() {
-		this.mutator.run();
+		if (this.isValid()) {
+			this.mutator.run();
+		}
 	}
 }

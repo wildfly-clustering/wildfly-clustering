@@ -70,6 +70,8 @@ public class DefaultSessionMetaData extends DefaultImmutableSessionMetaData impl
 
 	@Override
 	public void close() {
-		this.mutator.run();
+		if (this.isValid()) {
+			this.mutator.run();
+		}
 	}
 }

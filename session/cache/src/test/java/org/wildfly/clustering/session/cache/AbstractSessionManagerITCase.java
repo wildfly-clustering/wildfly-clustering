@@ -6,7 +6,6 @@
 package org.wildfly.clustering.session.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -28,7 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.function.Consumer;
@@ -291,10 +289,10 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 
 	private void invalidateSession(SessionManager<AtomicReference<String>> manager, String sessionId) {
 		this.requestSession(manager, sessionId, session -> {
-			session.invalidate();
-			assertThat(session.isValid()).isFalse();
-			assertThatThrownBy(() -> session.getAttributes()).isInstanceOf(IllegalStateException.class);
-			assertThatThrownBy(() -> session.getMetaData()).isInstanceOf(IllegalStateException.class);
+			try (Session<AtomicReference<String>> validSession = session) {
+				session.invalidate();
+				assertThat(session.isValid()).isFalse();
+			}
 		});
 	}
 
@@ -304,38 +302,35 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 
 	private void requestSession(SessionManager<AtomicReference<String>> manager, Function<String, Session<AtomicReference<String>>> sessionFactory, String sessionId, Consumer<Session<AtomicReference<String>>> action) {
 		Instant start = Instant.now();
-		try (Batch batch = manager.getBatchFactory().get()) {
-			try (Session<AtomicReference<String>> session = sessionFactory.apply(sessionId)) {
-				assertThat(session).isNotNull();
-				assertThat(session.getId()).isEqualTo(sessionId);
-				action.accept(session);
-				// Post-request processing
-				if (session.isValid()) {
-					SessionMetaData metaData = session.getMetaData();
-					Instant end = Instant.now();
-					metaData.setLastAccess(start, end);
-					// Once last-access is set, session should no longer be "new"
-					assertThat(session.getMetaData().getLastAccessTime()).isPresent();
-					assertThat(session.getMetaData().getLastAccessStartTime()).isPresent();
-					assertThat(session.getMetaData().getLastAccessEndTime()).isPresent();
-					// Skip these assertions during concurrent session access
-					// We would otherwise require memory synchronization to validate
-					if (!Thread.currentThread().getThreadGroup().getName().equals(this.threadGroupName)) {
-						// Validate last-access times are within precision bounds
-						if (metaData.getLastAccessStartTime().isPresent()) {
-							assertThat(Duration.between(metaData.getLastAccessStartTime().get(), start).getSeconds()).isEqualTo(0);
-							assertThat(Duration.between(metaData.getLastAccessStartTime().get(), start).truncatedTo(ChronoUnit.MILLIS).getNano()).isEqualTo(0);
-						}
-						if (metaData.getLastAccessEndTime().isPresent()) {
-							assertThat(Duration.between(end, metaData.getLastAccessEndTime().get()).getSeconds()).isEqualTo(0);
-						}
+		try (Session<AtomicReference<String>> session = sessionFactory.apply(sessionId)) {
+			assertThat(session).isNotNull();
+			assertThat(session.getId()).isEqualTo(sessionId);
+			action.accept(session);
+			// Post-request processing
+			if (session.isValid()) {
+				SessionMetaData metaData = session.getMetaData();
+				Instant end = Instant.now();
+				metaData.setLastAccess(start, end);
+				// Once last-access is set, session should no longer be "new"
+				assertThat(session.getMetaData().getLastAccessTime()).isPresent();
+				assertThat(session.getMetaData().getLastAccessStartTime()).isPresent();
+				assertThat(session.getMetaData().getLastAccessEndTime()).isPresent();
+				// Skip these assertions during concurrent session access
+				// We would otherwise require memory synchronization to validate
+				if (!Thread.currentThread().getThreadGroup().getName().equals(this.threadGroupName)) {
+					// Validate last-access times are within precision bounds
+					if (metaData.getLastAccessStartTime().isPresent()) {
+						assertThat(Duration.between(metaData.getLastAccessStartTime().get(), start).getSeconds()).isEqualTo(0);
+						assertThat(Duration.between(metaData.getLastAccessStartTime().get(), start).truncatedTo(ChronoUnit.MILLIS).getNano()).isEqualTo(0);
+					}
+					if (metaData.getLastAccessEndTime().isPresent()) {
+						assertThat(Duration.between(end, metaData.getLastAccessEndTime().get()).getSeconds()).isEqualTo(0);
 					}
 				}
-			} catch (RuntimeException e) {
-				this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-				batch.discard();
-				throw e;
 			}
+		} catch (RuntimeException e) {
+			this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+			throw e;
 		}
 	}
 
@@ -374,14 +369,11 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 	}
 
 	private void verifyNoSession(SessionManager<AtomicReference<String>> manager, String sessionId) {
-		try (Batch batch = manager.getBatchFactory().get()) {
-			try (Session<AtomicReference<String>> session = manager.findSession(sessionId)) {
-				assertThat(session).isNull();
-			} catch (RuntimeException e) {
-				this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-				batch.discard();
-				throw e;
-			}
+		try (Session<AtomicReference<String>> session = manager.findSession(sessionId)) {
+			assertThat(session).isNull();
+		} catch (RuntimeException e) {
+			this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+			throw e;
 		}
 	}
 

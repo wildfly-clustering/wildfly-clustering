@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpSessionEvent;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.util.BlockingReference;
 import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
@@ -25,6 +27,8 @@ import org.wildfly.clustering.session.container.ContainerProvider;
  */
 @MetaInfServices(ContainerProvider.class)
 public class ServletContainerProvider<C> implements ContainerProvider.SessionAttributeEventListener<ServletContext, HttpSession, HttpSessionActivationListener, C> {
+	private static final java.util.function.Function<ImmutableSession, String> IDENTIFIER = ImmutableSession::getId;
+
 	/**
 	 * Creates a new container provider.
 	 */
@@ -38,17 +42,21 @@ public class ServletContainerProvider<C> implements ContainerProvider.SessionAtt
 
 	@Override
 	public HttpSession getSession(SessionManager<C> manager, ImmutableSession session, ServletContext context) {
-		return new ImmutableHttpSession(manager, session, context);
+		Supplier<String> identifier = Supplier.of(session).thenApply(IDENTIFIER);
+		return new ImmutableHttpSession(identifier, BlockingReference.of(session), context, HttpSessionAccessor.provider(manager, identifier, context));
 	}
 
 	@Override
 	public HttpSession getSession(SessionManager<C> manager, Session<C> session, ServletContext context) {
-		return new MutableHttpSession<>(manager, session, context);
+		Reference<Session<C>> reference = BlockingReference.of(session);
+		java.util.function.Supplier<String> identifier = reference.getReader().map(IDENTIFIER);
+		return new MutableHttpSession<>(identifier, reference, context, HttpSessionAccessor.provider(manager, identifier, context));
 	}
 
 	@Override
-	public HttpSession getSession(Reference<Session<C>> reference, String id, ServletContext context) {
-		return new ReferencedHttpSession<>(reference, id, context);
+	public HttpSession getSession(SessionManager<C> manager, String id, ServletContext context) {
+		Reference<Session<C>> reference = manager.getSessionReference(id);
+		return new MutableHttpSession<>(Supplier.of(id), reference, context, Supplier.of(new HttpSessionAccessor<>(reference, context)));
 	}
 
 	@Override

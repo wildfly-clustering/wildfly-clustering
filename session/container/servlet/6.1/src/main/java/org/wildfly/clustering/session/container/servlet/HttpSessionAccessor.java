@@ -9,8 +9,11 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
 
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.util.BlockingReference;
 import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.Session;
+import org.wildfly.clustering.session.SessionManager;
 
 /**
  * A session accessor that reads from a session reference.
@@ -41,6 +44,15 @@ public class HttpSessionAccessor<C> implements HttpSession.Accessor {
 		if (session == null) {
 			throw new IllegalStateException();
 		}
-		return new MutableHttpSession<>(this, session, this.context);
+		return new MutableHttpSession<>(session::getId, BlockingReference.of(session), this.context, Supplier.of(this));
+	}
+
+	static <C> java.util.function.Supplier<HttpSession.Accessor> provider(SessionManager<C> manager, java.util.function.Supplier<String> identifier, ServletContext context) {
+		return new Supplier<>() {
+			@Override
+			public HttpSession.Accessor get() {
+				return new HttpSessionAccessor<>(manager.getSessionReference(identifier.get()), context);
+			}
+		};
 	}
 }

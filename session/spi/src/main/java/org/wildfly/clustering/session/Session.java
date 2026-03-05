@@ -15,7 +15,6 @@ public interface Session<C> extends ImmutableSession, AutoCloseable {
 
 	/**
 	 * Invalidates this session.
-	 * @throws IllegalStateException if this session was already invalidated.
 	 */
 	void invalidate();
 

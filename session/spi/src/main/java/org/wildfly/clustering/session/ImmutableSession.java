@@ -26,14 +26,12 @@ public interface ImmutableSession {
 	/**
 	 * Returns this session's meta data.
 	 * @return this session's meta data
-	 * @throws IllegalStateException if this session is invalid
 	 */
 	ImmutableSessionMetaData getMetaData();
 
 	/**
 	 * Returns this session's attributes.
 	 * @return this session's attributes
-	 * @throws IllegalStateException if this session is invalid
 	 */
 	Map<String, Object> getAttributes();
 }

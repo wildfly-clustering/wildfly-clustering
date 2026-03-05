@@ -6,6 +6,7 @@
 package org.wildfly.clustering.session.cache;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -13,6 +14,9 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
@@ -34,19 +38,11 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 	static final System.Logger LOGGER = System.getLogger(CachedSessionManager.class.getName());
 
 	private final Cache<String, CompletionStage<CacheableSession<C>>> sessionCache;
+	private final Supplier<Batch> batchFactory;
 	private final BiFunction<String, Instant, CompletionStage<Session<C>>> sessionCreator;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> defaultSessionCreator;
 	private final BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>> sessionFinder;
-	private final UnaryOperator<Session<C>> validator = new UnaryOperator<>() {
-		@Override
-		public Session<C> apply(Session<C> session) {
-			if (!session.isValid()) {
-				session.close();
-				return null;
-			}
-			return session;
-		}
-	};
+	private final UnaryOperator<Session<C>> validator = UnaryOperator.when(Session::isValid, UnaryOperator.identity(), UnaryOperator.of(Session::close, Supplier.of(null)));
 
 	/**
 	 * Creates a cached session manager decorator.
@@ -55,16 +51,22 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 	 */
 	public CachedSessionManager(SessionManager<C> manager, CacheFactory cacheFactory) {
 		super(manager);
+		this.batchFactory = manager.getBatchFactory();
 		this.sessionCreator = manager::createSessionAsync;
 		// If completed exceptionally, return an invalid session that rethrows this exception on Session.close()
 		// If completed with null, return an invalid session that we can filter later
-		this.defaultSessionCreator = new SessionManagerFunction<>(manager::createSessionAsync);
-		this.sessionFinder = new SessionManagerFunction<>(manager::findSessionAsync);
+		this.defaultSessionCreator = new SessionManagerFunction<>(this.batchFactory, manager::createSessionAsync);
+		this.sessionFinder = new SessionManagerFunction<>(this.batchFactory, manager::findSessionAsync);
 		this.sessionCache = cacheFactory.createCache(Consumer.of(), new Consumer<CompletionStage<CacheableSession<C>>>() {
 			@Override
 			public void accept(CompletionStage<CacheableSession<C>> stage) {
 				try {
-					Optional.ofNullable(stage.toCompletableFuture().join()).map(CacheableSession::get).ifPresent(Session::close);
+					CacheableSession<C> session = stage.toCompletableFuture().join();
+					if (session != null) {
+						try (Batch batch = session.resume()) {
+							Optional.ofNullable(session.get()).ifPresent(Consumer.close());
+						}
+					}
 				} catch (CompletionException | CancellationException e) {
 					// This would already have been handled
 					LOGGER.log(System.Logger.Level.DEBUG, e.getLocalizedMessage(), e);
@@ -80,7 +82,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 
 	@Override
 	public CompletionStage<Session<C>> createSessionAsync(String id, Instant creationTime) {
-		return this.sessionCache.computeIfAbsent(id, new SessionManagerFunction<>(this.sessionCreator.composeUnary(UnaryOperator.identity(), Function.of(creationTime)))).thenApply(this.validator);
+		return this.sessionCache.computeIfAbsent(id, new SessionManagerFunction<>(this.batchFactory, this.sessionCreator.composeUnary(UnaryOperator.identity(), Function.of(creationTime)))).thenApply(this.validator);
 	}
 
 	@Override
@@ -93,15 +95,26 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 	}
 
 	static class SessionManagerFunction<C> implements BiFunction<String, Runnable, CompletionStage<CacheableSession<C>>>, Session<C> {
+		private final Supplier<Batch> batchFactory;
 		private final Function<String, CompletionStage<Session<C>>> operation;
 
-		SessionManagerFunction(Function<String, CompletionStage<Session<C>>> operation) {
+		SessionManagerFunction(Supplier<Batch> batchFactory, Function<String, CompletionStage<Session<C>>> operation) {
+			this.batchFactory = batchFactory;
 			this.operation = operation;
 		}
 
 		@Override
 		public CompletionStage<CacheableSession<C>> apply(String id, Runnable closeTask) {
-			return this.operation.apply(id).handle((session, exception) -> new CachedSession<>((session != null) ? session : this, (exception != null) ? Runner.of(closeTask, Supplier.of(exception).thenThrow(CompletionException::new).thenAccept(Consumer.of())) : closeTask));
+			SuspendedBatch suspended = this.batchFactory.get().suspend();
+			try (Context<Batch> context = suspended.resumeWithContext()) {
+				return this.operation.apply(id).handle(new BiFunction<>() {
+					@Override
+					public CacheableSession<C> apply(Session<C> session, Throwable exception) {
+						Runnable onClose = (exception != null) ? Runner.of(List.of(closeTask, Runner.of(Supplier.of(exception).thenThrow(CompletionException::new), Consumer.of()))) : closeTask;
+						return new CachedSession<>((session != null) ? session : SessionManagerFunction.this, suspended, onClose);
+					}
+				});
+			}
 		}
 
 		@Override

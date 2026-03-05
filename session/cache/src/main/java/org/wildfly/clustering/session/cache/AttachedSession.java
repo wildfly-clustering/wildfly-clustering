@@ -5,13 +5,11 @@
 
 package org.wildfly.clustering.session.cache;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.SessionMetaData;
 
 /**
  * A {@link Session} decorator whose methods throw an {@link IllegalStateException} if the session is not valid.
@@ -19,35 +17,11 @@ import org.wildfly.clustering.session.SessionMetaData;
  * @author Paul Ferraro
  */
 public class AttachedSession<C> extends DecoratedSession<C> {
-	private final Consumer<ImmutableSession> closeTask;
+	private final Runnable closeTask;
 
 	AttachedSession(Session<C> session, Consumer<ImmutableSession> closeTask) {
-		super(Supplier.of(session));
-		this.closeTask = closeTask;
-	}
-
-	private void validate() {
-		if (!this.isValid()) {
-			throw new IllegalStateException(this.getId());
-		}
-	}
-
-	@Override
-	public SessionMetaData getMetaData() {
-		this.validate();
-		return super.getMetaData();
-	}
-
-	@Override
-	public Map<String, Object> getAttributes() {
-		this.validate();
-		return super.getAttributes();
-	}
-
-	@Override
-	public void invalidate() {
-		this.validate();
-		super.invalidate();
+		super(session);
+		this.closeTask = Supplier.of(session).thenAccept(closeTask);
 	}
 
 	@Override
@@ -55,7 +29,7 @@ public class AttachedSession<C> extends DecoratedSession<C> {
 		try {
 			super.close();
 		} finally {
-			this.closeTask.accept(this.get());
+			this.closeTask.run();
 		}
 	}
 }
