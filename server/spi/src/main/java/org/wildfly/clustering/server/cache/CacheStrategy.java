@@ -122,6 +122,7 @@ public enum CacheStrategy implements CacheFactory {
 									if (value != null) {
 										stopTask.accept(value);
 										reference.setPlain(null);
+										LOGGER.log(System.Logger.Level.TRACE, "Removed reference to {0}", key);
 									}
 								} finally {
 									lock.unlockWrite(stopStamp);
@@ -130,6 +131,7 @@ public enum CacheStrategy implements CacheFactory {
 							// Create object from factory while holding write lock
 							result = factory.apply(key, () -> this.remove(key, stop));
 							if (result != null) {
+								LOGGER.log(System.Logger.Level.TRACE, "Adding reference to {0}", key);
 								// Invoke start task while holding write lock
 								startTask.accept(result);
 								reference.setPlain(result);
@@ -164,6 +166,8 @@ public enum CacheStrategy implements CacheFactory {
 		}
 	},
 	;
+	private static final System.Logger LOGGER = System.getLogger(CacheStrategy.class.getCanonicalName());
+
 	private abstract static class AbstractFunction<K, V> implements BiFunction<K, Map.Entry<Integer, V>, Map.Entry<Integer, V>> {
 		static final Integer INITIAL_INDEX = Integer.valueOf(0);
 
