@@ -105,7 +105,7 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 
 	protected void concurrent(P parameters) throws InterruptedException, ExecutionException {
 		int threads = 10;
-		int requests = 10;
+		int requests = 100;
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
 		SessionManagerConfiguration<String> managerConfig1 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
 		SessionManagerConfiguration<String> managerConfig2 = new TestSessionManagerConfiguration<>(expiredSessions, DEPLOYMENT_CONTEXT);
