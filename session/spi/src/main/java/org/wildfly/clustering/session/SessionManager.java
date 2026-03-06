@@ -7,6 +7,7 @@ package org.wildfly.clustering.session;
 
 import java.time.Instant;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.Function;
@@ -135,12 +136,18 @@ public interface SessionManager<C> extends Manager<String> {
 		}
 
 		@Override
+		public void read(Consumer<? super V> reader) {
+			try (Batch batch = this.manager.getBatchFactory().get()) {
+				try (Session<C> session = this.manager.findSession(this.id)) {
+					reader.accept(this.mapper.apply(session));
+				}
+			}
+		}
+
+		@Override
 		public V get() {
 			try (Batch batch = this.manager.getBatchFactory().get()) {
 				try (Session<C> session = this.manager.findSession(this.id)) {
-					if (session == null) {
-						throw new IllegalStateException(this.id);
-					}
 					return this.mapper.apply(session);
 				}
 			}
