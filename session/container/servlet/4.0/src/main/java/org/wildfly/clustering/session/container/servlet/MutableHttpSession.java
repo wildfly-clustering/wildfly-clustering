@@ -11,7 +11,6 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 
 import org.wildfly.clustering.function.BiConsumer;
-import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
@@ -31,7 +30,8 @@ public class MutableHttpSession<C> extends ImmutableHttpSession {
 	private static final Function<Session<?>, Map<String, Object>> ATTRIBUTES = REQUIRE_VALID.thenApply(Session::getAttributes);
 	private static final Consumer<Session<?>> INVALIDATE = REQUIRE_VALID.thenAccept(Session::invalidate);
 	private static final BiConsumer<SessionMetaData, Duration> MAX_IDLE = SessionMetaData::setMaxIdle;
-	private static final BiFunction<Map<String, Object>, String, Object> REMOVE_ATTRIBUTE = Map::remove;
+	private static final BiConsumer<Map<String, Object>, Map.Entry<String, Object>> SET_ATTRIBUTE = (map, entry) -> map.put(entry.getKey(), entry.getValue());
+	private static final BiConsumer<Map<String, Object>, String> REMOVE_ATTRIBUTE = Map::remove;
 
 	private final Reference.Reader<Session<C>> reader;
 	private final Reference.Reader<SessionMetaData> metaDataReader;
@@ -52,12 +52,12 @@ public class MutableHttpSession<C> extends ImmutableHttpSession {
 
 	@Override
 	public void setAttribute(String name, Object value) {
-		this.attributesReader.read(map -> map.put(name, value));
+		this.attributesReader.read(SET_ATTRIBUTE.composeUnary(Function.identity(), Function.of(Map.entry(name, value))));
 	}
 
 	@Override
 	public void removeAttribute(String name) {
-		this.attributesReader.read(REMOVE_ATTRIBUTE.composeUnary(Function.identity(), Function.of(name)).thenAccept(Consumer.of()));
+		this.attributesReader.read(REMOVE_ATTRIBUTE.composeUnary(Function.identity(), Function.of(name)));
 	}
 
 	@Override
