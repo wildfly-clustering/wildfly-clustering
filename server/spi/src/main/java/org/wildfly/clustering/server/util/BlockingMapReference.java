@@ -62,7 +62,7 @@ public interface BlockingMapReference<K, V> extends Reference<Map<K, V>> {
 					}
 
 					@Override
-					public Writer<V> getWriter(Predicate<V> when) {
+					public Writer<V> getWriter(Predicate<? super V> when) {
 						return new ConditionalReferenceWriter<>(lock, reader, writer, when);
 					}
 				};
