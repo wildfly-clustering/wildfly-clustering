@@ -4,10 +4,13 @@
  */
 package org.wildfly.clustering.session;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 
 /**
@@ -15,6 +18,14 @@ import org.wildfly.clustering.server.expiration.ExpirationMetaData;
  * @author Paul Ferraro
  */
 public interface ImmutableSessionMetaData extends ExpirationMetaData {
+	/** A function returning the creation time for a session */
+	Function<ImmutableSessionMetaData, Instant> CREATION_TIME = ImmutableSessionMetaData::getCreationTime;
+	/** A function returning the start time of the last access of a session, of empty */
+	Function<ImmutableSessionMetaData, Optional<Instant>> LAST_ACCESS_START_TIME = ImmutableSessionMetaData::getLastAccessStartTime;
+	/** A function returning the start time of the last access of a session, or the creation time for new sessions */
+	Function<ImmutableSessionMetaData, Instant> LAST_ACCESS_TIME = Function.when(Predicate.of(LAST_ACCESS_START_TIME, Optional::isPresent), Function.of(LAST_ACCESS_START_TIME, Optional::get), CREATION_TIME);
+	/** A function returning the maximum idle duration for a session */
+	Function<ImmutableSessionMetaData, Optional<Duration>> MAX_IDLE = ImmutableSessionMetaData::getMaxIdle;
 
 	/**
 	 * Returns the time this session was created.

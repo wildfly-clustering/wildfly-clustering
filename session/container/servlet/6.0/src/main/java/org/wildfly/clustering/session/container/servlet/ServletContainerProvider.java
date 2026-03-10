@@ -21,13 +21,13 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.container.ContainerProvider;
 
 /**
- * Jakarta Servlet 6.0 container provider.
+ * {@value #NAME} container provider.
  * @author Paul Ferraro
  * @param <C> the session context type
  */
 @MetaInfServices(ContainerProvider.class)
 public class ServletContainerProvider<C> implements ContainerProvider.SessionAttributeEventListener<ServletContext, HttpSession, HttpSessionActivationListener, C> {
-	private static final java.util.function.Function<ImmutableSession, String> IDENTIFIER = ImmutableSession::getId;
+	static final String NAME = "Jakarta Servlet 6.0";
 
 	/**
 	 * Creates a new container provider.
@@ -42,15 +42,13 @@ public class ServletContainerProvider<C> implements ContainerProvider.SessionAtt
 
 	@Override
 	public HttpSession getSession(SessionManager<C> manager, ImmutableSession session, ServletContext context) {
-		Supplier<String> identifier = Supplier.of(session).thenApply(IDENTIFIER);
-		return new ImmutableHttpSession(identifier, BlockingReference.of(session), context);
+		return new ImmutableHttpSession<>(Supplier.of(session).thenApply(ImmutableSession.IDENTIFIER), BlockingReference.of(session), context);
 	}
 
 	@Override
 	public HttpSession getSession(SessionManager<C> manager, Session<C> session, ServletContext context) {
 		Reference<Session<C>> reference = BlockingReference.of(session);
-		java.util.function.Supplier<String> identifier = reference.getReader().map(IDENTIFIER);
-		return new MutableHttpSession<>(identifier, reference, context);
+		return new MutableHttpSession<>(reference.getReader().map(ImmutableSession.IDENTIFIER), reference, context);
 	}
 
 	@Override
@@ -76,6 +74,6 @@ public class ServletContainerProvider<C> implements ContainerProvider.SessionAtt
 
 	@Override
 	public String toString() {
-		return "Jakarta Servlet 6.0";
+		return NAME;
 	}
 }

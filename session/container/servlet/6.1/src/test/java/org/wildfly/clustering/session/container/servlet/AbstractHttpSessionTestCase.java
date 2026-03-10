@@ -33,7 +33,7 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
 public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M extends ImmutableSessionMetaData> {
 
 	interface HttpSessionFactory<S extends ImmutableSession> {
-		HttpSession createHttpSession(java.util.function.Supplier<String> identifier, Reference<S> reference, ServletContext context, java.util.function.Supplier<HttpSession.Accessor> accessor);
+		HttpSession createHttpSession(java.util.function.Supplier<String> identifier, Reference<S> reference, ServletContext context, java.util.function.Function<String, HttpSession.Accessor> accessor);
 	}
 
 	final String sessionId = "foo";
@@ -48,7 +48,7 @@ public abstract class AbstractHttpSessionTestCase<S extends ImmutableSession, M 
 		this.session = mock(sessionClass);
 		this.metaData = mock(metaDataClass);
 		this.context = mock(ServletContext.class);
-		this.subject = factory.createHttpSession(Supplier.of(this.sessionId), Reference.of(this.session), this.context, Supplier.of(this.accessor));
+		this.subject = factory.createHttpSession(Supplier.of(this.sessionId), Reference.of(this.session), this.context, Map.of(this.sessionId, this.accessor)::get);
 
 		doReturn(true).when(this.session).isValid();
 	}

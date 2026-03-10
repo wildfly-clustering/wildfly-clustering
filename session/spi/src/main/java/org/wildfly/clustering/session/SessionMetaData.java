@@ -8,11 +8,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 
+import org.wildfly.clustering.function.BiConsumer;
+
 /**
  * Abstraction for meta information about a session.
  * @author Paul Ferraro
  */
 public interface SessionMetaData extends ImmutableSessionMetaData {
+	/** A consumer that updates the maximum idle duration of a session */
+	BiConsumer<SessionMetaData, Duration> MAX_IDLE = SessionMetaData::setMaxIdle;
+	/** A consumer that updates the last access of a session */
+	BiConsumer<SessionMetaData, Map.Entry<Instant, Instant>> LAST_ACCESS = SessionMetaData::setLastAccess;
+
 	/**
 	 * Sets the time this session was last accessed.
 	 * @param startTime the start time of the last request

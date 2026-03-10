@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.session.container.servlet;
 
+import java.util.function.Supplier;
+
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
 
@@ -13,11 +15,17 @@ import jakarta.servlet.http.HttpSession;
  * @author Paul Ferraro
  */
 public abstract class AbstractHttpSession implements HttpSession {
-
+	private final Supplier<String> identifier;
 	private final ServletContext context;
 
-	AbstractHttpSession(ServletContext context) {
+	AbstractHttpSession(Supplier<String> identifier, ServletContext context) {
+		this.identifier = identifier;
 		this.context = context;
+	}
+
+	@Override
+	public String getId() {
+		return this.identifier.get();
 	}
 
 	@Override
