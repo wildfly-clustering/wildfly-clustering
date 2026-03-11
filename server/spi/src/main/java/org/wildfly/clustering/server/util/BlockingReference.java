@@ -36,7 +36,7 @@ public interface BlockingReference<T> extends Reference<T> {
 	 * @param when a predicate that must be met for a given write operation to proceed.
 	 * @return a conditional thread-safe writer of this reference.
 	 */
-	Writer<T> getWriter(Predicate<T> when);
+	Writer<T> getWriter(Predicate<? super T> when);
 
 	/**
 	 * Describes the writer of a reference.
@@ -122,7 +122,7 @@ public interface BlockingReference<T> extends Reference<T> {
 			}
 
 			@Override
-			public Writer<T> getWriter(Predicate<T> when) {
+			public Writer<T> getWriter(Predicate<? super T> when) {
 				return new ConditionalReferenceWriter<>(lock, reader, writer, when);
 			}
 		};
@@ -230,9 +230,9 @@ public interface BlockingReference<T> extends Reference<T> {
 		private final StampedLock lock;
 		private final Supplier<T> reader;
 		private final Consumer<T> writer;
-		private final Predicate<T> condition;
+		private final Predicate<? super T> condition;
 
-		ConditionalReferenceWriter(StampedLock lock, Supplier<T> reader, Consumer<T> writer, Predicate<T> condition) {
+		ConditionalReferenceWriter(StampedLock lock, Supplier<T> reader, Consumer<T> writer, Predicate<? super T> condition) {
 			this.lock = lock;
 			this.reader = reader;
 			this.writer = writer;
