@@ -10,11 +10,12 @@ import static org.mockito.Mockito.*;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadFactory;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.server.scheduler.SchedulerService;
 
@@ -23,152 +24,197 @@ import org.wildfly.clustering.server.scheduler.SchedulerService;
  */
 public class LocalSchedulerServiceTestCase {
 
-	static LocalSchedulerService.Configuration<UUID> configuration(ScheduledEntries<UUID, Instant> entries, Predicate<UUID> task) {
-		return new LocalSchedulerService.Configuration<>() {
-			@Override
-			public String getName() {
-				return "test";
+	private final Predicate<UUID> task = mock(Predicate.class);
+	private final ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
+	private final LocalSchedulerService.Configuration<UUID> configuration = new LocalSchedulerService.Configuration<UUID>() {
+		@Override
+		public String getName() {
+			return "test";
+		}
+
+		@Override
+		public Predicate<UUID> getTask() {
+			return LocalSchedulerServiceTestCase.this.task;
+		}
+
+		@Override
+		public ScheduledEntries<UUID, Instant> getScheduledEntries() {
+			return LocalSchedulerServiceTestCase.this.entries;
+		}
+
+		@Override
+		public ThreadFactory getThreadFactory() {
+			return Thread::new;
+		}
+	};
+
+	@Test
+	public void queue() throws InterruptedException {
+		List<UUID> keys = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+		Duration interval = Duration.ofMillis(200);
+
+		doReturn(true).when(this.task).test(any());
+		InOrder order = inOrder(this.task);
+
+		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(this.configuration)) {
+			scheduler.start();
+			Instant now = Instant.now();
+			for (int i = 0; i < keys.size(); ++i) {
+				scheduler.schedule(keys.get(i), now.plus(interval.multipliedBy(i + 1)));
 			}
 
-			public ScheduledEntries<UUID, Instant> getScheduledEntries() {
-				return entries;
-			}
+			this.waitUntilEmpty(interval.multipliedBy(keys.size() + 1));
 
-			@Override
-			public Predicate<UUID> getTask() {
-				return task;
+			// Verify all tasks were executed, in order
+			for (UUID key : keys) {
+				order.verify(this.task).test(key);
 			}
+			verifyNoMoreInteractions(this.task);
 
-			@Override
-			public ThreadFactory getThreadFactory() {
-				return Thread::new;
-			}
-
-			@Override
-			public Duration getCloseTimeout() {
-				return Duration.ZERO;
-			}
-		};
+			assertThat(this.entries).isEmpty();
+		}
 	}
 
 	@Test
-	public void lifecycle() {
-		ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
-		Predicate<UUID> task = mock(Predicate.class);
+	public void lifecycle() throws InterruptedException {
+		UUID key = UUID.randomUUID();
 
-		Map.Entry<UUID, Instant> entry = Map.entry(UUID.randomUUID(), Instant.now());
+		doReturn(true).when(this.task).test(key);
 
-		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(configuration(entries, task))) {
+		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(this.configuration)) {
 
-			// Verify simple scheduling
-			when(task.test(entry.getKey())).thenReturn(true);
+			scheduler.schedule(key, Instant.now().plus(Duration.ofMillis(100)));
 
-			scheduler.schedule(entry.getKey(), entry.getValue());
-
-			waitUntilEmpty(entries);
+			this.waitUntilEmpty(Duration.ofMillis(400));
 
 			// Tasks do not execute while scheduler is not started
-			verifyNoInteractions(task);
-			assertThat(entries).isNotEmpty();
+			verifyNoInteractions(this.task);
+			assertThat(this.entries).isNotEmpty();
 
 			scheduler.start();
 
-			waitUntilEmpty(entries);
+			this.waitUntilEmpty(Duration.ofMillis(400));
 
 			// Verify that entry was removed from backing collection
-			verify(task).test(entry.getKey());
-			assertThat(entries).isEmpty();
+			verify(this.task, only()).test(key);
+			assertThat(this.entries).isEmpty();
+
+			scheduler.schedule(key, Instant.now().plus(Duration.ofMillis(100)));
+
+			// Stop scheduler before its task runs
+			scheduler.stop();
+
+			this.waitUntilEmpty(Duration.ofMillis(400));
+
+			verifyNoMoreInteractions(this.task);
+			assertThat(this.entries).isNotEmpty();
+
+			scheduler.start();
+
+			this.waitUntilEmpty(Duration.ofMillis(400));
+
+			verify(this.task, times(2)).test(key);
+			assertThat(this.entries).isEmpty();
 		}
 	}
 
 	@Test
-	public void successfulTask() {
-		ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
-		Predicate<UUID> task = mock(Predicate.class);
+	public void successfulTask() throws InterruptedException {
+		UUID key = UUID.randomUUID();
 
-		Map.Entry<UUID, Instant> entry = Map.entry(UUID.randomUUID(), Instant.now());
+		doReturn(true).when(this.task).test(key);
 
-		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(configuration(entries, task))) {
+		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(this.configuration)) {
 			scheduler.start();
 
-			when(task.test(entry.getKey())).thenReturn(true);
+			scheduler.schedule(key, Instant.now().plus(Duration.ofMillis(100)));
 
-			scheduler.schedule(entry.getKey(), entry.getValue());
+			verifyNoInteractions(this.task);
 
-			waitUntilEmpty(entries);
+			this.waitUntilEmpty(Duration.ofMillis(400));
 
+			verify(this.task, only()).test(key);
 			// Verify that entry was removed from backing collection
-			assertThat(entries).isEmpty();
-			verify(task).test(entry.getKey());
+			assertThat(this.entries).isEmpty();
 		}
 	}
 
 	@Test
-	public void failingTask() {
-		ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
-		Predicate<UUID> task = mock(Predicate.class);
+	public void failingTask() throws InterruptedException {
+		UUID key = UUID.randomUUID();
 
-		Map.Entry<UUID, Instant> entry = Map.entry(UUID.randomUUID(), Instant.now());
+		doReturn(false).when(this.task).test(key);
 
-		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(configuration(entries, task))) {
+		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(this.configuration)) {
 			scheduler.start();
 
-			when(task.test(entry.getKey())).thenReturn(false);
+			scheduler.schedule(key, Instant.now().plus(Duration.ofMillis(100)));
 
-			scheduler.schedule(entry.getKey(), entry.getValue());
+			verifyNoInteractions(this.task);
 
-			waitUntilEmpty(entries);
+			// Let it retry for a bit
+			this.waitUntilEmpty(Duration.ofMillis(500));
+
+			verify(this.task, atLeastOnce()).test(key);
 
 			// Verify that entry was not removed from backing collection
-			assertThat(entries).isNotEmpty();
-			verify(task, atLeastOnce()).test(entry.getKey());
+			assertThat(this.entries).isNotEmpty();
 		}
 	}
 
 	@Test
-	public void retryUntilSuccessfulTask() {
-		ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
-		Predicate<UUID> task = mock(Predicate.class);
+	public void retryUntilSuccessfulTask() throws InterruptedException {
+		UUID key = UUID.randomUUID();
 
-		Map.Entry<UUID, Instant> entry = Map.entry(UUID.randomUUID(), Instant.now());
+		doReturn(false, false, false, true).when(this.task).test(key);
 
-		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(configuration(entries, task))) {
+		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(this.configuration)) {
 			scheduler.start();
 
-			// Verify that a failing scheduled task does not trigger removal
-			when(task.test(entry.getKey())).thenReturn(false, true);
+			scheduler.schedule(key, Instant.now().plus(Duration.ofMillis(100)));
 
-			scheduler.schedule(entry.getKey(), entry.getValue());
+			verifyNoInteractions(this.task);
 
-			waitUntilEmpty(entries);
+			this.waitUntilEmpty(Duration.ofMillis(500));
 
 			// Verify that entry was eventually removed from backing collection
-			assertThat(entries).isEmpty();
-			verify(task, times(2)).test(entry.getKey());
+			verify(this.task, times(4)).test(key);
+
+			assertThat(this.entries).isEmpty();
 		}
 	}
 
 	@Test
-	public void cancel() {
-		ScheduledEntries<UUID, Instant> entries = mock(ScheduledEntries.class);
-		Predicate<UUID> task = mock(Predicate.class);
+	public void cancel() throws InterruptedException {
+		UUID key = UUID.randomUUID();
 
-		Map.Entry<UUID, Instant> entry = Map.entry(UUID.randomUUID(), Instant.now());
+		doReturn(true).when(this.task).test(key);
 
-		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(configuration(entries, task))) {
-			when(entries.peek()).thenReturn(entry);
+		try (SchedulerService<UUID, Instant> scheduler = new LocalSchedulerService<>(this.configuration)) {
+			scheduler.start();
 
-			scheduler.cancel(entry.getKey());
+			scheduler.schedule(key, Instant.now().plus(Duration.ofMillis(100)));
 
-			verify(entries).remove(entry.getKey());
+			verifyNoInteractions(this.task);
+
+			scheduler.cancel(key);
+
+			assertThat(this.entries).isEmpty();
+
+			// Wait until task should have been triggered
+			Thread.sleep(400);
+
+			// Cancelled task should not be triggered
+			verifyNoInteractions(this.task);
 		}
 	}
 
-	private static void waitUntilEmpty(ScheduledEntries<UUID, Instant> entries) {
+	private void waitUntilEmpty(Duration duration) throws InterruptedException {
 		// Wait until empty of timeout has elapsed.
-		Instant stop = Instant.now().plus(Duration.ofSeconds(1));
-		while ((entries.peek() != null) && Instant.now().isBefore(stop)) {
-			Thread.yield();
+		Instant stop = Instant.now().plus(duration);
+		// Busy wait until entries are empty or
+		while ((this.entries.peek() != null) && Instant.now().isBefore(stop)) {
+			Thread.sleep(10);
 		}
 	}
 }
