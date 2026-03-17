@@ -17,3 +17,4 @@ buildNumber.properties
 .checkstyle
 .classpath
 .settings/
+.idea/
