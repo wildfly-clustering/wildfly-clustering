@@ -19,10 +19,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Supplier;
-import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.server.scheduler.SchedulerService;
 import org.wildfly.clustering.server.service.SimpleService;
 import org.wildfly.clustering.server.util.BlockingReference;
@@ -81,12 +79,10 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 	private final Predicate<K> task;
 	private final Duration closeTimeout;
 
+	// Reference to the scheduled entry and its future
 	private final BlockingReference<Map.Entry<Map.Entry<K, Instant>, Future<?>>> futureEntryReference = BlockingReference.of(null);
-	private final BlockingReference.Writer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> ifAbsentFutureEntryWriter = this.futureEntryReference.getWriter(Objects::isNull);
-
+	// Schedules and returns the first entry with its future
 	private final Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> schedule = this::scheduleFirst;
-	private final UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancel;
-	private final UnaryOperator<Map.Entry<Map.Entry<K, Instant>, Future<?>>> reschedule;
 
 	/**
 	 * Creates a local scheduler using the specified configuration.
@@ -103,12 +99,6 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 		this.executor = executor;
 		this.task = configuration.getTask();
 		this.closeTimeout = configuration.getCloseTimeout();
-
-		Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> scheduleFirst = this::scheduleFirst;
-		Consumer<Future<?>> cancelFuture = future -> future.cancel(true);
-		Consumer<Map.Entry<Map.Entry<K, Instant>, Future<?>>> cancelEntry = Consumer.when(Objects::nonNull, cancelFuture.compose(Map.Entry::getValue), Consumer.of());
-		this.cancel = UnaryOperator.of(cancelEntry, Supplier.of(null));
-		this.reschedule = UnaryOperator.of(cancelEntry, scheduleFirst);
 	}
 
 	@Override
@@ -119,9 +109,10 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 		// This can only be the case if the ScheduledEntries is sorted
 		if (this.entries.isSorted()) {
 			this.rescheduleIfEarlier(instant);
+		} else {
+			// Schedule the next task if nothing is currently scheduled.
+			this.scheduleIfAbsent();
 		}
-		// Schedule the next task if nothing is currently scheduled.
-		this.scheduleIfAbsent();
 	}
 
 	@Override
@@ -146,12 +137,12 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 	@Override
 	public void start() {
 		super.start();
-		this.schedule.get();
+		this.scheduleIfAbsent();
 	}
 
 	@Override
 	public void stop() {
-		this.futureEntryReference.getWriter().updateAndGet(this.cancel);
+		this.cancelWhen(Predicate.of(true));
 		super.stop();
 	}
 
@@ -195,7 +186,7 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 			}
 		}
 		// Schedule next task
-		this.schedule.get();
+		this.scheduleWhen(Predicate.of(true));
 	}
 
 	private Map.Entry<Map.Entry<K, Instant>, Future<?>> scheduleFirst() {
@@ -217,15 +208,33 @@ public class LocalSchedulerService<K> extends SimpleService implements Scheduler
 	}
 
 	private void scheduleIfAbsent() {
-		this.ifAbsentFutureEntryWriter.setAndGet(this.schedule);
+		this.scheduleWhen(Objects::isNull);
 	}
 
 	private void rescheduleIfEarlier(Instant instant) {
-		this.futureEntryReference.getWriter(entry -> (entry != null) && instant.isBefore(entry.getKey().getValue())).updateAndGet(this.reschedule);
+		this.scheduleWhen(entry -> (entry == null) || instant.isBefore(entry.getKey().getValue()));
 	}
 
 	private void cancelIfPresent(K id) {
-		this.futureEntryReference.getWriter(entry -> (entry != null) && entry.getKey().getKey().equals(id)).updateAndGet(this.cancel);
+		this.cancelWhen(Predicate.equalTo(id).<Map.Entry<K, Instant>>compose(Map.Entry::getKey).compose(Map.Entry::getKey));
+	}
+
+	private void scheduleWhen(Predicate<Map.Entry<Map.Entry<K, Instant>, Future<?>>> predicate) {
+		this.setWhen(predicate, this.schedule);
+	}
+
+	private void cancelWhen(Predicate<Map.Entry<Map.Entry<K, Instant>, Future<?>>> predicate) {
+		this.setWhen(Predicate.and(Objects::nonNull, predicate), Supplier.of(null));
+	}
+
+	private void setWhen(Predicate<Map.Entry<Map.Entry<K, Instant>, Future<?>>> predicate, Supplier<Map.Entry<Map.Entry<K, Instant>, Future<?>>> factory) {
+		Map.Entry<Map.Entry<Map.Entry<K, Instant>, Future<?>>, Map.Entry<Map.Entry<K, Instant>, Future<?>>> entry = this.futureEntryReference.getWriter(predicate).set(factory);
+		Map.Entry<Map.Entry<K, Instant>, Future<?>> original = entry.getKey();
+		Map.Entry<Map.Entry<K, Instant>, Future<?>> current = entry.getValue();
+		// If reference was updated, cancel original, if present
+		if ((original != null) && (current != original)) {
+			original.getValue().cancel(true);
+		}
 	}
 
 	@Override
