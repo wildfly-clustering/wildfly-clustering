@@ -36,12 +36,8 @@ public enum DefaultSessionAccessMetaDataEntryMarshaller implements ProtoStreamMa
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case SINCE_CREATION_INDEX -> {
-					sinceCreation = reader.readObject(Duration.class);
-				}
-				case LAST_ACCESS_INDEX -> {
-					lastAccess = reader.readObject(Duration.class);
-				}
+				case SINCE_CREATION_INDEX -> sinceCreation = reader.readObject(Duration.class);
+				case LAST_ACCESS_INDEX -> lastAccess = reader.readObject(Duration.class);
 				default -> reader.skipField(tag);
 			}
 		}

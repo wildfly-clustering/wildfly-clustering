@@ -48,7 +48,7 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
 			writer.writeVarint32(typeId);
 		}
 	},
-	/** An named class */
+	/** A named class */
 	NAME(WireType.LENGTH_DELIMITED) {
 		@Override
 		public Class<?> readFrom(ProtoStreamReader reader) throws IOException {

@@ -9,7 +9,6 @@ import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -215,12 +214,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 			if (!leftMembers.isEmpty()) {
 				Locality locality = Locality.forConsistentHash(cache, hash);
 				// We're only interested in the entries for which we are the primary owner
-				Iterator<Address> addresses = leftMembers.iterator();
-				while (addresses.hasNext()) {
-					if (!locality.isLocal(addresses.next())) {
-						addresses.remove();
-					}
-				}
+				leftMembers.removeIf(address -> !locality.isLocal(address));
 			}
 
 			// If this is a merge after cluster split, re-populate the cache registry with lost registry entries

@@ -24,7 +24,6 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
-import org.wildfly.clustering.session.SessionStatistics;
 import org.wildfly.clustering.session.cache.AbstractSessionManager;
 
 /**
@@ -76,7 +75,7 @@ public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionMan
 	 * Creates a session manager using the specified configuration.
 	 * @param configuration the configuration of this session manager
 	 */
-	public InfinispanSessionManager(Configuration<DC, MV, AV, SC> configuration) {
+	InfinispanSessionManager(Configuration<DC, MV, AV, SC> configuration) {
 		super(configuration);
 		this.cache = configuration.getCacheConfiguration().getCache();
 		this.properties = configuration.getCacheConfiguration().getCacheProperties();
@@ -102,11 +101,6 @@ public class InfinispanSessionManager<DC, MV, AV, SC> extends AbstractSessionMan
 	public CompletionStage<Session<SC>> findSessionAsync(String id) {
 		this.scheduler.cancel(id);
 		return super.findSessionAsync(id);
-	}
-
-	@Override
-	public SessionStatistics getStatistics() {
-		return this;
 	}
 
 	@Override

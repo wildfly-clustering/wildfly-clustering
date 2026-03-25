@@ -6,7 +6,7 @@
 package org.wildfly.clustering.function;
 
 /**
- * An operation with an long parameter.
+ * An operation with a long parameter.
  * @author Paul Ferraro
  */
 interface LongOperation extends PrimitiveOperation<Long> {
@@ -21,7 +21,7 @@ interface LongOperation extends PrimitiveOperation<Long> {
 	/**
 	 * Composes a consumer that invokes this consumer using result of the specified function.
 	 * @param <T1> the former composition type
-	 * @param <T1> the latter composition type
+	 * @param <T2> the latter composition type
 	 * @param before a composing function
 	 * @return a consumer that invokes this consumer using result of the specified function.
 	 */

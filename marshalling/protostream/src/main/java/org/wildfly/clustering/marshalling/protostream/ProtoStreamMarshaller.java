@@ -44,7 +44,7 @@ public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Mars
 	 * @return a new marshaller
 	 */
 	default <V extends T> ProtoStreamMarshaller<V> wrap(Class<? extends V> type, java.util.function.Function<T, V> wrapper) {
-		return wrap(type, Function.identity(), wrapper);
+		return this.wrap(type, Function.identity(), wrapper);
 	}
 
 	/**

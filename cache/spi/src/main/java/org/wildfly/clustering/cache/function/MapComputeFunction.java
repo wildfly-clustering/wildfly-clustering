@@ -43,7 +43,7 @@ public class MapComputeFunction<K, V> extends AbstractMapOperationFunction<K, V,
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof MapComputeFunction function)) return false;
+		if (!(object instanceof MapComputeFunction<?, ?> function)) return false;
 		Map<K, V> ourOperand = this.getOperand();
 		@SuppressWarnings("unchecked")
 		Map<K, V> otherOperand = (Map<K, V>) function.getOperand();

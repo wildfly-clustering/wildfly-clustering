@@ -19,7 +19,7 @@ enum ClassField implements Field<Class<?>> {
 	ID(ScalarClass.ID),
 	NAME(ScalarClass.NAME),
 	FIELD(ScalarClass.FIELD),
-	ARRAY(new FieldMarshaller<Class<?>>() {
+	ARRAY(new FieldMarshaller<>() {
 		@Override
 		public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
 			int dimensions = reader.readUInt32();

@@ -37,15 +37,9 @@ public enum PeriodMarshaller implements ProtoStreamMarshaller<Period> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case YEARS_INDEX -> {
-					period = period.withYears(reader.readSInt32());
-				}
-				case MONTHS_INDEX -> {
-					period = period.withMonths(reader.readSInt32());
-				}
-				case DAYS_INDEX -> {
-					period = period.withDays(reader.readSInt32());
-				}
+				case YEARS_INDEX -> period = period.withYears(reader.readSInt32());
+				case MONTHS_INDEX -> period = period.withMonths(reader.readSInt32());
+				case DAYS_INDEX -> period = period.withDays(reader.readSInt32());
 				default -> reader.skipField(tag);
 			}
 		}

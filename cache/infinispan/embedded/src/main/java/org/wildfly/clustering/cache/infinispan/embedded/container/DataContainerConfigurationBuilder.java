@@ -55,10 +55,6 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
 	}
 
 	@Override
-	public void validate() {
-	}
-
-	@Override
 	public DataContainerConfiguration create() {
 		return new DataContainerConfiguration(this.attributes);
 	}

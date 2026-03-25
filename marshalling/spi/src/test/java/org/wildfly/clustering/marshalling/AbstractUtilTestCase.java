@@ -229,8 +229,7 @@ public abstract class AbstractUtilTestCase {
 	public void testTreeMap() {
 		Consumer<TreeMap<Object, Object>> tester = this.factory.createOrderedMapTester();
 
-		TreeMap<Object, Object> map = new TreeMap<>();
-		map.putAll(BASIS);
+		TreeMap<Object, Object> map = new TreeMap<>(BASIS);
 		tester.accept(map);
 
 		map = new TreeMap<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
@@ -247,8 +246,7 @@ public abstract class AbstractUtilTestCase {
 	public void testTreeSet() {
 		Consumer<TreeSet<Object>> tester = this.factory.createOrderedCollectionTester();
 
-		TreeSet<Object> set = new TreeSet<>();
-		set.addAll(BASIS.keySet());
+		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(set);
 
 		set = new TreeSet<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
@@ -332,16 +330,14 @@ public abstract class AbstractUtilTestCase {
 	@Test
 	public void testSynchronizedNavigableMap() {
 		Consumer<Map<Object, Object>> tester = this.factory.createMapTester();
-		TreeMap<Object, Object> map = new TreeMap<>();
-		map.putAll(BASIS);
+		TreeMap<Object, Object> map = new TreeMap<>(BASIS);
 		tester.accept(Collections.synchronizedNavigableMap(map));
 	}
 
 	@Test
 	public void testSynchronizedNavigableSet() {
 		Consumer<Set<Object>> tester = this.factory.createOrderedCollectionTester();
-		TreeSet<Object> set = new TreeSet<>();
-		set.addAll(BASIS.keySet());
+		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(Collections.synchronizedNavigableSet(set));
 	}
 
@@ -360,16 +356,14 @@ public abstract class AbstractUtilTestCase {
 	@Test
 	public void testSynchronizedSortedMap() {
 		Consumer<SortedMap<Object, Object>> tester = this.factory.createTester();
-		TreeMap<Object, Object> map = new TreeMap<>();
-		map.putAll(BASIS);
+		TreeMap<Object, Object> map = new TreeMap<>(BASIS);
 		tester.accept(Collections.synchronizedSortedMap(map));
 	}
 
 	@Test
 	public void testSynchronizedSortedSet() {
 		Consumer<Set<Object>> tester = this.factory.createOrderedCollectionTester();
-		TreeSet<Object> set = new TreeSet<>();
-		set.addAll(BASIS.keySet());
+		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(Collections.synchronizedSortedSet(set));
 	}
 
@@ -445,16 +439,14 @@ public abstract class AbstractUtilTestCase {
 	@Test
 	public void testUnmodifiableNavigableMap() {
 		Consumer<NavigableMap<Object, Object>> tester = this.factory.createOrderedMapTester();
-		TreeMap<Object, Object> map = new TreeMap<>();
-		map.putAll(BASIS);
+		TreeMap<Object, Object> map = new TreeMap<>(BASIS);
 		tester.accept(Collections.unmodifiableNavigableMap(map));
 	}
 
 	@Test
 	public void testUnmodifiableNavigableSet() {
 		Consumer<NavigableSet<Object>> tester = this.factory.createOrderedCollectionTester();
-		TreeSet<Object> set = new TreeSet<>();
-		set.addAll(BASIS.keySet());
+		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(Collections.unmodifiableNavigableSet(set));
 	}
 
@@ -480,16 +472,14 @@ public abstract class AbstractUtilTestCase {
 	@Test
 	public void testUnmodifiableSortedMap() {
 		Consumer<SortedMap<Object, Object>> tester = this.factory.createOrderedMapTester();
-		TreeMap<Object, Object> map = new TreeMap<>();
-		map.putAll(BASIS);
+		TreeMap<Object, Object> map = new TreeMap<>(BASIS);
 		tester.accept(Collections.unmodifiableSortedMap(map));
 	}
 
 	@Test
 	public void testUnmodifiableSortedSet() {
 		Consumer<SortedSet<Object>> tester = this.factory.createOrderedCollectionTester();
-		TreeSet<Object> set = new TreeSet<>();
-		set.addAll(BASIS.keySet());
+		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(Collections.unmodifiableSortedSet(set));
 	}
 }

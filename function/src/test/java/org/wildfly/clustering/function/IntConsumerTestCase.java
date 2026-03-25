@@ -6,7 +6,6 @@
 package org.wildfly.clustering.function;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -143,7 +142,7 @@ public class IntConsumerTestCase {
 	@Test
 	public void composeAsInt() {
 		IntConsumer consumer = mock(IntConsumer.class);
-		doCallRealMethod().when(consumer).composeInt(ArgumentMatchers.<IntUnaryOperator>any());
+		doCallRealMethod().when(consumer).composeInt(ArgumentMatchers.any());
 		IntUnaryOperator composer = mock(IntUnaryOperator.class);
 		int value = this.random.nextInt();
 		int result = this.random.nextInt();
@@ -157,7 +156,7 @@ public class IntConsumerTestCase {
 	@Test
 	public void composeBinary() {
 		IntConsumer consumer = mock(IntConsumer.class);
-		doCallRealMethod().when(consumer).composeBinary(ArgumentMatchers.<ToIntBiFunction<Object, Object>>any());
+		doCallRealMethod().when(consumer).composeBinary(ArgumentMatchers.any());
 		ToIntBiFunction<Object, Object> composer = mock(ToIntBiFunction.class);
 		Object key = new Object();
 		Object value = new Object();

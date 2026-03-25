@@ -30,10 +30,7 @@ public interface SchedulerService<K, V> extends Scheduler<K, V>, Service, AutoCl
 		return new SchedulerService<>() {
 			@Override
 			public void schedule(KK id, VV value) {
-				Optional<V> mapped = entryMapper.apply(value);
-				if (mapped.isPresent()) {
-					SchedulerService.this.schedule(identifierMapper.apply(id), mapped.get());
-				}
+				entryMapper.apply(value).ifPresent(v -> SchedulerService.this.schedule(identifierMapper.apply(id), v));
 			}
 
 			@Override

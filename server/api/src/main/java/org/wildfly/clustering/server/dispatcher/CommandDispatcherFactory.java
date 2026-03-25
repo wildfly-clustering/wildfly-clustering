@@ -17,7 +17,7 @@ import org.wildfly.clustering.server.GroupMember;
 public interface CommandDispatcherFactory<M extends GroupMember> {
 
 	/**
-	 * Returns the group upon which the this command dispatcher operates.
+	 * Returns the group upon which this command dispatcher operates.
 	 * @return the group associated with this command dispatcher factory.
 	 */
 	Group<M> getGroup();

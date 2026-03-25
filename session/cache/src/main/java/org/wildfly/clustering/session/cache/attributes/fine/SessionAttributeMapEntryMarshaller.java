@@ -37,12 +37,8 @@ public enum SessionAttributeMapEntryMarshaller implements ProtoStreamMarshaller<
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case NAME_INDEX -> {
-					name = reader.readString();
-				}
-				case VALUE_INDEX -> {
-					value = reader.readObject(ByteBufferMarshalledValue.class);
-				}
+				case NAME_INDEX -> name = reader.readString();
+				case VALUE_INDEX -> value = reader.readObject(ByteBufferMarshalledValue.class);
 				default -> reader.skipField(tag);
 			}
 		}

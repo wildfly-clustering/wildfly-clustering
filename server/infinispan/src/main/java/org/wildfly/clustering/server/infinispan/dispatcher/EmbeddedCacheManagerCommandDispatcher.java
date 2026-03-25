@@ -53,12 +53,12 @@ public class EmbeddedCacheManagerCommandDispatcher<A extends Comparable<A>, M ex
 
 	@Override
 	public <R, E extends Exception> Map<CacheContainerGroupMember, CompletionStage<R>> dispatchToGroup(Command<R, ? super C, E> command) throws IOException {
-		return map(this.dispatcher.dispatchToGroup(command));
+		return this.map(this.dispatcher.dispatchToGroup(command));
 	}
 
 	@Override
 	public <R, E extends Exception> Map<CacheContainerGroupMember, CompletionStage<R>> dispatchToGroup(Command<R, ? super C, E> command, Set<CacheContainerGroupMember> excluding) throws IOException {
-		return map(this.dispatcher.dispatchToGroup(command, excluding.stream().map(this.unwrapper).collect(Collectors.toSet())));
+		return this.map(this.dispatcher.dispatchToGroup(command, excluding.stream().map(this.unwrapper).collect(Collectors.toSet())));
 	}
 
 	private <R> Map<CacheContainerGroupMember, CompletionStage<R>> map(Map<M, CompletionStage<R>> map) {

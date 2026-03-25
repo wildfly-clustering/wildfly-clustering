@@ -37,15 +37,9 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case CLASS_NAME_INDEX -> {
-					className = reader.readString();
-				}
-				case METHOD_NAME_INDEX -> {
-					methodName = reader.readString();
-				}
-				case FILE_NAME_INDEX -> {
-					fileName = reader.readString();
-				}
+				case CLASS_NAME_INDEX -> className = reader.readString();
+				case METHOD_NAME_INDEX -> methodName = reader.readString();
+				case FILE_NAME_INDEX -> fileName = reader.readString();
 				case LINE_NUMBER_INDEX -> {
 					line = reader.readUInt32();
 					if (line == 0) {
@@ -53,15 +47,9 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
 						line = -2;
 					}
 				}
-				case CLASS_LOADER_NAME_INDEX -> {
-					classLoaderName = reader.readString();
-				}
-				case MODULE_NAME_INDEX -> {
-					moduleName = reader.readString();
-				}
-				case MODULE_VERSION_INDEX -> {
-					moduleVersion = reader.readString();
-				}
+				case CLASS_LOADER_NAME_INDEX -> classLoaderName = reader.readString();
+				case MODULE_NAME_INDEX -> moduleName = reader.readString();
+				case MODULE_VERSION_INDEX -> moduleVersion = reader.readString();
 				default -> reader.skipField(tag);
 			}
 		}

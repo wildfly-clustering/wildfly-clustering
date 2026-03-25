@@ -61,7 +61,7 @@ public class DefaultSerializationContext extends NativeSerializationContext impl
 			// Adapt native ProtobufTagMarshaller to ProtoStreamMarshaller interface
 			this.registerMarshaller(new ProtoStreamMarshaller<>() {
 				@Override
-				public Class<? extends Object> getJavaClass() {
+				public Class<?> getJavaClass() {
 					return nativeMarshaller.getJavaClass();
 				}
 

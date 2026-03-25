@@ -30,8 +30,7 @@ public abstract class AbstractGroupMember<I extends Comparable<I>> implements Gr
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof org.wildfly.clustering.server.group.GroupMember member)) return false;
-		return this.getId().equals(member.getId());
+		return (object instanceof org.wildfly.clustering.server.group.GroupMember<?> member) && this.getId().equals(member.getId());
 	}
 
 	@Override

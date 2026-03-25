@@ -69,7 +69,7 @@ public class ContextualizerTestCase {
 	}
 
 	static class AtomicContextReference<T> implements ContextReference<T> {
-		private AtomicReference<T> ref;
+		private final AtomicReference<T> ref;
 
 		AtomicContextReference(T initial) {
 			this.ref = new AtomicReference<>(initial);

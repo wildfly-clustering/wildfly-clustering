@@ -52,9 +52,7 @@ public class SessionKeyMarshaller<K extends Key<String>> implements ProtoStreamM
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case IDENTIFIER_INDEX -> {
-					buffer = reader.readByteBuffer();
-				}
+				case IDENTIFIER_INDEX -> buffer = reader.readByteBuffer();
 				default -> reader.skipField(tag);
 			}
 		}

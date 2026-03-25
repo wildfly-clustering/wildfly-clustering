@@ -30,12 +30,8 @@ public enum ByteBufferMarshalledKeyMarshaller implements ProtoStreamMarshaller<B
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case BUFFER_INDEX -> {
-					buffer = reader.readByteBuffer();
-				}
-				case HASH_CODE_INDEX -> {
-					hashCode = reader.readSFixed32();
-				}
+				case BUFFER_INDEX -> buffer = reader.readByteBuffer();
+				case HASH_CODE_INDEX -> hashCode = reader.readSFixed32();
 				default -> reader.skipField(tag);
 			}
 		}

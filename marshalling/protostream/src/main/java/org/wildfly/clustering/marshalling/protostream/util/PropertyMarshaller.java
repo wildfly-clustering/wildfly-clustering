@@ -48,12 +48,8 @@ public class PropertyMarshaller<T extends Map.Entry<String, String>> implements 
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case KEY_INDEX -> {
-					key = reader.readString();
-				}
-				case VALUE_INDEX -> {
-					value = reader.readString();
-				}
+				case KEY_INDEX -> key = reader.readString();
+				case VALUE_INDEX -> value = reader.readString();
 				default -> reader.skipField(tag);
 			}
 		}

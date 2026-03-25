@@ -18,12 +18,7 @@ import org.wildfly.clustering.function.UnaryOperator;
  */
 public interface Supplied<T> {
 	/** A simple supplied value */
-	Supplied<?> SIMPLE = new Supplied<>() {
-		@Override
-		public Object get(Supplier<Object> supplier) {
-			return supplier.get();
-		}
-	};
+	Supplied<?> SIMPLE = Supplier::get;
 
 	/**
 	 * Returns the supplied value, created from the specified factory if necessary.

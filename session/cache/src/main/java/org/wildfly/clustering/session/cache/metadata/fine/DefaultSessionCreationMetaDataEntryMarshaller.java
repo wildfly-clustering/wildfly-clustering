@@ -36,12 +36,8 @@ public enum DefaultSessionCreationMetaDataEntryMarshaller implements ProtoStream
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case CREATION_TIME_INDEX -> {
-					creationTime = reader.readObject(Instant.class);
-				}
-				case TIMEOUT_INDEX -> {
-					timeout = reader.readObject(Duration.class);
-				}
+				case CREATION_TIME_INDEX -> creationTime = reader.readObject(Instant.class);
+				case TIMEOUT_INDEX -> timeout = reader.readObject(Duration.class);
 				default -> reader.skipField(tag);
 			}
 		}

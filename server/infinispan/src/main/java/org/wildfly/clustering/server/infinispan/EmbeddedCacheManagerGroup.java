@@ -7,7 +7,6 @@ package org.wildfly.clustering.server.infinispan;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.wildfly.clustering.server.GroupMembership;
@@ -106,7 +105,7 @@ public class EmbeddedCacheManagerGroup<A extends Comparable<A>, M extends GroupM
 
 		CacheGroupMembership(GroupMembership<M> membership, Function<M, CacheContainerGroupMember> wrapper) {
 			this.membership = membership;
-			this.members = membership.getMembers().stream().map(wrapper).collect(Collectors.toUnmodifiableList());
+			this.members = membership.getMembers().stream().map(wrapper).toList();
 			this.coordinator = wrapper.apply(membership.getCoordinator());
 		}
 
@@ -162,7 +161,7 @@ public class EmbeddedCacheManagerGroup<A extends Comparable<A>, M extends GroupM
 
 		CacheContainerGroupMembershipMergeEvent(GroupMembershipMergeEvent<M> event) {
 			super(event);
-			this.partitions = event.getPartitions().stream().map(EmbeddedCacheManagerGroup.this::wrap).collect(Collectors.toUnmodifiableList());
+			this.partitions = event.getPartitions().stream().map(EmbeddedCacheManagerGroup.this::wrap).toList();
 		}
 
 		@Override

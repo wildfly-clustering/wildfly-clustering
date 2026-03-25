@@ -6,7 +6,6 @@
 package org.wildfly.clustering.server.local.scheduler;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,7 @@ public class SortedScheduledEntriesTestCase extends AbstractScheduledEntriesTest
 	public SortedScheduledEntriesTestCase() {
 		super(ScheduledEntries.sorted(), list -> {
 			List<Map.Entry<UUID, Instant>> result = new LinkedList<>(list);
-			Collections.sort(result, SortedScheduledEntries.defaultComparator());
+			result.sort(SortedScheduledEntries.defaultComparator());
 			return result;
 		});
 	}

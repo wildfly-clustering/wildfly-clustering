@@ -22,7 +22,7 @@ public class SessionAffinityRegistryGroupMemberMapper<M extends GroupMember> imp
 	private final String localKey;
 
 	/**
-	 * Creates a affinity function from the specified registry.
+	 * Creates an affinity function from the specified registry.
 	 * @param registry the registry storing session affinity entries
 	 */
 	public SessionAffinityRegistryGroupMemberMapper(Registry<M, String, Void> registry) {

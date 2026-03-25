@@ -129,7 +129,7 @@ public interface BlockingReference<T> extends Reference<T> {
 	}
 
 	/**
-	 * A reader of an blocking reference.
+	 * A reader of a blocking reference.
 	 * {@link #read(java.util.function.Consumer)} consumes the referenced value while holding a pessimistic read lock.
 	 * {@link #get()} reads the reference using an optimistic read lock, when possible.
 	 * @param <T> the reference type

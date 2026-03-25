@@ -23,7 +23,7 @@ public interface ImmutableSession {
 	Function<ImmutableSession, String> IDENTIFIER = ImmutableSession::getId;
 	/** A predicate indicating whether a given session is valid. */
 	Predicate<ImmutableSession> VALID = ImmutableSession::isValid;
-	/** An validation function that throwing an exception for invalid sessions. */
+	/** A validation function that throwing an exception for invalid sessions. */
 	UnaryOperator<ImmutableSession> REQUIRE_VALID = UnaryOperator.when(VALID, UnaryOperator.identity(), UnaryOperator.of(Consumer.<ImmutableSession>of().thenThrow(IllegalStateException::new), Supplier.of(null)));
 	/** A function returning the valid metadata of a session */
 	Function<ImmutableSession, ImmutableSessionMetaData> METADATA = REQUIRE_VALID.thenApply(ImmutableSession::getMetaData);
@@ -41,14 +41,14 @@ public interface ImmutableSession {
 	String getId();
 
 	/**
-	 * Indicates whether or not this session is valid.
+	 * Indicates whether this session is valid.
 	 * @return true, if this session is valid, false otherwise
 	 */
 	boolean isValid();
 
 	/**
-	 * Returns this session's meta data.
-	 * @return this session's meta data
+	 * Returns this session's metadata.
+	 * @return this session's metadata
 	 */
 	ImmutableSessionMetaData getMetaData();
 

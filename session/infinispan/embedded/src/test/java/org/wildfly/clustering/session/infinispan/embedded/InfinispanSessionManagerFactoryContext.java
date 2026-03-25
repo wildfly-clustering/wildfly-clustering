@@ -127,7 +127,7 @@ public class InfinispanSessionManagerFactoryContext<CC, SC> extends AbstractCont
 			Cache<?, ?> cache = managerContext.get().getCache(parameters.getDeploymentName());
 			cache.start();
 			this.accept(cache::stop);
-			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<SC>() {
+			this.factory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<>() {
 				@Override
 				public EmbeddedCacheConfiguration getCacheConfiguration() {
 					return EmbeddedCacheConfiguration.of(cache);

@@ -50,7 +50,7 @@ public class ImmutableHttpSessionTestCase extends AbstractHttpSessionTestCase<Im
 
 	@Test
 	public void invalidate() {
-		assertThatIllegalStateException().isThrownBy(() -> this.subject.invalidate());
+		assertThatIllegalStateException().isThrownBy(this.subject::invalidate);
 
 		verifyNoInteractions(this.session);
 		verifyNoInteractions(this.context);

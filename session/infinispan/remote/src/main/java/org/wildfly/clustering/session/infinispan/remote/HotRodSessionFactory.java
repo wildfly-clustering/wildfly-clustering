@@ -63,7 +63,7 @@ public class HotRodSessionFactory<DC, AV, SC> extends CompositeSessionFactory<DC
 	 * Constructs a new session factory.
 	 * @param configuration the configuration of this session factory
 	 */
-	public HotRodSessionFactory(Configuration<DC, AV, SC> configuration) {
+	HotRodSessionFactory(Configuration<DC, AV, SC> configuration) {
 		super(configuration);
 		this.metaDataFactory = configuration.getSessionMetaDataFactory();
 		this.attributesFactory = configuration.getSessionAttributesFactory();

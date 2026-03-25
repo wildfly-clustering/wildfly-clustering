@@ -31,8 +31,7 @@ public interface Value<V> extends Supplier<V> {
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof Value value)) return false;
-			return this.get().equals(value.get());
+			return (object instanceof Value<?> value) && this.get().equals(value.get());
 		}
 
 		@Override

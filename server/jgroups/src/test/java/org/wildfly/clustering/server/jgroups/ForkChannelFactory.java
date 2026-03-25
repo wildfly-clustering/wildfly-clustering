@@ -40,7 +40,7 @@ public class ForkChannelFactory implements Function<String, JChannel> {
 			}
 
 			private Object handle(Message message) {
-				Header header = (Header) message.getHeader(this.id);
+				Header header = message.getHeader(this.id);
 				// If this is a request expecting a response, don't leave the requester hanging - send an identifiable response on which it can filter
 				if ((header != null) && (header.type == Header.REQ) && header.rspExpected()) {
 					Message response = new EmptyMessage(message.src()).setFlag(message.getFlags(), false).clearFlag(Message.Flag.RSVP);

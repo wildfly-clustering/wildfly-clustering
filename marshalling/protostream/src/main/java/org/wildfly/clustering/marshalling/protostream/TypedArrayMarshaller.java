@@ -56,7 +56,7 @@ public class TypedArrayMarshaller implements FieldMarshaller<Object> {
 	}
 
 	@Override
-	public Class<? extends Object> getJavaClass() {
+	public Class<?> getJavaClass() {
 		return Object.class;
 	}
 

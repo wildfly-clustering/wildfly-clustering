@@ -57,7 +57,7 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 		// If completed with null, return an invalid session that we can filter later
 		this.defaultSessionCreator = new SessionManagerFunction<>(this.batchFactory, manager::createSessionAsync);
 		this.sessionFinder = new SessionManagerFunction<>(this.batchFactory, manager::findSessionAsync);
-		this.sessionCache = cacheFactory.createCache(Consumer.of(), new Consumer<CompletionStage<CacheableSession<C>>>() {
+		this.sessionCache = cacheFactory.createCache(Consumer.of(), new Consumer<>() {
 			@Override
 			public void accept(CompletionStage<CacheableSession<C>> stage) {
 				try {

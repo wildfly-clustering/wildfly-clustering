@@ -262,8 +262,7 @@ public abstract class AbstractBasicCacheDecorator<K, V> implements BasicCache<K,
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof BasicCache cache)) return false;
-		return this.getName().equals(cache.getName());
+		return (object instanceof BasicCache<?, ?> cache) && this.getName().equals(cache.getName());
 	}
 
 	@Override

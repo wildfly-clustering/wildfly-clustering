@@ -130,7 +130,7 @@ public class JavaUtilSerializationContextInitializer extends AbstractSerializati
 		return collectionMarshaller.wrap(targetClass, collection -> factory.apply(collection.toArray()));
 	}
 
-	private static <T extends Map<Object, Object>> ProtoStreamMarshaller<T> unmodifiableMapMarshaller(ProtoStreamMarshaller<Map<Object, Object>> mapMarshaller, Class<T> targetClass, Function<Map.Entry<? extends Object, ? extends Object>[], T> factory) {
+	private static <T extends Map<Object, Object>> ProtoStreamMarshaller<T> unmodifiableMapMarshaller(ProtoStreamMarshaller<Map<Object, Object>> mapMarshaller, Class<T> targetClass, Function<Map.Entry<?, ?>[], T> factory) {
 		@SuppressWarnings("unchecked")
 		Map.Entry<Object, Object>[] entries = new Map.Entry[0];
 		return mapMarshaller.wrap(targetClass, map -> factory.apply(map.entrySet().toArray(entries)));

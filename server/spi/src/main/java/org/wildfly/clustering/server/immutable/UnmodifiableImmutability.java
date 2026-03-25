@@ -52,8 +52,8 @@ class UnmodifiableImmutability implements Immutability {
 
 	static <T> Set<T> identitySet(Collection<T> collection) {
 		Set<T> set = !collection.isEmpty() ? Collections.newSetFromMap(new IdentityHashMap<>(collection.size())) : Set.of();
-		for (T element : collection) {
-			set.add(element);
+		if (!collection.isEmpty()) {
+			set.addAll(collection);
 		}
 		return set;
 	}

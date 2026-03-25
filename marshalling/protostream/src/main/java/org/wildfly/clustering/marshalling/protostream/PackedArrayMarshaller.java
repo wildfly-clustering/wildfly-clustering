@@ -11,8 +11,7 @@ import java.lang.reflect.Array;
 import org.infinispan.protostream.descriptors.WireType;
 
 /**
- * Marshaller for packed repeated fields, e.g. primitive arrays.
- * See https://developers.google.com/protocol-buffers/docs/encoding?hl=id#packed
+ * Marshaller for <a href="https://developers.google.com/protocol-buffers/docs/encoding?hl=id#packed">packed repeated fields</a>, e.g. primitive arrays.
  * @author Paul Ferraro
  * @param <T> the component type of this marshaller
  */
@@ -20,7 +19,7 @@ public class PackedArrayMarshaller<T> implements ScalarMarshaller<Object> {
 
 	private final Class<T> componentType;
 	private final ScalarMarshaller<T> element;
-	private final Class<? extends Object> arrayClass;
+	private final Class<?> arrayClass;
 
 	PackedArrayMarshaller(Class<T> componentType, ScalarMarshaller<T> element) {
 		this.componentType = componentType;
@@ -51,7 +50,7 @@ public class PackedArrayMarshaller<T> implements ScalarMarshaller<Object> {
 	}
 
 	@Override
-	public Class<? extends Object> getJavaClass() {
+	public Class<?> getJavaClass() {
 		return this.arrayClass;
 	}
 

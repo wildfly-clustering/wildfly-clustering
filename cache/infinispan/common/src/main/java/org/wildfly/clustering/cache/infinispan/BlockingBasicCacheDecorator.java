@@ -20,7 +20,7 @@ import org.infinispan.commons.api.BasicCache;
 
 /**
  * A {@link BasicCache} decorator for cache implementations whose synchronous methods always block.
- * Synchronous operations will delegating to asynchronous methods and wait for result.
+ * Synchronous operations will delegate to asynchronous methods and wait for result.
  * @author Paul Ferraro
  * @param <K> cache key type
  * @param <V> cache value type

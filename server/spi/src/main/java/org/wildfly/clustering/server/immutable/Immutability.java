@@ -62,7 +62,7 @@ public interface Immutability extends Predicate<Object> {
 	 */
 	static Immutability composite(Collection<? extends Immutability> immutabilities) {
 		return new Immutability() {
-			private Immutability unmodifiable = new UnmodifiableImmutability(this);
+			private final Immutability unmodifiable = new UnmodifiableImmutability(this);
 
 			@Override
 			public boolean test(Object object) {

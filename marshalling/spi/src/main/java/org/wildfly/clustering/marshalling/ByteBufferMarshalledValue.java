@@ -65,13 +65,13 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	}
 
 	/**
-	 * Indicates whether or not this value is empty.
+	 * Indicates whether this value is empty.
 	 * @return true, if this value is empty, false otherwise
 	 */
 	public boolean isEmpty() {
 		long stamp = this.lock.tryOptimisticRead();
 		try {
-			boolean result = StampedLock.isOptimisticReadStamp(stamp) ? this.isEmptyUnsafe() : false;
+			boolean result = StampedLock.isOptimisticReadStamp(stamp) && this.isEmptyUnsafe();
 			if (!this.lock.validate(stamp)) {
 				// Optimistic read unsuccessful or invalid
 				// Acquire pessimistic read lock
@@ -230,7 +230,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	public boolean equals(Object object) {
 		long stamp = this.lock.tryOptimisticRead();
 		try {
-			boolean result = StampedLock.isOptimisticReadStamp(stamp) ? this.equalsUnsafe(object) : false;
+			boolean result = StampedLock.isOptimisticReadStamp(stamp) && this.equalsUnsafe(object);
 			if (!this.lock.validate(stamp)) {
 				// Optimistic read unsuccessful or invalid
 				// Acquire pessimistic read lock
@@ -246,7 +246,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	}
 
 	private boolean equalsUnsafe(Object object) {
-		if ((object == null) || !(object instanceof ByteBufferMarshalledValue value)) return false;
+		if (!(object instanceof ByteBufferMarshalledValue<?> value)) return false;
 		Object ourObject = this.object;
 		Object theirObject = value.object;
 		if ((ourObject != null) && (theirObject != null)) {

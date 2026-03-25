@@ -21,7 +21,7 @@ interface IntOperation extends PrimitiveOperation<Integer> {
 	/**
 	 * Composes a consumer that invokes this consumer using result of the specified function.
 	 * @param <T1> the former composition type
-	 * @param <T1> the latter composition type
+	 * @param <T2> the latter composition type
 	 * @param before a composing function
 	 * @return a consumer that invokes this consumer using result of the specified function.
 	 */

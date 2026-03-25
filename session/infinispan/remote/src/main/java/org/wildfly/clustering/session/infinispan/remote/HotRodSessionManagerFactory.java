@@ -90,7 +90,7 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 		@SuppressWarnings("unchecked")
 		SessionAttributesFactory<CC, Object> attributesFactory = (SessionAttributesFactory<CC, Object>) this.createSessionAttributesFactory(configuration, provider);
 		ConsumerRegistry<ImmutableSession> expirationListenerRegistry = ConsumerRegistry.newInstance();
-		this.sessionFactory = new HotRodSessionFactory<>(new HotRodSessionFactory.Configuration<CC, Object, SC>() {
+		this.sessionFactory = new HotRodSessionFactory<>(new HotRodSessionFactory.Configuration<>() {
 			@Override
 			public SessionMetaDataFactory<SessionMetaDataEntry<SC>> getSessionMetaDataFactory() {
 				return metaDataFactory;
@@ -144,7 +144,7 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 		SessionFactory<CC, SessionMetaDataEntry<SC>, Object, SC> sessionFactory = this.sessionFactory;
 		IdentifierFactoryService<String> identifierFactory = new SimpleIdentifierFactoryService<>(configuration.getIdentifierFactory());
 		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
-		SessionManager<SC> manager = new CachedSessionManager<>(new HotRodSessionManager<>(new HotRodSessionManager.Configuration<CC, SessionMetaDataEntry<SC>, Object, SC>() {
+		return new CachedSessionManager<>(new HotRodSessionManager<>(new HotRodSessionManager.Configuration<CC, SessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public IdentifierFactoryService<String> getIdentifierFactory() {
 				return identifierFactory;
@@ -192,7 +192,6 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 				}
 			}
 		};
-		return manager;
 	}
 
 	@Override
@@ -202,14 +201,9 @@ public class HotRodSessionManagerFactory<CC, SC> implements SessionManagerFactor
 
 	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider) {
 		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> notifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getSession(manager, session, context))).orElse(null);
-		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
-			case FINE -> {
-				return new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), notifierFactory, configuration.getCacheConfiguration());
-			}
-			case COARSE -> {
-				return new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), notifierFactory, configuration.getCacheConfiguration());
-			}
-			default -> throw new IllegalStateException();
-		}
+		return switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
+			case FINE -> new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), notifierFactory, configuration.getCacheConfiguration());
+			case COARSE -> new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), notifierFactory, configuration.getCacheConfiguration());
+		};
 	}
 }

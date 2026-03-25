@@ -19,7 +19,7 @@ public interface Consumer<V> extends java.util.function.Consumer<V>, ObjectOpera
 
 	@Override
 	default Consumer<V> andThen(java.util.function.Consumer<? super V> after) {
-		return Consumer.<V>of(List.of(this, after));
+		return Consumer.of(List.of(this, after));
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public interface Consumer<V> extends java.util.function.Consumer<V>, ObjectOpera
 	/**
 	 * Returns a consumer that silently closes its object.
 	 * @param <V> the auto-closeable type
-	 * @return an closing consumer
+	 * @return a closing consumer
 	 */
 	@SuppressWarnings("unchecked")
 	static <V extends AutoCloseable> Consumer<V> close() {

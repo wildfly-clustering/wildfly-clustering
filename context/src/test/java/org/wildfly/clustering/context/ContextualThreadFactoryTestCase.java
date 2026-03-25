@@ -6,12 +6,12 @@
 package org.wildfly.clustering.context;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.ThreadFactory;
 
 import org.junit.jupiter.api.Test;
+import org.wildfly.clustering.function.Runner;
 
 /**
  * @author Paul Ferraro
@@ -21,7 +21,7 @@ public class ContextualThreadFactoryTestCase {
 	@Test
 	public void test() {
 		ThreadFactory factory = mock(ThreadFactory.class);
-		Thread expected = new Thread();
+		Thread expected = new Thread(Runner.of());
 		Contextualizer contextualizer = mock(Contextualizer.class);
 		ThreadFactory subject = new ContextualThreadFactory<>(factory, contextualizer);
 		Runnable task = mock(Runnable.class);

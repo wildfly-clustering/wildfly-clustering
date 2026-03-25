@@ -44,12 +44,8 @@ public enum CalendarMarshaller implements ProtoStreamMarshaller<Calendar> {
 				case TIME_INDEX -> builder.setInstant(reader.readObject(Date.class));
 				case LENIENT_INDEX -> builder.setLenient(reader.readBool());
 				case TIME_ZONE_INDEX -> builder.setTimeZone(TimeZone.getTimeZone(reader.readString()));
-				case FIRST_DAY_OF_WEEK_INDEX -> {
-					firstDayOfWeek = reader.readUInt32();
-				}
-				case MIN_DAYS_IN_FIRST_WEEK_INDEX -> {
-					minDaysInFirstWeek = reader.readUInt32();
-				}
+				case FIRST_DAY_OF_WEEK_INDEX -> firstDayOfWeek = reader.readUInt32();
+				case MIN_DAYS_IN_FIRST_WEEK_INDEX -> minDaysInFirstWeek = reader.readUInt32();
 				default -> reader.skipField(tag);
 			}
 		}

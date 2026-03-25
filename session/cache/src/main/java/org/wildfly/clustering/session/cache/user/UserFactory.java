@@ -59,7 +59,7 @@ public interface UserFactory<CV, C, T, SV, D, S> extends BiCacheEntryCreator<Str
 	@Override
 	default Map.Entry<CompletionStage<CV>, CompletionStage<SV>> findEntry(String id) {
 		CompletionStage<CV> contextStage = this.getUserContextFactory().findValueAsync(id);
-		// If cache locks on read, find meta data first
+		// If cache locks on read, find metadata first
 		CompletionStage<SV> sessionsStage = this.getCacheProperties().isLockOnRead() ? contextStage.thenCompose(metaData -> (metaData != null) ? this.getUserSessionsFactory().findValueAsync(id) : CompletableFuture.completedStage(null)) : this.getUserSessionsFactory().findValueAsync(id);
 		return Map.entry(contextStage, sessionsStage);
 	}
@@ -67,7 +67,7 @@ public interface UserFactory<CV, C, T, SV, D, S> extends BiCacheEntryCreator<Str
 	@Override
 	default Map.Entry<CompletionStage<CV>, CompletionStage<SV>> tryEntry(String id) {
 		CompletionStage<CV> contextStage = this.getUserContextFactory().tryValueAsync(id);
-		// If cache locks on read, find meta data first
+		// If cache locks on read, find metadata first
 		CompletionStage<SV> sessionsStage = this.getCacheProperties().isLockOnRead() ? contextStage.thenCompose(metaData -> (metaData != null) ? this.getUserSessionsFactory().tryValueAsync(id) : CompletableFuture.completedStage(null)) : this.getUserSessionsFactory().tryValueAsync(id);
 		return Map.entry(contextStage, sessionsStage);
 	}

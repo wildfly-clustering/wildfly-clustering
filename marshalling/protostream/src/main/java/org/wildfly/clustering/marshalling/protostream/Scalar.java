@@ -30,7 +30,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 		}
 
 		@Override
-		public Class<? extends Object> getJavaClass() {
+		public Class<?> getJavaClass() {
 			return Object.class;
 		}
 
@@ -352,7 +352,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 	}
 
 	@Override
-	public Class<? extends Object> getJavaClass() {
+	public Class<?> getJavaClass() {
 		return this.marshaller.getJavaClass();
 	}
 

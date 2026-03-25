@@ -63,7 +63,7 @@ public class BasicCacheContainerDecorator implements BasicCacheContainer {
 
 	@Override
 	public boolean equals(Object object) {
-		return (object != null) ? this.container.toString().equals(object.toString()) : false;
+		return (object != null) && this.container.toString().equals(object.toString());
 	}
 
 	@Override

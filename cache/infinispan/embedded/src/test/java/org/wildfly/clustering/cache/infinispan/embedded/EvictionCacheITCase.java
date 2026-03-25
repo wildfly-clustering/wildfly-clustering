@@ -131,7 +131,7 @@ public class EvictionCacheITCase {
 	}
 
 	@Listener
-	private class EvictionEventListener<K, V> {
+	private static class EvictionEventListener<K, V> {
 		private final Queue<Map.Entry<K, V>> entries;
 
 		EvictionEventListener(Queue<Map.Entry<K, V>> entries) {

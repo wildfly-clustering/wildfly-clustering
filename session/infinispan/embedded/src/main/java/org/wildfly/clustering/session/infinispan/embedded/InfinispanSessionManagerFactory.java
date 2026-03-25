@@ -131,7 +131,7 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 		SessionMetaDataFactory<ContextualSessionMetaDataEntry<SC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(this.configuration);
 		@SuppressWarnings("unchecked")
 		SessionAttributesFactory<CC, Object> attributesFactory = (SessionAttributesFactory<CC, Object>) this.createSessionAttributesFactory(configuration, provider);
-		this.factory = new CompositeSessionFactory<>(new SessionFactoryConfiguration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
+		this.factory = new CompositeSessionFactory<>(new SessionFactoryConfiguration<>() {
 			@Override
 			public CacheProperties getCacheProperties() {
 				return cacheConfiguration.getCacheProperties();
@@ -172,7 +172,7 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 		};
 		Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<SC>> cache = cacheConfiguration.getCache();
 		@SuppressWarnings("resource")
-		SchedulerService<String, Instant> localScheduler = new LocalSchedulerService<>(new LocalSchedulerService.Configuration<String>() {
+		SchedulerService<String, Instant> localScheduler = new LocalSchedulerService<>(new LocalSchedulerService.Configuration<>() {
 			@Override
 			public String getName() {
 				return cacheConfiguration.getName();
@@ -249,7 +249,7 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 		IdentifierFactoryService<String> identifierFactory = new AffinityIdentifierFactoryService<>(configuration.getIdentifierFactory(), cacheConfiguration.getCache());
 		Registrar<SessionManager<SC>> registrar = this.managerRegistrarFactory.apply(configuration);
 		SchedulerService<String, ExpirationMetaData> scheduler = this.scheduler;
-		SessionManager<SC> manager = new CachedSessionManager<>(new InfinispanSessionManager<>(new InfinispanSessionManager.Configuration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
+		return new CachedSessionManager<>(new InfinispanSessionManager<>(new InfinispanSessionManager.Configuration<CC, ContextualSessionMetaDataEntry<SC>, Object, SC>() {
 			@Override
 			public IdentifierFactoryService<String> getIdentifierFactory() {
 				return identifierFactory;
@@ -311,22 +311,16 @@ public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFa
 				}
 			}
 		};
-		return manager;
 	}
 
 	private <S, L> SessionAttributesFactory<CC, ?> createSessionAttributesFactory(Configuration<SC> configuration, ContainerProvider<CC, S, L, SC> provider) {
 		boolean marshalling = configuration.getCacheConfiguration().getCacheProperties().isMarshalling();
 		BiFunction<ImmutableSession, CC, SessionAttributeActivationNotifier> persistenceNotifierFactory = (session, context) -> Optional.ofNullable(this.findSessionManager(context)).<SessionAttributeActivationNotifier>map(manager -> new ContainerSessionAttributeActivationNotifier<>(provider, provider.getSession(manager, session, context))).orElse(SessionAttributeActivationNotifier.SILENT);
 		Function<String, SessionAttributeActivationNotifier> passivationNotifierFactory = sessionId -> new CompositeContainerSessionAttributeActivationNotifier<>(provider, this.managers.values(), sessionId);
-		switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
-			case FINE -> {
-				return marshalling ? new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration()) : new FineSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration());
-			}
-			case COARSE -> {
-				return marshalling ? new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration()) : new CoarseSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration());
-			}
-			default -> throw new IllegalStateException();
-		}
+		return switch (configuration.getSessionManagerFactoryConfiguration().getAttributePersistenceStrategy()) {
+			case FINE -> marshalling ? new FineSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration()) : new FineSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration());
+			case COARSE -> marshalling ? new CoarseSessionAttributesFactory<>(new MarshalledValueMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration()) : new CoarseSessionAttributesFactory<>(new IdentityMarshallerSessionAttributesFactoryConfiguration<>(configuration.getSessionManagerFactoryConfiguration()), persistenceNotifierFactory, passivationNotifierFactory, configuration.getCacheConfiguration());
+		};
 	}
 
 	@Override

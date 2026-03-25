@@ -86,8 +86,7 @@ public interface MapEntry<K, V> extends Map.Entry<K, V>, Serializable {
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof Map.Entry entry)) return false;
-			return Objects.equals(this.key, entry.getKey()) && Objects.equals(this.value, entry.getValue());
+			return (object instanceof Map.Entry<?, ?> entry) && Objects.equals(this.key, entry.getKey()) && Objects.equals(this.value, entry.getValue());
 		}
 
 		@Override

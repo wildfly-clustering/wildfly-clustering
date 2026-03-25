@@ -21,7 +21,7 @@ public class MutableSessionMetaDataEntry extends AbstractSessionMetaDataEntry {
 	private final Value<Instant> lastAccessEndTime;
 
 	/**
-	 * A mutable session meta data entry using the specified offset values.
+	 * A mutable session metadata entry using the specified offset values.
 	 * @param entry a metadata entry
 	 * @param values a set of offset values
 	 */

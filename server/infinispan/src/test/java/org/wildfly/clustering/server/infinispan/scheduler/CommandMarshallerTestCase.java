@@ -40,9 +40,7 @@ public class CommandMarshallerTestCase {
 	@ParameterizedTest
 	@TesterFactorySource(ProtoStreamTesterFactory.class)
 	public void testCancelCommand(TesterFactory factory) {
-		Consumer<CancelCommand<String, Object>> tester = factory.createTester((expected, actual) -> {
-			assertThat(actual.getKey()).isEqualTo(expected.getKey());
-		});
+		Consumer<CancelCommand<String, Object>> tester = factory.createTester((expected, actual) -> assertThat(actual.getKey()).isEqualTo(expected.getKey()));
 
 		tester.accept(new CancelCommand<>("foo"));
 	}

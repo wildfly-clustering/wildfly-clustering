@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.NodeVersion;
@@ -152,7 +151,7 @@ public enum AddressSerializer implements Serializer<Address> {
 					parts.add(machine);
 				}
 			}
-			return parts.stream().collect(Collectors.joining(DELIMITER));
+			return String.join(DELIMITER, parts);
 		}
 	}
 }

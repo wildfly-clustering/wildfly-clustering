@@ -151,9 +151,7 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 						this.logger.log(System.Logger.Level.INFO, "{0} concurrent requests completed in {1}", threads * requests, concurrentDuration);
 
 						// Verify integrity of value on other manager
-						this.requestSession(manager2, sessionId, session -> {
-							assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests);
-						});
+						this.requestSession(manager2, sessionId, session -> assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests));
 
 						start = Instant.now();
 						// Trigger sequences of the same number of requests for the same session
@@ -171,9 +169,7 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 						this.logger.log(System.Logger.Level.INFO, "{0} serial requests completed in {1}", threads * requests, serialDuration);
 
 						// Verify integrity of value on other manager
-						this.requestSession(manager2, sessionId, session -> {
-							assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests * 2);
-						});
+						this.requestSession(manager2, sessionId, session -> assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests * 2));
 
 						// Ensure that concurrent requests complete faster than same number of serial requests
 						assertThat(concurrentDuration).isLessThan(serialDuration);
@@ -212,9 +208,7 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 					this.createSession(manager1, sessionId, Map.of("foo", foo, "bar", bar));
 
 					// Setup session to expire soon
-					this.requestSession(manager1, sessionId, session -> {
-						session.getMetaData().setMaxIdle(Duration.ofSeconds(2));
-					});
+					this.requestSession(manager1, sessionId, session -> session.getMetaData().setMaxIdle(Duration.ofSeconds(2)));
 
 					// Verify that session does not expire prematurely
 					TimeUnit.SECONDS.sleep(1);

@@ -19,7 +19,7 @@ public abstract class AbstractCacheEntryMutator implements CacheEntryMutator, ja
 	private volatile java.util.function.Supplier<Duration> maxIdle = Supplier.of(Duration.ZERO);
 
 	/**
-	 * Creates a immortal cache entry mutator.
+	 * Creates an immortal cache entry mutator.
 	 */
 	protected AbstractCacheEntryMutator() {
 	}

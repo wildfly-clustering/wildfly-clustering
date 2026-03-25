@@ -66,8 +66,7 @@ public abstract class AbstractConcurrentTestCase {
 	public void testConcurrentSkipListMap() {
 		Consumer<ConcurrentSkipListMap<Object, Object>> tester = this.factory.createMapTester();
 
-		ConcurrentSkipListMap<Object, Object> map = new ConcurrentSkipListMap<>();
-		map.putAll(BASIS);
+		ConcurrentSkipListMap<Object, Object> map = new ConcurrentSkipListMap<>(BASIS);
 		tester.accept(map);
 
 		map = new ConcurrentSkipListMap<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());
@@ -86,8 +85,7 @@ public abstract class AbstractConcurrentTestCase {
 	public void testConcurrentSkipListSet() {
 		Consumer<ConcurrentSkipListSet<Object>> tester = this.factory.createCollectionTester();
 
-		ConcurrentSkipListSet<Object> set = new ConcurrentSkipListSet<>();
-		set.addAll(BASIS.keySet());
+		ConcurrentSkipListSet<Object> set = new ConcurrentSkipListSet<>(BASIS.keySet());
 		tester.accept(set);
 
 		set = new ConcurrentSkipListSet<>((Comparator<Object>) (Comparator<?>) Comparator.reverseOrder());

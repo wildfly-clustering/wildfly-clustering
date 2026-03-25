@@ -29,14 +29,13 @@ import org.wildfly.clustering.session.cache.attributes.SessionAttributes;
  */
 public class FineSessionAttributesTestCase {
 
-	private final String id = "id";
 	private final CacheEntryMutatorFactory<String, Map<String, Object>> mutatorFactory = mock(CacheEntryMutatorFactory.class);
 	private final Marshaller<Object, Object> marshaller = mock(Marshaller.class);
 	private final Immutability immutability = mock(Immutability.class);
 	private final SessionAttributeActivationNotifier notifier = mock(SessionAttributeActivationNotifier.class);
 
 	private SessionAttributes createSessionAttributes(String id, Map<String, Object> map) {
-		SessionAttributes attribute = new FineSessionAttributes<>(this.id, new TreeMap<>(map), this.mutatorFactory, this.marshaller, this.immutability, this.notifier);
+		SessionAttributes attribute = new FineSessionAttributes<>(id, new TreeMap<>(map), this.mutatorFactory, this.marshaller, this.immutability, this.notifier);
 
 		for (Object value : map.values()) {
 			verify(this.notifier).postActivate(value);
@@ -178,7 +177,7 @@ public class FineSessionAttributesTestCase {
 		}
 
 		verify(this.notifier).prePassivate(existing);
-		// Nothing should have require writing
+		// Nothing should have required writing
 		verifyNoInteractions(this.mutatorFactory);
 
 		reset(this.notifier);

@@ -4,6 +4,7 @@
  */
 package org.wildfly.clustering.server.local.scheduler;
 
+import java.io.Serial;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -20,7 +21,7 @@ import java.util.stream.Stream;
 
 /**
  * {@link ScheduledEntries} implemented using a {@link ConcurrentSkipListSet}, where entries are sorted based on the entry value.
- * Both {@link #add(Object, Comparable)} and {@link #remove(Object)} run in O(log N) time.
+ * Both {@link #add(Object, Object)} and {@link #remove(Object)} run in O(log N) time.
  * @author Paul Ferraro
  */
 class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
@@ -147,6 +148,7 @@ class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
 	 * A {@link SimpleImmutableEntry} whose equality is based solely on the entry key.
 	 */
 	private static class Entry<K, V> extends SimpleImmutableEntry<K, V> {
+		@Serial
 		private static final long serialVersionUID = -1818780078437540182L;
 
 		Entry(K key, V value) {
@@ -155,8 +157,7 @@ class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof Map.Entry entry)) return false;
-			return this.getKey().equals(entry.getKey());
+			return (object instanceof Map.Entry<?, ?> entry) && this.getKey().equals(entry.getKey());
 		}
 
 		@Override

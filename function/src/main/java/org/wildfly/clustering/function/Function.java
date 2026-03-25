@@ -310,7 +310,7 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Objec
 	class SimpleFunction<T, R> implements Function<T, R> {
 		static final Function<?, ?> NULL = new SimpleFunction<>(null);
 
-		private R result;
+		private final R result;
 
 		SimpleFunction(R result) {
 			this.result = result;

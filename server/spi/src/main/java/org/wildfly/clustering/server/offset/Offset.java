@@ -81,8 +81,7 @@ public interface Offset<V> extends UnaryOperator<V> {
 
 		@Override
 		public boolean equals(Object object) {
-			if (!(object instanceof DefaultOffset offset)) return false;
-			return this.value.equals(offset.value);
+			return (object instanceof DefaultOffset<?, ?> offset) && this.value.equals(offset.value);
 		}
 
 		@Override

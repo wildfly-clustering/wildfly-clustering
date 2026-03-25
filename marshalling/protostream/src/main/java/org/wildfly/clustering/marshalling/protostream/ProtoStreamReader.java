@@ -82,7 +82,7 @@ public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 	<T> T readObject(Class<T> targetClass) throws IOException;
 
 	/**
-	 * Reads an num of the specified type from this reader.
+	 * Reads an enum of the specified type from this reader.
 	 * @param <E> the enum type of the associated marshaller
 	 * @param enumClass the class of the associated marshaller
 	 * @return the unmarshalled enum

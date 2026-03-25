@@ -34,21 +34,21 @@ public interface SessionAttributes extends Map<String, Object>, AutoCloseable {
 	}
 
 	@Override
-	default void putAll(Map<? extends String, ? extends Object> map) {
-		map.entrySet().stream().forEach(this::put);
+	default void putAll(Map<? extends String, ?> map) {
+		map.entrySet().forEach(this::put);
 	}
 
 	/**
 	 * Adds the specified entry to this map.
 	 * @param entry a map entry
 	 */
-	default void put(Map.Entry<? extends String, ? extends Object> entry) {
+	default void put(Map.Entry<? extends String, ?> entry) {
 		this.put(entry.getKey(), entry.getValue());
 	}
 
 	@Override
 	default void clear() {
-		this.keySet().stream().forEach(this::remove);
+		this.keySet().forEach(this::remove);
 	}
 
 	@Override

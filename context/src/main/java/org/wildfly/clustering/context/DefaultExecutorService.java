@@ -24,7 +24,7 @@ public class DefaultExecutorService extends ContextualExecutorService {
 	@SuppressWarnings("removal")
 	public DefaultExecutorService(Function<ThreadFactory, ExecutorService> factory, ClassLoader loader) {
 		// Use thread group of current thread
-		this(factory.apply(AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
+		this(factory.apply(AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ThreadFactory run() {
 				return new DefaultThreadFactory(Thread.currentThread().getThreadGroup(), DefaultExecutorService.class.getClassLoader());

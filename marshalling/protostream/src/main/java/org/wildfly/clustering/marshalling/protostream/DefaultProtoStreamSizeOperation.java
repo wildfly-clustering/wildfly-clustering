@@ -33,9 +33,9 @@ public class DefaultProtoStreamSizeOperation extends AbstractProtoStreamOperatio
 	 * @param context the serialization context
 	 * @param sizeContext the context of the size operation
 	 */
-	DefaultProtoStreamSizeOperation(ImmutableSerializationContext context, ProtoStreamWriterContext writerContext) {
+	DefaultProtoStreamSizeOperation(ImmutableSerializationContext context, ProtoStreamWriterContext sizeContext) {
 		super(context);
-		this.context = writerContext;
+		this.context = sizeContext;
 	}
 
 	@Override

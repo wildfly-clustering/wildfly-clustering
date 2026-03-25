@@ -39,7 +39,7 @@ public interface MarshallingTesterFactory extends TesterFactory {
 					}
 
 					if (subject != null) {
-						Class<?> subjectClass = (subject instanceof Enum enumValue) ? enumValue.getDeclaringClass() : subject.getClass();
+						Class<?> subjectClass = (subject instanceof Enum<?> enumValue) ? enumValue.getDeclaringClass() : subject.getClass();
 						Object subjectValue = (subject instanceof Character character) ? (int) character.charValue() : subject;
 						LOGGER.log(System.Logger.Level.DEBUG, "{0}\t{1}\t{2}\t{3}", marshaller, subjectClass.getCanonicalName(), subjectValue, bufferSize);
 					}

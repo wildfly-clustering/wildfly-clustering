@@ -16,7 +16,7 @@ import org.wildfly.clustering.server.scheduler.Scheduler;
 public class ContainsCommand<K, V> extends AbstractPrimaryOwnerCommand<K, V, Boolean> {
 	/**
 	 * Creates a contains command for a scheduled entry with the specified identifier
-	 * @param id a scheduler entry identifier
+	 * @param key a scheduler entry key
 	 */
 	ContainsCommand(K key) {
 		super(key);

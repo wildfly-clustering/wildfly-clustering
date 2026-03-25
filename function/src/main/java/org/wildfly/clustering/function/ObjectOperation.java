@@ -20,7 +20,7 @@ interface ObjectOperation<V> {
 
 	/**
 	 * Composes an operation that invokes this operation using the result of the specified function.
-	 * @param mapper a mapping function
+	 * @param before a mapping function
 	 * @param <T1> the former parameter type
 	 * @param <T2> the latter parameter type
 	 * @return a mapped operation
@@ -29,28 +29,28 @@ interface ObjectOperation<V> {
 
 	/**
 	 * Composes an operation that invokes this operation using the result of the specified function.
-	 * @param mapper a mapping function
+	 * @param before a mapping function
 	 * @return a mapped operation
 	 */
 	BooleanOperation composeBoolean(BooleanFunction<? extends V> before);
 
 	/**
 	 * Composes an operation that invokes this operation using the result of the specified function.
-	 * @param mapper a mapping function
+	 * @param before a mapping function
 	 * @return a mapped operation
 	 */
 	DoubleOperation composeDouble(java.util.function.DoubleFunction<? extends V> before);
 
 	/**
 	 * Composes an operation that invokes this operation using the result of the specified function.
-	 * @param mapper a mapping function
+	 * @param before a mapping function
 	 * @return a mapped operation
 	 */
 	IntOperation composeInt(java.util.function.IntFunction<? extends V> before);
 
 	/**
 	 * Composes an operation that invokes this operation using the result of the specified function.
-	 * @param mapper a mapping function
+	 * @param before a mapping function
 	 * @return a mapped operation
 	 */
 	LongOperation composeLong(java.util.function.LongFunction<? extends V> before);

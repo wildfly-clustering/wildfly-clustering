@@ -139,7 +139,7 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 		cache.start();
 		this.accept(cache::stop);
 
-		this.factory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactory.Configuration<SC>() {
+		this.factory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactory.Configuration<>() {
 			@Override
 			public SessionManagerFactoryConfiguration<SC> getSessionManagerFactoryConfiguration() {
 				return managerFactoryConfiguration;

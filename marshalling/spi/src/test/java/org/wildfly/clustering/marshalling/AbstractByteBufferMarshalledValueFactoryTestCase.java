@@ -45,7 +45,7 @@ public abstract class AbstractByteBufferMarshalledValueFactoryTestCase {
 		assertThat(mv.peek()).isNotNull().isSameAs(uuid);
 		assertThat(mv.get(this.marshaller)).isNotNull().isSameAs(uuid);
 
-		ByteBufferMarshalledValue<UUID> copy = replicate(mv);
+		ByteBufferMarshalledValue<UUID> copy = this.replicate(mv);
 
 		assertThat(copy).isNotNull();
 		assertThat(copy.peek()).isNull();
@@ -53,7 +53,7 @@ public abstract class AbstractByteBufferMarshalledValueFactoryTestCase {
 		UUID uuid2 = copy.get(this.marshaller);
 		assertThat(uuid2).isNotSameAs(uuid).isEqualTo(uuid);
 
-		copy = replicate(copy);
+		copy = this.replicate(copy);
 		uuid2 = copy.get(this.marshaller);
 		assertThat(uuid2).isEqualTo(uuid);
 
@@ -68,22 +68,19 @@ public abstract class AbstractByteBufferMarshalledValueFactoryTestCase {
 	public void equals() throws Exception {
 		UUID uuid = UUID.randomUUID();
 		ByteBufferMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
-
-		assertThat(mv).isNotNull().isEqualTo(mv);
-
 		ByteBufferMarshalledValue<UUID> dup = this.factory.createMarshalledValue(uuid);
 		assertThat(dup).isEqualTo(mv);
 		assertThat(mv).isEqualTo(dup);
 
-		ByteBufferMarshalledValue<UUID> replica = replicate(mv);
+		ByteBufferMarshalledValue<UUID> replica = this.replicate(mv);
 		assertThat(replica).isEqualTo(mv);
 		assertThat(mv).isEqualTo(replica);
 
-		ByteBufferMarshalledValue<UUID> nulled = this.factory.createMarshalledValue(null);
-		assertThat(nulled).isNotNull().isNotEqualTo(mv).isNotEqualTo(replica).isEqualTo(nulled);
-		assertThat(mv).isNotEqualTo(nulled);
-		assertThat(replica).isNotEqualTo(nulled);
-		assertThat(this.factory.createMarshalledValue(null)).isEqualTo(nulled);
+		ByteBufferMarshalledValue<UUID> nullValue = this.factory.createMarshalledValue(null);
+		assertThat(nullValue).isNotNull().isNotEqualTo(mv).isNotEqualTo(replica);
+		assertThat(mv).isNotEqualTo(nullValue);
+		assertThat(replica).isNotEqualTo(nullValue);
+		assertThat(this.factory.createMarshalledValue(null)).isEqualTo(nullValue);
 	}
 
 	@Test
@@ -92,7 +89,7 @@ public abstract class AbstractByteBufferMarshalledValueFactoryTestCase {
 		ByteBufferMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
 		assertThat(mv).hasSameHashCodeAs(uuid);
 
-		ByteBufferMarshalledValue<UUID> copy = replicate(mv);
+		ByteBufferMarshalledValue<UUID> copy = this.replicate(mv);
 		assertThat(copy.hashCode()).isEqualTo(0);
 
 		mv = this.factory.createMarshalledValue(null);

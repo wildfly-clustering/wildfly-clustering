@@ -7,7 +7,7 @@ package org.wildfly.clustering.server.local;
 import org.wildfly.clustering.server.group.AbstractGroupMember;
 
 /**
- * Non-clustered {@link GroupMember} implementation.
+ * Non-clustered {@link org.wildfly.clustering.server.GroupMember} implementation.
  * @author Paul Ferraro
  */
 class DefaultLocalGroupMember extends AbstractGroupMember<String> implements LocalGroupMember {

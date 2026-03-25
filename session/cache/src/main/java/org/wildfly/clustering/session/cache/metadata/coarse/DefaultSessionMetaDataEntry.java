@@ -22,7 +22,7 @@ public class DefaultSessionMetaDataEntry<C> extends AbstractSessionMetaDataEntry
 	private volatile Duration maxIdle = Duration.ZERO;
 	// The start time of the last access, expressed as an offset from the creation time
 	private final OffsetValue<Instant> lastAccessStartTime;
-	// The end time of the last access, expressed an an offset from the start time of the last access
+	// The end time of the last access, expressed an offset from the start time of the last access
 	private final OffsetValue<Instant> lastAccessEndTime;
 	private final Supplied<C> context = Supplied.cached();
 

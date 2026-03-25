@@ -9,7 +9,6 @@ package org.wildfly.clustering.function;
  * A function with a primitive value.
  * @author Paul Ferraro
  * @param <B> the boxed type
- * @param <P> the parameter type
  */
 interface PrimitiveFunction<B, V> extends PrimitiveOperation<B>, ToObjectOperation<V> {
 

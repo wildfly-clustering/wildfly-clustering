@@ -36,12 +36,8 @@ public enum ScheduleCommandMarshaller implements ProtoStreamMarshaller<ScheduleC
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case KEY_INDEX -> {
-					key = reader.readAny();
-				}
-				case VALUE_INDEX -> {
-					value = reader.readAny();
-				}
+				case KEY_INDEX -> key = reader.readAny();
+				case VALUE_INDEX -> value = reader.readAny();
 				default -> reader.skipField(tag);
 			}
 		}
