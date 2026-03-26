@@ -37,7 +37,7 @@ public abstract class AbstractByteBufferMarshalledKeyFactoryTestCase extends Abs
 		ByteBufferMarshalledValue<UUID> mv = this.factory.createMarshalledValue(uuid);
 		assertThat(mv).hasSameHashCodeAs(uuid);
 
-		ByteBufferMarshalledValue<UUID> copy = replicate(mv);
+		ByteBufferMarshalledValue<UUID> copy = this.replicate(mv);
 		assertThat(copy).hasSameHashCodeAs(uuid);
 
 		mv = this.factory.createMarshalledValue(null);

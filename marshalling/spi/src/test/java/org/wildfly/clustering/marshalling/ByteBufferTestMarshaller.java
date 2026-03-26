@@ -35,7 +35,7 @@ public class ByteBufferTestMarshaller<T> implements TestMarshaller<T> {
 		ByteBuffer buffer = this.marshaller.write(object);
 		OptionalInt size = this.marshaller.size(object);
 		if (size.isPresent()) {
-			assertThat(size).isEqualTo(buffer.remaining());
+			assertThat(size).hasValue(buffer.remaining());
 		}
 		return buffer;
 	}

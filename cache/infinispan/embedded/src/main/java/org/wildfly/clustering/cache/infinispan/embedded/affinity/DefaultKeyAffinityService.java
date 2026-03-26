@@ -57,7 +57,7 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
 public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supplier<BlockingQueue<K>> {
 	static final int DEFAULT_QUEUE_SIZE = 100;
 	@SuppressWarnings("removal")
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(DefaultKeyAffinityService.class, AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(DefaultKeyAffinityService.class, AccessController.doPrivileged(new PrivilegedAction<>() {
 		@Override
 		public ClassLoader run() {
 			return DefaultKeyAffinityService.class.getClassLoader();
@@ -241,7 +241,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 				BlockingQueue<K> keys = registry.getKeys(address);
 				futures.add(this.executor.get().submit(new GenerateKeysTask<>(this.generator, distribution, address, keys)));
 			}
-			KeyAffinityState<K> previousState = this.currentState.getAndSet(new KeyAffinityState<K>() {
+			KeyAffinityState<K> previousState = this.currentState.getAndSet(new KeyAffinityState<>() {
 				@Override
 				public KeyDistribution getDistribution() {
 					return distribution;

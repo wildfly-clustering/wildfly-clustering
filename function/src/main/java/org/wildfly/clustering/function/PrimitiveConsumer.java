@@ -9,7 +9,6 @@ package org.wildfly.clustering.function;
  * A consumer of a primitive value.
  * @author Paul Ferraro
  * @param <B> the boxed type
- * @param <P> the associated predicate type
  */
 interface PrimitiveConsumer<B> extends PrimitiveOperation<B>, ToVoidOperation {
 }

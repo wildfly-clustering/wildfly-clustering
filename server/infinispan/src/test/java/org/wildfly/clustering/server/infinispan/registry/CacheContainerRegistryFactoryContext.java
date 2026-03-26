@@ -47,7 +47,7 @@ public class CacheContainerRegistryFactoryContext<K, V> extends AbstractContext<
 		this.factory = RegistryFactory.singleton(new BiFunction<>() {
 			@Override
 			public Registry<CacheContainerGroupMember, K, V> apply(Map.Entry<K, V> entry, Runnable closeTask) {
-				return new CacheRegistry<>(new CacheRegistry.Configuration<K, V>() {
+				return new CacheRegistry<>(new CacheRegistry.Configuration<>() {
 					@SuppressWarnings("unchecked")
 					@Override
 					public <KK, VV> Cache<KK, VV> getCache() {

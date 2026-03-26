@@ -19,10 +19,10 @@ import org.wildfly.clustering.server.GroupMember;
  */
 public class NarySessionAffinity<M extends GroupMember> implements UnaryOperator<String> {
 
-	private Function<String, List<M>> affinity;
-	private Function<M, String> mapper;
-	private String delimiter;
-	private int maxMembers;
+	private final Function<String, List<M>> affinity;
+	private final Function<M, String> mapper;
+	private final String delimiter;
+	private final int maxMembers;
 
 	/**
 	 * Creates an affinity to multiple members.

@@ -48,12 +48,8 @@ public class MapEntryMarshaller<K, V, T extends Map.Entry<K, V>> implements Prot
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case KEY_INDEX -> {
-					key = (K) reader.readAny();
-				}
-				case VALUE_INDEX -> {
-					value = (V) reader.readAny();
-				}
+				case KEY_INDEX -> key = (K) reader.readAny();
+				case VALUE_INDEX -> value = (V) reader.readAny();
 				default -> reader.skipField(tag);
 			}
 		}

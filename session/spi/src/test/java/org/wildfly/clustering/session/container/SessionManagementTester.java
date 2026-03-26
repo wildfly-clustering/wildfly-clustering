@@ -141,7 +141,7 @@ public class SessionManagementTester implements Tester {
 				if (nullableSession) {
 					assertThat(response.headers().firstValue(SESSION_ID)).isEmpty();
 				} else {
-					assertThat(response.headers().firstValue(SESSION_ID)).isNotEqualTo(sessionId);
+					assertThat(response.headers().firstValue(SESSION_ID)).isPresent().get().isNotEqualTo(sessionId);
 				}
 				assertThat(response.headers().firstValueAsLong(COUNTER)).isEmpty();
 			}));

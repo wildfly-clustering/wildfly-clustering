@@ -28,9 +28,7 @@ public enum ByteBufferMarshalledValueMarshaller implements ProtoStreamMarshaller
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case BUFFER_INDEX -> {
-					buffer = reader.readByteBuffer();
-				}
+				case BUFFER_INDEX -> buffer = reader.readByteBuffer();
 				default -> reader.skipField(tag);
 			}
 		}

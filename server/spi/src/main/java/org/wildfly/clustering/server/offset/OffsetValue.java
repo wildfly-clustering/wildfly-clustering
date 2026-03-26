@@ -65,9 +65,9 @@ public interface OffsetValue<V> extends Value<V> {
 	}
 
 	/**
-	 * Creates a instant-based offset value from the specified basis.
+	 * Creates an instant-based offset value from the specified basis.
 	 * @param instant the offset basis
-	 * @return a instant-based offset value from the specified basis.
+	 * @return an instant-based offset value from the specified basis.
 	 */
 	static OffsetValue<Instant> from(Instant instant) {
 		return new InstantOffsetValue(Supplier.of(instant));

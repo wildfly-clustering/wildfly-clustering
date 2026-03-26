@@ -6,7 +6,7 @@
 package org.wildfly.clustering.function;
 
 /**
- * A function operating on a boolean value, returning a int value.
+ * A function operating on a boolean value, returning an int value.
  * @author Paul Ferraro
  */
 public interface BooleanToIntFunction extends BooleanOperation, ToIntOperation {

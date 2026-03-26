@@ -17,7 +17,7 @@ public final class ByteBufferOutputStream extends ByteArrayOutputStream {
 	private static final int DEFAULT_INITIAL_CAPACITY = 512;
 
 	/**
-	 * Constructs a new output stream with an default initial capacity.
+	 * Constructs a new output stream with a default initial capacity.
 	 */
 	public ByteBufferOutputStream() {
 		this(OptionalInt.empty());

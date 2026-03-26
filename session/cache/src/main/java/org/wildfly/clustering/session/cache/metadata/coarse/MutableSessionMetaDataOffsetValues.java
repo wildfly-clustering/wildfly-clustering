@@ -20,7 +20,7 @@ public interface MutableSessionMetaDataOffsetValues extends MutableSessionMetaDa
 	 * Creates a mutable session metadata entry delta from the specified metadata entry.
 	 * @param <C> the session context type
 	 * @param entry a session metadata entry
-	 * @return an object encapsulating the mutable session meta data properties
+	 * @return an object encapsulating the mutable session metadata properties
 	 */
 	static <C> MutableSessionMetaDataOffsetValues from(ContextualSessionMetaDataEntry<C> entry) {
 		OffsetValue<Duration> maxIdle = OffsetValue.from(entry.getMaxIdle());

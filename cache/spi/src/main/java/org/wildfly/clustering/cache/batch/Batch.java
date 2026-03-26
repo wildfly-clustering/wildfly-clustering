@@ -19,19 +19,19 @@ public interface Batch extends AutoCloseable {
 	 */
 	interface Status {
 		/**
-		 * Indicates whether or not this batch is active.
+		 * Indicates whether this batch is active.
 		 * @return true, if this batch is active, false otherwise.
 		 */
 		boolean isActive();
 
 		/**
-		 * Indicates whether or not this batch will be discarded.
+		 * Indicates whether this batch will be discarded.
 		 * @return true, if this batch will be discarded, false otherwise.
 		 */
 		boolean isDiscarding();
 
 		/**
-		 * Indicates whether or not this batch was closed.
+		 * Indicates whether this batch was closed.
 		 * @return true, if this batch was closed, false otherwise.
 		 */
 		boolean isClosed();

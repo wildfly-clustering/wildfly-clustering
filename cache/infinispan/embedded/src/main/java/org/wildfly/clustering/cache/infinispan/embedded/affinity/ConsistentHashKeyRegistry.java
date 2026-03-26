@@ -34,7 +34,7 @@ public class ConsistentHashKeyRegistry<K> implements KeyRegistry<K> {
 				members.add(address);
 			}
 		}
-		if (members.size() == 0) {
+		if (members.isEmpty()) {
 			this.keys = Map.of();
 		} else if (members.size() == 1) {
 			Address member = members.get(0);

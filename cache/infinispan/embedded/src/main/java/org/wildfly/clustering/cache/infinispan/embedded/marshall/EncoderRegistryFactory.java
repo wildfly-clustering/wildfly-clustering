@@ -36,7 +36,7 @@ public class EncoderRegistryFactory extends AbstractComponentFactory implements 
 	@Inject SerializationContextRegistry registry;
 
 	/**
-	 * Creates a encoder registry factory.
+	 * Creates an encoder registry factory.
 	 */
 	public EncoderRegistryFactory() {
 	}

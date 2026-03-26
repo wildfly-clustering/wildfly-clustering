@@ -93,7 +93,6 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 		}
 	}
 
-	private final String name;
 	private final CommandDispatcher<CacheContainerGroupMember, Scheduler<K, V>> dispatcher;
 	private final CheckedFunction<Map.Entry<K, V>, CompletionStage<Void>> primaryOwnerSchedule;
 	private final CheckedFunction<K, CompletionStage<Void>> primaryOwnerCancel;
@@ -108,10 +107,10 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 	 */
 	public <SE, CE> PrimaryOwnerSchedulerService(Configuration<K, V, SE, CE> configuration) {
 		super(configuration.getScheduler());
-		this.name = configuration.getName();
-		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(this.name, configuration.getScheduler(), configuration.getClassLoader());
+		String name = configuration.getName();
+		this.dispatcher = configuration.getCommandDispatcherFactory().createCommandDispatcher(name, configuration.getScheduler(), configuration.getClassLoader());
 		Function<K, CacheContainerGroupMember> affinity = configuration.getAffinity();
-		Retry retry = Retry.of(this.name, configuration.getCacheConfiguration().getRetryConfig());
+		Retry retry = Retry.of(name, configuration.getCacheConfiguration().getRetryConfig());
 		this.primaryOwnerSchedule = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, configuration.getScheduleCommandFactory()));
 		this.primaryOwnerCancel = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, CancelCommand::new));
 		this.primaryOwnerContains = Retry.decorateCheckedFunction(retry, new PrimaryOwnerCommandExecutionFunction<>(this.dispatcher, affinity, ContainsCommand::new));

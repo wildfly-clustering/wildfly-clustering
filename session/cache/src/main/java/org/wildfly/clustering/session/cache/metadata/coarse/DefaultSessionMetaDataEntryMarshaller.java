@@ -46,18 +46,10 @@ public enum DefaultSessionMetaDataEntryMarshaller implements ProtoStreamMarshall
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case CREATION_TIME_INDEX -> {
-					creationTime = reader.readObject(Instant.class);
-				}
-				case TIMEOUT_INDEX -> {
-					timeout = reader.readObject(Duration.class);
-				}
-				case LAST_ACCESS_START_TIME_OFFSET_INDEX -> {
-					lastAccessStartTimeOffset = reader.readObject(lastAccessStartTimeOffset.getClass());
-				}
-				case LAST_ACCESS_END_TIME_OFFSET_INDEX -> {
-					lastAccessEndTimeOffset = reader.readObject(lastAccessEndTimeOffset.getClass());
-				}
+				case CREATION_TIME_INDEX -> creationTime = reader.readObject(Instant.class);
+				case TIMEOUT_INDEX -> timeout = reader.readObject(Duration.class);
+				case LAST_ACCESS_START_TIME_OFFSET_INDEX -> lastAccessStartTimeOffset = reader.readObject(lastAccessStartTimeOffset.getClass());
+				case LAST_ACCESS_END_TIME_OFFSET_INDEX -> lastAccessEndTimeOffset = reader.readObject(lastAccessEndTimeOffset.getClass());
 				default -> reader.skipField(tag);
 			}
 		}

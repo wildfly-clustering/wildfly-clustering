@@ -9,7 +9,7 @@ import org.wildfly.clustering.server.group.GroupMembership;
 
 /**
  * Non-clustered group implementation.
- * Registered {@link GroupListener} are never invoked, as membership of a local group is fixed.
+ * Registered {@link org.wildfly.clustering.server.GroupMembershipListener} instances are never invoked, as membership of a local group is fixed.
  * @author Paul Ferraro
  */
 class DefaultLocalGroup implements LocalGroup {

@@ -35,12 +35,8 @@ public enum MonthDayMarshaller implements ProtoStreamMarshaller<MonthDay> {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case MONTH_INDEX -> {
-					result = result.with(MONTHS[reader.readEnum()]);
-				}
-				case DAY_OF_MONTH_INDEX -> {
-					result = result.withDayOfMonth(reader.readUInt32() + 1);
-				}
+				case MONTH_INDEX -> result = result.with(MONTHS[reader.readEnum()]);
+				case DAY_OF_MONTH_INDEX -> result = result.withDayOfMonth(reader.readUInt32() + 1);
 				default -> reader.skipField(tag);
 			}
 		}

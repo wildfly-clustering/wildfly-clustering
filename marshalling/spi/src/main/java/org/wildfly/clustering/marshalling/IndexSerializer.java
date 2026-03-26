@@ -14,7 +14,7 @@ import java.io.IOException;
  * @author Paul Ferraro
  */
 public enum IndexSerializer implements IntSerializer {
-	/** A serializer for a integer in the range 0 - 255. */
+	/** A serializer for an integer in the range 0 - 255. */
 	UNSIGNED_BYTE() {
 		@Override
 		public int readInt(DataInput input) throws IOException {
@@ -34,7 +34,7 @@ public enum IndexSerializer implements IntSerializer {
 			return Byte.BYTES;
 		}
 	},
-	/** A serializer for a integer in the range 0 - 65535. */
+	/** A serializer for an integer in the range 0 - 65535. */
 	UNSIGNED_SHORT() {
 		@Override
 		public int readInt(DataInput input) throws IOException {
@@ -54,14 +54,13 @@ public enum IndexSerializer implements IntSerializer {
 			return Short.BYTES;
 		}
 	},
-	/** A serializer for a integer in the range 0 - {@value Integer#MAX_VALUE}. */
+	/** A serializer for an integer in the range 0 - {@value Integer#MAX_VALUE}. */
 	INTEGER(),
 	/**
 	 * Reads/write an unsigned integer using a variable-length format.
 	 * Format requires between 1 and 5 bytes, depending on the index size.
 	 * Smaller values require fewer bytes.
 	 * Logic lifted directly from org.infinispan.commons.io.UnsignedNumeric.
-	 * @author Manik Surtani
 	 */
 	VARIABLE() {
 		@Override
@@ -70,7 +69,7 @@ public enum IndexSerializer implements IntSerializer {
 			int i = b & 0x7F;
 			for (int shift = 7; (b & 0x80) != 0; shift += 7) {
 				b = input.readByte();
-				i |= (b & 0x7FL) << shift;
+				i |= (b & 0x7F) << shift;
 			}
 			return i;
 		}

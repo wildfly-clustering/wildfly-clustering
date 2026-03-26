@@ -176,9 +176,7 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 		K typedKey = (K) key;
 		RemoteCache<K, MarshalledValue> cache = this.segmentCache(segment);
 		if (cache == null) return CompletableFuture.completedStage(null);
-		return cache.getWithMetadataAsync(typedKey).thenApplyAsync(value -> {
-			return (value != null) ? this.entryMapper.apply(Map.entry(typedKey, value)) : null;
-		}, this.executor);
+		return cache.getWithMetadataAsync(typedKey).thenApplyAsync(value -> (value != null) ? this.entryMapper.apply(Map.entry(typedKey, value)) : null, this.executor);
 	}
 
 	@Override

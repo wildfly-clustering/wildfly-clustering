@@ -12,7 +12,7 @@ package org.wildfly.clustering.cache.infinispan.embedded.listener;
 public interface ListenerRegistrar {
 
 	/**
-	 * Registers this listener for a Infinispan events.
+	 * Registers this listener for an Infinispan events.
 	 * @return a listener registration
 	 */
 	ListenerRegistration register();

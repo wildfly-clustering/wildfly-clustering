@@ -40,11 +40,6 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 		this.loader = Privileged.getClassLoader(this.getClass());
 	}
 
-	/**
-	 * Creates a new serialization context initializer that loads a protobuf schema file using the name of the specified package.
-	 * @param targetPackage the package whose name corresponds to the protobuf schema file
-	 * @return
-	 */
 	private static String getResourceName(Package targetPackage) {
 		return targetPackage.getName() + ".proto";
 	}

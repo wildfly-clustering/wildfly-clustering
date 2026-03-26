@@ -111,7 +111,7 @@ public class JChannelCommandDispatcher<CC, MC> implements CommandDispatcher<Chan
 	 * Creates a command dispatcher using the specified configuration.
 	 * @param configuration the configuration of this command dispatcher
 	 */
-	public JChannelCommandDispatcher(Configuration<CC, MC> configuration) {
+	JChannelCommandDispatcher(Configuration<CC, MC> configuration) {
 		this.id = configuration.getId();
 		this.commandContext = configuration.getCommandExecutionContext();
 		this.dispatcher = configuration.getMessageDispatcher();

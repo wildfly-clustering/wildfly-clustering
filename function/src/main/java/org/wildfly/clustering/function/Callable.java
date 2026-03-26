@@ -42,12 +42,7 @@ public interface Callable<T> extends java.util.concurrent.Callable<T>, MappableT
 	 * @return the result of the specified supplier.
 	 */
 	static <T> Callable<T> get(java.util.function.Supplier<T> supplier) {
-		return new Callable<>() {
-			@Override
-			public T call() {
-				return supplier.get();
-			}
-		};
+		return supplier::get;
 	}
 
 	/**

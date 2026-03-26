@@ -271,7 +271,7 @@ public interface LongPredicate extends java.util.function.LongPredicate, LongOpe
 		return new LongPredicate() {
 			@Override
 			public boolean test(long value) {
-				return Long.compare(value, base) < 0L;
+				return value < base;
 			}
 		};
 	}
@@ -285,7 +285,7 @@ public interface LongPredicate extends java.util.function.LongPredicate, LongOpe
 		return new LongPredicate() {
 			@Override
 			public boolean test(long value) {
-				return Long.compare(base, value) == 0L;
+				return base == value;
 			}
 		};
 	}
@@ -299,7 +299,7 @@ public interface LongPredicate extends java.util.function.LongPredicate, LongOpe
 		return new LongPredicate() {
 			@Override
 			public boolean test(long value) {
-				return Long.compare(value, base) > 0L;
+				return value > base;
 			}
 		};
 	}

@@ -42,18 +42,10 @@ public enum LocaleMarshaller implements ProtoStreamMarshaller<Locale> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case LANGUAGE_INDEX -> {
-					language = reader.readString();
-				}
-				case REGION_INDEX -> {
-					region = reader.readString();
-				}
-				case VARIANT_INDEX -> {
-					variant = reader.readString();
-				}
-				case SCRIPT_INDEX -> {
-					builder.setScript(reader.readString());
-				}
+				case LANGUAGE_INDEX -> language = reader.readString();
+				case REGION_INDEX -> region = reader.readString();
+				case VARIANT_INDEX -> variant = reader.readString();
+				case SCRIPT_INDEX -> builder.setScript(reader.readString());
 				case EXTENSION_INDEX -> {
 					String value = reader.readString();
 					builder.setExtension(value.charAt(0), value.substring(1));
@@ -88,7 +80,7 @@ public enum LocaleMarshaller implements ProtoStreamMarshaller<Locale> {
 			writer.writeString(SCRIPT_INDEX, script);
 		}
 		for (Character key : locale.getExtensionKeys()) {
-			String extension = locale.getExtension(key.charValue());
+			String extension = locale.getExtension(key);
 			writer.writeString(EXTENSION_INDEX, new StringBuilder(extension.length() + 1).append(key.charValue()).append(extension).toString());
 		}
 	}

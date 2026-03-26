@@ -38,12 +38,8 @@ public enum SimpleExpirationMetaDataMarshaller implements ProtoStreamMarshaller<
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case MAX_IDLE_INDEX -> {
-					maxIdle = Optional.of(reader.readObject(Duration.class));
-				}
-				case LAST_ACCESS_TIME_INDEX -> {
-					lastAccessTime = Optional.of(reader.readObject(Instant.class));
-				}
+				case MAX_IDLE_INDEX -> maxIdle = Optional.of(reader.readObject(Duration.class));
+				case LAST_ACCESS_TIME_INDEX -> lastAccessTime = Optional.of(reader.readObject(Instant.class));
 				default -> reader.skipField(tag);
 			}
 		}

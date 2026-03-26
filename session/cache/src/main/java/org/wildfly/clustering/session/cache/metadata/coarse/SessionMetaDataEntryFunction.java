@@ -12,7 +12,7 @@ import org.wildfly.clustering.cache.function.RemappingFunction;
 import org.wildfly.clustering.server.offset.Offset;
 
 /**
- * Cache compute function that applies the session meta data delta.
+ * Cache compute function that applies the session metadata delta.
  * @param <C> the session context type
  * @author Paul Ferraro
  */

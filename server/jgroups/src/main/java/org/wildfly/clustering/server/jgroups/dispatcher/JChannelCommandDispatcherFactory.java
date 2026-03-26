@@ -87,7 +87,6 @@ public class JChannelCommandDispatcherFactory implements ChannelCommandDispatche
 	 * Creates a channel-based command dispatcher factory using the specified configuration.
 	 * @param config the configuration of the command dispatcher factory.
 	 */
-	@SuppressWarnings("resource")
 	public JChannelCommandDispatcherFactory(Configuration config) {
 		this.marshaller = config.getMarshaller();
 		this.marshallerFactory = config.getMarshallerFactory();

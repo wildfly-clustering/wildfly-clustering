@@ -10,7 +10,7 @@ import java.util.Objects;
 import org.wildfly.clustering.cache.Key;
 
 /**
- * An base implementation for Infinispan cache keys.
+ * A base implementation for Infinispan cache keys.
  * @param <I> the identifier type of this cache key.
  * @author Paul Ferraro
  */

@@ -69,8 +69,8 @@
 		<connection>scm:git:https://${project.repository.host}/${project.repository.organization.id}/${project.repository.id}.git</connection>
 		<developerConnection>scm:git:git@${project.repository.host}:${project.repository.organization.id}/${project.repository.id}.git</developerConnection>
 		<url>${project.repository.url}</url>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<build>
 		<pluginManagement>

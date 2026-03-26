@@ -26,7 +26,6 @@ public class BlockingExecutorTestCase {
 	@Test
 	public void testExecuteRunnable() {
 		Runnable closeTask = mock(Runnable.class);
-		@SuppressWarnings("resource")
 		BlockingExecutor executor = BlockingExecutor.newInstance(closeTask);
 
 		Runnable executeTask = mock(Runnable.class);
@@ -59,7 +58,6 @@ public class BlockingExecutorTestCase {
 	@Test
 	public void testExecuteSupplier() {
 		Runnable closeTask = mock(Runnable.class);
-		@SuppressWarnings("resource")
 		BlockingExecutor executor = BlockingExecutor.newInstance(closeTask);
 		Object expected = new Object();
 
@@ -95,40 +93,40 @@ public class BlockingExecutorTestCase {
 	@Test
 	public void concurrent() throws InterruptedException, ExecutionException {
 		Runnable closeTask = mock(Runnable.class);
-		BlockingExecutor executor = BlockingExecutor.newInstance(closeTask);
+		try (BlockingExecutor executor = BlockingExecutor.newInstance(closeTask)) {
+			ExecutorService service = Executors.newFixedThreadPool(2);
+			try {
+				CountDownLatch executeLatch = new CountDownLatch(1);
+				CountDownLatch stopLatch = new CountDownLatch(1);
+				Runnable executeTask = () -> {
+					try {
+						executeLatch.countDown();
+						stopLatch.await();
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				};
+				Future<?> executeFuture = service.submit(() -> executor.execute(executeTask));
 
-		ExecutorService service = Executors.newFixedThreadPool(2);
-		try {
-			CountDownLatch executeLatch = new CountDownLatch(1);
-			CountDownLatch stopLatch = new CountDownLatch(1);
-			Runnable executeTask = () -> {
-				try {
-					executeLatch.countDown();
-					stopLatch.await();
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-			};
-			Future<?> executeFuture = service.submit(() -> executor.execute(executeTask));
+				executeLatch.await();
 
-			executeLatch.await();
+				Future<?> closeFuture = service.submit(executor::close);
 
-			Future<?> closeFuture = service.submit(executor::close);
+				Thread.yield();
 
-			Thread.yield();
+				// Verify that stop is blocked
+				verify(closeTask, never()).run();
 
-			// Verify that stop is blocked
-			verify(closeTask, never()).run();
+				stopLatch.countDown();
 
-			stopLatch.countDown();
+				executeFuture.get();
+				closeFuture.get();
 
-			executeFuture.get();
-			closeFuture.get();
-
-			// Verify close task was invoked, now that execute task is complete
-			verify(closeTask).run();
-		} finally {
-			service.shutdownNow();
+				// Verify close task was invoked, now that execute task is complete
+				verify(closeTask).run();
+			} finally {
+				service.shutdownNow();
+			}
 		}
 	}
 }

@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.server.expiration;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -20,8 +19,7 @@ public interface ExpirationMetaData extends Expiration {
 	 * @return true, if this object has expired, false otherwise.
 	 */
 	default boolean isExpired() {
-		Optional<Instant> expirationTime = this.getExpirationTime();
-		return expirationTime.isPresent() ? !Instant.now().isBefore(expirationTime.get()) : false;
+		return this.getExpirationTime().filter(instant -> !Instant.now().isBefore(instant)).isPresent();
 	}
 
 	/**
@@ -29,8 +27,7 @@ public interface ExpirationMetaData extends Expiration {
 	 * @return an optional expiration time.
 	 */
 	default Optional<Instant> getExpirationTime() {
-		Optional<Duration> maxIdle = this.getMaxIdle();
-		return maxIdle.isPresent() ? this.getLastAccessTime().map(time -> time.plus(maxIdle.get())) : Optional.empty();
+		return this.getMaxIdle().flatMap(duration -> this.getLastAccessTime().map(time -> time.plus(duration)));
 	}
 
 	/**

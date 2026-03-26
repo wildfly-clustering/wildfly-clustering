@@ -18,7 +18,7 @@ import org.wildfly.clustering.function.UnaryOperator;
  * @param <C> the session context type
  */
 public interface Session<C> extends ImmutableSession, AutoCloseable {
-	/** An validation function that throwing an exception for invalid sessions. */
+	/** A validation function that throwing an exception for invalid sessions. */
 	UnaryOperator<Session<?>> REQUIRE_VALID = UnaryOperator.when(VALID, UnaryOperator.identity(), UnaryOperator.of(Consumer.<Session<?>>of().thenThrow(IllegalStateException::new), Supplier.of(null)));
 	/** A function returning the valid metadata of a session. */
 	Function<Session<?>, SessionMetaData> METADATA = REQUIRE_VALID.thenApply(Session::getMetaData);

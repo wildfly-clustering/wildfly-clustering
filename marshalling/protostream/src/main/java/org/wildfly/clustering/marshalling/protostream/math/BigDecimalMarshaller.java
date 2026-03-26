@@ -34,12 +34,8 @@ public enum BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case UNSCALED_VALUE_INDEX -> {
-					unscaledValue = new BigInteger(reader.readByteArray());
-				}
-				case SCALE_INDEX -> {
-					scale = reader.readSInt32();
-				}
+				case UNSCALED_VALUE_INDEX -> unscaledValue = new BigInteger(reader.readByteArray());
+				case SCALE_INDEX -> scale = reader.readSInt32();
 				default -> reader.skipField(tag);
 			}
 		}

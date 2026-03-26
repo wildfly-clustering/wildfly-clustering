@@ -16,8 +16,8 @@ import org.wildfly.clustering.session.cache.metadata.ImmutableSessionMetaDataFac
  */
 public interface ImmutableSessionFactoryConfiguration<MV, AV> {
 	/**
-	 * Returns the session meta data factory.
-	 * @return the session meta data factory.
+	 * Returns the session metadata factory.
+	 * @return the session metadata factory.
 	 */
 	ImmutableSessionMetaDataFactory<MV> getSessionMetaDataFactory();
 

@@ -21,7 +21,7 @@ public interface Marshallable<T> extends Readable<T>, Writable<T> {
 	 * @return an optional buffer size, only present if the buffer size could be computed
 	 */
 	default OptionalInt size(ProtoStreamSizeOperation operation, T value) {
-		return operation.computeSize(this::writeTo, value);
+		return operation.computeSize(this, value);
 	}
 
 	/**

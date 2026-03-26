@@ -17,8 +17,8 @@ import org.wildfly.clustering.server.GroupMember;
  */
 public class UnarySessionAffinity<M extends GroupMember> implements UnaryOperator<String> {
 
-	private Function<String, M> affinity;
-	private Function<M, String> mapper;
+	private final Function<String, M> affinity;
+	private final Function<M, String> mapper;
 
 	/**
 	 * Creates a session affinity to a single member.

@@ -77,7 +77,7 @@ public class InvalidationCacheITCase extends SoftAssertions {
 					this.testCompute(cache1, cache2);
 					this.testComputeIgnoreReturnValue(cache1.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES), cache2.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES));
 
-					assertAll();
+					this.assertAll();
 				} finally {
 					cache2.stop();
 				}
@@ -790,7 +790,7 @@ public class InvalidationCacheITCase extends SoftAssertions {
 	}
 
 	@Listener
-	public class InvalidationEventCollector {
+	public static class InvalidationEventCollector {
 		private final Collection<Map.Entry<String, Listener.Observation>> events;
 
 		InvalidationEventCollector(Collection<Map.Entry<String, Listener.Observation>> events) {

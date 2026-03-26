@@ -83,7 +83,7 @@ public abstract class AbstractHttpSession implements HttpSession {
 
 	@Override
 	public boolean equals(Object object) {
-		return (object instanceof HttpSession session) ? this.getId().equals(session.getId()) : false;
+		return (object instanceof HttpSession session) && this.getId().equals(session.getId());
 	}
 
 	@Override

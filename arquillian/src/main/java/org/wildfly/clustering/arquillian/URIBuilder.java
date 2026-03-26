@@ -63,9 +63,7 @@ public interface URIBuilder extends RelativeURIBuilder {
 	URIBuilder addPath(String path, Map<String, String> parameters);
 
 	@Override
-	default URIBuilder addParameter(String parameterName, String parameterValue) {
-		return this.addParameter(parameterName, parameterValue);
-	}
+	URIBuilder addParameter(String parameterName, String parameterValue);
 
 	@Override
 	default URIBuilder addParameters(Map<String, String> parameters) {
@@ -88,9 +86,7 @@ public interface URIBuilder extends RelativeURIBuilder {
 			public int applyAsInt(String scheme) {
 				return switch (scheme) {
 					case "ftp" -> 21;
-					case "sftp" -> 22;
-					case "scp" -> 22;
-					case "ssh" -> 22;
+					case "sftp", "scp", "ssh" -> 22;
 					case "dns" -> 53;
 					case "http" -> 80;
 					case "https" -> 443;

@@ -47,7 +47,7 @@ public class ByteBufferMarshalledKey<K> extends ByteBufferMarshalledValue<K> {
 	@Override
 	public boolean equals(Object object) {
 		// Optimize by verifying equality of hash code first
-		if ((object == null) || !(object instanceof ByteBufferMarshalledKey) || (this.hashCode != object.hashCode())) return false;
+		if (!(object instanceof ByteBufferMarshalledKey) || (this.hashCode != object.hashCode())) return false;
 		return super.equals(object);
 	}
 }

@@ -20,7 +20,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for an function that operates on a {@link Set} of {@link Address} instances.
+ * Marshaller for a function that operates on a {@link Set} of {@link Address} instances.
  * @param <F> the function type
  * @author Paul Ferraro
  */

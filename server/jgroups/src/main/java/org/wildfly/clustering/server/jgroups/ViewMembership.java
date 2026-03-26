@@ -6,7 +6,6 @@
 package org.wildfly.clustering.server.jgroups;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.jgroups.Address;
 import org.jgroups.View;
@@ -30,7 +29,7 @@ public class ViewMembership implements GroupMembership<ChannelGroupMember> {
 	public ViewMembership(View view, ChannelGroupMemberFactory factory) {
 		this.id = view.getViewId().getId();
 		List<Address> addresses = view.getMembers();
-		this.members = addresses.stream().map(factory::createGroupMember).collect(Collectors.toUnmodifiableList());
+		this.members = addresses.stream().map(factory::createGroupMember).toList();
 		this.coordinatorIndex = addresses.indexOf(view.getCoord());
 	}
 

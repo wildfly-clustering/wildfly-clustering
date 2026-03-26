@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.assertj.core.api.Assert;
@@ -49,8 +48,7 @@ public interface TesterFactory {
 	}
 
 	default <E extends Enum<E>> Runnable createTester(Class<E> enumClass) {
-		Consumer<E> tester = this.createIdentityTester();
-		return () -> EnumSet.allOf(enumClass).forEach(tester::accept);
+		return () -> EnumSet.allOf(enumClass).forEach(this.createIdentityTester());
 	}
 
 	default <E> Tester<E[]> createArrayTester() {

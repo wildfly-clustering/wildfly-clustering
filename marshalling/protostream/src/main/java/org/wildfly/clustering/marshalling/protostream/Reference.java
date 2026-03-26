@@ -34,7 +34,7 @@ public class Reference implements IntSupplier {
 
 	@Override
 	public boolean equals(Object object) {
-		return (object instanceof Reference reference) ? this.id == reference.id : false;
+		return (object instanceof Reference reference) && (this.id == reference.id);
 	}
 
 	@Override

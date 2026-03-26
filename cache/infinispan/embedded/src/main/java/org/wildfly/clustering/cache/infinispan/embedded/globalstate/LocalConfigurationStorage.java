@@ -26,7 +26,7 @@ public class LocalConfigurationStorage extends org.infinispan.globalstate.impl.V
 
 	@Override
 	public CompletionStage<Void> removeCache(String name, EnumSet<CacheContainerAdmin.AdminFlag> flags) {
-		return this.blockingManager.<Void>supplyBlocking(() -> {
+		return this.blockingManager.supplyBlocking(() -> {
 			Cache<?, ?> cache = this.cacheManager.getCache(name, false);
 			if (cache != null) {
 				cache.stop();

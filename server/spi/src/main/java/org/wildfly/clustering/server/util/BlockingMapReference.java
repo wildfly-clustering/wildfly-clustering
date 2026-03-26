@@ -47,7 +47,7 @@ public interface BlockingMapReference<K, V> extends Reference<Map<K, V>> {
 			public BlockingReference<V> getReference(K key) {
 				Supplier<V> reader = Supplier.of(key).thenApply(map::get);
 				// Remove if null, put otherwise.
-				Consumer<V> writer = BiConsumer.<K, V>when(BiPredicate.latter(Objects::nonNull), map::put, BiConsumer.<K, V>of(map::remove, Consumer.of())).composeUnary(Function.of(key), Function.identity());
+				Consumer<V> writer = BiConsumer.when(BiPredicate.latter(Objects::nonNull), map::put, BiConsumer.<K, V>of(map::remove, Consumer.of())).composeUnary(Function.of(key), Function.identity());
 				BlockingReference.Reader<V> blockingReader = new BlockingReference.BlockingReferenceReader<>(lock, reader, Function.identity());
 				BlockingReference.Writer<V> blockingWriter = new BlockingReference.BlockingReferenceWriter<>(lock, reader, writer);
 				return new BlockingReference<>() {

@@ -45,12 +45,8 @@ public class StringKeyMapEntryMarshaller<T extends Map.Entry<String, Object>> im
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			switch (index) {
-				case KEY_INDEX -> {
-					key = reader.readString();
-				}
-				case VALUE_INDEX -> {
-					value = reader.readAny();
-				}
+				case KEY_INDEX -> key = reader.readString();
+				case VALUE_INDEX -> value = reader.readAny();
 				default -> reader.skipField(tag);
 			}
 		}

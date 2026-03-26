@@ -8,7 +8,7 @@ package org.wildfly.clustering.session.infinispan.remote.metadata;
 import org.wildfly.clustering.cache.infinispan.CacheKey;
 
 /**
- * Cache key for the session creation meta data entry.
+ * Cache key for the session creation metadata entry.
  * @author Paul Ferraro
  */
 public class SessionCreationMetaDataKey extends CacheKey<String> {

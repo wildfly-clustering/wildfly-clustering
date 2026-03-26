@@ -33,7 +33,7 @@ public class NativeProtoStreamTestCase {
 		Employee manager = new Employee(2, new Name("John", "Barron"), Sex.MALE, head);
 		Employee employee = new Employee(3, new Name("Alan", "Smithee"), Sex.MALE, manager);
 
-		factory.<Employee>createTester(NativeProtoStreamTestCase::assertEquals).accept(employee);
+		factory.createTester(NativeProtoStreamTestCase::assertEquals).accept(employee);
 	}
 
 	static void assertEquals(Employee expected, Employee actual) {

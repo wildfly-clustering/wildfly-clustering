@@ -26,7 +26,7 @@ public class LocalSchedulerServiceTestCase {
 
 	private final Predicate<UUID> task = mock(Predicate.class);
 	private final ScheduledEntries<UUID, Instant> entries = ScheduledEntries.queued();
-	private final LocalSchedulerService.Configuration<UUID> configuration = new LocalSchedulerService.Configuration<UUID>() {
+	private final LocalSchedulerService.Configuration<UUID> configuration = new LocalSchedulerService.Configuration<>() {
 		@Override
 		public String getName() {
 			return "test";

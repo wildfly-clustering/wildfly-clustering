@@ -32,7 +32,6 @@ public interface KeyAffinityServiceFactory {
 	 * @param generator a generator of cache keys
 	 * @return a key affinity service
 	 */
-	@SuppressWarnings("resource")
 	default <K> KeyAffinityService<K> createService(Cache<? extends K, ?> cache, KeyGenerator<K> generator) {
 		return this.createService(cache, generator, cache.getCacheManager().getAddress()::equals);
 	}

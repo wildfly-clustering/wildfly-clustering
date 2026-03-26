@@ -270,7 +270,7 @@ public interface IntPredicate extends java.util.function.IntPredicate, IntOperat
 		return new IntPredicate() {
 			@Override
 			public boolean test(int value) {
-				return Integer.compare(value, base) < 0;
+				return value < base;
 			}
 		};
 	}
@@ -284,7 +284,7 @@ public interface IntPredicate extends java.util.function.IntPredicate, IntOperat
 		return new IntPredicate() {
 			@Override
 			public boolean test(int value) {
-				return Integer.compare(base, value) == 0;
+				return base == value;
 			}
 		};
 	}
@@ -298,7 +298,7 @@ public interface IntPredicate extends java.util.function.IntPredicate, IntOperat
 		return new IntPredicate() {
 			@Override
 			public boolean test(int value) {
-				return Integer.compare(value, base) > 0;
+				return value > base;
 			}
 		};
 	}

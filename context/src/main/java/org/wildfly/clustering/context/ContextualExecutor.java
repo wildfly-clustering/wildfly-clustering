@@ -44,7 +44,7 @@ public interface ContextualExecutor extends Executor {
 	 */
 	default <T> T execute(java.util.concurrent.Callable<T> caller) throws Exception {
 		try {
-			return this.execute(Callable.of(caller, Function.identity()).handle(UnaryOperator.<Exception>identity().thenThrow(CompletionException::new).thenApply(Function.<Exception, T>of(null))));
+			return this.execute(Callable.of(caller, Function.identity()).handle(UnaryOperator.<Exception>identity().thenThrow(CompletionException::new).thenApply(Function.of(null))));
 		} catch (CompletionException e) {
 			throw (Exception) e.getCause();
 		}

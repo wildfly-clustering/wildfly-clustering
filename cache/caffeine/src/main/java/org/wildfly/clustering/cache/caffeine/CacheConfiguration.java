@@ -94,7 +94,7 @@ public interface CacheConfiguration<K, V> {
 		 * @return a reference to this builder
 		 */
 		default Builder<K, V> evictableWhen(BiPredicate<K, V> evictable) {
-			return this.withWeigher((evictable != org.wildfly.clustering.function.BiPredicate.of(true)) ? new Weigher<K, V>() {
+			return this.withWeigher((evictable != org.wildfly.clustering.function.BiPredicate.of(true)) ? new Weigher<>() {
 				@Override
 				public int weigh(K key, V value) {
 					return evictable.test(key, value) ? 1 : 0;
@@ -143,7 +143,7 @@ public interface CacheConfiguration<K, V> {
 		 * @return a reference to this builder
 		 */
 		default Builder<K, V> evictAfter(BiFunction<K, V, Duration> idleTimeout) {
-			return this.withExpiry(new Expiry<K, V>() {
+			return this.withExpiry(new Expiry<>() {
 				@Override
 				public long expireAfterCreate(K key, V value, long currentTime) {
 					return idleTimeout.apply(key, value).toNanos();

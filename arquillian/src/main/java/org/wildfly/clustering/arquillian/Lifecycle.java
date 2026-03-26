@@ -63,7 +63,7 @@ public interface Lifecycle extends AutoCloseable {
 
 			@Override
 			public void close() {
-				lifecycles.stream().forEach(Lifecycle::close);
+				lifecycles.forEach(Lifecycle::close);
 			}
 		};
 	}

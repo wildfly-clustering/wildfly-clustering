@@ -84,7 +84,7 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 	 * Creates the topology change listener for a scheduler.
 	 * @param configuration the listener configuration
 	 */
-	public SchedulerTopologyChangeListenerRegistrar(Configuration<K, V, SE, CE> configuration) {
+	SchedulerTopologyChangeListenerRegistrar(Configuration<K, V, SE, CE> configuration) {
 		this.configuration = configuration;
 	}
 

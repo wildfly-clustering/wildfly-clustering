@@ -27,7 +27,7 @@ public interface CacheEntryScheduler<K, V> {
 	void cancelKey(K key);
 
 	/**
-	 * Indicates whether or not the entry with the specified cache key is scheduled.
+	 * Indicates whether the entry with the specified cache key is scheduled.
 	 * @param key a cache key
 	 * @return true, if the entry with the specified cache key is scheduled, false otherwise.
 	 */

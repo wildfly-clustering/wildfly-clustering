@@ -20,7 +20,7 @@ import org.wildfly.clustering.marshalling.Formatter;
 
 /**
  * {@link TwoWayKey2StringMapper} implementation that maps multiple {@link Formatter} instances.
- * Key is mapped to an padded hexadecimal index + the formatted key.
+ * Key is mapped to a padded hexadecimal index + the formatted key.
  * @author Paul Ferraro
  */
 public class FormatterKeyMapper implements TwoWayKey2StringMapper {
@@ -42,8 +42,7 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 	 */
 	@SuppressWarnings("removal")
 	public FormatterKeyMapper() {
-		List<Formatter<?>> formatters = new LinkedList<>();
-		formatters.addAll(DEFAULT_FORMATTERS);
+		List<Formatter<?>> formatters = new LinkedList<>(DEFAULT_FORMATTERS);
 		AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public Void run() {

@@ -146,12 +146,12 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 
 	@Override
 	public InternalCacheEntry<K, V> get(Object k) {
-		return get(-1, k);
+		return this.get(-1, k);
 	}
 
 	@Override
 	public InternalCacheEntry<K, V> peek(Object k) {
-		return peek(-1, k);
+		return this.peek(-1, k);
 	}
 
 	@Override
@@ -197,7 +197,7 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 		}
 		if (includeOthers) {
 			valueIterables.add(this.entries.values().stream()
-					.filter(e -> segments.contains(getSegmentForKey(e.getKey())))
+					.filter(e -> segments.contains(this.getSegmentForKey(e.getKey())))
 					.collect(Collectors.toSet()));
 		}
 		return new ConcatIterator<>(valueIterables);
@@ -219,7 +219,7 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 			if (map == null) {
 				if (!usedOthers.getAndSet(true)) {
 					return this.entries.values().stream()
-							.filter(e -> segments.contains(getSegmentForKey(e.getKey())))
+							.filter(e -> segments.contains(this.getSegmentForKey(e.getKey())))
 							.collect(Collectors.toSet());
 				}
 				return Collections.emptyList();
@@ -242,7 +242,7 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 	private void clearSegments(IntSet segments) {
 		for (Iterator<K> keyIterator = this.entries.keySet().iterator(); keyIterator.hasNext(); ) {
 			K key = keyIterator.next();
-			int keySegment = getSegmentForKey(key);
+			int keySegment = this.getSegmentForKey(key);
 			if (segments.contains(keySegment)) {
 				keyIterator.remove();
 			}
