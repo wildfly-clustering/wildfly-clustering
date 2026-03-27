@@ -53,12 +53,10 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 
 	/**
 	 * The configuration of the topology change listener registrar for a scheduler.
-	 * @param <K> the cache key type
-	 * @param <V> the cache value type
 	 * @param <SE> the schedule task entry type
 	 * @param <CE> the cancel task entry type
 	 */
-	interface Configuration<K, V, SE, CE> {
+	interface Configuration<SE, CE> {
 		/**
 		 * Returns the configuration for the associated cache.
 		 * @return the configuration for the associated cache.
@@ -78,13 +76,13 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 		java.util.function.Consumer<CacheStreamFilter<CE>> getCancelTask();
 	}
 
-	private final Configuration<K, V, SE, CE> configuration;
+	private final Configuration<SE, CE> configuration;
 
 	/**
 	 * Creates the topology change listener for a scheduler.
 	 * @param configuration the listener configuration
 	 */
-	SchedulerTopologyChangeListenerRegistrar(Configuration<K, V, SE, CE> configuration) {
+	SchedulerTopologyChangeListenerRegistrar(Configuration<SE, CE> configuration) {
 		this.configuration = configuration;
 	}
 
@@ -106,7 +104,7 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 		private final java.util.function.Consumer<CacheStreamFilter<CE>> cancelTask;
 		private final Duration stopTimeout;
 
-		TopologyChangedListener(Configuration<K, V, SE, CE> configuration) {
+		TopologyChangedListener(Configuration<SE, CE> configuration) {
 			this.scheduleTask = configuration.getScheduleTask();
 			this.cancelTask = configuration.getCancelTask();
 			this.stopTimeout = configuration.getCacheConfiguration().getStopTimeout();

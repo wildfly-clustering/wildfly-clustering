@@ -118,7 +118,7 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void setMaxInactiveInterval(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
+	public void setMaxInactiveInterval(SessionCreationMetaData creationMetaData, @SuppressWarnings("unused") SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		Duration duration = Duration.ZERO;
 
 		metaData.setMaxIdle(duration);
@@ -129,7 +129,7 @@ public class CompositeSessionMetaDataTestCase extends AbstractImmutableSessionMe
 
 	@ParameterizedTest
 	@ArgumentsSource(Parameters.class)
-	public void close(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
+	public void close(@SuppressWarnings("unused") SessionCreationMetaData creationMetaData, @SuppressWarnings("unused") SessionAccessMetaData accessMetaData, Runnable mutator, InvalidatableSessionMetaData metaData) {
 		metaData.close();
 
 		verify(mutator).run();

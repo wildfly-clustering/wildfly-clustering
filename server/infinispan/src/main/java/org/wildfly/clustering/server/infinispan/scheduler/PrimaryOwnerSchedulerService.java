@@ -41,7 +41,7 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 	 * @param <SE> the schedule task entry type
 	 * @param <CE> the cancel task entry type
 	 */
-	public interface Configuration<K, V, SE, CE> extends SchedulerTopologyChangeListenerRegistrar.Configuration<K, V, SE, CE> {
+	public interface Configuration<K, V, SE, CE> extends SchedulerTopologyChangeListenerRegistrar.Configuration<SE, CE> {
 		/**
 		 * Returns the name of this scheduler.
 		 * @return the name of this scheduler.

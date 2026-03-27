@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 /**
  * {@link ScheduledEntries} implemented using a {@link ConcurrentSkipListSet}, where entries are sorted based on the entry value.
- * Both {@link #add(Object, Object)} and {@link #remove(Object)} run in O(log N) time.
+ * Both {@link ScheduledEntries#add(Object, Object)} and {@link ScheduledEntries#remove(Object)} run in O(log N) time.
  * @author Paul Ferraro
  */
 class SortedScheduledEntries<K, V> implements ScheduledEntries<K, V> {

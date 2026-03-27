@@ -35,7 +35,6 @@ import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
@@ -62,7 +61,7 @@ import org.wildfly.clustering.cache.infinispan.BlockingBasicCacheDecorator;
 
 /**
  * An abstract delegating remote cache implementation.
- * N.B. Implements {@link InternalRemoteCache} to support casting, as required by {@link org.infinispan.client.hotrod.Search#getQueryFactory(RemoteCache)}.
+ * N.B. Implements {@link InternalRemoteCache} to support casting, as required by org.infinispan.client.hotrod.impl.query.RemoteQueryFactory.
  * @param <K> the cache key type
  * @param <V> the cache value type
  * @author Paul Ferraro

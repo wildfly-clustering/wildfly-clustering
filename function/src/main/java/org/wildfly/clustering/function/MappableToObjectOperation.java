@@ -12,6 +12,7 @@ interface MappableToObjectOperation<T> {
 
 	/**
 	 * Returns an operation that applies the specified function to the result of this operation.
+	 * @param <R> the operation return type
 	 * @param after a function applied to the result of this operation
 	 * @return an operation that applies the specified function to the result of this operation.
 	 */

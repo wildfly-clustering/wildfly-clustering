@@ -12,6 +12,7 @@ package org.wildfly.clustering.function;
 interface VoidOperation {
 	/**
 	 * Composes an operation that consumes an object before invoking this operation.
+	 * @param <T> the parameter type of the composed operation
 	 * @param before a consumer to accept a value before invoking this operation
 	 * @return an operation that consumes an object before invoking this operation.
 	 */
@@ -19,6 +20,8 @@ interface VoidOperation {
 
 	/**
 	 * Composes an operation that consumes an object before invoking this operation.
+	 * @param <T1> the former parameter type of the composed operation
+	 * @param <T2> the latter parameter type of the composed operation
 	 * @param before a consumer to accept a value before invoking this operation
 	 * @return an operation that consumes an object before invoking this operation.
 	 */

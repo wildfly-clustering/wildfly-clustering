@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Unit test for {@link SortedScheduledEntries}
+ * Unit test for a sorted {@link ScheduledEntries} implementation.
  * @author Paul Ferraro
  */
 public class SortedScheduledEntriesTestCase extends AbstractScheduledEntriesTestCase {

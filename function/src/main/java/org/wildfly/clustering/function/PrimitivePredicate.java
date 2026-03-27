@@ -24,12 +24,14 @@ interface PrimitivePredicate<B, P> extends PrimitiveOperation<B>, ToBooleanOpera
 
 	/**
 	 * Returns an operation that returns the conjunction of this and the specified operation.
+	 * @param other another predicate
 	 * @return an operation that returns the conjunction of this and the specified operation.
 	 */
 	PrimitivePredicate<B, P> and(P other);
 
 	/**
 	 * Returns an operation that returns the disjunction of this and the specified operation.
+	 * @param other another predicate
 	 * @return an operation that returns the disjunction of this and the specified operation.
 	 */
 	PrimitivePredicate<B, P> or(P other);

@@ -24,7 +24,7 @@ public interface InfinispanSessionManagerParameters extends SessionManagerParame
 		return String.format("%s-%s-%s-%s.war", this.getSessionAttributeMarshaller(), this.getSessionAttributePersistenceStrategy(), this.getCacheType(), this.getTransactionMode());
 	}
 
-	default Runnable persistence(GlobalConfiguration global, PersistenceConfigurationBuilder builder) {
+	default Runnable persistence(@SuppressWarnings("unused") GlobalConfiguration global, @SuppressWarnings("unused") PersistenceConfigurationBuilder builder) {
 		return Runner.of();
 	}
 }

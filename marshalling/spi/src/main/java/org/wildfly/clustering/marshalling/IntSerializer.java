@@ -39,7 +39,7 @@ public interface IntSerializer {
 	 * @param value a numeric value
 	 * @return the serialized size of the specified value.
 	 */
-	default int size(int value) {
+	default int size(@SuppressWarnings("unused") int value) {
 		return Integer.BYTES;
 	}
 }

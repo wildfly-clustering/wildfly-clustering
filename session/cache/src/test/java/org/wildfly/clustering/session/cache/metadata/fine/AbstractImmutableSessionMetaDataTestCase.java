@@ -30,7 +30,7 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 		assertThat(metaData.isExpired()).isFalse();
 	}
 
-	void getCreationTime(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
+	void getCreationTime(ImmutableSessionCreationMetaData creationMetaData, @SuppressWarnings("unused") ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
 		Instant expected = Instant.now();
 
 		when(creationMetaData.getCreationTime()).thenReturn(expected);
@@ -72,7 +72,7 @@ public abstract class AbstractImmutableSessionMetaDataTestCase {
 		assertThat(metaData.getLastAccessEndTime()).hasValue(now);
 	}
 
-	void getMaxIdle(ImmutableSessionCreationMetaData creationMetaData, ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
+	void getMaxIdle(ImmutableSessionCreationMetaData creationMetaData, @SuppressWarnings("unused") ImmutableSessionAccessMetaData accessMetaData, ImmutableSessionMetaData metaData) {
 		Duration expected = Duration.ofMinutes(30L);
 
 		doReturn(Duration.ZERO, expected).when(creationMetaData).getMaxIdle();

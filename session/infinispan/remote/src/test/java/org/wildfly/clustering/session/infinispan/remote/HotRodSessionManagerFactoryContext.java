@@ -42,7 +42,7 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 
 	private final SessionManagerFactory<CC, SC> factory;
 
-	public HotRodSessionManagerFactoryContext(HotRodSessionManagerParameters parameters, String memberName, Supplier<SC> contextFactory) {
+	public HotRodSessionManagerFactoryContext(HotRodSessionManagerParameters parameters, @SuppressWarnings("unused") String memberName, Supplier<SC> contextFactory) {
 		RemoteCacheManager container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder()));
 		this.accept(container::close);
 

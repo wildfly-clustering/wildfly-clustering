@@ -1184,7 +1184,7 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 	 * the array immediately following the end of the deque is set to
 	 * {@code null}.
 	 *
-	 * <p>Like the {@link #toArray()} method, this method acts as
+	 * <p>Like the {@link Collection#toArray()} method, this method acts as
 	 * bridge between array-based and collection-based APIs.  Further,
 	 * this method allows precise control over the runtime type of the
 	 * output array, and may, under certain circumstances, be used to

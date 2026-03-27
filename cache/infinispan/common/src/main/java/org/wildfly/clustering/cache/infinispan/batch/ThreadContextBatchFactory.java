@@ -9,7 +9,7 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.Supplier;
 
 /**
- * A factory that {@link ThreadContextBatch}.
+ * A factory that creates a {@link Batch} associated with the current thread context.
  * @author Paul Ferraro
  */
 public class ThreadContextBatchFactory implements Supplier<Batch> {

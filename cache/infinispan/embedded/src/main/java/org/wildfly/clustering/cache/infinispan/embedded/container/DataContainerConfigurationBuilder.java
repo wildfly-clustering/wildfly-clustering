@@ -25,7 +25,7 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
 	 * Creates a new configuration builder.
 	 * @param builder the builder of the associated cache configuration
 	 */
-	public DataContainerConfigurationBuilder(ConfigurationBuilder builder) {
+	public DataContainerConfigurationBuilder(@SuppressWarnings("unused") ConfigurationBuilder builder) {
 		this();
 	}
 

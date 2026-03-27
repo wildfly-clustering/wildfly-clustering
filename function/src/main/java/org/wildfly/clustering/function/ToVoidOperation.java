@@ -13,6 +13,7 @@ interface ToVoidOperation extends ToPrimitiveOperation<Void> {
 
 	/**
 	 * Composes an operation that returns the value from the specified supplier after invoking this operation.
+	 * @param <T> the return type
 	 * @param after a supplier of the return value
 	 * @return an operation that returns the value from the specified supplier after invoking this operation.
 	 */

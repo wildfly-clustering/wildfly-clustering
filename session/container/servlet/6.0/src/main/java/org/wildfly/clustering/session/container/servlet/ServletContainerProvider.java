@@ -25,6 +25,7 @@ import org.wildfly.clustering.session.container.ContainerProvider;
  * @author Paul Ferraro
  * @param <C> the session context type
  */
+@SuppressWarnings("javadoc")
 @MetaInfServices(ContainerProvider.class)
 public class ServletContainerProvider<C> implements ContainerProvider.SessionAttributeEventListener<ServletContext, HttpSession, HttpSessionActivationListener, C> {
 	static final String NAME = "Jakarta Servlet 6.0";
