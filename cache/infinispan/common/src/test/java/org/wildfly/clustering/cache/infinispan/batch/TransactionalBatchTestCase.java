@@ -22,7 +22,7 @@ import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.function.Supplier;
 
 /**
- * Unit test for a {@link TransactionalBatch}.
+ * Unit test for a transactional {@link Batch}.
  * @author Paul Ferraro
  */
 public class TransactionalBatchTestCase {

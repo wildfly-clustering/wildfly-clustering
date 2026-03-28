@@ -37,13 +37,12 @@ public class CacheEntriesTask<K, V> implements Consumer<CacheStreamFilter<Map.En
 	 * @param <I> the cache key identifier type
 	 * @param <K> the cache key type
 	 * @param <V> the cache value type
-	 * @param <M> the group member type
 	 * @param cache an embedded cache
 	 * @param filter a cache entry filter
 	 * @param scheduler the target scheduler
 	 * @return a task that schedules entries matching the specified filter.
 	 */
-	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> schedule(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<K, V> scheduler) {
+	public static <I, K extends Key<I>, V> Consumer<CacheStreamFilter<Map.Entry<K, V>>> schedule(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<K, V> scheduler) {
 		return new CacheEntriesTask<>(cache, filter, scheduler::scheduleEntry);
 	}
 
@@ -52,13 +51,12 @@ public class CacheEntriesTask<K, V> implements Consumer<CacheStreamFilter<Map.En
 	 * @param <I> the cache key identifier type
 	 * @param <K> the cache key type
 	 * @param <V> the cache value type
-	 * @param <M> the group member type
 	 * @param cache an embedded cache
 	 * @param filter a cache entry filter
 	 * @param scheduler the target scheduler
 	 * @return a task that cancels entries matching the specified filter.
 	 */
-	public static <I, K extends Key<I>, V, M> Consumer<CacheStreamFilter<Map.Entry<K, V>>> cancel(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<K, V> scheduler) {
+	public static <I, K extends Key<I>, V> Consumer<CacheStreamFilter<Map.Entry<K, V>>> cancel(Cache<K, V> cache, Predicate<Map.Entry<? super K, ? super V>> filter, CacheEntryScheduler<K, V> scheduler) {
 		org.wildfly.clustering.function.Consumer<K> cancel = scheduler::cancelKey;
 		return new CacheEntriesTask<>(cache, filter, cancel.compose(Map.Entry::getKey));
 	}

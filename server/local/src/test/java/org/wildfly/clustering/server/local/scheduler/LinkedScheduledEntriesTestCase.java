@@ -8,12 +8,12 @@ package org.wildfly.clustering.server.local.scheduler;
 import java.util.function.UnaryOperator;
 
 /**
- * Unit test for {@link LinkedScheduledEntries}
+ * Unit test for a queued {@link ScheduledEntries} implementation.
  * @author Paul Ferraro
  */
 public class LinkedScheduledEntriesTestCase extends AbstractScheduledEntriesTestCase {
 
 	public LinkedScheduledEntriesTestCase() {
-		super(new LinkedScheduledEntries<>(), UnaryOperator.identity());
+		super(ScheduledEntries.queued(), UnaryOperator.identity());
 	}
 }

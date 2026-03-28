@@ -254,7 +254,7 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 	}
 
 	private void createSession(SessionManager<AtomicReference<String>> manager, String sessionId, Map<String, Object> attributes) {
-		this.requestSession(manager, manager::createSession, sessionId, session -> {
+		this.requestSession(manager::createSession, sessionId, session -> {
 			assertThat(session.getMetaData().getLastAccessTime()).isEmpty();
 			verifySessionMetaData(session);
 			verifySessionAttributes(session, Map.of());
@@ -291,10 +291,10 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 	}
 
 	private void requestSession(SessionManager<AtomicReference<String>> manager, String sessionId, Consumer<Session<AtomicReference<String>>> action) {
-		this.requestSession(manager, manager::findSession, sessionId, action);
+		this.requestSession(manager::findSession, sessionId, action);
 	}
 
-	private void requestSession(SessionManager<AtomicReference<String>> manager, Function<String, Session<AtomicReference<String>>> sessionFactory, String sessionId, Consumer<Session<AtomicReference<String>>> action) {
+	private void requestSession(Function<String, Session<AtomicReference<String>>> sessionFactory, String sessionId, Consumer<Session<AtomicReference<String>>> action) {
 		Instant start = Instant.now();
 		try (Session<AtomicReference<String>> session = sessionFactory.apply(sessionId)) {
 			assertThat(session).isNotNull();

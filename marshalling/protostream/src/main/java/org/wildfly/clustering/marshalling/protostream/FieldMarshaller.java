@@ -9,8 +9,8 @@ import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Marshaller for a field.
- * {@link #writeTo(ProtoStreamWriter, Object)} does not write a field tag, but may write additional tagged fields.
- * Likewise, {@link #readFrom(ProtoStreamReader)} will continue to read fields until a zero tag is reached.
+ * {@link Writable#writeTo(ProtoStreamWriter, Object)} does not write a field tag, but may write additional tagged fields.
+ * Likewise, {@link Readable#readFrom(ProtoStreamReader)} will continue to read fields until a zero tag is reached.
  * @author Paul Ferraro
  * @param <T> the type of this marshaller
  */

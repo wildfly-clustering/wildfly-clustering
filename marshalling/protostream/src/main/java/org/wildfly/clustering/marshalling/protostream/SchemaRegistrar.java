@@ -39,7 +39,7 @@ public class SchemaRegistrar implements Consumer<SerializationContext> {
 	 */
 	public SchemaRegistrar(Class<? extends SerializationContextInitializer> initializerClass, Package schemaPackage) {
 		this.resourceName = schemaPackage.getName() + ".proto";
-		this.loader = Privileged.getClassLoader(this.getClass());
+		this.loader = Privileged.getClassLoader(initializerClass);
 	}
 
 	@Override

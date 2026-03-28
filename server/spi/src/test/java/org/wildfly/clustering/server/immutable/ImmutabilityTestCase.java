@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit test for {@link DefaultImmutability}
+ * Unit test for default immutability tests.
  *
  * @author Paul Ferraro
  */

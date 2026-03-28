@@ -6,50 +6,47 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.function.IntFunction;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 
 /**
- * Marshaller for a {@link Map}.
+ * A ProtoStrema marshaller for sized collections.
  * @author Paul Ferraro
- * @param <K> the map key type
- * @param <V> the map value type
- * @param <T> the map type of this marshaller
+ * @param <E> the element type
+ * @param <T> the collection type
  */
-public class MapMarshaller<K, V, T extends Map<K, V>> extends AbstractMapMarshaller<K, V, T> {
+public class SizedCollectionMarshaller<E, T extends Collection<E>> extends AbstractCollectionMarshaller<E, T> {
 
 	private final IntFunction<T> factory;
 
 	/**
-	 * Creates a marshaller for a map.
-	 * @param factory a map factory
+	 * Creates a marshaller for a collection.
+	 * @param factory the collection factory
 	 */
 	@SuppressWarnings("unchecked")
-	public MapMarshaller(IntFunction<T> factory) {
+	public SizedCollectionMarshaller(IntFunction<T> factory) {
 		super((Class<T>) factory.apply(0).getClass());
 		this.factory = factory;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
-		List<Map.Entry<K, V>> entries = new LinkedList<>();
+		List<E> elements = new LinkedList<>();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ENTRY_INDEX -> entries.add(reader.readObject(AbstractMap.SimpleEntry.class));
+				case ELEMENT_INDEX -> elements.add((E) reader.readAny());
 				default -> reader.skipField(tag);
 			}
 		}
-		T map = this.factory.apply(entries.size());
-		for (Map.Entry<K, V> entry : entries) {
-			map.put(entry.getKey(), entry.getValue());
-		}
-		return map;
+		T result = this.factory.apply(elements.size());
+		result.addAll(elements);
+		return result;
 	}
 }

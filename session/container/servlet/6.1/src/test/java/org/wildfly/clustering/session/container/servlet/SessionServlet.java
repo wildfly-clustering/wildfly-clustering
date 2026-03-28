@@ -21,6 +21,7 @@ import org.wildfly.clustering.session.container.SessionManagementEndpointConfigu
 
 /**
  * @author Paul Ferraro
+ * @param <T> the operating type
  */
 public class SessionServlet<T> extends HttpServlet {
 	private static final long serialVersionUID = 2864700300414161976L;

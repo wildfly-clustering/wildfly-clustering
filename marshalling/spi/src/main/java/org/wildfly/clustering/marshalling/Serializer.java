@@ -44,7 +44,7 @@ public interface Serializer<T> {
 	 * @param object the object to be sized
 	 * @return the buffer size (in bytes), or empty if unknown.
 	 */
-	default OptionalInt size(T object) {
+	default OptionalInt size(@SuppressWarnings("unused") T object) {
 		return OptionalInt.empty();
 	}
 

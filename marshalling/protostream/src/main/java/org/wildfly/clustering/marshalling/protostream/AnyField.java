@@ -17,7 +17,7 @@ import java.util.Map;
 import org.infinispan.protostream.descriptors.WireType;
 
 /**
- * A set of fields used by {@link AnyMarshaller}.
+ * A set of fields used by the {@link Any} marshaller.
  * @author Paul Ferraro
  */
 enum AnyField implements Field<Object> {

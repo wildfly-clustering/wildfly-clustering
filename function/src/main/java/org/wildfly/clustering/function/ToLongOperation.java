@@ -20,6 +20,7 @@ interface ToLongOperation extends ToPrimitiveOperation<Long> {
 
 	/**
 	 * Returns an operation that return the result of applying the specified function to the result of this operation.
+	 * @param <R> the return type
 	 * @param after a function applied to the result of this operation
 	 * @return an operation that return the result of applying the specified function to the result of this operation.
 	 */
