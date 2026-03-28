@@ -70,7 +70,7 @@ public interface TesterFactory {
 		});
 	}
 
-	default <E, T extends Collection<E>> Tester<T> createOrderedCollectionTester() {
+	default <E, T extends Collection<E>> Tester<T> createSequencedCollectionTester() {
 		return this.createTester(new BiConsumer<>() {
 			@Override
 			public void accept(T expected, T actual) {
@@ -88,7 +88,7 @@ public interface TesterFactory {
 		});
 	}
 
-	default <K, V, T extends Map<K, V>> Tester<T> createOrderedMapTester() {
+	default <K, V, T extends Map<K, V>> Tester<T> createSequencedMapTester() {
 		return this.createTester(new BiConsumer<>() {
 			@Override
 			public void accept(T expected, T actual) {

@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.marshalling;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -39,6 +41,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,13 +63,13 @@ public abstract class AbstractUtilTestCase {
 
 	@Test
 	public void testArrayDeque() {
-		Consumer<ArrayDeque<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<ArrayDeque<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(new ArrayDeque<>(BASIS.keySet()));
 	}
 
 	@Test
 	public void testArrayList() {
-		Consumer<ArrayList<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<ArrayList<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(new ArrayList<>(BASIS.keySet()));
 	}
 
@@ -157,22 +160,33 @@ public abstract class AbstractUtilTestCase {
 
 	@Test
 	public void testLinkedHashMap() {
-		Consumer<LinkedHashMap<Object, Object>> tester = this.factory.createOrderedMapTester();
-		tester.accept(new LinkedHashMap<>(BASIS));
-		LinkedHashMap<Object, Object> accessOrderMap = new LinkedHashMap<>(5, 1, true);
+		UnaryOperator<LinkedHashMap<Object, Object>> tester = this.factory.createSequencedMapTester();
+		// Verify map with insertion-order
+		LinkedHashMap<Object, Object> result = tester.apply(new LinkedHashMap<>(BASIS));
+		// Access first entry
+		result.get(result.keySet().iterator().next());
+		// Validate that marshalled map uses insertion order
+		assertThat(result.keySet().iterator().next()).isEqualTo(BASIS.keySet().iterator().next());
+
+		// Verify map with access-order
+		LinkedHashMap<Object, Object> accessOrderMap = new LinkedHashMap<>(BASIS.size(), 1, true);
 		accessOrderMap.putAll(BASIS);
-		tester.accept(new LinkedHashMap<>(accessOrderMap));
+		result = tester.apply(accessOrderMap);
+		// Access first entry
+		result.get(result.keySet().iterator().next());
+		// Validate that marshalled map uses access order
+		assertThat(result.keySet().iterator().next()).isNotEqualTo(BASIS.keySet().iterator().next());
 	}
 
 	@Test
 	public void testLinkedHashSet() {
-		Consumer<LinkedHashSet<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<LinkedHashSet<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(new LinkedHashSet<>(BASIS.keySet()));
 	}
 
 	@Test
 	public void testLinkedList() {
-		Consumer<LinkedList<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<LinkedList<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(new LinkedList<>(BASIS.keySet()));
 	}
 
@@ -227,7 +241,7 @@ public abstract class AbstractUtilTestCase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testTreeMap() {
-		Consumer<TreeMap<Object, Object>> tester = this.factory.createOrderedMapTester();
+		Consumer<TreeMap<Object, Object>> tester = this.factory.createSequencedMapTester();
 
 		TreeMap<Object, Object> map = new TreeMap<>(BASIS);
 		tester.accept(map);
@@ -244,7 +258,7 @@ public abstract class AbstractUtilTestCase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testTreeSet() {
-		Consumer<TreeSet<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<TreeSet<Object>> tester = this.factory.createSequencedCollectionTester();
 
 		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(set);
@@ -317,7 +331,7 @@ public abstract class AbstractUtilTestCase {
 
 	@Test
 	public void testSynchronizedList() {
-		Consumer<List<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<List<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(Collections.synchronizedList(new LinkedList<>(BASIS.keySet())));
 	}
 
@@ -336,14 +350,14 @@ public abstract class AbstractUtilTestCase {
 
 	@Test
 	public void testSynchronizedNavigableSet() {
-		Consumer<Set<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<Set<Object>> tester = this.factory.createSequencedCollectionTester();
 		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(Collections.synchronizedNavigableSet(set));
 	}
 
 	@Test
 	public void testSynchronizedRandomAccessList() {
-		Consumer<List<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<List<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(Collections.synchronizedList(new ArrayList<>(BASIS.keySet())));
 	}
 
@@ -362,7 +376,7 @@ public abstract class AbstractUtilTestCase {
 
 	@Test
 	public void testSynchronizedSortedSet() {
-		Consumer<Set<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<Set<Object>> tester = this.factory.createSequencedCollectionTester();
 		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(Collections.synchronizedSortedSet(set));
 	}
@@ -370,7 +384,7 @@ public abstract class AbstractUtilTestCase {
 	// java.util.Collections.singletonXXX(...) methods
 	@Test
 	public void testSingletonList() {
-		Consumer<List<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<List<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(Collections.singletonList(null));
 		tester.accept(Collections.singletonList("foo"));
 	}
@@ -399,7 +413,7 @@ public abstract class AbstractUtilTestCase {
 
 	@Test
 	public void testUnmodifiableList() {
-		Consumer<List<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<List<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(Collections.unmodifiableList(new LinkedList<>(BASIS.keySet())));
 
 		tester.accept(List.of());
@@ -438,14 +452,14 @@ public abstract class AbstractUtilTestCase {
 
 	@Test
 	public void testUnmodifiableNavigableMap() {
-		Consumer<NavigableMap<Object, Object>> tester = this.factory.createOrderedMapTester();
+		Consumer<NavigableMap<Object, Object>> tester = this.factory.createSequencedMapTester();
 		TreeMap<Object, Object> map = new TreeMap<>(BASIS);
 		tester.accept(Collections.unmodifiableNavigableMap(map));
 	}
 
 	@Test
 	public void testUnmodifiableNavigableSet() {
-		Consumer<NavigableSet<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<NavigableSet<Object>> tester = this.factory.createSequencedCollectionTester();
 		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(Collections.unmodifiableNavigableSet(set));
 	}
@@ -471,14 +485,14 @@ public abstract class AbstractUtilTestCase {
 
 	@Test
 	public void testUnmodifiableSortedMap() {
-		Consumer<SortedMap<Object, Object>> tester = this.factory.createOrderedMapTester();
+		Consumer<SortedMap<Object, Object>> tester = this.factory.createSequencedMapTester();
 		TreeMap<Object, Object> map = new TreeMap<>(BASIS);
 		tester.accept(Collections.unmodifiableSortedMap(map));
 	}
 
 	@Test
 	public void testUnmodifiableSortedSet() {
-		Consumer<SortedSet<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<SortedSet<Object>> tester = this.factory.createSequencedCollectionTester();
 		TreeSet<Object> set = new TreeSet<>(BASIS.keySet());
 		tester.accept(Collections.unmodifiableSortedSet(set));
 	}

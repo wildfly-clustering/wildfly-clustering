@@ -51,13 +51,13 @@ public abstract class AbstractConcurrentTestCase {
 
 	@Test
 	public void testConcurrentLinkedDeque() {
-		Consumer<ConcurrentLinkedDeque<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<ConcurrentLinkedDeque<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(new ConcurrentLinkedDeque<>(BASIS.keySet()));
 	}
 
 	@Test
 	public void testConcurrentLinkedQueue() {
-		Consumer<ConcurrentLinkedQueue<Object>> tester = this.factory.createOrderedCollectionTester();
+		Consumer<ConcurrentLinkedQueue<Object>> tester = this.factory.createSequencedCollectionTester();
 		tester.accept(new ConcurrentLinkedQueue<>(BASIS.keySet()));
 	}
 
