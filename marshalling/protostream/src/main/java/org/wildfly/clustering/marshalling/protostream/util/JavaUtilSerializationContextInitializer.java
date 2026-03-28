@@ -58,8 +58,8 @@ public class JavaUtilSerializationContextInitializer extends AbstractSerializati
 	@SuppressWarnings("unchecked")
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new CollectionMarshaller<>(ArrayDeque::new));
-		context.registerMarshaller(new CollectionMarshaller<>(ArrayList::new));
+		context.registerMarshaller(new SizedCollectionMarshaller<>(ArrayDeque::new));
+		context.registerMarshaller(new SizedCollectionMarshaller<>(ArrayList::new));
 		context.registerMarshaller(Scalar.BYTE_ARRAY.cast(byte[].class).toMarshaller(BitSet.class, BitSet::isEmpty, BitSet::toByteArray, BitSet::new, BitSet::valueOf));
 		context.registerMarshaller(CalendarMarshaller.INSTANCE);
 		context.registerMarshaller(Scalar.STRING.cast(String.class).toMarshaller(Currency.class, Currency::getCurrencyCode, Currency::getInstance));
@@ -67,9 +67,9 @@ public class JavaUtilSerializationContextInitializer extends AbstractSerializati
 		context.registerMarshaller(EnumMapMarshaller.INSTANCE);
 		context.registerMarshaller(EnumSetMarshaller.INSTANCE);
 		context.registerMarshaller(HASH_MAP_MARSHALLER);
-		context.registerMarshaller(new CollectionMarshaller<>(HashSet::new));
+		context.registerMarshaller(new SizedCollectionMarshaller<>(HashSet::new));
 		context.registerMarshaller(LinkedHashMapMarshaller.INSTANCE);
-		context.registerMarshaller(new CollectionMarshaller<>(LinkedHashSet::new));
+		context.registerMarshaller(new SizedCollectionMarshaller<>(LinkedHashSet::new));
 		context.registerMarshaller(LINKED_LIST_MARSHALLER);
 		context.registerMarshaller(LocaleMarshaller.INSTANCE);
 		context.registerMarshaller(PropertiesMarshaller.INSTANCE);
