@@ -6,8 +6,8 @@
 	<FD_SOCK2/>
 	<FD_ALL3/>
 	<VERIFY_SUSPECT/>
-	<NAKACK4/>
-	<UNICAST4/>
+	<NAKACK4 preview_warning="false"/>
+	<UNICAST4 preview_warning="false"/>
 	<pbcast.GMS print_local_addr="false"/>
 	<FRAG4/>
 </config>
