@@ -7,7 +7,7 @@ package org.wildfly.clustering.session.infinispan.remote;
 
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerConfigurator;
+import org.infinispan.client.hotrod.impl.HotRodURI;
 import org.wildfly.clustering.session.cache.SessionManagerParameters;
 
 /**
@@ -16,6 +16,5 @@ import org.wildfly.clustering.session.cache.SessionManagerParameters;
 public interface HotRodSessionManagerParameters extends SessionManagerParameters {
 	NearCacheMode getNearCacheMode();
 	TransactionMode getTransactionMode();
-
-	RemoteCacheContainerConfigurator getRemoteCacheContainerConfigurator();
+	HotRodURI getHotRodURI();
 }

@@ -11,7 +11,6 @@ import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
@@ -43,7 +42,7 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 	private final SessionManagerFactory<CC, SC> factory;
 
 	public HotRodSessionManagerFactoryContext(HotRodSessionManagerParameters parameters, @SuppressWarnings("unused") String memberName, Supplier<SC> contextFactory) {
-		RemoteCacheManager container = new RemoteCacheManager(parameters.getRemoteCacheContainerConfigurator().configure(new ConfigurationBuilder()));
+		RemoteCacheManager container = new RemoteCacheManager(parameters.getHotRodURI().toConfigurationBuilder().build());
 		this.accept(container::close);
 
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();

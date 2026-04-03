@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.client.hotrod.impl.HotRodURI;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,7 +22,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
-import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheContainerConfigurator;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
@@ -74,8 +74,8 @@ public class HotRodSessionManagerITCase extends AbstractSessionManagerITCase<Hot
 								}
 
 								@Override
-								public RemoteCacheContainerConfigurator getRemoteCacheContainerConfigurator() {
-									return INFINISPAN;
+								public HotRodURI getHotRodURI() {
+									return INFINISPAN.getContainer().get();
 								}
 
 								@Override
