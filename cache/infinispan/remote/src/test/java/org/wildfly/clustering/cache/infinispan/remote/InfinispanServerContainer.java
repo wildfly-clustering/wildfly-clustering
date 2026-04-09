@@ -6,14 +6,16 @@
 package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.io.PrintStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
-import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.impl.ConfigurationProperties;
+import org.infinispan.client.hotrod.impl.HotRodURI;
 import org.infinispan.commons.util.Version;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.containers.GenericContainer;
@@ -22,12 +24,13 @@ import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Infinispan server test container.
  * @author Paul Ferraro
  */
-public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> implements RemoteCacheContainerConfigurator {
+public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> implements Supplier<HotRodURI> {
 
 	static final System.Logger LOGGER = System.getLogger(InfinispanServerContainer.class.getName());
 
@@ -49,6 +52,7 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 	private static final String DEFAULT_HOTROD_PASSWORD = "changeme";
 	private static final String USERNAME_ENV = "USER";
 	private static final String PASSWORD_ENV = "PASS";
+	private static final String CLIENT_INTELLIGENCE = ConfigurationProperties.CLIENT_INTELLIGENCE.substring(ConfigurationProperties.ICH.length());
 
 	private final int port;
 
@@ -91,15 +95,15 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 	}
 
 	@Override
-	public Configuration configure(ConfigurationBuilder builder) {
+	public HotRodURI get() {
 		String username = this.getEnvMap().get(USERNAME_ENV);
 		String password = this.getEnvMap().get(PASSWORD_ENV);
-		if ((username != null) && (password != null)) {
-			builder.security().authentication().username(username).password(password);
+		String userInfo = (username != null) && (password != null) ? String.join(":", username, password) : null;
+		ClientIntelligence clientIntelligence = this.isPortMapping() ? ClientIntelligence.BASIC : ClientIntelligence.HASH_DISTRIBUTION_AWARE;
+		try {
+			return HotRodURI.create(new URI("hotrod", userInfo, this.getHost(), this.isPortMapping() ? this.getMappedPort(this.port) : this.port, null, String.join("=", CLIENT_INTELLIGENCE, clientIntelligence.name()), null));
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException(e);
 		}
-		return builder.addServer().host(this.getHost()).port(this.isPortMapping() ? this.getMappedPort(this.port) : this.port)
-				// Disable client topology updates when using bridge networking
-				.clientIntelligence(this.isPortMapping() ? ClientIntelligence.BASIC : ClientIntelligence.HASH_DISTRIBUTION_AWARE)
-				.build();
 	}
 }

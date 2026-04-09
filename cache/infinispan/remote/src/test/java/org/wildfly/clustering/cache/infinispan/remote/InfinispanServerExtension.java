@@ -5,22 +5,15 @@
 
 package org.wildfly.clustering.cache.infinispan.remote;
 
-import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.wildfly.clustering.cache.ContainerExtension;
 
 /**
  * JUnit extension that manages the lifecycle of an Infinispan server container and configures a HotRod client.
  * @author Paul Ferraro
  */
-public class InfinispanServerExtension extends ContainerExtension<InfinispanServerContainer> implements RemoteCacheContainerConfigurator {
+public class InfinispanServerExtension extends ContainerExtension<InfinispanServerContainer> {
 
 	public InfinispanServerExtension() {
 		super(InfinispanServerContainer::new);
-	}
-
-	@Override
-	public Configuration configure(ConfigurationBuilder builder) {
-		return this.getContainer().configure(builder);
 	}
 }

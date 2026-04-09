@@ -129,7 +129,8 @@ public class RemoteCacheStore<K, V> implements NonBlockingStore<K, V> {
 			return this.entryFactory.create(entry.getKey(), value.getValueBytes(), value.getMetadataBytes(), value.getInternalMetadataBytes(), value.getCreated(), value.getLastUsed());
 		};
 		this.cacheTransformer = configuration.transactional() ? ReadForUpdateRemoteCache::new : UnaryOperator.identity();
-		this.segments = configuration.segmented() && (cache.getAdvancedCache().getDistributionManager() != null) ? cache.getCacheConfiguration().clustering().hash().numSegments() : 1;
+		// Do not segment if a non-segmented remote cache exists
+		this.segments = configuration.segmented() && !this.container.getCacheNames().contains(this.cacheName) && (cache.getAdvancedCache().getDistributionManager() != null) ? cache.getCacheConfiguration().clustering().hash().numSegments() : 1;
 		this.batchFactory = configuration.transactional() ? new TransactionalBatchFactory(this.cacheName, RemoteTransactionManager.getInstance(), CacheException::new) : null;
 		this.caches = new AtomicReferenceArray<>(this.segments);
 		for (int i = 0; i < this.segments; ++i) {

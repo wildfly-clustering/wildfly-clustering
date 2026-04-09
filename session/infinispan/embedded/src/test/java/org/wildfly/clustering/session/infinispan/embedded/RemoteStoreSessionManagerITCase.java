@@ -74,7 +74,7 @@ public class RemoteStoreSessionManagerITCase extends AbstractSessionManagerITCas
 
 							@Override
 							public Runnable persistence(GlobalConfiguration global, PersistenceConfigurationBuilder builder) {
-								org.infinispan.client.hotrod.configuration.Configuration configuration = INFINISPAN.configure(new org.infinispan.client.hotrod.configuration.ConfigurationBuilder().marshaller(global.serialization().marshaller()));
+								org.infinispan.client.hotrod.configuration.Configuration configuration = INFINISPAN.getContainer().get().toConfigurationBuilder().marshaller(global.serialization().marshaller()).build();
 								RemoteCacheManager container = new RemoteCacheManager(configuration);
 
 								builder.persistence().addStore(RemoteCacheStoreConfigurationBuilder.class)
