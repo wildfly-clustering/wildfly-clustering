@@ -11,7 +11,7 @@ jobs:
       matrix:
         branch:
         - { source: main, target: 10.x }
-    if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, 'backport') == true)
+    if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true)
     runs-on: ubuntu-latest
     steps:
     - name: Environment
@@ -19,11 +19,9 @@ jobs:
           VARS_JSON: ${{ toJSON(vars) }}
           ENV_JSON: ${{ toJSON(env) }}
           MERGED: ${{ github.event.pull_request.merged }}
-          PR_LABELS: ${{ github.event.pull_request.labels.*.name }}
           BASE_REF_NAME: ${{ github.event.pull_request.baseRefName }}
       run: |
-          echo "vars = ${VARS_JSON}"
-          echo "env = ${ENV_JSON}"
+          echo "label = ${{ vars.BACKPORT_LABEL }}"
           echo "merged = ${MERGED}"
           echo "labels = ${PR_LABELS}"
           echo "baseRefName = ${BASE_REF_NAME}"
