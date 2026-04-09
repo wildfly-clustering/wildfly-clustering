@@ -18,15 +18,10 @@ jobs:
     name: Build with Java ${{ matrix.java }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
-      MAVEN_GOAL: ${{ case((github.event_name == 'pull_request') && contains(github.event.pull_request.labels.*.name, 'unverified'), 'validate', 'verify -P lts') }}
+      MAVEN_GOAL: ${{ case(contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) == true, 'validate', 'verify -P lts') }}
     steps:
     - name: Environment
-      env:
-          VARS_JSON: ${{ toJSON(vars) }}
-          ENV_JSON: ${{ toJSON(env) }}
-      run: |
-          echo "vars = ${VARS_JSON}"
-          echo "env = ${ENV_JSON}"
+      run: echo "label = ${{ vars.VALIDATE_ONLY_LABEL }}"
     - name: Checkout
       uses: actions/checkout@v6
     - name: Setup Java
