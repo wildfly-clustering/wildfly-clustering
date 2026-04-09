@@ -1,10 +1,11 @@
 name: Verify
 
 on:
-  push:
-    branches: [ "*" ]
-  pull_request:
-    branches: [ "*" ]
+  pull_request_target:
+    types:
+    - opened
+    - reopened
+    - synchronize
 
 jobs:
   verify:
@@ -14,7 +15,7 @@ jobs:
         - ubuntu-latest
         java:
         - 25
-    name: Verify with Java ${{ matrix.java }} on ${{ matrix.os }}
+    name: Build with Java ${{ matrix.java }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       MAVEN_GOAL: ${{ case((github.event_name == 'pull_request') && contains(github.event.pull_request.labels.*.name, 'unverified'), 'validate', 'verify -P lts') }}
@@ -37,5 +38,5 @@ jobs:
           25
         distribution: temurin
         cache: maven
-    - name: Verify
+    - name: Maven ${{ env.MAVEN_GOAL }}
       run: mvn --batch-mode --no-transfer-progress ${{ env.MAVEN_GOAL }}
