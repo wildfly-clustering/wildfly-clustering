@@ -7,17 +7,17 @@ on:
     branches: [ "*" ]
 
 jobs:
-  build:
+  verify:
     strategy:
       matrix:
         os:
         - ubuntu-latest
         java:
         - 25
-    name: Java ${{ matrix.java }} on ${{ matrix.os }}
+    name: Verify with Java ${{ matrix.java }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
-      VALIDATE_ONLY_LABEL: unverified
+      MAVEN_GOAL: ${{ case((github.event_name == 'pull_request') && contains(github.event.pull_request.labels.*.name, 'unverified'), 'validate', 'verify -P lts') }}
     steps:
     - name: Checkout
       uses: actions/checkout@v6
@@ -30,8 +30,5 @@ jobs:
           25
         distribution: temurin
         cache: maven
-    - name: Validate
-      run: mvn --batch-mode --no-transfer-progress validate
     - name: Verify
-      if: (github.event_name != 'pull_request') || contains(github.event.pull_request.labels.*.name, env.VALIDATE_ONLY_LABEL) == false
-      run: mvn --batch-mode --no-transfer-progress verify -P lts
+      run: mvn --batch-mode --no-transfer-progress ${{ env.MAVEN_GOAL }}
