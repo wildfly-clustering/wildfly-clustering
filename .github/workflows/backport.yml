@@ -11,17 +11,22 @@ jobs:
       matrix:
         branch:
         - { source: main, target: 10.x }
-    if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true)
+    if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, 'backport') == true)
     runs-on: ubuntu-latest
     steps:
     - name: Environment
       env:
           VARS_JSON: ${{ toJSON(vars) }}
           ENV_JSON: ${{ toJSON(env) }}
+          MERGED: ${{ github.event.pull_request.merged }}
+          PR_LABELS: ${{ github.event.pull_request.labels.*.name }}
+          BASE_REF_NAME: ${{ github.event.pull_request.baseRefName }}
       run: |
-          env
-          echo "${VARS_JSON}"
-          echo "${ENV_JSON}"
+          echo "vars = ${VARS_JSON}"
+          echo "env = ${ENV_JSON}"
+          echo "merged = ${MERGED}"
+          echo "labels = ${PR_LABELS}"
+          echo "baseRefName = ${BASE_REF_NAME}"
     - name: Checkout ${{ matrix.branch.target }}
       if: github.event.pull_request.baseRefName == matrix.branch.source
       uses: actions/checkout@v6
