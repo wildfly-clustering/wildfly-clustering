@@ -21,13 +21,9 @@ jobs:
       MAVEN_GOAL: ${{ case(contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) == true, 'validate', 'verify -P lts') }}
       PR_JSON: ${{ toJSON(github.event.pull_request) }}
     steps:
-    - name: Environment
-      run: |
-        echo "label = ${{ vars.VALIDATE_ONLY_LABEL }}"
-        echo "pull_request = ${PR_JSON}"
-        echo "validate-only? ${{ contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) }}
     - name: Checkout
       uses: actions/checkout@v6
+
     - name: Setup Java
       uses: actions/setup-java@v5
       with:
@@ -37,5 +33,6 @@ jobs:
           25
         distribution: temurin
         cache: maven
+
     - name: Maven ${{ env.MAVEN_GOAL }}
       run: mvn --batch-mode --no-transfer-progress ${{ env.MAVEN_GOAL }}
