@@ -3,7 +3,10 @@ name: Backport
 on:
   pull_request_target:
     types:
-      - closed
+    - closed
+
+env:
+  BACKPORT_LABEL: backport
 
 jobs:
   backport:
@@ -11,18 +14,17 @@ jobs:
       matrix:
         branch:
         - { source: main, target: 10.x }
-    if: (github.event.pull_request.merged == true) && (github.event.pull_request.baseRefName == matrix.branch.source) && (contains(github.event.pull_request.labels.*.name, matrix.branch.target) == true)
+    if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, env.BACKPORT_LABEL) == true)
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout ${{ matrix.branch.target }}
+    - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch.target }}
+      if: github.event.pull_request.baseRefName == matrix.branch.source
       uses: actions/checkout@v6
       with:
         ref: ${{ matrix.branch.target }}
-
-    - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch.target }}
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git checkout -b backport-${{ matrix.branch.target }}-${{ github.event.pull_request.number }}
         gh pr diff --patch ${{ github.event.pull_request.number }} | git am
         gh pr create --base ${{ matrix.branch.target }} --title "[${{ matrix.branch.target }}] ${{ github.event.pull_request.title }} --body "Backport of ${{ github.event.pull_request.url }}"
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
