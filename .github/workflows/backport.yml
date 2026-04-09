@@ -16,15 +16,10 @@ jobs:
     steps:
     - name: Environment
       env:
-          VARS_JSON: ${{ toJSON(vars) }}
-          ENV_JSON: ${{ toJSON(env) }}
-          MERGED: ${{ github.event.pull_request.merged }}
-          BASE_REF_NAME: ${{ github.event.pull_request.baseRefName }}
+        PR_JSON: ${{ toJSON(github.event.pull_request) }}
       run: |
-          echo "label = ${{ vars.BACKPORT_LABEL }}"
-          echo "merged = ${MERGED}"
-          echo "labels = ${PR_LABELS}"
-          echo "baseRefName = ${BASE_REF_NAME}"
+        echo "label = ${{ vars.BACKPORT_LABEL }}"
+        echo "pull_request = ${PR_JSON}"
     - name: Checkout ${{ matrix.branch.target }}
       if: github.event.pull_request.baseRefName == matrix.branch.source
       uses: actions/checkout@v6
