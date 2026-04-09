@@ -17,11 +17,14 @@ jobs:
     if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, env.BACKPORT_LABEL) == true)
     runs-on: ubuntu-latest
     steps:
-    - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch.target }}
+    - name: Checkout ${{ matrix.branch.target }}
       if: github.event.pull_request.baseRefName == matrix.branch.source
       uses: actions/checkout@v6
       with:
         ref: ${{ matrix.branch.target }}
+
+    - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch.target }}
+      if: github.event.pull_request.baseRefName == matrix.branch.source
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
