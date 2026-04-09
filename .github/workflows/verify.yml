@@ -19,6 +19,13 @@ jobs:
     env:
       MAVEN_GOAL: ${{ case((github.event_name == 'pull_request') && contains(github.event.pull_request.labels.*.name, 'unverified'), 'validate', 'verify -P lts') }}
     steps:
+    - name: Environment
+      env:
+          VARS_JSON: ${{ toJSON(vars) }}
+          ENV_JSON: ${{ toJSON(env) }}
+      run: |
+          echo "vars = ${VARS_JSON}"
+          echo "env = ${ENV_JSON}"
     - name: Checkout
       uses: actions/checkout@v6
     - name: Setup Java
