@@ -16,6 +16,8 @@ jobs:
         - 25
     name: Java ${{ matrix.java }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    env:
+      VALIDATE_ONLY_LABEL: unverified
     steps:
     - name: Checkout
       uses: actions/checkout@v6
@@ -26,7 +28,10 @@ jobs:
           17
           21
           25
-        distribution: 'temurin'
+        distribution: temurin
         cache: maven
+    - name: Validate
+      run: mvn --batch-mode --no-transfer-progress validate
     - name: Verify
+      if: (github.event_name != 'pull_request') || contains(github.event.pull_request.labels.*.name, env.VALIDATE_ONLY_LABEL) == false
       run: mvn --batch-mode --no-transfer-progress verify -P lts
