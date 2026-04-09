@@ -14,20 +14,14 @@ jobs:
     if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true)
     runs-on: ubuntu-latest
     steps:
-    - name: Environment
-      env:
-        PR_JSON: ${{ toJSON(github.event.pull_request) }}
-      run: |
-        echo "label = ${{ vars.BACKPORT_LABEL }}"
-        echo "pull_request = ${PR_JSON}"
     - name: Checkout ${{ matrix.branch.target }}
-      if: github.event.pull_request.baseRefName == matrix.branch.source
+      if: github.event.pull_request.base.ref == matrix.branch.source
       uses: actions/checkout@v6
       with:
         ref: ${{ matrix.branch.target }}
 
     - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch.target }}
-      if: github.event.pull_request.baseRefName == matrix.branch.source
+      if: github.event.pull_request.base.ref == matrix.branch.source
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
