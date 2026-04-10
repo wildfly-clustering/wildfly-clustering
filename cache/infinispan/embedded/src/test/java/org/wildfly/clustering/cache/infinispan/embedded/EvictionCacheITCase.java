@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -17,6 +18,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheType;
 import org.infinispan.configuration.cache.Configuration;
@@ -54,7 +56,7 @@ public class EvictionCacheITCase {
 		}
 		List<Map.Entry<Object, String>> evictable = new ArrayList<>(size);
 		for (int i = 0; i < size; ++i) {
-			evictable.add(Map.entry(Integer.valueOf(i), Integer.toString(i)));
+			evictable.add(Map.entry(i, Integer.toString(i)));
 		}
 
 		ConfigurationBuilder builder = new ConfigurationBuilder();
@@ -73,30 +75,46 @@ public class EvictionCacheITCase {
 				// Add evictable entries to capacity
 				for (Map.Entry<Object, String> entry : evictable.subList(0, excess)) {
 					cache.put(entry.getKey(), entry.getValue());
+					// Encourage distinct ages
+					Thread.sleep(1);
 				}
-				// Verify that capacity was not exceeded
+				// Time after which evictable entries will be considered idle
+				Instant idleTime = Instant.now().plus(IDLE_THRESHOLD);
+
+				// Verify that nothing was evicted yet, since we are at capacity
 				assertThat(entries).isEmpty();
+
 				// Add non-evictable entries - should have no effect on capacity
 				for (Map.Entry<Object, String> entry : nonEvictable) {
 					cache.put(entry.getKey(), entry.getValue());
 				}
-				// Verify that capacity was not exceeded
+				// Verify that nothing was evicted yet, since we are still at capacity
 				assertThat(entries).isEmpty();
 
-				Instant start = Instant.now();
 				// Add excess evictable entries - should trigger synchronous eviction events
 				for (Map.Entry<Object, String> entry : evictable.subList(excess, size)) {
 					cache.put(entry.getKey(), entry.getValue());
+					// Encourage distinct ages
+					Thread.sleep(1);
 				}
-				Instant evictTime = Instant.now().plus(IDLE_THRESHOLD).plus(IDLE_THRESHOLD);
 
-				// Verify that excess evictable entries were evicted
-				for (int i = 0; i < excess; ++i) {
-					Map.Entry<Object, String> entry = entries.poll();
-					assertThat(entry).isNotNull();
-					assertThat(entry.getKey()).isInstanceOf(EVICTABLE);
+				// Verify that excess evictable entries were evicted according to age
+				List<Map.Entry<Object, String>> evictedEntries = new LinkedList<>();
+				assertThat(entries.drainTo(evictedEntries)).isEqualTo(excess);
+				evictedEntries.forEach(evicted -> assertThat(evicted.getKey()).asInstanceOf(InstanceOfAssertFactories.INTEGER).isLessThan(excess));
+
+				// Read remaining evictable entries so that they are no longer idle
+				for (Map.Entry<Object, String> entry : evictable.subList(excess, evictable.size())) {
+					assertThat(cache.get(entry.getKey())).isNotNull().isSameAs(entry.getValue());
 				}
-				// Verify nothing else was evicted
+
+				// Time after which evictable entries will be considered idle again, plus some grace period
+				Instant evictTime = Instant.now().plus(IDLE_THRESHOLD.multipliedBy(4));
+
+				// Allow original idle time to pass
+				Thread.sleep(Duration.between(Instant.now(), idleTime).toMillis());
+
+				// Verify nothing was evicted yet
 				assertThat(entries.poll()).isNull();
 
 				// Remove non-evictable entries
@@ -104,15 +122,16 @@ public class EvictionCacheITCase {
 					assertThat(cache.remove(entry.getKey())).isSameAs(entry.getValue());
 				}
 
-				// Verify that idle evictable entries are eventually evicted
-				for (int i = 0; i < CAPACITY; ++i) {
-					Map.Entry<Object, String> entry = entries.poll(Duration.between(Instant.now(), evictTime).toNanos(), TimeUnit.NANOSECONDS);
-					assertThat(entry).isNotNull();
-					assertThat(entry.getKey()).isInstanceOf(EVICTABLE);
-					if (i == 0) {
-						// Verify that we do not evict prematurely
-						assertThat(Duration.between(start, Instant.now())).isGreaterThanOrEqualTo(IDLE_THRESHOLD);
-					}
+				// Verify nothing was evicted yet
+				assertThat(entries.poll()).isNull();
+
+				// Verify that idle evictable entries are no longer present and that the corresponding events were fired
+				for (Map.Entry<Object, String> entry : evictable.subList(excess, evictable.size())) {
+					Map.Entry<Object, String> evictedEntry = entries.poll(Duration.between(Instant.now(), evictTime).toNanos(), TimeUnit.NANOSECONDS);
+					assertThat(evictedEntry).isNotNull();
+					assertThat(evictedEntry.getValue()).isSameAs(entry.getValue());
+
+					assertThat(cache.get(entry.getKey())).isNull();
 				}
 				// Verify nothing else was evicted
 				assertThat(entries.poll()).isNull();
