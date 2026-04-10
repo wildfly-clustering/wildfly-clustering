@@ -14,6 +14,12 @@ jobs:
     if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true)
     runs-on: ubuntu-latest
     steps:
+    - name: Generate Token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ secrets.APP_ID }}
+        private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
     - name: Checkout ${{ matrix.branch.target }}
       if: github.event.pull_request.base.ref == matrix.branch.source
       uses: actions/checkout@v6
@@ -21,12 +27,17 @@ jobs:
         ref: ${{ matrix.branch.target }}
 
     - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch.target }}
-      if: github.event.pull_request.base.ref == matrix.branch.source
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BACKPORT_BRANCH: backport-${{ matrix.branch.target }}-${{ github.event.pull_request.number }}
+        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
       run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git checkout -b backport-${{ matrix.branch.target }}-${{ github.event.pull_request.number }}
+        git checkout -b ${{ env.BACKPORT_BRANCH }}
         git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
-        gh pr create --base ${{ matrix.branch.target }} --title "[${{ matrix.branch.target }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
+        gh pr create --base ${{ matrix.branch.target }} --head ${{ env.BACKPORT_BRANCH }} --label ${{ vars.BACKPORT_LABEL }} --title "[${{ matrix.branch.target }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
+
+    - name: Delete ${{ matrix.branch.target }} backport branch
+      if: (github.event.pull_request.base.ref == matrix.branch.target) && (github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name)
+      env:
+        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+      run: |
+        git push origin --delete ${{ github.event.pull_request.head.ref }}
