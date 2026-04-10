@@ -32,6 +32,7 @@ jobs:
         GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
       run: |
         git checkout -b ${{ env.BACKPORT_BRANCH }}
+        git fetch ${{ matrix.branch.source }}
         git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
         gh pr create --base ${{ matrix.branch.target }} --head ${{ env.BACKPORT_BRANCH }} --label ${{ vars.BACKPORT_LABEL }} --title "[${{ matrix.branch.target }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
 
