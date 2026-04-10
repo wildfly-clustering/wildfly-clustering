@@ -27,6 +27,7 @@ jobs:
         ref: ${{ matrix.branch.target }}
 
     - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch.target }}
+      if: github.event.pull_request.base.ref == matrix.branch.source
       env:
         BACKPORT_BRANCH: backport-${{ matrix.branch.target }}-${{ github.event.pull_request.number }}
         GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
