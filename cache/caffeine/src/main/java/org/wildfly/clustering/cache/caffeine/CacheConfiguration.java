@@ -114,13 +114,14 @@ public interface CacheConfiguration<K, V> {
 
 		/**
 		 * Defines a weigher used to determine the weight a given cache entry.
+		 * An entry that weighs nothing will never be auto-evicted.
 		 * @param weigher a weigher used to determine the weight a given cache entry.
 		 * @return a reference to this builder
 		 */
 		Builder<K, V> withWeigher(Weigher<K, V> weigher);
 
 		/**
-		 * Defines a duration of time after which idle entries should be auto-evicted.
+		 * Defines a duration of time after which idle entries (with non-zero weight) should be auto-evicted.
 		 * @param idleTimeout a duration of time after which idle entries should be auto-evicted.
 		 * @return a reference to this builder
 		 */
@@ -129,7 +130,7 @@ public interface CacheConfiguration<K, V> {
 		}
 
 		/**
-		 * Defines a function returning the duration of time after which a given idle entry should be auto-evicted.
+		 * Defines a function returning the duration of time after which a given idle entry (with non-zero weight) should be auto-evicted.
 		 * @param idleTimeout a function returning the duration of time after which a given idle entry should be auto-evicted.
 		 * @return a reference to this builder
 		 */

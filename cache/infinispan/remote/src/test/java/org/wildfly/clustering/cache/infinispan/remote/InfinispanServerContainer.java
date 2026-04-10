@@ -32,8 +32,6 @@ import org.wildfly.clustering.function.Supplier;
  */
 public class InfinispanServerContainer extends GenericContainer<InfinispanServerContainer> implements Supplier<HotRodURI> {
 
-	static final System.Logger LOGGER = System.getLogger(InfinispanServerContainer.class.getName());
-
 	static final String DOCKER_NETWORK_MODE_PROPERTY = "docker.network.mode";
 	static final String DOCKER_IMAGE_PROPERTY = "infinispan.server.image";
 	static final String HOTROD_PORT_PROPERTY = "infinispan.server.port";
@@ -83,11 +81,10 @@ public class InfinispanServerContainer extends GenericContainer<InfinispanServer
 			this.withEnv(USERNAME_ENV, context.getConfigurationParameter(INFINISPAN_USERNAME_PROPERTY).orElse(DEFAULT_HOTROD_USERNAME));
 			this.withEnv(PASSWORD_ENV, context.getConfigurationParameter(INFINISPAN_PASSWORD_PROPERTY).orElse(DEFAULT_HOTROD_PASSWORD));
 		}
-		String configuration = context.getConfigurationParameter(INFINISPAN_CONFIGURATION_PROPERTY).orElse(null);
-		if (configuration != null) {
+		context.getConfigurationParameter(INFINISPAN_CONFIGURATION_PROPERTY).ifPresent(configuration -> {
 			// Replace default configuration file within container
 			this.withCopyFileToContainer(MountableFile.forHostPath(configuration), CONTAINER_IMAGE_CONFIGURATION_PATH);
-		}
+		});
 	}
 
 	private boolean isPortMapping() {
