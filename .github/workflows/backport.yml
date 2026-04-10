@@ -28,5 +28,5 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git checkout -b backport-${{ matrix.branch.target }}-${{ github.event.pull_request.number }}
-        git cherry-pick -x | git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }}
-        gh pr create --base ${{ matrix.branch.target }} --title "[${{ matrix.branch.target }}] ${{ github.event.pull_request.title }} --body "Backport of ${{ github.event.pull_request.url }}"
+        git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
+        gh pr create --base ${{ matrix.branch.target }} --title "[${{ matrix.branch.target }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
