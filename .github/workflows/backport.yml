@@ -7,39 +7,41 @@ on:
 
 jobs:
   backport:
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       matrix:
         branch:
-        - { source: main, target: 10.x }
+        - 10.x
     if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true)
     runs-on: ubuntu-latest
     steps:
-    - name: Generate Token
-      uses: actions/create-github-app-token@v3
-      with:
-        app-id: ${{ secrets.APP_ID }}
-        private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-    - name: Checkout ${{ matrix.branch.target }}
-      if: github.event.pull_request.base.ref == matrix.branch.source
+    - name: Environment
+      run: |
+        echo "github.base_ref = ${{ github.base_ref }}"
+        echo "github.head_ref = ${{ github.head_ref }}"
+        echo "github.ref_name = ${{ github.ref_name }}"
+        echo "github.workflow_ref = ${{ github.workflow_ref }}"
+    - name: Checkout ${{ matrix.branch }}
+      if: github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch
       uses: actions/checkout@v6
       with:
-        ref: ${{ matrix.branch.target }}
+        ref: ${{ matrix.branch }}
 
-    - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch.target }}
-      if: github.event.pull_request.base.ref == matrix.branch.source
+    - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch }}
+      if: github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch
       env:
-        BACKPORT_BRANCH: backport-${{ matrix.branch.target }}-${{ github.event.pull_request.number }}
-        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+        BACKPORT_BRANCH: backport-${{ matrix.branch }}-${{ github.event.pull_request.number }}
+        # Used by GitHub CLI
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git checkout -b ${{ env.BACKPORT_BRANCH }}
         git fetch origin ${{ matrix.branch.source }}
         git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
-        gh pr create --base ${{ matrix.branch.target }} --head ${{ env.BACKPORT_BRANCH }} --label ${{ vars.BACKPORT_LABEL }} --title "[${{ matrix.branch.target }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
+        gh pr create --base ${{ matrix.branch }} --head ${{ env.BACKPORT_BRANCH }} --label ${{ vars.BACKPORT_LABEL }} --title "[${{ matrix.branch }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
 
-    - name: Delete ${{ matrix.branch.target }} backport branch
-      if: (github.event.pull_request.base.ref == matrix.branch.target) && (github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name)
-      env:
-        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+    - name: Delete ${{ matrix.branch }} backport branch
+      if: (github.event.pull_request.base.ref == matrix.branch) && (github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name)
       run: |
         git push origin --delete ${{ github.event.pull_request.head.ref }}
