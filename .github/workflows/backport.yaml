@@ -24,6 +24,7 @@ jobs:
         if: github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           # Checkout target branch for
           ref: ${{ matrix.branch }}
 
@@ -38,7 +39,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Create branch for backport
-          git checkout -b ${{ env.BACKPORT_BRANCH }} -t origin/${{ matrix.branch }}
+          git checkout -b ${{ env.BACKPORT_BRANCH }}
           # Cherry-pick commits from pull request
           git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
           # Push brackport branch
