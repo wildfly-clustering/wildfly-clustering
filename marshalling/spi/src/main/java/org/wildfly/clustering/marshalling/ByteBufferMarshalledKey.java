@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.marshalling;
 
+import java.io.Serial;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -14,6 +15,7 @@ import java.util.Objects;
  * @author Paul Ferraro
  */
 public class ByteBufferMarshalledKey<K> extends ByteBufferMarshalledValue<K> {
+	@Serial
 	private static final long serialVersionUID = 7317347779979133897L;
 
 	/** The hash code of the marshalled value */
