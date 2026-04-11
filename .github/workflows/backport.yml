@@ -37,6 +37,7 @@ jobs:
         git checkout -b ${{ env.BACKPORT_BRANCH }} -t origin/${{ matrix.branch }}
         git fetch origin ${{ matrix.branch.source }}
         git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
+        git push origin
         gh pr create --base ${{ matrix.branch }} --head ${{ env.BACKPORT_BRANCH }} --label ${{ vars.BACKPORT_LABEL }} --title "[${{ matrix.branch }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
 
     - name: Delete ${{ matrix.branch }} backport branch
