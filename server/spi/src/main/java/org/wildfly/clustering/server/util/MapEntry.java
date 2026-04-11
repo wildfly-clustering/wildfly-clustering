@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.server.util;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -57,6 +58,7 @@ public interface MapEntry<K, V> extends Map.Entry<K, V>, Serializable {
 	 * @param <V> the map entry value type
 	 */
 	class SimpleMapEntry<K, V> implements MapEntry<K, V> {
+		@Serial
 		private static final long serialVersionUID = -2330498313768028514L;
 
 		/** The map entry key */

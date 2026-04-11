@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.server.infinispan;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.infinispan.remoting.transport.Address;
@@ -16,6 +17,7 @@ import org.wildfly.clustering.server.group.AbstractGroupMember;
  * @author Paul Ferraro
  */
 public class LocalEmbeddedCacheManagerGroupMember extends AbstractGroupMember<Address> implements CacheContainerGroupMember, Serializable {
+	@Serial
 	private static final long serialVersionUID = -8987757972156115087L;
 
 	/** The group name */

@@ -8,6 +8,7 @@ package org.wildfly.clustering.marshalling;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -20,6 +21,7 @@ import java.util.concurrent.locks.StampedLock;
  * @param <V> the type wrapped by this marshalled value
  */
 public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBufferMarshaller>, Serializable {
+	@Serial
 	private static final long serialVersionUID = -8419893544424515905L;
 
 	/** Controls access to fields below */
@@ -289,6 +291,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	 * @param output an output stream
 	 * @throws IOException if the fields of this object could not be written
 	 */
+	@Serial
 	private void writeObject(ObjectOutputStream output) throws IOException {
 		output.defaultWriteObject();
 		ByteBuffer buffer = this.getBuffer();
@@ -315,6 +318,7 @@ public class ByteBufferMarshalledValue<V> implements MarshalledValue<V, ByteBuff
 	 * @throws IOException if the fields of this object could not be read
 	 * @throws ClassNotFoundException if this class could not be loaded by the class loader of the current thread context
 	 */
+	@Serial
 	private void readObject(ObjectInputStream input) throws IOException, ClassNotFoundException {
 		input.defaultReadObject();
 		int size = IndexSerializer.VARIABLE.readInt(input);
