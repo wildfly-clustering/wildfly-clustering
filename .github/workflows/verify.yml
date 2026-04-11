@@ -1,4 +1,5 @@
 name: Verify
+run-name: Verify ${{ github.head_ref }} for ${{ github.actor }}
 
 on:
   pull_request_target:
