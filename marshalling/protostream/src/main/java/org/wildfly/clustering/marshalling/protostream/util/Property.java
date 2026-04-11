@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.marshalling.protostream.util;
 
+import java.io.Serial;
 import java.util.AbstractMap;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import java.util.Map;
  * @author Paul Ferraro
  */
 public class Property extends AbstractMap.SimpleEntry<String, String> {
+	@Serial
 	private static final long serialVersionUID = -8779521775890292166L;
 
 	/**

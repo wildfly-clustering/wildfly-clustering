@@ -11,6 +11,7 @@
 
 package org.wildfly.clustering.server.local.scheduler;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -230,7 +231,7 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 	 * 40% overhead relative to ConcurrentLinkedQueue, which feels as
 	 * good as we can hope for.
 	 */
-
+	@Serial
 	private static final long serialVersionUID = 876323262645176354L;
 
 	/**
@@ -360,11 +361,6 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 	 * Unlinks non-null node x.
 	 */
 	void unlink(Node<E> x) {
-		// assert x != null;
-		// assert x.item == null;
-		// assert x != PREV_TERMINATOR;
-		// assert x != NEXT_TERMINATOR;
-
 		final Node<E> prev = x.prev;
 		final Node<E> next = x.next;
 		if (prev == null) {
@@ -461,9 +457,6 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 	 * Unlinks non-null first node.
 	 */
 	private void unlinkFirst(Node<E> first, Node<E> next) {
-		// assert first != null;
-		// assert next != null;
-		// assert first.item == null;
 		for (Node<E> o = null, p = next, q;;) {
 			if (p.item != null || (q = p.next) == null) {
 				if (o != null && p.prev != p && NEXT.compareAndSet(first, next, p)) {
@@ -491,9 +484,6 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 	 * Unlinks non-null last node.
 	 */
 	private void unlinkLast(Node<E> last, Node<E> prev) {
-		// assert last != null;
-		// assert prev != null;
-		// assert last.item == null;
 		for (Node<E> o = null, p = prev, q;;) {
 			if (p.item != null || (q = p.prev) == null) {
 				if (o != null && p.next != p && PREV.compareAndSet(last, prev, p)) {
@@ -577,9 +567,6 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 		whileActive:
 		do {
 			Node<E> prev = x.prev;
-			// assert prev != null;
-			// assert x != NEXT_TERMINATOR;
-			// assert x != PREV_TERMINATOR;
 			Node<E> p = prev;
 			findActive:
 			for (;;) {
@@ -608,9 +595,6 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 		whileActive:
 		do {
 			Node<E> next = x.next;
-			// assert next != null;
-			// assert x != NEXT_TERMINATOR;
-			// assert x != PREV_TERMINATOR;
 			Node<E> p = next;
 			findActive:
 			for (;;) {
@@ -1500,6 +1484,7 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 	 * @serialData All of the elements (each an {@code E}) in
 	 * the proper order, followed by a null
 	 */
+	@Serial
 	private void writeObject(java.io.ObjectOutputStream s)
 		throws java.io.IOException {
 
@@ -1524,6 +1509,7 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 	 *		 could not be found
 	 * @throws java.io.IOException if an I/O error occurs
 	 */
+	@Serial
 	private void readObject(java.io.ObjectInputStream s)
 		throws java.io.IOException, ClassNotFoundException {
 		s.defaultReadObject();
