@@ -9,14 +9,10 @@ on:
 
 jobs:
   verify:
-    strategy:
-      matrix:
-        os:
-        - ubuntu-latest
-        java:
-        - 25
-    name: Build with Java ${{ matrix.java }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Verify
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v6
@@ -33,5 +29,5 @@ jobs:
         distribution: temurin
         cache: maven
 
-    - name: Verify
-      run: mvn --batch-mode --no-transfer-progress ${{ case(contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) == true, 'validate', 'verify -P lts') }}
+    - name: Maven verify
+      run: mvn --batch-mode --no-transfer-progress ${{ case(contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) == true, 'validate', 'verify') }} -P lts
