@@ -914,7 +914,7 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 		Objects.requireNonNull(o);
 		for (Node<E> p = first(); p != null; p = succ(p)) {
 			E item = p.item;
-			if (item != null && o.equals(item) && ITEM.compareAndSet(p, item, null)) {
+			if (o.equals(item) && ITEM.compareAndSet(p, item, null)) {
 				unlink(p);
 				return true;
 			}
@@ -939,7 +939,7 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 		Objects.requireNonNull(o);
 		for (Node<E> p = last(); p != null; p = pred(p)) {
 			E item = p.item;
-			if (item != null && o.equals(item) && ITEM.compareAndSet(p, item, null)) {
+			if (o.equals(item) && ITEM.compareAndSet(p, item, null)) {
 				unlink(p);
 				return true;
 			}
@@ -960,7 +960,7 @@ class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements Conc
 		if (o != null) {
 			for (Node<E> p = first(); p != null; p = succ(p)) {
 				E item = p.item;
-				if (item != null && o.equals(item))
+				if (o.equals(item))
 					return true;
 			}
 		}
