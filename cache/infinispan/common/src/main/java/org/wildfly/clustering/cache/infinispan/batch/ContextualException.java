@@ -5,11 +5,14 @@
 
 package org.wildfly.clustering.cache.infinispan.batch;
 
+import java.io.Serial;
+
 /**
  * An exception used to log the creation context of a batch.
  * @author Paul Ferraro
  */
 public class ContextualException extends RuntimeException {
+	@Serial
 	private static final long serialVersionUID = -4254375328855589267L;
 
 	ContextualException(Contextual contextual) {
