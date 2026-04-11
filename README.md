@@ -10,6 +10,7 @@ This project serves as upstream to the following projects:
 * [WildFly](https://github.com/wildfly/wildfly)
 * Tomcat via [wildfly-clustering-tomcat](https://github.com/wildfly-clustering/wildfly-clustering-tomcat)
 * Spring via [wildfly-clustering-spring](https://github.com/wildfly-clustering/wildfly-clustering-spring)
+* Vert.x-Web via [wildfly-clustering-vert.x](https://github.com/wildfly-clustering/wildfly-clustering-vert.x)
 
 ## Building
 
@@ -17,7 +18,7 @@ This project serves as upstream to the following projects:
 
 Building this project requires the following software:
 
-* JDK 25
+* JDK 25 (runtime requires JRE 17)
 * Maven 3.9+
 
 Additionally, the integration tests contained in this project require a Docker-API compatible container runtime.
