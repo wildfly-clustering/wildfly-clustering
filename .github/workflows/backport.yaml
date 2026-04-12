@@ -20,34 +20,62 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout ${{ matrix.branch }}
-        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
+      - id: create-app-token
+        name: Create GitHub App installation access token
+        # Per https://github.com/actions/create-github-app-token#create-a-token-for-the-current-repository
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          owner: ${{ github.repository_owner }}
+          permissions-contents: write
+          permissions-pull-requests: write
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - id: create-app-user
+        name: Determine user ID of GitHub App installation
+        env:
+          GH_TOKEN: ${{ steps.create-app-token.outputs.token }}
+        # Per https://github.com/actions/create-github-app-token#create-a-git-committer-string-for-an-app-installation
+        run: echo "id=$(gh api "/users/${{ steps.create-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+
+      - id: git-configure
+        name: Configure git with GitHub app author
+        run: |
+          git config --global user.name "${{ steps.create-app-token.outputs.app-slug }}[bot]"
+          git config --global user.email "${{ steps.create-app-user.outputs.id }}+${{ steps.create-app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
+
+      - id: git-checkout
+        name: Checkout ${{ matrix.branch }} branch
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          # Checkout target branch for
+          # Checkout backport target branch
           ref: ${{ matrix.branch }}
+          token: ${{ steps.create-app-token.outputs.token }}
 
-      - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch }}
+      - id: create-backport-branch
+        name: Create backport branch
+        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
+        run: |
+          echo "name=backport-${{ matrix.branch }}-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+
+      - id: prepare-backport-branch
+        name: Prepare backport branch
+        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
+        run: |
+          git checkout -b ${{ steps.create-backport-branch.outputs.name }}
+          git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
+          git push --set-upstream origin ${{ steps.create-backport-branch.outputs.name }}
+
+      - id: create-backport-pull-request
+        name: Create backport pull request
         if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
         env:
-          BACKPORT_BRANCH: backport-${{ matrix.branch }}-${{ github.event.pull_request.number }}
-          # For use by GitHub CLI
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Per https://github.com/actions/checkout#push-a-commit-using-the-built-in-token
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Create branch for backport
-          git checkout -b ${{ env.BACKPORT_BRANCH }}
-          # Cherry-pick commits from pull request
-          git cherry-pick $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
-          # Push backport branch
-          git push --set-upstream origin ${{ env.BACKPORT_BRANCH }}
-          # Create pull request
-          gh pr create --base ${{ matrix.branch }} --head ${{ env.BACKPORT_BRANCH }} --label ${{ vars.BACKPORT_LABEL }} --title "[${{ matrix.branch }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
+          GH_TOKEN: ${{ steps.create-app-token.outputs.token }}
+        run: gh pr create --base ${{ matrix.branch }} --head ${{ steps.create-backport-branch.outputs.name }} --label ${{ vars.BACKPORT_LABEL }} --title "[${{ matrix.branch }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
 
-      - name: Delete ${{ matrix.branch }} backport branch
+      - id: delete-backport-branch
+        name: Delete backport branch
         if: (github.event.pull_request.base.ref == matrix.branch) && (github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name)
         run: |
           git push origin --delete ${{ github.event.pull_request.head.ref }}
