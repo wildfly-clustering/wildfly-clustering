@@ -100,12 +100,12 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 
 	@Override
 	public long capacity() {
-		return this.evictionCache.policy().eviction().get().getMaximum();
+		return this.evictionCache.policy().eviction().orElseThrow(UnsupportedOperationException::new).getMaximum();
 	}
 
 	@Override
 	public void resize(long newSize) {
-		this.evictionCache.policy().eviction().get().setMaximum(newSize);
+		this.evictionCache.policy().eviction().orElseThrow(UnsupportedOperationException::new).setMaximum(newSize);
 	}
 
 	@Override
@@ -176,7 +176,7 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 
 	@Override
 	public long evictionSize() {
-		return this.evictionCache.policy().eviction().get().weightedSize().orElse(this.entries.size());
+		return this.evictionCache.policy().eviction().orElseThrow(UnsupportedOperationException::new).weightedSize().orElse(this.entries.size());
 	}
 
 	@Override
