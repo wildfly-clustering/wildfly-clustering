@@ -17,11 +17,11 @@ jobs:
         # Enumerate branches to which we will attempt to backport
         branch:
           - 10.x
-    if: (github.event.pull_request.merged == true) && (contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true)
+    if: contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout ${{ matrix.branch }}
-        if: github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch
+        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -29,7 +29,7 @@ jobs:
           ref: ${{ matrix.branch }}
 
       - name: Backport ${{ github.event.pull_request.number }} to ${{ matrix.branch }}
-        if: github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch
+        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
         env:
           BACKPORT_BRANCH: backport-${{ matrix.branch }}-${{ github.event.pull_request.number }}
           # For use by GitHub CLI
