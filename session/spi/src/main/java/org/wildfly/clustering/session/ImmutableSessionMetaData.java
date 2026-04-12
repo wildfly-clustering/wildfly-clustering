@@ -55,6 +55,8 @@ public interface ImmutableSessionMetaData extends ExpirationMetaData {
 	 * @return an entry containing the start and end time of the last request to access this session, or empty if session was created during the current request.
 	 */
 	default Optional<Map.Entry<Instant, Instant>> getLastAccess() {
-		return this.getLastAccessTime().isPresent() ? Optional.of(Map.entry(this.getLastAccessStartTime().get(), this.getLastAccessEndTime().get())) : Optional.empty();
+		Instant startTime = this.getLastAccessStartTime().orElse(null);
+		Instant endTime = this.getLastAccessEndTime().orElse(null);
+		return (startTime != null) && (endTime != null) ? Optional.of(Map.entry(startTime, endTime)) : Optional.empty();
 	}
 }
