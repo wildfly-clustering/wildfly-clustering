@@ -11,7 +11,7 @@ import org.wildfly.clustering.cache.batch.Batch;
  * An extendable transactional {@link Batch}.
  * @author Paul Ferraro
  */
-interface TransactionalBatch extends ContextualBatch, Transactional {
+public interface TransactionalBatch extends ContextualBatch, Transactional {
 
 	@Override
 	TransactionalSuspendedBatch suspend();
