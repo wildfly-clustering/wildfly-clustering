@@ -30,20 +30,6 @@ jobs:
           permission-pull-requests: write
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - id: app-user
-        name: Determine user ID of GitHub App installation
-        env:
-          GH_TOKEN: ${{ steps.create-app-token.outputs.token }}
-        # Per https://github.com/actions/create-github-app-token#create-a-git-committer-string-for-an-app-installation
-        run: echo "id=$(gh api "/users/${{ steps.create-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
-
-      - id: git-configure
-        name: Configure git with GitHub app author
-        run: |
-          git config --global user.name "${{ steps.create-app-token.outputs.app-slug }}[bot]"
-          git config --global user.email "${{ steps.app-user.outputs.id }}+${{ steps.create-app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
-          echo "identity=$(git config get user.name) <$(git config get user.email)>" >> "$GITHUB_OUTPUT"
-
       - id: git-checkout
         name: ${{ format('Checkout {0} branch', matrix.branch) }}
         uses: actions/checkout@v6
@@ -52,6 +38,23 @@ jobs:
           # Checkout backport target branch
           ref: ${{ matrix.branch }}
           token: ${{ steps.create-app-token.outputs.token }}
+
+      - run: echo "user.name=$(git config get user.name)"
+      - run: echo "user.email=$(git config get user.email)"
+
+      - id: app-user
+        name: Determine user ID of GitHub App installation
+        env:
+            GH_TOKEN: ${{ steps.create-app-token.outputs.token }}
+          # Per https://github.com/actions/create-github-app-token#create-a-git-committer-string-for-an-app-installation
+        run: echo "id=$(gh api "/users/${{ steps.create-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+
+      - id: git-configure
+        name: Configure git with GitHub app author
+        run: |
+            git config --global user.name "${{ steps.create-app-token.outputs.app-slug }}[bot]"
+            git config --global user.email "${{ steps.app-user.outputs.id }}+${{ steps.create-app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
+            echo "identity=$(git config get user.name) <$(git config get user.email)>" >> "$GITHUB_OUTPUT"
 
       - id: prepare-backport
         name: Prepare backport branch
