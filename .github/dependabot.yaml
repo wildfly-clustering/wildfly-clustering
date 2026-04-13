@@ -1,17 +1,23 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: '/'
     schedule:
-      interval: "daily"
-  - package-ecosystem: "maven"
-    directory: "/"
+      interval: daily
+  - package-ecosystem: maven
+    directory: '/'
     schedule:
-      interval: "daily"
+      interval: daily
     ignore:
       - dependency-name: jakarta.servlet:jakarta.servlet-api
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
       - dependency-name: org.infinispan:infinispan-bom
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
       - dependency-name: org.jgroups:jgroups
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
