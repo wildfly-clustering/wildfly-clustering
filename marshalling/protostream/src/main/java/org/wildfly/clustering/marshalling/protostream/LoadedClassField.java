@@ -13,7 +13,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * A class field that marshals instances of {@link Class} using a {@link ClassLoaderMarshaller}.
  * @author Paul Ferraro
  */
-public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<?>> {
+class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<?>> {
 
 	private final ClassLoaderMarshaller loaderMarshaller;
 	private final int index;
