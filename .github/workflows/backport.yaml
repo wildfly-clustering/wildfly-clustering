@@ -27,8 +27,8 @@ jobs:
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
           owner: ${{ github.repository_owner }}
-          permissions-contents: write
-          permissions-pull-requests: write
+          permission-contents: write
+          permission-pull-requests: write
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: create-app-user
@@ -53,26 +53,24 @@ jobs:
           ref: ${{ matrix.branch }}
           token: ${{ steps.create-app-token.outputs.token }}
 
-      - id: create-backport-branch
-        name: Create backport branch
-        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
-        run: |
-          echo "name=backport-${{ matrix.branch }}-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-
-      - id: prepare-backport-branch
+      - id: prepare-backport
         name: Prepare backport branch
         if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
-        run: |
-          git checkout -b ${{ steps.create-backport-branch.outputs.name }}
-          git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
-          git push --set-upstream origin ${{ steps.create-backport-branch.outputs.name }}
+        run: git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
 
       - id: create-backport-pull-request
         name: Create backport pull request
         if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
-        env:
-          GH_TOKEN: ${{ steps.create-app-token.outputs.token }}
-        run: gh pr create --base ${{ matrix.branch }} --head ${{ steps.create-backport-branch.outputs.name }} --label ${{ vars.BACKPORT_LABEL }} --title "[${{ matrix.branch }}] ${{ github.event.pull_request.title }}" --body "Backport of ${{ github.event.pull_request.url }}"
+        uses: peter-evans/create-pull-request@v8
+        with:
+          base: ${{ matrix.branch }}
+          branch: backport-${{ matrix.branch }}-${{ github.event.pull_request.number }}
+          committer: ${{ steps.create-app-user.outputs.id }}+${{ steps.create-app-token.outputs.app-slug }}[bot]@users.noreply.github.com
+          label: ${{ vars.BACKPORT_LABEL }}
+          title: [${{ matrix.branch }}] ${{ github.event.pull_request.title }}
+          body: Backport of ${{ github.event.pull_request.url }}
+          token: ${{ steps.create-app-token.outputs.token }}
+          sign-commits: true
 
       - id: delete-backport-branch
         name: Delete backport branch
