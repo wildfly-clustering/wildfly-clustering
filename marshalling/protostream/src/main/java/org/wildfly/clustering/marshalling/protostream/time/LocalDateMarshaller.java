@@ -41,7 +41,7 @@ public enum LocalDateMarshaller implements FieldSetMarshaller.Simple<LocalDate> 
 	public LocalDate readFrom(ProtoStreamReader reader, int index, WireType type, LocalDate date) throws IOException {
 		return switch (index) {
 			case POST_EPOCH_DAY -> LocalDate.ofEpochDay(reader.readUInt64());
-			case PRE_EPOCH_DAY -> LocalDate.ofEpochDay(0L - reader.readUInt64());
+			case PRE_EPOCH_DAY -> LocalDate.ofEpochDay(- reader.readUInt64());
 			default -> reader.skipField(type, date);
 		};
 	}
@@ -52,7 +52,7 @@ public enum LocalDateMarshaller implements FieldSetMarshaller.Simple<LocalDate> 
 		if (epochDay > 0) {
 			writer.writeUInt64(POST_EPOCH_DAY, epochDay);
 		} else if (epochDay < 0) {
-			writer.writeUInt64(PRE_EPOCH_DAY, 0L - epochDay);
+			writer.writeUInt64(PRE_EPOCH_DAY, - epochDay);
 		}
 	}
 }

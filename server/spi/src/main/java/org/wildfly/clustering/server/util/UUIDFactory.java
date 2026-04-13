@@ -26,7 +26,7 @@ public enum UUIDFactory implements Supplier<UUID> {
 			data[6] &= 0x0F; /* clear version */
 			data[6] |= 0x40; /* set to version 4 */
 			data[8] &= 0x3F; /* clear variant */
-			data[8] |= 0x80; /* set to IETF variant */
+			data[8] |= (byte) 0x80; /* set to IETF variant */
 			long msb = 0;
 			long lsb = 0;
 			for (int i = 0; i < 8; i++) {

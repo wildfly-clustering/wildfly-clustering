@@ -53,7 +53,7 @@ public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
 	public Duration readFrom(ProtoStreamReader reader, int index, WireType type, Duration duration) throws IOException {
 		return switch (index) {
 			case POSITIVE_SECONDS_INDEX -> withSeconds(duration, reader.readUInt64());
-			case NEGATIVE_SECONDS_INDEX -> duration.withSeconds(0 - reader.readUInt64());
+			case NEGATIVE_SECONDS_INDEX -> duration.withSeconds(- reader.readUInt64());
 			case MILLIS_INDEX -> withMillis(duration, reader.readUInt32());
 			case NANOS_INDEX -> withNanos(duration, reader.readUInt32());
 			default -> reader.skipField(type, duration);
@@ -98,7 +98,7 @@ public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
 		if (seconds > 0) {
 			writer.writeUInt64(POSITIVE_SECONDS_INDEX, seconds);
 		} else if (seconds < 0) {
-			writer.writeUInt64(NEGATIVE_SECONDS_INDEX, 0 - seconds);
+			writer.writeUInt64(NEGATIVE_SECONDS_INDEX, - seconds);
 		}
 		int nanos = duration.getNano();
 		if (nanos > 0) {
