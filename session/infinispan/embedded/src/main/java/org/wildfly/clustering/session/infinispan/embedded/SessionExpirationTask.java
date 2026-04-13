@@ -4,6 +4,7 @@
  */
 package org.wildfly.clustering.session.infinispan.embedded;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 
@@ -66,8 +67,11 @@ public class SessionExpirationTask<SC, MV, AV, LC> implements Predicate<String> 
 							return false;
 						}
 					}
-					LOGGER.log(System.Logger.Level.INFO, "Session {0} does not expire until {1}", id, metaData.getExpirationTime().orElse(null));
-					return false;
+					Instant expirationTime = metaData.getExpirationTime().orElse(null);
+					if (expirationTime != null) {
+						LOGGER.log(System.Logger.Level.DEBUG, "Session {0} does not expire until {1}", id, expirationTime);
+					}
+					return expirationTime == null;
 				}
 				LOGGER.log(System.Logger.Level.TRACE, "Session {0} was not found or is currently in use.", id);
 				return true;
