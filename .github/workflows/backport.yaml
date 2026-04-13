@@ -69,7 +69,7 @@ jobs:
           committer: ${{ steps.git-configure.outputs.identity }}
           labels: ${{ vars.BACKPORT_LABEL }}
           title: ${{ format('[{0}] {1}', matrix.branch, github.event.pull_request.title) }}
-          body: ${{ format('Backport of {0}', github.event.pull_request.url) }}
+          body: ${{ format('Backport of {0}', github.event.pull_request.html_url) }}
           token: ${{ steps.create-app-token.outputs.token }}
           sign-commits: true
 
