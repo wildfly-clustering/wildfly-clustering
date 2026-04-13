@@ -26,7 +26,6 @@ jobs:
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
-          owner: ${{ github.repository_owner }}
           permission-contents: write
           permission-pull-requests: write
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
