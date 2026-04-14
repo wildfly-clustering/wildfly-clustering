@@ -7,7 +7,10 @@ package org.wildfly.clustering.session.infinispan.embedded;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -20,7 +23,6 @@ import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.cache.SessionFactory;
 import org.wildfly.clustering.session.cache.attributes.SessionAttributesFactory;
 import org.wildfly.clustering.session.cache.metadata.SessionMetaDataFactory;
-
 
 /**
  * Unit test for {@link SessionExpirationTask}.
@@ -38,37 +40,48 @@ public class SessionExpirationTaskTestCase {
 		Map<String, Object> expiredAttributes = mock(Map.class);
 		ImmutableSessionMetaData validMetaData = mock(ImmutableSessionMetaData.class);
 		ImmutableSessionMetaData expiredMetaData = mock(ImmutableSessionMetaData.class);
+		ImmutableSessionMetaData immortalMetaData = mock(ImmutableSessionMetaData.class);
 		ImmutableSession expiredSession = mock(ImmutableSession.class);
 
 		String missingSessionId = "missing";
 		String expiredSessionId = "expired";
 		String validSessionId = "valid";
+		String immortalSessionId = "immortal";
 
 		UUID expiredMetaDataValue = UUID.randomUUID();
 		UUID expiredAttributesValue = UUID.randomUUID();
 		UUID validMetaDataValue = UUID.randomUUID();
+		UUID immortalMetaDataValue = UUID.randomUUID();
 
 		Predicate<String> task = new SessionExpirationTask<>(sessionFactory, batchFactory, listener);
 
-		when(sessionFactory.getSessionMetaDataFactory()).thenReturn(metaDataFactory);
-		when(sessionFactory.getSessionAttributesFactory()).thenReturn(attributesFactory);
-		when(metaDataFactory.tryValue(missingSessionId)).thenReturn(null);
-		when(metaDataFactory.tryValue(expiredSessionId)).thenReturn(expiredMetaDataValue);
-		when(metaDataFactory.tryValue(validSessionId)).thenReturn(validMetaDataValue);
+		doReturn(metaDataFactory).when(sessionFactory).getSessionMetaDataFactory();
+		doReturn(attributesFactory).when(sessionFactory).getSessionAttributesFactory();
 
-		when(metaDataFactory.createImmutableSessionMetaData(expiredSessionId, expiredMetaDataValue)).thenReturn(expiredMetaData);
-		when(metaDataFactory.createImmutableSessionMetaData(validSessionId, validMetaDataValue)).thenReturn(validMetaData);
+		doReturn(null).when(metaDataFactory).tryValue(missingSessionId);
+		doReturn(expiredMetaDataValue).when(metaDataFactory).tryValue(expiredSessionId);
+		doReturn(validMetaDataValue).when(metaDataFactory).tryValue(validSessionId);
+		doReturn(immortalMetaDataValue).when(metaDataFactory).tryValue(immortalSessionId);
 
-		when(expiredMetaData.isExpired()).thenReturn(true);
-		when(validMetaData.isExpired()).thenReturn(false);
+		doReturn(expiredMetaData).when(metaDataFactory).createImmutableSessionMetaData(expiredSessionId, expiredMetaDataValue);
+		doReturn(validMetaData).when(metaDataFactory).createImmutableSessionMetaData(validSessionId, validMetaDataValue);
+		doReturn(immortalMetaData).when(metaDataFactory).createImmutableSessionMetaData(immortalSessionId, immortalMetaDataValue);
 
-		when(attributesFactory.findValue(expiredSessionId)).thenReturn(expiredAttributesValue);
-		when(attributesFactory.createImmutableSessionAttributes(expiredSessionId, expiredAttributesValue)).thenReturn(expiredAttributes);
-		when(sessionFactory.createImmutableSession(same(expiredSessionId), same(expiredMetaData), same(expiredAttributes))).thenReturn(expiredSession);
+		doReturn(true).when(expiredMetaData).isExpired();
+		doReturn(false).when(validMetaData).isExpired();
+		doReturn(false).when(immortalMetaData).isExpired();
+
+		doReturn(Optional.of(Instant.now().plus(Duration.ofMinutes(1)))).when(validMetaData).getExpirationTime();
+		doReturn(Optional.empty()).when(immortalMetaData).getExpirationTime();
+
+		doReturn(expiredAttributesValue).when(attributesFactory).findValue(expiredSessionId);
+		doReturn(expiredAttributes).when(attributesFactory).createImmutableSessionAttributes(expiredSessionId, expiredAttributesValue);
+		doReturn(expiredSession).when(sessionFactory).createImmutableSession(same(expiredSessionId), same(expiredMetaData), same(expiredAttributes));
 
 		assertThat(task.test(missingSessionId)).isTrue();
 		assertThat(task.test(expiredSessionId)).isTrue();
 		assertThat(task.test(validSessionId)).isFalse();
+		assertThat(task.test(immortalSessionId)).isTrue();
 
 		verify(sessionFactory).remove(expiredSessionId);
 		verify(sessionFactory, never()).remove(missingSessionId);
