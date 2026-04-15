@@ -43,7 +43,7 @@ public class EmbeddedCacheProperties implements CacheProperties {
 		this.lockOnRead = this.lockOnWrite && (configuration.locking().lockIsolationLevel() == IsolationLevel.REPEATABLE_READ);
 		boolean distributed = configuration.clustering().cacheMode().needsStateTransfer();
 		boolean hasStore = configuration.persistence().usingStores();
-		this.marshalling = distributed || hasStore || configuration.memory().isOffHeap();;
+		this.marshalling = distributed || hasStore || configuration.memory().isOffHeap();
 		this.distributed = distributed || (hasStore && configuration.persistence().stores().stream().anyMatch(StoreConfiguration::shared));
 		this.persistent = distributed || (hasStore && !configuration.persistence().passivation()) || configuration.memory().isOffHeap();
 	}
