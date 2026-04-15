@@ -23,7 +23,7 @@ public interface CacheProperties {
 	boolean isLockOnWrite();
 
 	/**
-	 * Indicates whether the mode of this cache requires marshalling of cache values
+	 * Indicates whether this cache requires marshalling of cache values
 	 * @return true, if cache values need to be marshallable, false otherwise.
 	 */
 	boolean isMarshalling();
@@ -39,4 +39,11 @@ public interface CacheProperties {
 	 * @return true, if this cache is transactional, false otherwise.
 	 */
 	boolean isTransactional();
+
+	/**
+	 * Indicates whether the entries of this cache are accessible to another JVM.
+	 * Implies that {@link #isMarshalling()} = {@code true}.
+	 * @return true, if the entries of this cache are accessible to another JVM, false otherwise.
+	 */
+	boolean isDistributed();
 }

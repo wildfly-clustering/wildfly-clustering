@@ -23,6 +23,12 @@ import org.wildfly.clustering.server.util.Reference.Reader;
 public interface SessionManager<C> extends Manager<String> {
 
 	/**
+	 * Indicates whether sessions created by this manager are available to another JVM.
+	 * @return true, if sessions created by this manager are available to another JVM, false otherwise.
+	 */
+	boolean isDistributed();
+
+	/**
 	 * Creates a session using the specified identifier.
 	 * Sessions returned by this method must be closed via {@link Session#close()}.
 	 * This method is intended to be invoked within the context of a batch.
