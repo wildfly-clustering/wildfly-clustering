@@ -8,6 +8,7 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.IsolationLevel;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.transaction.LockingMode;
 import org.wildfly.clustering.cache.CacheProperties;
 
@@ -22,6 +23,7 @@ public class EmbeddedCacheProperties implements CacheProperties {
 	private final boolean marshalling;
 	private final boolean persistent;
 	private final boolean transactional;
+	private final boolean distributed;
 
 	/**
 	 * Creates an encapsulation of the properties of the specified cache.
@@ -39,10 +41,11 @@ public class EmbeddedCacheProperties implements CacheProperties {
 		this.transactional = configuration.transaction().transactionMode().isTransactional();
 		this.lockOnWrite = this.transactional && (configuration.transaction().lockingMode() == LockingMode.PESSIMISTIC);
 		this.lockOnRead = this.lockOnWrite && (configuration.locking().lockIsolationLevel() == IsolationLevel.REPEATABLE_READ);
-		boolean clustered = configuration.clustering().cacheMode().needsStateTransfer();
+		boolean distributed = configuration.clustering().cacheMode().needsStateTransfer();
 		boolean hasStore = configuration.persistence().usingStores();
-		this.marshalling = clustered || hasStore;
-		this.persistent = clustered || (hasStore && !configuration.persistence().passivation()) || configuration.memory().isOffHeap();
+		this.marshalling = distributed || hasStore || configuration.memory().isOffHeap();;
+		this.distributed = distributed || (hasStore && configuration.persistence().stores().stream().anyMatch(StoreConfiguration::shared));
+		this.persistent = distributed || (hasStore && !configuration.persistence().passivation()) || configuration.memory().isOffHeap();
 	}
 
 	@Override
@@ -68,5 +71,10 @@ public class EmbeddedCacheProperties implements CacheProperties {
 	@Override
 	public boolean isMarshalling() {
 		return this.marshalling;
+	}
+
+	@Override
+	public boolean isDistributed() {
+		return this.distributed;
 	}
 }

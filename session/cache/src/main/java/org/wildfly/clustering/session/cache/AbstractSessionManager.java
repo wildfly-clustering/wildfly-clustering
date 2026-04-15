@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.cache.CacheConfiguration;
+import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.expiration.Expiration;
@@ -43,6 +44,7 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 	private final CC context;
 	private final Supplier<Batch> batchFactory;
 	private final UnaryOperator<Session<SC>> wrapper;
+	private final CacheProperties properties;
 
 	/**
 	 * Configuration of a session manager.
@@ -87,7 +89,8 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 	protected AbstractSessionManager(Configuration<CC, MV, AV, SC> configuration) {
 		this.identifierFactory = configuration.getIdentifierFactory();
 		this.context = configuration.getContext();
-		this.batchFactory = configuration.getCacheConfiguration().getBatchFactory();
+		CacheConfiguration cacheConfiguration = configuration.getCacheConfiguration();
+		this.batchFactory = cacheConfiguration.getBatchFactory();
 		this.expiration = configuration;
 		this.expiredSessionHandler = configuration.getExpiredSessionHandler();
 		this.sessionFactory = configuration.getSessionFactory();
@@ -98,6 +101,7 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 				return new AttachedSession<>(session, sessionCloseTask);
 			}
 		};
+		this.properties = cacheConfiguration.getCacheProperties();
 	}
 
 	@Override
@@ -113,6 +117,11 @@ public abstract class AbstractSessionManager<CC, MV, AV, SC> implements SessionM
 	@Override
 	public void stop() {
 		this.identifierFactory.stop();
+	}
+
+	@Override
+	public boolean isDistributed() {
+		return this.properties.isDistributed();
 	}
 
 	@Override
