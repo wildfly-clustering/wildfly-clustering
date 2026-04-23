@@ -17,7 +17,7 @@ jobs:
         # Enumerate branches to which we will attempt to backport
         branch:
           - 10.x
-    if: (github.event.pull_request.state == closed) && contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
+    if: (github.event.pull_request.state == 'closed') && contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
     runs-on: ubuntu-latest
     steps:
       - id: create-app-token
