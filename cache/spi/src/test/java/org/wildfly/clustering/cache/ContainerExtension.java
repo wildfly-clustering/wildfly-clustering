@@ -7,6 +7,8 @@ package org.wildfly.clustering.cache;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.containers.Container;
 import org.testcontainers.lifecycle.Startable;
+import org.wildfly.clustering.function.Consumer;
 
 /**
  * Generic JUnit extension for managing the lifecycle of a container.
@@ -24,7 +27,7 @@ public class ContainerExtension<C extends Container<C> & Startable> implements A
 	protected static final System.Logger LOGGER = System.getLogger(ContainerExtension.class.getName());
 
 	private final Function<ExtensionContext, C> factory;
-	private C container;
+	private final AtomicReference<C> container = new AtomicReference<>();
 
 	public ContainerExtension(Function<ExtensionContext, C> factory) {
 		this.factory = factory;
@@ -32,25 +35,28 @@ public class ContainerExtension<C extends Container<C> & Startable> implements A
 
 	@Override
 	public C getContainer() {
-		return this.container;
+		return this.container.get();
 	}
 
 	@Override
 	public void beforeAll(ExtensionContext context) {
-		this.container = this.factory.apply(context);
-		LOGGER.log(System.Logger.Level.INFO, "Starting {0}", this.container.getDockerImageName());
+		C container = this.factory.apply(context);
+		Optional.ofNullable(this.container.getAndSet(container)).ifPresent(Consumer.close());
+		LOGGER.log(System.Logger.Level.INFO, "Starting {0}", container.getDockerImageName());
 		Instant start = Instant.now();
-		this.container.start();
-		LOGGER.log(System.Logger.Level.INFO, "Started {0} in {1}", this.container.getDockerImageName(), Duration.between(start, Instant.now()));
+		container.start();
+		LOGGER.log(System.Logger.Level.INFO, "Started {0} in {1}", container.getDockerImageName(), Duration.between(start, Instant.now()));
 	}
 
 	@Override
 	public void afterAll(ExtensionContext context) {
-		if (this.container != null) {
-			LOGGER.log(System.Logger.Level.INFO, "Stopping {0}", this.container.getDockerImageName());
-			Instant start = Instant.now();
-			this.container.stop();
-			LOGGER.log(System.Logger.Level.INFO, "Stopped {0} in {1}", this.container.getDockerImageName(), Duration.between(start, Instant.now()));
+		try (C container = this.container.getAndSet(null)) {
+			if (container != null) {
+				LOGGER.log(System.Logger.Level.INFO, "Stopping {0}", container.getDockerImageName());
+				Instant start = Instant.now();
+				container.stop();
+				LOGGER.log(System.Logger.Level.INFO, "Stopped {0} in {1}", container.getDockerImageName(), Duration.between(start, Instant.now()));
+			}
 		}
 	}
 }
