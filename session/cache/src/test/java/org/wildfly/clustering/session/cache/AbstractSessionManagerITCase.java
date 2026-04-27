@@ -17,14 +17,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import org.wildfly.clustering.context.Context;
@@ -103,7 +103,7 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 		}
 	}
 
-	protected void concurrent(P parameters) throws InterruptedException, ExecutionException {
+	protected void concurrent(P parameters) throws InterruptedException {
 		int threads = 10;
 		int requests = 100;
 		BlockingQueue<ImmutableSession> expiredSessions = new LinkedBlockingQueue<>();
@@ -136,22 +136,38 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 							}
 						});
 					}
-					List<Future<?>> futures = new ArrayList<>(threads);
+					AtomicInteger incomplete = new AtomicInteger(threads);
 					ExecutorService executor = Executors.newFixedThreadPool(threads, new DefaultThreadFactory(new ThreadGroup(this.threadGroupName), Thread.currentThread().getContextClassLoader()));
 					try {
+						CompletableFuture<Void> future = new CompletableFuture<>();
+						BiConsumer<Void, Throwable> handler = (ignore, exception) -> {
+							if (exception != null) {
+								future.completeExceptionally(exception);
+							} else if (incomplete.decrementAndGet() == 0) {
+								future.complete(null);
+							}
+						};
 						Instant start = Instant.now();
 						for (Runnable task : tasks) {
-							futures.add(executor.submit(task));
+							CompletableFuture.runAsync(task, executor).whenComplete(handler);
 						}
-						for (Future<?> future : futures) {
-							future.get();
-						}
+						future.join();
 						Instant stop = Instant.now();
 						Duration concurrentDuration = Duration.between(start, stop);
 						this.logger.log(System.Logger.Level.INFO, "{0} concurrent requests completed in {1}", threads * requests, concurrentDuration);
 
+						long gracePeriodNanos = parameters.getFailoverGracePeriod().toNanos();
+
+						if (gracePeriodNanos > 0) {
+							TimeUnit.NANOSECONDS.sleep(gracePeriodNanos);
+						}
+
 						// Verify integrity of value on other manager
 						this.requestSession(manager2, sessionId, session -> assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests));
+
+						if (gracePeriodNanos > 0) {
+							TimeUnit.NANOSECONDS.sleep(gracePeriodNanos);
+						}
 
 						start = Instant.now();
 						// Trigger sequences of the same number of requests for the same session
@@ -167,6 +183,10 @@ public abstract class AbstractSessionManagerITCase<P extends SessionManagerParam
 						stop = Instant.now();
 						Duration serialDuration = Duration.between(start, stop);
 						this.logger.log(System.Logger.Level.INFO, "{0} serial requests completed in {1}", threads * requests, serialDuration);
+
+						if (gracePeriodNanos > 0) {
+							TimeUnit.NANOSECONDS.sleep(gracePeriodNanos);
+						}
 
 						// Verify integrity of value on other manager
 						this.requestSession(manager2, sessionId, session -> assertThat((AtomicInteger) session.getAttributes().get("value")).hasValue(threads * requests * 2));

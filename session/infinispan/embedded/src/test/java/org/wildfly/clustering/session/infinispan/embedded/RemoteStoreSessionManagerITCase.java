@@ -9,7 +9,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -139,7 +138,7 @@ public class RemoteStoreSessionManagerITCase extends AbstractSessionManagerITCas
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanInvalidationSessionManagerArgumentsProvider.class)
-	public void concurrent(InfinispanSessionManagerParameters parameters) throws InterruptedException, ExecutionException {
+	public void concurrent(InfinispanSessionManagerParameters parameters) throws InterruptedException {
 		super.concurrent(parameters);
 	}
 
