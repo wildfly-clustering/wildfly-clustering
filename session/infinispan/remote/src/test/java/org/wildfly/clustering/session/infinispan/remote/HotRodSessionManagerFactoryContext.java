@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.session.infinispan.remote;
 
-import java.util.OptionalInt;
-
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -24,7 +22,6 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.server.eviction.EvictionConfiguration;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
@@ -49,7 +46,6 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 		Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
 
 		Configuration configuration = container.getConfiguration();
-		OptionalInt sizeThreshold = parameters.getNearCacheMode().enabled() ? OptionalInt.of(Short.MAX_VALUE) : OptionalInt.empty();
 		// Use local cache since our remote cluster has a single member
 		// Reduce expiration interval to speed up expiration verification
 		Consumer<RemoteCacheConfigurationBuilder> configurator = builder -> builder.configuration("""
@@ -75,13 +71,6 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 """)
 				.forceReturnValues(false)
 				.marshaller(marshaller)
-				.nearCacheMode(parameters.getNearCacheMode())
-				.nearCacheFactory(parameters.getNearCacheMode().invalidated() ? new SessionManagerNearCacheFactory(new EvictionConfiguration() {
-					@Override
-					public OptionalInt getSizeThreshold() {
-						return sizeThreshold;
-					}
-				}) : null)
 				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
 				.transactionMode(parameters.getTransactionMode())
 				;
@@ -89,11 +78,6 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 		configuration.addRemoteCache(deploymentName, configurator);
 		this.accept(() -> configuration.removeRemoteCache(deploymentName));
 		SessionManagerFactoryConfiguration<SC> managerFactoryConfiguration = new SessionManagerFactoryConfiguration<>() {
-			@Override
-			public OptionalInt getSizeThreshold() {
-				return sizeThreshold;
-			}
-
 			@Override
 			public ByteBufferMarshaller getMarshaller() {
 				return parameters.getSessionAttributeMarshaller();

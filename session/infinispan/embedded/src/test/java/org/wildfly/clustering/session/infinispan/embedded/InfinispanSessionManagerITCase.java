@@ -10,7 +10,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.h2.jdbcx.JdbcDataSource;
@@ -143,7 +142,7 @@ public class InfinispanSessionManagerITCase extends AbstractSessionManagerITCase
 	@Override
 	@ParameterizedTest
 	@ArgumentsSource(ConcurrentInfinispanSessionManagerArgumentsProvider.class)
-	public void concurrent(InfinispanSessionManagerParameters parameters) throws InterruptedException, ExecutionException {
+	public void concurrent(InfinispanSessionManagerParameters parameters) throws InterruptedException {
 		super.concurrent(parameters);
 	}
 

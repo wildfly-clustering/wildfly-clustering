@@ -7,7 +7,6 @@ package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -39,7 +38,6 @@ import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
 import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.impl.ClientStatistics;
 import org.infinispan.client.hotrod.impl.InternalRemoteCache;
@@ -85,6 +83,11 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 	}
 
 	@Override
+	public Marshaller getMarshaller() {
+		return this.cache.getMarshaller();
+	}
+
+	@Override
 	public <T> Query<T> query(String query) {
 		return this.createQueryFactory().create(query);
 	}
@@ -96,20 +99,7 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 
 	@SuppressWarnings("removal")
 	private RemoteQueryFactory createQueryFactory() {
-		RemoteCacheContainer container = this.getRemoteCacheContainer();
-		// Prefer RemoteCache marshaller
-		Marshaller marshaller = Optional.ofNullable(container.getConfiguration().remoteCaches().get(this.getName())).map(RemoteCacheConfiguration::marshaller).orElse(container.getMarshaller());
-		return new RemoteQueryFactory(new RemoteCacheDecorator<>(this.cache, this.decorator) {
-			@Override
-			public RemoteCacheContainer getRemoteCacheContainer() {
-				return new RemoteCacheContainerDecorator(container) {
-					@Override
-					public Marshaller getMarshaller() {
-						return marshaller;
-					}
-				};
-			}
-		});
+		return new RemoteQueryFactory(new RemoteCacheDecorator<>(this.cache, this.decorator));
 	}
 
 	@Override

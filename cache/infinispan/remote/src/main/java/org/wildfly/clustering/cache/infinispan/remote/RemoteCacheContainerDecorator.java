@@ -9,6 +9,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.impl.MarshallerRegistry;
 import org.infinispan.client.hotrod.impl.protocol.HotRodConstants;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.cache.infinispan.BasicCacheContainerDecorator;
@@ -64,6 +65,7 @@ public class RemoteCacheContainerDecorator extends BasicCacheContainerDecorator 
 		return this.container.getCurrentClusterName();
 	}
 
+	@Deprecated
 	@Override
 	public Marshaller getMarshaller() {
 		return this.container.getMarshaller();
@@ -72,6 +74,11 @@ public class RemoteCacheContainerDecorator extends BasicCacheContainerDecorator 
 	@Override
 	public boolean isTransactional(String cacheName) {
 		return this.container.isTransactional(cacheName);
+	}
+
+	@Override
+	public MarshallerRegistry getMarshallerRegistry() {
+		return this.container.getMarshallerRegistry();
 	}
 
 	@Override

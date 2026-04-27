@@ -21,9 +21,11 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.wildfly.clustering.arquillian.Deployment;
@@ -150,14 +152,18 @@ public class SessionManagementTester implements Tester {
 	}
 
 	private void failoverGracePeriod() {
-		this.configuration.getFailoverGracePeriod().ifPresent(duration -> {
+		long nanos = this.configuration.getFailoverGracePeriod().toNanos();
+		if (nanos > 0) {
 			// Grace time between fail-over requests
 			try {
-				Thread.sleep(duration.toMillis());
+				TimeUnit.NANOSECONDS.sleep(nanos);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
+				CancellationException exception = new CancellationException();
+				exception.initCause(e);
+				throw exception;
 			}
-		});
+		}
 	}
 
 	private static CompletableFuture<HttpResponse<Void>> request(HttpClient client, URI uri, HttpMethod method) {
