@@ -91,10 +91,7 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 		builder.forceReturnValues(false)
 				.nearCacheMode(NearCacheMode.DISABLED)
 				.transactionMode(transactional ? TransactionMode.NON_XA : TransactionMode.NONE)
-				;
-		if (transactional) {
-			builder.transactionManagerLookup(RemoteTransactionManagerLookup.getInstance());
-		}
+				.transactionManagerLookup(RemoteTransactionManagerLookup.getInstance());
 		String template = this.attributes.attribute(TEMPLATE).get();
 		if (template != null) {
 			builder.templateName(template);
