@@ -34,6 +34,7 @@ import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
@@ -68,18 +69,35 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 	private static final Duration DEFAULT_LIFESPAN = Duration.ZERO;
 	private static final Duration DEFAULT_MAX_IDLE = Duration.ZERO;
 
+	private final RemoteCacheContainer container;
 	private final InternalRemoteCache<K, V> cache;
 	private final UnaryOperator<InternalRemoteCache<K, V>> decorator;
 
+	RemoteCacheDecorator(RemoteCacheContainer container, RemoteCache<K, V> cache) {
+		this(container, (InternalRemoteCache<K, V>) cache, new UnaryOperator<>() {
+			@Override
+			public InternalRemoteCache<K, V> apply(InternalRemoteCache<K, V> decorated) {
+				return new RemoteCacheDecorator<>(container, decorated);
+			}
+		});
+	}
+
 	/**
 	 * Creates a remote cache decorator.
+	 * @param container the container of the decorated cache
 	 * @param cache the decorated remote cache
 	 * @param decorator the cache decorator.
 	 */
-	protected RemoteCacheDecorator(InternalRemoteCache<K, V> cache, UnaryOperator<InternalRemoteCache<K, V>> decorator) {
-		super(cache, Duration.ofMillis(Math.max(cache.getRemoteCacheContainer().getConfiguration().socketTimeout(), cache.getRemoteCacheContainer().getConfiguration().transactionTimeout())));
+	protected RemoteCacheDecorator(RemoteCacheContainer container, InternalRemoteCache<K, V> cache, UnaryOperator<InternalRemoteCache<K, V>> decorator) {
+		super(cache, Duration.ofMillis(Math.max(container.getConfiguration().socketTimeout(), container.getConfiguration().transactionTimeout())));
+		this.container = container;
 		this.cache = cache;
 		this.decorator = decorator;
+	}
+
+	@Override
+	public RemoteCacheContainer getRemoteCacheContainer() {
+		return this.container;
 	}
 
 	@Override
@@ -99,7 +117,7 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 
 	@SuppressWarnings("removal")
 	private RemoteQueryFactory createQueryFactory() {
-		return new RemoteQueryFactory(new RemoteCacheDecorator<>(this.cache, this.decorator));
+		return new RemoteQueryFactory(this);
 	}
 
 	@Override
@@ -190,11 +208,6 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 	@Override
 	public String getProtocolVersion() {
 		return this.cache.getProtocolVersion();
-	}
-
-	@Override
-	public RemoteCacheContainer getRemoteCacheContainer() {
-		return this.cache.getRemoteCacheContainer();
 	}
 
 	@SuppressWarnings("removal")

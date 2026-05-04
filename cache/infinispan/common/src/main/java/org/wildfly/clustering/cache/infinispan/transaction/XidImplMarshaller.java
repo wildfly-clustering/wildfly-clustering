@@ -3,28 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.cache.infinispan.remote.transaction;
+package org.wildfly.clustering.cache.infinispan.transaction;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.infinispan.client.hotrod.transaction.manager.RemoteXid;
+import org.infinispan.commons.tx.XidImpl;
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * ProtoStream marshaller for a {@link RemoteXid}.
+ * ProtoStream marshaller for a {@link XidImpl}.
  * @author Paul Ferraro
  */
-public enum RemoteXidMarshaller implements ProtoStreamMarshaller<RemoteXid> {
+public enum XidImplMarshaller implements ProtoStreamMarshaller<XidImpl> {
 	/** Singleton instance */
 	INSTANCE;
 
@@ -32,31 +27,16 @@ public enum RemoteXidMarshaller implements ProtoStreamMarshaller<RemoteXid> {
 	private static final int GLOBAL_INDEX = 2;
 	private static final int BRANCH_INDEX = 3;
 
+	// Format identifier for RemoteXid
 	private static final int DEFAULT_FORMAT_ID = 0x48525458;
 
-	@SuppressWarnings("removal")
-	private static final MethodHandle CONSTRUCTOR = (System.getSecurityManager() != null) ? AccessController.doPrivileged(new PrivilegedAction<>() {
-		@Override
-		public MethodHandle run() {
-			return findConstructor();
-		}
-	}) : findConstructor();
-
-	private static MethodHandle findConstructor() {
-		try {
-			return MethodHandles.privateLookupIn(RemoteXid.class, MethodHandles.lookup()).findConstructor(RemoteXid.class, MethodType.methodType(void.class, int.class, byte[].class, byte[].class));
-		} catch (NoSuchMethodException | IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		}
+	@Override
+	public Class<? extends XidImpl> getJavaClass() {
+		return XidImpl.class;
 	}
 
 	@Override
-	public Class<? extends RemoteXid> getJavaClass() {
-		return RemoteXid.class;
-	}
-
-	@Override
-	public RemoteXid readFrom(ProtoStreamReader reader) throws IOException {
+	public XidImpl readFrom(ProtoStreamReader reader) throws IOException {
 		int formatId = DEFAULT_FORMAT_ID;
 		byte[] globalId = new byte[0];
 		byte[] branchId = null;
@@ -69,17 +49,11 @@ public enum RemoteXidMarshaller implements ProtoStreamMarshaller<RemoteXid> {
 				default -> reader.skipField(tag);
 			}
 		}
-		try {
-			return (RemoteXid) CONSTRUCTOR.invokeExact(formatId, globalId, Optional.ofNullable(branchId).orElse(globalId));
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new IllegalStateException(e);
-		}
+		return XidImpl.create(formatId, globalId, Optional.ofNullable(branchId).orElse(globalId));
 	}
 
 	@Override
-	public void writeTo(ProtoStreamWriter writer, RemoteXid id) throws IOException {
+	public void writeTo(ProtoStreamWriter writer, XidImpl id) throws IOException {
 		int formatId = id.getFormatId();
 		if (formatId != DEFAULT_FORMAT_ID) {
 			writer.writeSFixed32(FORMAT_INDEX, formatId);

@@ -50,6 +50,7 @@ import org.wildfly.clustering.session.cache.metadata.fine.SessionMetaDataEntry;
 public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<SessionMetaDataEntry<C>>, BiFunction<SessionCreationMetaDataEntry<C>, SessionAccessMetaDataEntry, SessionMetaDataEntry<C>> {
 
 	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<C>> readCreationMetaDataCache;
+	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<C>> tryReadCreationMetaDataCache;
 	private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<C>> writeCreationMetaDataCache;
 	private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaDataEntry> readAccessMetaDataCache;
 	private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaDataEntry> writeAccessMetaDataCache;
@@ -62,6 +63,7 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 	 */
 	public HotRodSessionMetaDataFactory(RemoteCacheConfiguration configuration) {
 		this.readCreationMetaDataCache = configuration.getReadForUpdateCache();
+		this.tryReadCreationMetaDataCache = configuration.getTryReadForUpdateCache();
 		this.writeCreationMetaDataCache = configuration.getIgnoreReturnCache();
 		this.readAccessMetaDataCache = configuration.getCache();
 		this.writeAccessMetaDataCache = configuration.getIgnoreReturnCache();
@@ -83,9 +85,18 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 
 	@Override
 	public CompletionStage<SessionMetaDataEntry<C>> findValueAsync(String id) {
+		return this.getValueAsync(this.readCreationMetaDataCache, id);
+	}
+
+	@Override
+	public CompletionStage<SessionMetaDataEntry<C>> tryValueAsync(String id) {
+		return this.getValueAsync(this.tryReadCreationMetaDataCache, id);
+	}
+
+	private CompletionStage<SessionMetaDataEntry<C>> getValueAsync(RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<C>> creationMetaDataCache, String id) {
 		SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
 		SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
-		return this.readCreationMetaDataCache.getAsync(creationMetaDataKey).thenCompose(creationMetaDataEntry -> (creationMetaDataEntry != null) ? this.readAccessMetaDataCache.getAsync(accessMetaDataKey).thenApply(accessMetaDataEntry -> this.apply(creationMetaDataEntry, accessMetaDataEntry)) : CompletableFutures.completedNull());
+		return creationMetaDataCache.getAsync(creationMetaDataKey).thenCompose(creationMetaDataEntry -> (creationMetaDataEntry != null) ? this.readAccessMetaDataCache.getAsync(accessMetaDataKey).thenApply(accessMetaDataEntry -> this.apply(creationMetaDataEntry, accessMetaDataEntry)) : CompletableFutures.completedNull());
 	}
 
 	@Override

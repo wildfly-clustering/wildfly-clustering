@@ -4,10 +4,10 @@ package org.wildfly.clustering.cache.infinispan.remote.transaction;
 
 import "org.wildfly.clustering.marshalling.protostream.proto";
 
-// IDs: 165-168
+// IDs: 169-169
 
 /**
- * @TypeId(165)
+ * @TypeId(169)
  */
 message TransactionKey {
 	org.wildfly.clustering.marshalling.protostream.Any	key	= 1;

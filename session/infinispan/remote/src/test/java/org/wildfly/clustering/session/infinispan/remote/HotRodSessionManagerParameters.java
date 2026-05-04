@@ -20,6 +20,6 @@ public interface HotRodSessionManagerParameters extends SessionManagerParameters
 
 	@Override
 	default Duration getFailoverGracePeriod() {
-		return (this.getTransactionMode() == TransactionMode.NONE) ? Duration.ofSeconds(1) : Duration.ZERO;
+		return (this.getTransactionMode() == TransactionMode.NONE) ? Duration.ofSeconds(1) : SessionManagerParameters.super.getFailoverGracePeriod();
 	}
 }

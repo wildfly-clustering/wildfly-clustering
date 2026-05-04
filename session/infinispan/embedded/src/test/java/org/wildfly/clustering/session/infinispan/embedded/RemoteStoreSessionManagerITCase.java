@@ -40,7 +40,7 @@ public class RemoteStoreSessionManagerITCase extends AbstractSessionManagerITCas
 
 	static class InfinispanInvalidationSessionManagerArgumentsProvider implements ArgumentsProvider {
 		Class<? extends MarshallingTesterFactory> marshallerClass = MarshallingTesterFactory.class;
-		Set<TransactionMode> transactionModes = EnumSet.of(TransactionMode.NON_TRANSACTIONAL);
+		Set<TransactionMode> transactionModes = EnumSet.allOf(TransactionMode.class);
 		Set<SessionAttributePersistenceStrategy> strategies = EnumSet.allOf(SessionAttributePersistenceStrategy.class);
 
 		@Override
@@ -92,6 +92,9 @@ public class RemoteStoreSessionManagerITCase extends AbstractSessionManagerITCas
 		"expiration" : {
 			"interval" : 0
 		},
+		"locking" : {
+			"isolation" : "REPEATABLE_READ"
+		},
 		"transaction" : {
 			"mode" : "NON_XA",
 			"locking" : "PESSIMISTIC"
@@ -101,8 +104,6 @@ public class RemoteStoreSessionManagerITCase extends AbstractSessionManagerITCas
 """)
 										.segmented(true)
 										.shared(true)
-										// transactional(true) Currently fails with: java.lang.UnsupportedOperationException: Decorated caches should not delegate wrapping operations
-										// See https://github.com/infinispan/infinispan/issues/14926
 										.transactional(false)
 										;
 								return container::close;

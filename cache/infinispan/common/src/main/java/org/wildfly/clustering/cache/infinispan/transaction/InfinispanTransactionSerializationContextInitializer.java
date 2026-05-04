@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.cache.infinispan.remote.transaction;
+package org.wildfly.clustering.cache.infinispan.transaction;
 
-import org.infinispan.client.hotrod.transaction.manager.RemoteXid;
+import org.infinispan.commons.tx.XidImpl;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -16,17 +16,17 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
-public class TransactionManagerSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class InfinispanTransactionSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	/**
 	 * Creates a serialization context initializer.
 	 */
-	public TransactionManagerSerializationContextInitializer() {
-		super(RemoteXid.class.getPackage());
+	public InfinispanTransactionSerializationContextInitializer() {
+		super(XidImpl.class.getPackage());
 	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(RemoteXidMarshaller.INSTANCE);
+		context.registerMarshaller(XidImplMarshaller.INSTANCE);
 	}
 }

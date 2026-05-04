@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.cache.infinispan.batch;
+package org.wildfly.clustering.cache.infinispan.transaction;
 
 import jakarta.transaction.InvalidTransactionException;
 import jakarta.transaction.SystemException;

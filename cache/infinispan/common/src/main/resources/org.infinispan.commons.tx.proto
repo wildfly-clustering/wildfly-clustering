@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package org.infinispan.commons.tx;
+
+// IDs: 165-168
+
+/**
+ * @TypeId(165)
+ */
+message XidImpl {
+	sint32	formatId	= 1;
+	bytes	globalId	= 2;
+	bytes	branchId	= 3;
+}

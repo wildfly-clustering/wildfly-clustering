@@ -11,7 +11,6 @@ import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup;
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.configuration.ConfigurationFor;
 import org.infinispan.commons.configuration.attributes.AttributeDefinition;
@@ -35,6 +34,7 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 	static final AttributeDefinition<String> CONFIGURATION = AttributeDefinition.builder("configuration", """
 {
 	"distributed-cache": {
+		"mode" : "SYNC",
 		"encoding" : {
 			"key" : {
 				"media-type" : "application/octet-stream"
@@ -43,7 +43,9 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 				"media-type" : "application/octet-stream"
 			}
 		},
-		"mode" : "SYNC",
+		"locking" : {
+			"isolation" : "REPEATABLE_READ"
+		},
 		"transaction" : {
 			"mode" : "NON_XA",
 			"locking" : "PESSIMISTIC"
@@ -87,11 +89,10 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 
 	@Override
 	public void accept(RemoteCacheConfigurationBuilder builder) {
-		boolean transactional = this.attributes.attribute(TRANSACTIONAL).get();
 		builder.forceReturnValues(false)
 				.nearCacheMode(NearCacheMode.DISABLED)
-				.transactionMode(transactional ? TransactionMode.NON_XA : TransactionMode.NONE)
-				.transactionManagerLookup(RemoteTransactionManagerLookup.getInstance());
+				.transactionMode(TransactionMode.NONE)
+				;
 		String template = this.attributes.attribute(TEMPLATE).get();
 		if (template != null) {
 			builder.templateName(template);

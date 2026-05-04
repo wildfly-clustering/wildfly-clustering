@@ -32,12 +32,12 @@ public class RemoteCacheContainerDecorator extends BasicCacheContainerDecorator 
 
 	@Override
 	public <K, V> RemoteCache<K, V> getCache() {
-		return this.container.getCache(HotRodConstants.DEFAULT_CACHE_NAME);
+		return new RemoteCacheDecorator<>(this, this.container.getCache(HotRodConstants.DEFAULT_CACHE_NAME));
 	}
 
 	@Override
 	public <K, V> RemoteCache<K, V> getCache(String cacheName) {
-		return this.container.getCache(cacheName);
+		return new RemoteCacheDecorator<>(this, this.container.getCache(cacheName));
 	}
 
 	@Override
@@ -83,6 +83,6 @@ public class RemoteCacheContainerDecorator extends BasicCacheContainerDecorator 
 
 	@Override
 	public RemoteCacheManagerAdmin administration() {
-		return this.container.administration();
+		return new RemoteCacheManagerAdminDecorator(this, this.container.administration());
 	}
 }

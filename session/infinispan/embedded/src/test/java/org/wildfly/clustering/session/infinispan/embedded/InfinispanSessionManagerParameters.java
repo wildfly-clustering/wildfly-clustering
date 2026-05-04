@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.session.infinispan.embedded;
 
+import java.time.Duration;
+
 import org.infinispan.configuration.cache.CacheType;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -22,6 +24,11 @@ public interface InfinispanSessionManagerParameters extends SessionManagerParame
 	@Override
 	default String getDeploymentName() {
 		return String.format("%s-%s-%s-%s.war", this.getSessionAttributeMarshaller(), this.getSessionAttributePersistenceStrategy(), this.getCacheType(), this.getTransactionMode());
+	}
+
+	@Override
+	default Duration getFailoverGracePeriod() {
+		return !this.getTransactionMode().isTransactional() ? Duration.ofSeconds(1) : SessionManagerParameters.super.getFailoverGracePeriod();
 	}
 
 	default Runnable persistence(@SuppressWarnings("unused") GlobalConfiguration global, @SuppressWarnings("unused") PersistenceConfigurationBuilder builder) {
