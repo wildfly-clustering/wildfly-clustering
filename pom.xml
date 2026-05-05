@@ -10,7 +10,7 @@
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-bom</artifactId>
 		<version>11.0.0.Beta1-SNAPSHOT</version>
-		<relativePath>bom</relativePath>
+		<relativePath>bom/pom.xml</relativePath>
 	</parent>
 
 	<artifactId>wildfly-clustering</artifactId>

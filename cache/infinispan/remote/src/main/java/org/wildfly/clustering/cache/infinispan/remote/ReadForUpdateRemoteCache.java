@@ -120,17 +120,21 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 								return CompletableFutures.completedNull();
 							}
 							if (attempts.incrementAndGet() == maxAttempts) {
-								LOGGER.log(System.Logger.Level.TRACE, "Failed to lock {0} for read by {1} after {2} attempts", key, currentTxId, maxAttempts);
+								LOGGER.log(System.Logger.Level.DEBUG, "Failed to lock {0} for read by {1} after {2} attempts", key, currentTxId, maxAttempts);
 								return CompletableFuture.completedFuture(UNSUCCESSFUL);
 							}
 							if (Instant.now().isAfter(timeout)) {
-								LOGGER.log(System.Logger.Level.TRACE, "Failed to lock {0} for read by {1} after {2} ms", key, currentTxId, maxTxDurationMillis);
+								LOGGER.log(System.Logger.Level.DEBUG, "Failed to lock {0} for read by {1} after {2} ms", key, currentTxId, maxTxDurationMillis);
 								return CompletableFuture.failedFuture(new TimeoutException());
 							}
-							LOGGER.log(System.Logger.Level.TRACE, "Fail to lock {0} for read by {1}, still locked by {2}", key, currentTxId, txId);
+							if (Thread.currentThread().isInterrupted()) {
+								return CompletableFuture.failedFuture(new InterruptedException());
+							}
+							LOGGER.log(System.Logger.Level.TRACE, "Attempt #{2} failed to lock {0} for read by {1}, lock currently held by {3}", key, currentTxId, attempts, txId);
 							Thread.yield();
+						} else {
+							LOGGER.log(System.Logger.Level.TRACE, "Locking {0} for read by {1}", key, currentTxId);
 						}
-						LOGGER.log(System.Logger.Level.TRACE, "Locking {0} for read by {1}", key, currentTxId);
 						return putCache.putIfAbsentAsync(currentTxKey, currentTxId, maxTxDurationMillis, TimeUnit.MILLISECONDS).thenCompose(this);
 					}
 
