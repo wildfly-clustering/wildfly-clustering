@@ -178,16 +178,18 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 		try (Context<Transaction> suspended = this.contextFactory.suspendWithContext()) {
 			Transaction suspendedTx = suspended.get();
 			return (suspendedTx == null) ? operation.apply(this.cache, key) : this.syncFactory.apply(key, suspendedTx).thenCompose(synchronization -> {
-				if ((synchronization != UNSUCCESSFUL) && (synchronization != null)) {
-					try (Context<Transaction> resumed = this.contextFactory.resumeWithContext(suspendedTx)) {
-						resumed.get().registerSynchronization(synchronization);
-					} catch (RollbackException e) {
-						synchronization.afterCompletion(Status.STATUS_MARKED_ROLLBACK);
-					} catch (SystemException e) {
-						throw new IllegalStateException(e);
+				if (synchronization == UNSUCCESSFUL) return CompletableFutures.completedNull();
+				try (Context<Transaction> resumed = this.contextFactory.resumeWithContext(suspendedTx)) {
+					if (synchronization != null) {
+						try {
+							resumed.get().registerSynchronization(synchronization);
+						} catch (RollbackException | SystemException e) {
+							synchronization.afterCompletion(Status.STATUS_MARKED_ROLLBACK);
+							throw new IllegalStateException(e);
+						}
 					}
 				}
-				return (synchronization != UNSUCCESSFUL) ? operation.apply(this.cache, key) : CompletableFutures.completedNull();
+				return operation.apply(this.cache, key);
 			});
 		}
 	}
@@ -219,21 +221,24 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 				}
 				return stage.thenCompose(ignore -> {
 					Set<?> lockedKeys = new HashSet<>(keys);
-					for (Map.Entry<K, Synchronization> entry : synchronizations.entrySet()) {
-						Synchronization synchronization = entry.getValue();
-						if (synchronization != UNSUCCESSFUL) {
-							try (Context<Transaction> resumed = this.contextFactory.resumeWithContext(suspendedTx)) {
-								resumed.get().registerSynchronization(synchronization);
-							} catch (RollbackException e) {
-								synchronization.afterCompletion(Status.STATUS_MARKED_ROLLBACK);
-							} catch (SystemException e) {
-								throw new IllegalStateException(e);
+					try (Context<Transaction> resumed = this.contextFactory.resumeWithContext(suspendedTx)) {
+						for (Map.Entry<K, Synchronization> entry : synchronizations.entrySet()) {
+							Synchronization synchronization = entry.getValue();
+							if (synchronization == UNSUCCESSFUL) {
+								lockedKeys.remove(entry.getKey());
+							} else {
+								if (synchronization != null) {
+									try {
+										resumed.get().registerSynchronization(synchronization);
+									} catch (RollbackException | SystemException e) {
+										synchronization.afterCompletion(Status.STATUS_MARKED_ROLLBACK);
+										throw new IllegalStateException(e);
+									}
+								}
 							}
-						} else {
-							lockedKeys.remove(entry.getKey());
 						}
+						return !lockedKeys.isEmpty() ? super.getAllAsync(lockedKeys) : CompletableFutures.completedEmptyMap();
 					}
-					return !lockedKeys.isEmpty() ? super.getAllAsync(lockedKeys) : CompletableFutures.completedEmptyMap();
 				});
 			}
 			return super.getAllAsync(keys);
