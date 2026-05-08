@@ -60,13 +60,21 @@ e.g.
 
 #### Testing with alternate Java versions
 
-The "lts" profile adds surefire and failsafe test executions for older LTS java releases starting with Java 17.
+The "lts" profile adds surefire and failsafe test executions for the oldest support LTS java release, i.e. Java 17.
 e.g.
 
 		$ mvn verify -P lts
 
+The "latest" profile adds surefire and failsafe test executions for the latest non-LTS java release.
+e.g.
+
+		$ mvn verify -P latest
+
 This requires that maven toolchains configuration exists for these java versions.
-These can be auto-configured, if necessary.
+The `toolchains:select-jdk-toolchain` goal usually discovers these without issue.
+You may also auto-generate a toolchain file and modify it as necessary.
 e.g.
 
 		$ mvn toolchains:generate-jdk-toolchains-xml -Dtoolchain.file=~/.m2/toolchains.xml
+
+For details, see: https://maven.apache.org/guides/mini/guide-using-toolchains.html
