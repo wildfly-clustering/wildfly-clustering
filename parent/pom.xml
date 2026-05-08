@@ -20,7 +20,7 @@
 		<maven.compiler.release>17</maven.compiler.release>
 		<maven.compiler.testRelease>${maven.compiler.release}</maven.compiler.testRelease>
 		<!-- Require latest LTS toolchain -->
-		<toolchain.jdk.version>[25,26)</toolchain.jdk.version>
+		<toolchain.jdk.version>25</toolchain.jdk.version>
 		<!-- Sets encoding for compiler/resources plugins -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -599,8 +599,8 @@
 			</reporting>
 		</profile>
 		<profile>
-			<!-- Additional test executions using older LTS java versions -->
-			<id>lts</id>
+			<!-- Additional test executions using latest non-LTS java versions -->
+			<id>latest</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -608,7 +608,7 @@
 						<artifactId>maven-failsafe-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>java17-integration-test</id>
+								<id>latest-integration-test</id>
 								<phase>integration-test</phase>
 								<goals>
 									<goal>integration-test</goal>
@@ -616,23 +616,9 @@
 								</goals>
 								<configuration>
 									<jdkToolchain>
-										<version>[17,18)</version>
+										<version>(${toolchain.jdk.version},)</version>
 									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/failsafe-reports-java17</reportsDirectory>
-								</configuration>
-							</execution>
-							<execution>
-								<id>java21-integration-test</id>
-								<phase>integration-test</phase>
-								<goals>
-									<goal>integration-test</goal>
-									<goal>verify</goal>
-								</goals>
-								<configuration>
-									<jdkToolchain>
-										<version>[21,22)</version>
-									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/failsafe-reports-java21</reportsDirectory>
+									<reportsDirectory>${project.build.directory}/failsafe-reports-latest</reportsDirectory>
 								</configuration>
 							</execution>
 						</executions>
@@ -642,29 +628,63 @@
 						<artifactId>maven-surefire-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>java17-test</id>
+								<id>latest-test</id>
 								<phase>test</phase>
 								<goals>
 									<goal>test</goal>
 								</goals>
 								<configuration>
 									<jdkToolchain>
-										<version>[17,18)</version>
+										<version>(${toolchain.jdk.version},)</version>
 									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/surefire-reports-java17</reportsDirectory>
+									<reportsDirectory>${project.build.directory}/surefire-reports-latest</reportsDirectory>
 								</configuration>
 							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- Additional test executions using legacy LTS java version -->
+			<id>lts</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<executions>
 							<execution>
-								<id>java21-test</id>
+								<id>lts-integration-test</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+								<configuration>
+									<jdkToolchain>
+										<version>${maven.compiler.release}</version>
+									</jdkToolchain>
+									<reportsDirectory>${project.build.directory}/failsafe-reports-lts</reportsDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>lts-test</id>
 								<phase>test</phase>
 								<goals>
 									<goal>test</goal>
 								</goals>
 								<configuration>
 									<jdkToolchain>
-										<version>[21,22)</version>
+										<version>${maven.compiler.release}</version>
 									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/surefire-reports-java21</reportsDirectory>
+									<reportsDirectory>${project.build.directory}/surefire-reports-lts</reportsDirectory>
 								</configuration>
 							</execution>
 						</executions>
