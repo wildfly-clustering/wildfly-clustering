@@ -496,7 +496,6 @@ public class ReadForUpdateRemoteCacheTestCase {
 
 		order.verify(txPutCache, atLeastOnce()).putIfAbsentAsync(txKey, txId, transactionTimeout, TimeUnit.MILLISECONDS);
 		order.verifyNoMoreInteractions();
-
 	}
 
 	@Test
@@ -560,6 +559,7 @@ public class ReadForUpdateRemoteCacheTestCase {
 		assertThat(result).isCompletedWithValue(Map.of());
 		assertThat(tx.getEnlistedSynchronization()).isEmpty();
 
+		order.verify(tm).getTransaction();
 		order.verifyNoMoreInteractions();
 	}
 }
