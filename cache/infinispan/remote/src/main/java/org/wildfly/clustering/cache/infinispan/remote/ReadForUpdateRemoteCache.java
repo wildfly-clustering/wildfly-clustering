@@ -105,13 +105,16 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 				Xid currentTxId = ((TransactionImpl) suspendedTx).getXid();
 				long maxTxDurationMillis = this.maxTxDuration.toMillis();
 				Instant timeout = Instant.now().plus(this.maxTxDuration);
-				int maxAttempts = maxRetries + 1;
-				AtomicInteger attempts = new AtomicInteger(0);
+				AtomicInteger retries = new AtomicInteger(0);
 				return new SynchronizationFactory() {
 					@Override
 					public CompletableFuture<Synchronization> apply(Xid txId) {
 						if (txId == null) {
-							LOGGER.log(System.Logger.Level.TRACE, "Locked {0} for read by {1} after {2} attempts", key, currentTxId, attempts);
+							if (retries.get() == 0) {
+								LOGGER.log(System.Logger.Level.TRACE, "Locked {0} for read by {1}", key, currentTxId);
+							} else {
+								LOGGER.log(System.Logger.Level.TRACE, "Locked {0} for read by {1} after {2} retries", key, currentTxId, retries);
+							}
 							return CompletableFuture.completedFuture(this);
 						}
 						if (txId != INITIAL_TX_ID) {
@@ -119,18 +122,20 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 								LOGGER.log(System.Logger.Level.TRACE, "{0} already locked for read by {1}", key, currentTxId);
 								return CompletableFutures.completedNull();
 							}
-							if (attempts.incrementAndGet() == maxAttempts) {
-								LOGGER.log(System.Logger.Level.TRACE, "Failed to lock {0} for read by {1} after {2} attempts", key, currentTxId, maxAttempts);
+							if (retries.incrementAndGet() > maxRetries) {
+								LOGGER.log(System.Logger.Level.TRACE, "Failed to lock {0} for read by {1} after {2} retries", key, currentTxId, maxRetries);
 								return CompletableFuture.completedFuture(UNSUCCESSFUL);
 							}
 							if (Instant.now().isAfter(timeout)) {
 								LOGGER.log(System.Logger.Level.TRACE, "Failed to lock {0} for read by {1} after {2} ms", key, currentTxId, maxTxDurationMillis);
 								return CompletableFuture.failedFuture(new TimeoutException());
 							}
-							LOGGER.log(System.Logger.Level.TRACE, "Fail to lock {0} for read by {1}, still locked by {2}", key, currentTxId, txId);
+							if (Thread.currentThread().isInterrupted()) {
+								return CompletableFuture.failedFuture(new InterruptedException());
+							}
 							Thread.yield();
 						}
-						LOGGER.log(System.Logger.Level.TRACE, "Locking {0} for read by {1}", key, currentTxId);
+						// Create mortal tx entry for key, if possible
 						return putCache.putIfAbsentAsync(currentTxKey, currentTxId, maxTxDurationMillis, TimeUnit.MILLISECONDS).thenCompose(this);
 					}
 
