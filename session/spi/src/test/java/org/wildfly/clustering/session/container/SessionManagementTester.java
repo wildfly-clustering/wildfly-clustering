@@ -125,6 +125,7 @@ public class SessionManagementTester implements Tester {
 				}).join();
 				assertThat(value).as(message).isEqualTo(expected.incrementAndGet());
 
+				// Accommodate non-transactional session managers, if necessary
 				this.failoverGracePeriod();
 			}
 		}
