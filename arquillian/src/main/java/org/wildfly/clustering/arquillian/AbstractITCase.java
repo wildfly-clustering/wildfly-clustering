@@ -6,7 +6,8 @@
 package org.wildfly.clustering.arquillian;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
@@ -14,25 +15,22 @@ import org.jboss.shrinkwrap.api.Archive;
 /**
  * An abstract integration test that runs against a specific set of containers.
  * @author Paul Ferraro
+ * @param <C> the test configuration type
  * @param <A> the archive type
- * @param <C> the tester configuration type
  */
-public abstract class AbstractITCase<C, A extends Archive<A>> implements Runnable, ApplicationConfiguration<C, A>, DeploymentContainerConfiguration {
+public abstract class AbstractITCase<C, A extends Archive<A>> implements Consumer<C>, ApplicationConfiguration<C, A>, DeploymentContainerConfiguration {
 
 	@ArquillianResource
 	private DeploymentContainerRegistry registry;
 
-	private final Function<C, Tester> testerFactory;
-	private final C configuration;
+	private final Supplier<Tester> testerFactory;
 
 	/**
 	 * Constructs a new integration test using the specified tester factory and configuration.
 	 * @param testerFactory a tester factory
-	 * @param configuration a tester configuration
 	 */
-	protected AbstractITCase(Function<C, Tester> testerFactory, C configuration) {
+	protected AbstractITCase(Supplier<Tester> testerFactory) {
 		this.testerFactory = testerFactory;
-		this.configuration = configuration;
 	}
 
 	@Override
@@ -41,11 +39,11 @@ public abstract class AbstractITCase<C, A extends Archive<A>> implements Runnabl
 	}
 
 	@Override
-	public void run() {
-		Archive<?> archive = this.createArchive(this.configuration);
+	public void accept(C configuration) {
+		Archive<?> archive = this.createArchive(configuration);
 		List<Deployment> deployments = this.getDeploymentContainers().stream().map(container -> container.deploy(archive)).toList();
 		try (Lifecycle composite = Lifecycle.composite(deployments)) {
-			try (Tester tester = this.testerFactory.apply(this.configuration)) {
+			try (Tester tester = this.testerFactory.get()) {
 				tester.accept(deployments);
 			}
 		}
