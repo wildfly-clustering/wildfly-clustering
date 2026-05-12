@@ -19,6 +19,9 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
 
+import org.wildfly.clustering.cache.infinispan.transaction.TransactionContextFactory;
+import org.wildfly.clustering.context.Context;
+
 /**
  * A transactional batch.
  * @author Paul Ferraro
@@ -31,18 +34,22 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 	private final AtomicBoolean active;
 
 	DefaultTransactionalBatch(String name, TransactionManager tm, Function<Exception, RuntimeException> exceptionTransformer) {
-		this(name, tm, begin(tm, exceptionTransformer), exceptionTransformer, new AtomicBoolean(true));
+		this(name, tm, TransactionContextFactory.of(tm), exceptionTransformer);
 	}
 
-	DefaultTransactionalBatch(String name, TransactionManager tm, Transaction tx, Function<Exception, RuntimeException> exceptionTransformer, AtomicBoolean active) {
+	DefaultTransactionalBatch(String name, TransactionManager tm, TransactionContextFactory contextFactory, Function<Exception, RuntimeException> exceptionTransformer) {
+		this(name, tm, contextFactory, begin(tm, exceptionTransformer), exceptionTransformer, new AtomicBoolean(true));
+	}
+
+	DefaultTransactionalBatch(String name, TransactionManager tm, TransactionContextFactory contextFactory, Transaction tx, Function<Exception, RuntimeException> exceptionTransformer, AtomicBoolean active) {
 		super(name, status -> {
-			try {
+			try (Context<Transaction> resumed = contextFactory.resumeWithContext(tx)) {
 				switch (tx.getStatus()) {
 					case jakarta.transaction.Status.STATUS_ACTIVE:
 						if (status.isActive()) {
 							try {
 								LOGGER.log(System.Logger.Level.TRACE, "Committing batch {0}", tx);
-								tx.commit();
+								tm.commit();
 								LOGGER.log(System.Logger.Level.DEBUG, "Committed batch {0}", tx);
 								break;
 							} catch (RollbackException e) {
@@ -54,7 +61,7 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 						// Otherwise fall through
 					case jakarta.transaction.Status.STATUS_MARKED_ROLLBACK:
 						LOGGER.log(System.Logger.Level.TRACE, "Rolling back batch {0}", tx);
-						tx.rollback();
+						tm.rollback();
 						LOGGER.log(System.Logger.Level.DEBUG, "Rolled back batch {0}", tx);
 						break;
 					default:
