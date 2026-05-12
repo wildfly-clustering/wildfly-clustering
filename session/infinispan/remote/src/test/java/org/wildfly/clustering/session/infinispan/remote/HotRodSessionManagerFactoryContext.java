@@ -16,6 +16,7 @@ import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
 import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
+import org.wildfly.clustering.cache.infinispan.remote.transaction.RemoteTransactionManagerLookup;
 import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
@@ -76,7 +77,7 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 				.forceReturnValues(false)
 				.marshaller(marshaller)
 				.nearCacheMode(NearCacheMode.DISABLED)
-				.transactionManagerLookup(org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup.getInstance())
+				.transactionManagerLookup(RemoteTransactionManagerLookup.INSTANCE)
 				.transactionMode(parameters.getTransactionMode())
 				;
 		String deploymentName = parameters.getDeploymentName();
