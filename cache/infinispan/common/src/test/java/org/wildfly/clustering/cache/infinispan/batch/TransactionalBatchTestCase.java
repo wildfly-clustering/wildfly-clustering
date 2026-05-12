@@ -88,7 +88,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(3)).getStatus();
-		verify(tx).commit();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).commit();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
@@ -123,7 +124,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(3)).getStatus();
-		verify(tx).rollback();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).rollback();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
@@ -139,7 +141,7 @@ public class TransactionalBatchTestCase {
 
 		try (Batch outerBatch = this.factory.get()) {
 			verify(this.tm).begin();
-			verify(this.tm, times(2)).getTransaction();
+			verify(this.tm, atLeastOnce()).getTransaction();
 			verifyNoMoreInteractions(this.tm);
 			verify(tx, only()).registerSynchronization(capturedSync.capture());
 
@@ -169,7 +171,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(4)).getStatus();
-		verify(tx).commit();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).commit();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
@@ -220,7 +223,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(4)).getStatus();
-		verify(tx).rollback();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).rollback();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
@@ -271,7 +275,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(4)).getStatus();
-		verify(tx).rollback();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).rollback();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
@@ -322,7 +327,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(4)).getStatus();
-		verify(tx).commit();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).commit();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
@@ -377,7 +383,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(4)).getStatus();
-		verify(tx).rollback();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).rollback();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
@@ -412,7 +419,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(3)).getStatus();
-		verify(tx).commit();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).commit();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
@@ -546,7 +554,8 @@ public class TransactionalBatchTestCase {
 		}
 
 		verify(tx, times(4)).getStatus();
-		verify(tx).commit();
+		verify(this.tm, atLeastOnce()).getTransaction();
+		verify(this.tm).commit();
 		verifyNoMoreInteractions(tx);
 		verifyNoMoreInteractions(this.tm);
 
