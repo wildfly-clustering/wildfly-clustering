@@ -7,16 +7,25 @@ package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import javax.transaction.xa.Xid;
@@ -36,9 +45,12 @@ import org.infinispan.client.hotrod.transaction.manager.RemoteXid;
 import org.infinispan.commons.tx.TransactionImpl;
 import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.cache.infinispan.remote.transaction.TransactionKey;
+import org.wildfly.clustering.cache.infinispan.transaction.CompositeSynchronization;
+import org.wildfly.clustering.cache.infinispan.transaction.IdentifiedTransaction;
 import org.wildfly.clustering.cache.infinispan.transaction.TransactionContextFactory;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * A remote cache that performs locking reads if a transaction is active.
@@ -102,7 +114,7 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 				RemoteCache<TransactionKey<K>, Xid> putCache = this.putCache;
 				RemoteCache<TransactionKey<K>, Xid> removeCache = this.removeCache;
 				TransactionKey<K> currentTxKey = new TransactionKey<>(key);
-				Xid currentTxId = ((TransactionImpl) suspendedTx).getXid();
+				Xid currentTxId = (suspendedTx instanceof IdentifiedTransaction identified) ? identified.getId() : ((TransactionImpl) suspendedTx).getXid();
 				long maxTxDurationMillis = this.maxTxDuration.toMillis();
 				Instant timeout = Instant.now().plus(this.maxTxDuration);
 				AtomicInteger retries = new AtomicInteger(0);
@@ -184,21 +196,33 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 	private <T> CompletableFuture<T> readForUpdateAsync(BiFunction<RemoteCache<K, V>, K, CompletableFuture<T>> operation, K key) {
 		try (Context<Transaction> suspended = this.contextFactory.suspendWithContext()) {
 			Transaction suspendedTx = suspended.get();
-			return (suspendedTx == null) ? operation.apply(this.cache, key) : this.syncFactory.apply(key, suspendedTx).thenCompose(synchronization -> {
+			return (suspendedTx != null) ? this.syncFactory.apply(key, suspendedTx).thenCompose(synchronization -> {
 				if (synchronization == UNSUCCESSFUL) return CompletableFutures.completedNull();
-				try (Context<Transaction> resumed = this.contextFactory.resumeWithContext(suspendedTx)) {
-					if (synchronization != null) {
-						try {
-							resumed.get().registerSynchronization(synchronization);
-						} catch (RollbackException | SystemException e) {
-							synchronization.afterCompletion(Status.STATUS_MARKED_ROLLBACK);
-							throw new IllegalStateException(e);
-						}
-					}
+				CompletableFuture<T> result = operation.apply(this.cache, key);
+				if (synchronization != null) {
+					result.whenComplete(registerWhen(Objects::nonNull, Supplier.of(suspendedTx).thenApply(this.contextFactory::resumeWithContext), synchronization));
 				}
-				return operation.apply(this.cache, key);
-			});
+				return result;
+			}) : operation.apply(this.cache, key);
 		}
+	}
+
+	private static <T> BiConsumer<T, Throwable> registerWhen(Predicate<T> predicate, Supplier<Context<Transaction>> transactionContextFactory, Synchronization synchronization) {
+		return new BiConsumer<>() {
+			@Override
+			public void accept(T value, Throwable exception) {
+				if (predicate.test(value)) {
+					try (Context<Transaction> context = transactionContextFactory.get()) {
+						context.get().registerSynchronization(synchronization);
+					} catch (RollbackException | SystemException e) {
+						synchronization.afterCompletion(Status.STATUS_NO_TRANSACTION);
+						throw new IllegalStateException(e);
+					}
+				} else {
+					synchronization.afterCompletion(Status.STATUS_NO_TRANSACTION);
+				}
+			}
+		};
 	}
 
 	@Override
@@ -206,49 +230,61 @@ public class ReadForUpdateRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
 		if (keys.isEmpty()) return CompletableFutures.completedEmptyMap();
 		try (Context<Transaction> suspended = this.contextFactory.suspendWithContext()) {
 			Transaction suspendedTx = suspended.get();
-			if (suspendedTx != null) {
-				Map<K, Synchronization> synchronizations = new ConcurrentHashMap<>();
-				CompletableFuture<Void> stage = new CompletableFuture<>();
-				AtomicInteger remaining = new AtomicInteger(keys.size());
-				for (Object rawKey : keys) {
-					@SuppressWarnings("unchecked")
-					K key = (K) rawKey;
-					this.syncFactory.apply(key, suspendedTx).whenComplete((synchronization, exception) -> {
-						if (exception != null) {
-							stage.completeExceptionally(exception);
-						} else {
-							if (synchronization != null) {
-								synchronizations.put(key, synchronization);
-							}
-							if (remaining.decrementAndGet() == 0) {
-								stage.complete(null);
-							}
-						}
-					});
-				}
-				return stage.thenCompose(ignore -> {
-					Set<?> lockedKeys = new HashSet<>(keys);
-					try (Context<Transaction> resumed = this.contextFactory.resumeWithContext(suspendedTx)) {
-						for (Map.Entry<K, Synchronization> entry : synchronizations.entrySet()) {
-							Synchronization synchronization = entry.getValue();
-							if (synchronization == UNSUCCESSFUL) {
-								lockedKeys.remove(entry.getKey());
-							} else {
-								if (synchronization != null) {
-									try {
-										resumed.get().registerSynchronization(synchronization);
-									} catch (RollbackException | SystemException e) {
-										synchronization.afterCompletion(Status.STATUS_MARKED_ROLLBACK);
-										throw new IllegalStateException(e);
-									}
-								}
-							}
-						}
-						return !lockedKeys.isEmpty() ? super.getAllAsync(lockedKeys) : CompletableFutures.completedEmptyMap();
+			return (suspendedTx != null) ? this.createSynchronizationStage(keys, suspendedTx).thenCompose(keySynchronizations -> {
+				Set<?> lockedKeys = new HashSet<>(keys);
+				Deque<Synchronization> synchronizations = new ArrayDeque<>(keySynchronizations.size());
+				for (Map.Entry<K, Synchronization> entry : keySynchronizations.entrySet()) {
+					Synchronization synchronization = entry.getValue();
+					if (synchronization == UNSUCCESSFUL) {
+						lockedKeys.remove(entry.getKey());
+					} else if (synchronization != null) {
+						synchronizations.add(synchronization);
 					}
-				});
-			}
-			return super.getAllAsync(keys);
+				}
+				CompletableFuture<Map<K, V>> result = !lockedKeys.isEmpty() ? super.getAllAsync(lockedKeys) : CompletableFutures.completedEmptyMap();
+				if (!synchronizations.isEmpty()) {
+					Synchronization synchronization = new CompositeSynchronization(synchronizations);
+					result.whenComplete(registerWhen(Predicate.not(Map::isEmpty), Supplier.of(suspendedTx).thenApply(this.contextFactory::resumeWithContext), synchronization));
+				}
+				return result;
+			}) : super.getAllAsync(keys);
 		}
+	}
+
+	private CompletableFuture<Map<K, Synchronization>> createSynchronizationStage(Set<?> keys, Transaction suspendedTx) {
+		Map<K, Synchronization> synchronizations = new ConcurrentHashMap<>();
+		List<Throwable> exceptions = new CopyOnWriteArrayList<>();
+		CompletableFuture<Void> stage = new CompletableFuture<>();
+		AtomicInteger remaining = new AtomicInteger(keys.size());
+		for (Object rawKey : keys) {
+			@SuppressWarnings("unchecked")
+			K key = (K) rawKey;
+			this.syncFactory.apply(key, suspendedTx).whenComplete((synchronization, exception) -> {
+				if (exception != null) {
+					exceptions.add(exception);
+				} else if (synchronization != null) {
+					synchronizations.put(key, synchronization);
+				}
+				if (remaining.decrementAndGet() == 0) {
+					stage.complete(null);
+				}
+			});
+		}
+		return stage.thenApply(ignore -> {
+			if (!exceptions.isEmpty()) {
+				for (Synchronization synchronization : synchronizations.values()) {
+					synchronization.afterCompletion(Status.STATUS_NO_TRANSACTION);
+				}
+				// Throw first, log others
+				Iterator<Throwable> iterator = exceptions.iterator();
+				CompletionException result = new CompletionException(iterator.next());
+				while (iterator.hasNext()) {
+					Throwable exception = iterator.next();
+					LOGGER.log(System.Logger.Level.DEBUG, exception.getLocalizedMessage(), exception);
+				}
+				throw result;
+			}
+			return synchronizations;
+		});
 	}
 }

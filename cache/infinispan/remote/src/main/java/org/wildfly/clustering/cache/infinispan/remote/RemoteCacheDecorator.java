@@ -327,12 +327,12 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 
 	@Override
 	public Map<K, V> getAll(Set<? extends K> keys) {
-		return this.cache.getAll(keys);
+		return this.join(this.getAllAsync(keys));
 	}
 
 	@Override
 	public MetadataValue<V> getWithMetadata(K key) {
-		return this.cache.getWithMetadata(key);
+		return this.join(this.getWithMetadataAsync(key));
 	}
 
 	@Override
@@ -342,7 +342,7 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 
 	@Override
 	public boolean removeWithVersion(K key, long version) {
-		return this.cache.removeWithVersion(key, version);
+		return this.join(this.removeWithVersionAsync(key, version));
 	}
 
 	@Override
@@ -367,7 +367,7 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 
 	@Override
 	public boolean replaceWithVersion(K key, V newValue, long version, long lifespanSeconds, TimeUnit lifespanTimeUnit, long maxIdle, TimeUnit maxIdleTimeUnit) {
-		return this.cache.replaceWithVersion(key, newValue, version, lifespanSeconds, lifespanTimeUnit, maxIdle, maxIdleTimeUnit);
+		return this.join(this.cache.replaceWithVersionAsync(key, newValue, version, lifespanSeconds, lifespanTimeUnit, maxIdle, maxIdleTimeUnit));
 	}
 
 	@Override

@@ -122,6 +122,7 @@ public class ReadForUpdateRemoteCacheTestCase {
 		assertThat(tx.getEnlistedSynchronization()).hasSize(1);
 
 		order.verify(cache).getAsync(key);
+		order.verify(tm).getTransaction();
 		order.verifyNoMoreInteractions();
 
 		assertThat(subject.getAsync(missingKey)).isCompletedWithValue(null);
@@ -307,6 +308,7 @@ public class ReadForUpdateRemoteCacheTestCase {
 		assertThat(tx.getEnlistedSynchronization()).hasSize(1);
 
 		order.verify(cache).getAsync(key);
+		order.verify(tm).getTransaction();
 		order.verifyNoMoreInteractions();
 
 		Synchronization synchronization = tx.getEnlistedSynchronization().iterator().next();
@@ -559,7 +561,6 @@ public class ReadForUpdateRemoteCacheTestCase {
 		assertThat(result).isCompletedWithValue(Map.of());
 		assertThat(tx.getEnlistedSynchronization()).isEmpty();
 
-		order.verify(tm).getTransaction();
 		order.verifyNoMoreInteractions();
 	}
 }
