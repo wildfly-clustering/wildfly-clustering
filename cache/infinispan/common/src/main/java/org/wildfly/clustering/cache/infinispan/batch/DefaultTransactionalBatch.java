@@ -65,7 +65,7 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 						LOGGER.log(System.Logger.Level.DEBUG, "Rolled back batch {0}", tx);
 						break;
 					default:
-						LOGGER.log(System.Logger.Level.DEBUG, "Closed batch {0} with status = {2}", tx, tx.getStatus());
+						LOGGER.log(System.Logger.Level.DEBUG, "Closed batch {0} with status = {1}", tx, tx.getStatus());
 				}
 			} catch (SystemException e) {
 				throw exceptionTransformer.apply(e);
