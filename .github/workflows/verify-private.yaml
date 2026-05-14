@@ -8,11 +8,16 @@ on:
       - synchronize
 
 jobs:
-  verify:
+  verify-backport:
     name: Verify
+    # Exclude pull requests from forks
+    if: (github.event.pull_request.head.repo.owner.id == github.event.pull_request.repository.owner.id)
     permissions:
       contents: read
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - name: Context
         env:
