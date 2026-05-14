@@ -599,7 +599,7 @@
 			</reporting>
 		</profile>
 		<profile>
-			<!-- Additional test executions using latest non-LTS java versions -->
+			<!-- Additional test executions using latest available java version -->
 			<id>latest</id>
 			<build>
 				<plugins>
@@ -663,7 +663,7 @@
 								</goals>
 								<configuration>
 									<jdkToolchain>
-										<version>${maven.compiler.release}</version>
+										<version>[${maven.compiler.release},${toolchain.jdk.version})</version>
 									</jdkToolchain>
 									<reportsDirectory>${project.build.directory}/failsafe-reports-lts</reportsDirectory>
 								</configuration>
@@ -682,7 +682,7 @@
 								</goals>
 								<configuration>
 									<jdkToolchain>
-										<version>${maven.compiler.release}</version>
+										<version>[${maven.compiler.release},${toolchain.jdk.version})</version>
 									</jdkToolchain>
 									<reportsDirectory>${project.build.directory}/surefire-reports-lts</reportsDirectory>
 								</configuration>
