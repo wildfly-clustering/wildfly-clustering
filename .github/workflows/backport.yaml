@@ -56,7 +56,7 @@ jobs:
       - id: prepare-backport
         name: Prepare backport branch
         if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
-        run: git cherry-pick -x $(git rev-list --reverse --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.merge_commit_sha }})
+        run: git cherry-pick -x $(git rev-list --reverse ${{ github.event.pull_request.merge_commit_sha }}^1..${{ github.event.pull_request.merge_commit_sha }}^2)
 
       - id: create-backport-pull-request
         name: Create backport pull request
