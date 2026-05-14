@@ -165,7 +165,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 				return this.getCollocatedKey(currentState, otherKey);
 			}
 		}
-		LOGGER.log(System.Logger.Level.DEBUG, "Could not obtain pre-generated key for {0} with same affinity as {0} -- generating random key", this.cache.getName(), otherKey);
+		LOGGER.log(System.Logger.Level.DEBUG, "Could not obtain pre-generated key for {0} with same affinity as {1} -- generating random key", this.cache.getName(), otherKey);
 		return this.generator.getKey();
 	}
 
