@@ -19,11 +19,8 @@ jobs:
     steps:
       - name: Context
         env:
-          VARS_CONTEXT: ${{ toJSON(vars) }}
           GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: |
-          echo "vars = $VARS_CONTEXT"
-          echo "github = $GITHUB_CONTEXT"
+        run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout
         uses: actions/checkout@v6

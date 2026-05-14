@@ -74,5 +74,7 @@ jobs:
 
       - id: delete-backport-branch
         name: Delete backport branch
-        if: (github.event.pull_request.base.ref == matrix.branch) && (github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name)
-        run: git push origin --delete ${{ github.event.pull_request.head.ref }}
+        if: (github.event.pull_request.base.ref == matrix.branch) && (github.event.pull_request.base.repo.owner.id == github.event.pull_request.head.repo.owner.id)
+        env:
+          BACKPORT_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: git push origin --delete $BACKPORT_BRANCH
