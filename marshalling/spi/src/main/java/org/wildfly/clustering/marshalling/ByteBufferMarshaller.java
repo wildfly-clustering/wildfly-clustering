@@ -52,7 +52,7 @@ public interface ByteBufferMarshaller extends Marshaller<Object, ByteBuffer> {
 					int predictedSize = size.getAsInt();
 					int actualSize = buffer.remaining();
 					if (predictedSize < actualSize) {
-						Logger.INSTANCE.log(System.Logger.Level.DEBUG, "Buffer size prediction too small for {0} ({1}), predicted = {3}, actual = {4}", object, (object != null) ? object.getClass().getCanonicalName() : null, predictedSize, actualSize);
+						Logger.INSTANCE.log(System.Logger.Level.DEBUG, "Buffer size prediction too small for {0} ({1}), predicted = {2}, actual = {3}", object, (object != null) ? object.getClass().getCanonicalName() : null, predictedSize, actualSize);
 					}
 				} else {
 					Logger.INSTANCE.log(System.Logger.Level.DEBUG, "Buffer size prediction missing for {0} ({1})", object, (object != null) ? object.getClass().getCanonicalName() : null);
