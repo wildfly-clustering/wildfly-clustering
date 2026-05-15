@@ -18,7 +18,7 @@ This project serves as upstream to the following projects:
 
 Building this project requires the following software:
 
-* JDK 25 (runtime requires JRE 17)
+* JDK 25 (compiled with JRE 17 compatibility)
 * Maven 3.9+
 
 Additionally, the integration tests contained in this project require a Docker-API compatible container runtime.
@@ -40,36 +40,36 @@ See: https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tuto
 
 1.	Build via maven.
 
-		$ mvn clean install
+		$ mvn install
 
-#### Integration test execution options
+	For faster builds, you can use the "quickly" profile to skip all validations, javadoc, and tests execution:
 
-Since the integration tests take some time to execute, you can skip integration test execution via:
+		$ mvn install -P quickly
 
-		$ mvn clean install -DskipITs
+#### Integration tests
 
-By default, the remote Infinispan integration tests launch docker using "bridge" network mode.
+By default, the remote Infinispan integration tests launch docker/podman using "bridge" network mode.
 If running a Linux distribution, and encounter issues with connectivity between you test client and the Infinispan server instance running in the container, try using "host" network mode via:
 
-		$ mvn clean install -Ddocker.network.mode=host
+		$ mvn install -Ddocker.network.mode=host
 
 By default, remote Infinispan integration tests will use the Infinispan server docker image published at `quay.io` corresponding to the `${version.org.infinispan}` version configured by this project's pom.
 You can override this to use an arbitrary Infinispan server docker image and user via system properties.
 e.g.
 
-		$ mvn clean install -Dinfinispan.server.image=quay.io/infinispan/server:16.0 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
+		$ mvn install -Dinfinispan.server.image=quay.io/infinispan/server:16.0 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
 
 #### Testing with alternate Java versions
 
-The "lts" profile adds surefire and failsafe test executions for the oldest support LTS java release, i.e. Java 17.
-e.g.
-
-		$ mvn verify -P lts
-
-The "latest" profile adds surefire and failsafe test executions for the latest non-LTS java release.
+The "latest" profile adds surefire and failsafe test executions for the latest available java toolchain.
 e.g.
 
 		$ mvn verify -P latest
+
+The "legacy" profile adds surefire and failsafe test executions for the latest legacy LTS java toolchain.
+e.g.
+
+		$ mvn verify -P legacy
 
 This requires that maven toolchains configuration exists for these java versions.
 The `toolchains:select-jdk-toolchain` goal usually discovers these without issue.
