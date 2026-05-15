@@ -1,5 +1,5 @@
 name: Backport
-run-name: Verifying pull request "${{ github.event.pull_request.title }}"
+run-name: Backport "${{ github.event.pull_request.title }}"
 
 on:
   pull_request_target:
@@ -17,7 +17,7 @@ jobs:
       # Matrix of source and target branches to which we will attempt to backport
       matrix:
         include:
-          - origin: ${{ github.event.pull_request.repository.default_branch }}
+          - origin: ${{ github.event.pull_request.base.repo.default_branch }}
             target: 10.x
     if: (github.event.pull_request.state == 'closed') && contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
 
       - id: filter-target
         name: Filter backport matrix by target branch
-        if: (github.event.pull_request.head.repo.owner.id == github.repository_owner_id) && (github.event.pull_request.base.ref == matrix.target) && startsWith(github.event.pull_request.head.ref, format('{0}-{1}-}', vars.BACKPORT_LABEL, matrix.target))
+        if: (github.event.pull_request.head.repo.owner.id == github.repository_owner_id) && (github.event.pull_request.base.ref == matrix.target) && startsWith(github.event.pull_request.head.ref, format('{0}-{1}-', vars.BACKPORT_LABEL, matrix.target))
         env:
           BACKPORT_BRANCH: ${{ github.event.pull_request.head.ref }}
         run: echo "Deleting obsolete $BACKPORT_BRANCH branch"

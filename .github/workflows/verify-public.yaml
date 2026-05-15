@@ -1,4 +1,4 @@
-name: Verify
+name: Pull request
 run-name: Verifying pull request "${{ github.event.pull_request.title }}"
 
 on:
@@ -12,7 +12,7 @@ jobs:
   verify:
     name: Verify
     # Include only pull requests from forks
-    if: (github.event.pull_request.head.repo.owner.id != github.event.pull_request.repository.owner.id)
+    if: github.event.pull_request.head.repo.owner.id != github.event.pull_request.base.repo.owner.id
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.event.pull_request.number }}
