@@ -646,8 +646,8 @@
 			</build>
 		</profile>
 		<profile>
-			<!-- Additional test executions using legacy LTS java version -->
-			<id>lts</id>
+			<!-- Additional test executions using the latest available legacy LTS java version -->
+			<id>legacy</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -665,7 +665,7 @@
 									<jdkToolchain>
 										<version>[${maven.compiler.release},${toolchain.jdk.version})</version>
 									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/failsafe-reports-lts</reportsDirectory>
+									<reportsDirectory>${project.build.directory}/failsafe-reports-legacy</reportsDirectory>
 								</configuration>
 							</execution>
 						</executions>
@@ -684,7 +684,7 @@
 									<jdkToolchain>
 										<version>[${maven.compiler.release},${toolchain.jdk.version})</version>
 									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/surefire-reports-lts</reportsDirectory>
+									<reportsDirectory>${project.build.directory}/surefire-reports-legacy</reportsDirectory>
 								</configuration>
 							</execution>
 						</executions>
