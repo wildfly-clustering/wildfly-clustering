@@ -1,7 +1,8 @@
-name: Verify
+name: Pull request
+run-name: Verifying pull request "${{ github.event.pull_request.title }}"
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - reopened
@@ -10,14 +11,20 @@ on:
 jobs:
   verify:
     name: Verify
-    permissions:
-      contents: read
+    # Include only pull requests from forks
+    if: github.event.pull_request.head.repo.owner.id != github.event.pull_request.base.repo.owner.id
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
+      - name: Context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -30,4 +37,4 @@ jobs:
           cache: maven
 
       - name: Maven verify
-        run: mvn --batch-mode --no-transfer-progress ${{ case(contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) == true, 'validate', 'verify --activate-profiles latest,lts') }}
+        run: mvn --batch-mode --no-transfer-progress ${{ case(contains(github.event.pull_request.labels.*.name, 'validate-only') == true, 'validate', 'verify --activate-profiles latest,legacy') }}
