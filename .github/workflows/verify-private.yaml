@@ -1,4 +1,4 @@
-name: Verify
+name: Backport pull request
 run-name: Verifying pull request "${{ github.event.pull_request.title }}"
 
 on:
@@ -12,7 +12,7 @@ jobs:
   verify-private:
     name: Verify
     # Exclude pull requests from forks
-    if: (github.event.pull_request.head.repo.owner.id == github.event.pull_request.repository.owner.id)
+    if: (github.event.pull_request.head.repo.owner.id == github.repository_owner_id)
     permissions:
       contents: read
     runs-on: ubuntu-latest
