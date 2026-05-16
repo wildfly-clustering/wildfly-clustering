@@ -19,8 +19,10 @@
 		<!-- JRE compatibility -->
 		<maven.compiler.release>17</maven.compiler.release>
 		<maven.compiler.testRelease>${maven.compiler.release}</maven.compiler.testRelease>
-		<!-- Require latest LTS toolchain -->
+		<!-- Use latest LTS toolchain by default -->
 		<toolchain.jdk.version>25</toolchain.jdk.version>
+		<toolchain.jdk.test.version>${toolchain.jdk.version}</toolchain.jdk.test.version>
+		<toolchain.jdk.test.label>java${toolchain.jdk.version}</toolchain.jdk.test.label>
 		<!-- Sets encoding for compiler/resources plugins -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -400,6 +402,10 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<argLine>@{argLine}</argLine>
+					<jdkToolchain>
+						<version>${toolchain.jdk.test.version}</version>
+					</jdkToolchain>
+					<reportsDirectory>${project.build.directory}/failsafe-reports-${toolchain.jdk.test.label}</reportsDirectory>
 				</configuration>
 				<executions>
 					<execution>
@@ -516,6 +522,10 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<argLine>@{argLine}</argLine>
+					<jdkToolchain>
+						<version>${toolchain.jdk.test.version}</version>
+					</jdkToolchain>
+					<reportsDirectory>${project.build.directory}/surefire-reports-${toolchain.jdk.test.label}</reportsDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -575,100 +585,6 @@
 			</reporting>
 		</profile>
 		<profile>
-			<!-- Additional test executions using latest available java version -->
-			<id>latest</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>latest-integration-test</id>
-								<phase>integration-test</phase>
-								<goals>
-									<goal>integration-test</goal>
-									<goal>verify</goal>
-								</goals>
-								<configuration>
-									<jdkToolchain>
-										<version>(${toolchain.jdk.version},)</version>
-									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/failsafe-reports-latest</reportsDirectory>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>latest-test</id>
-								<phase>test</phase>
-								<goals>
-									<goal>test</goal>
-								</goals>
-								<configuration>
-									<jdkToolchain>
-										<version>(${toolchain.jdk.version},)</version>
-									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/surefire-reports-latest</reportsDirectory>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<!-- Additional test executions using the latest available legacy LTS java version -->
-			<id>legacy</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>lts-integration-test</id>
-								<phase>integration-test</phase>
-								<goals>
-									<goal>integration-test</goal>
-									<goal>verify</goal>
-								</goals>
-								<configuration>
-									<jdkToolchain>
-										<version>[${maven.compiler.release},${toolchain.jdk.version})</version>
-									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/failsafe-reports-legacy</reportsDirectory>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>lts-test</id>
-								<phase>test</phase>
-								<goals>
-									<goal>test</goal>
-								</goals>
-								<configuration>
-									<jdkToolchain>
-										<version>[${maven.compiler.release},${toolchain.jdk.version})</version>
-									</jdkToolchain>
-									<reportsDirectory>${project.build.directory}/surefire-reports-legacy</reportsDirectory>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
 			<id>quickly</id>
 			<properties>
 				<checkstyle.skip>true</checkstyle.skip>
@@ -726,6 +642,19 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+		<profile>
+			<id>test</id>
+			<activation>
+				<property>
+					<name>toolchain.jdk.test.version</name>
+				</property>
+			</activation>
+			<properties>
+				<checkstyle.skip>true</checkstyle.skip>
+				<editorconfig.skip>true</editorconfig.skip>
+				<maven.javadoc.skip>true</maven.javadoc.skip>
+			</properties>
 		</profile>
 	</profiles>
 </project>
