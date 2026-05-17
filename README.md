@@ -61,19 +61,15 @@ e.g.
 
 #### Testing with alternate Java versions
 
-The "latest" profile adds surefire and failsafe test executions for the latest available java toolchain.
+By default, surefire and failsafe tests will execute using the same toolchain used for compilation.
+To run surefire and failsafe tests against an alternate java toolchain, override the `toolchain.jdk.test.version` system property.
 e.g.
 
-		$ mvn verify -P latest
+		$ mvn verify -Dtoolchain.jdk.test.version=17
 
-The "legacy" profile adds surefire and failsafe test executions for the latest legacy LTS java toolchain.
-e.g.
-
-		$ mvn verify -P legacy
-
-This requires that maven toolchains configuration exists for these java versions.
-The `toolchains:select-jdk-toolchain` goal usually discovers these without issue.
-You may also auto-generate a toolchain file and modify it as necessary.
+This requires that maven toolchains configuration exists for this java version.
+The `toolchains:select-jdk-toolchain` goal usually discovers these automatically.
+Alternatively, you can auto-generate a toolchain file and modify it as necessary.
 e.g.
 
 		$ mvn toolchains:generate-jdk-toolchains-xml -Dtoolchain.file=~/.m2/toolchains.xml
