@@ -1,4 +1,4 @@
-name: Backport pull request
+name: Pull request (internal)
 run-name: Verifying pull request "${{ github.event.pull_request.title }}"
 
 on:
