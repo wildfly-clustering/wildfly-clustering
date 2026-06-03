@@ -24,7 +24,7 @@ import org.infinispan.commons.tx.TransactionImpl;
  * A transaction decorator that registers synchronizations into a {@link CompositeSynchronization}.
  * @author Paul Ferraro
  */
-class CompositeSynchronizationTransaction implements IdentifiedTransaction {
+public class CompositeSynchronizationTransaction implements IdentifiedTransaction {
 	private final Transaction tx;
 	private final Deque<Synchronization> synchronizations = new LinkedList<>();
 
