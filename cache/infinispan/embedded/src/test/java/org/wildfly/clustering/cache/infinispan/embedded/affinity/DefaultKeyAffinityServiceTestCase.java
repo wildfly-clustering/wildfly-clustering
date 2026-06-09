@@ -115,6 +115,6 @@ public class DefaultKeyAffinityServiceTestCase {
 	}
 
 	private static int getSegment(UUID key) {
-		return Math.abs(key.hashCode()) % SEGMENTS;
+		return Math.abs(key.hashCode() % SEGMENTS);
 	}
 }
