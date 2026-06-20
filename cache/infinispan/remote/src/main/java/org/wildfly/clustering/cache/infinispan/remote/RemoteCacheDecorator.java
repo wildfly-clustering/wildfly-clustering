@@ -42,6 +42,7 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.impl.ClientStatistics;
 import org.infinispan.client.hotrod.impl.InternalRemoteCache;
+import org.infinispan.client.hotrod.impl.MarshallerRegistry;
 import org.infinispan.client.hotrod.impl.operations.CacheOperationsFactory;
 import org.infinispan.client.hotrod.impl.operations.GetWithMetadataOperation.GetWithMetadataResult;
 import org.infinispan.client.hotrod.impl.operations.PingResponse;
@@ -107,17 +108,16 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 
 	@Override
 	public <T> Query<T> query(String query) {
-		return this.createQueryFactory().create(query);
+		// Override default implementation which still relies on marshaller of RemoteCacheManager
+		InternalRemoteCache<K, V> cache = new QueryRemoteCache<>(this);
+		return new RemoteQueryFactory(cache).create(query);
 	}
 
 	@Override
 	public ContinuousQuery<K, V> continuousQuery() {
-		return this.createQueryFactory().continuousQuery(this);
-	}
-
-	@SuppressWarnings("removal")
-	private RemoteQueryFactory createQueryFactory() {
-		return new RemoteQueryFactory(this);
+		// Override default implementation which still relies on marshaller of RemoteCacheManager
+		InternalRemoteCache<K, V> cache = new QueryRemoteCache<>(this);
+		return new RemoteQueryFactory(cache).continuousQuery(cache);
 	}
 
 	@Override
@@ -644,5 +644,33 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 	@Override
 	public <T> java.util.concurrent.Flow.Publisher<CacheEntryProcessorResult<K, T>> processAll(AsyncCacheEntryProcessor<K, V, T> processor, CacheProcessorOptions options) {
 		return this.cache.processAll(processor, options);
+	}
+
+	private static class QueryRemoteCache<K, V> extends RemoteCacheDecorator<K, V> {
+
+		QueryRemoteCache(InternalRemoteCache<K, V> cache) {
+			super(new QueryRemoteCacheContainer(cache.getRemoteCacheContainer(), cache.getMarshaller()), cache, QueryRemoteCache::new);
+		}
+	}
+
+	private static class QueryRemoteCacheContainer extends RemoteCacheContainerDecorator {
+		private final MarshallerRegistry registry = new MarshallerRegistry();
+		private final Marshaller marshaller;
+
+		QueryRemoteCacheContainer(org.infinispan.client.hotrod.RemoteCacheContainer container, Marshaller marshaller) {
+			super(container);
+			this.marshaller = marshaller;
+			this.registry.registerMarshaller(marshaller);
+		}
+
+		@Override
+		public MarshallerRegistry getMarshallerRegistry() {
+			return this.registry;
+		}
+
+		@Override
+		public Marshaller getMarshaller() {
+			return this.marshaller;
+		}
 	}
 }
