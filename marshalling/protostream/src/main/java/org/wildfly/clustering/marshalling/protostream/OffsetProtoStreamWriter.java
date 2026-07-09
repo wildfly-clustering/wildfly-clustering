@@ -8,7 +8,6 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.descriptors.WireType;
 

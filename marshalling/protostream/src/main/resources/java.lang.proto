@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package java.lang;
 
-// IDs: 1 - 9
+// IDs: 1 - 7
 
 /**
  * @TypeId(1)

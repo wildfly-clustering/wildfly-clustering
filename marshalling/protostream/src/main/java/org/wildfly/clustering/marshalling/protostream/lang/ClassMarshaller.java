@@ -3,13 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.lang;
 
 import java.io.IOException;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver;
+import org.wildfly.clustering.marshalling.protostream.Field;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * Generic marshaller for instances of {@link Class}.
@@ -19,9 +24,9 @@ class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 
 	private final Field<Class<?>> field;
 
-	ClassMarshaller(ClassLoaderMarshaller marshaller) {
+	ClassMarshaller(ClassLoaderResolver resolver) {
 		ClassField[] fields = ClassField.values();
-		this.field = new LoadedClassField(marshaller, fields[fields.length - 1].getIndex() + 1);
+		this.field = new ResolvedClassField(resolver, fields[fields.length - 1].getIndex() + 1);
 	}
 
 	@Override
@@ -37,6 +42,9 @@ class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 				reader.skipField(tag);
 			}
 		}
+		if (!reader.getResolvedClassPredicate().test(result)) {
+			throw new IllegalArgumentException(result.getCanonicalName());
+		}
 		return result;
 	}
 
@@ -50,7 +58,7 @@ class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 	}
 
 	Field<Class<?>> getField(ImmutableSerializationContext context, Class<?> targetClass) {
-		AnyField classField = AnyField.fromJavaType(targetClass);
+		Field<?> classField = Field.forClass(targetClass);
 		if (classField != null) return ClassField.FIELD;
 		if (targetClass.isArray()) return ClassField.ARRAY;
 		try {

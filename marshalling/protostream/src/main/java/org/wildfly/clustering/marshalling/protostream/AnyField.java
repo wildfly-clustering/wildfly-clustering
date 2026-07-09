@@ -10,11 +10,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.BitSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.lang.invoke.LambdaMarshaller;
 
 /**
  * A set of fields used by the {@link Any} marshaller.
@@ -100,10 +100,12 @@ enum AnyField implements Field<Object> {
 	CHAR_ARRAY(new PackedArrayMarshaller<>(Character.TYPE, Scalar.CHARACTER.cast(Character.class))),
 	ANY_ARRAY(new TypedArrayMarshaller(ScalarClass.ANY)),
 	PROXY(new FieldMarshaller<>() {
+		private final ScalarMarshaller<InvocationHandler> invocationHandlerMarshaller = Scalar.ANY.cast(InvocationHandler.class);
+
 		@Override
 		public Object readFrom(ProtoStreamReader reader) throws IOException {
-			InvocationHandler handler = (InvocationHandler) Scalar.ANY.readFrom(reader);
-			List<Class<?>> interfaces = new LinkedList<>();
+			InvocationHandler handler = this.invocationHandlerMarshaller.readFrom(reader);
+			List<Class<?>> interfaces = reader.repeatedElementCollector();
 			while (!reader.isAtEnd()) {
 				int tag = reader.readTag();
 				int index = WireType.getTagFieldNumber(tag);
@@ -118,7 +120,7 @@ enum AnyField implements Field<Object> {
 
 		@Override
 		public void writeTo(ProtoStreamWriter writer, Object proxy) throws IOException {
-			Scalar.ANY.writeTo(writer, Proxy.getInvocationHandler(proxy));
+			this.invocationHandlerMarshaller.writeTo(writer, Proxy.getInvocationHandler(proxy));
 
 			for (Class<?> interfaceClass : proxy.getClass().getInterfaces()) {
 				writer.writeTag(ANY.getIndex(), ScalarClass.ANY.getWireType());
@@ -136,6 +138,7 @@ enum AnyField implements Field<Object> {
 			return WireType.LENGTH_DELIMITED;
 		}
 	}),
+	SYNTHETIC(LambdaMarshaller.INSTANCE),
 	;
 	private static final AnyField[] VALUES = AnyField.values();
 	private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();
@@ -147,7 +150,6 @@ enum AnyField implements Field<Object> {
 			}
 		}
 	}
-
 
 	private final FieldMarshaller<Object> marshaller;
 

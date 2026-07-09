@@ -24,7 +24,7 @@ import org.infinispan.protostream.descriptors.GenericDescriptor;
  * We have to use the decorator pattern since SerializationContextImpl is final.
  * @author Paul Ferraro
  */
-public class NativeSerializationContext implements SerializationContext {
+class NativeSerializationContext implements SerializationContext {
 
 	private final SerializationContext context;
 
@@ -32,7 +32,7 @@ public class NativeSerializationContext implements SerializationContext {
 	 * Constructs a new native serialization context decorator
 	 * @param context a serialization context
 	 */
-	public NativeSerializationContext(SerializationContext context) {
+	NativeSerializationContext(SerializationContext context) {
 		this.context = context;
 	}
 

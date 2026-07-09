@@ -21,9 +21,10 @@ import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.session.SessionManagerFactory;
@@ -45,7 +46,7 @@ public class HotRodSessionManagerFactoryContext<CC, SC> extends AbstractContext<
 		this.accept(container::close);
 
 		ClassLoader loader = HotRodSessionManagerFactory.class.getClassLoader();
-		Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
+		Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(ImmutableSerializationContext.Builder.with(ProtoStreamConfiguration.Builder.with(ClassLoaderResolver.of(loader)).build()).build()));
 
 		Configuration configuration = container.getConfiguration();
 		// Use local cache since our remote cluster has a single member

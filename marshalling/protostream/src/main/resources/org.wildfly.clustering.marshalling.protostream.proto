@@ -36,4 +36,5 @@ message Any {
 	repeated	uint32	charArray	= 26;
 	java.lang.Class	anyArray	= 27;
 	Any	invocationHandler	= 28;
+	Any	lambda	= 29;
 }

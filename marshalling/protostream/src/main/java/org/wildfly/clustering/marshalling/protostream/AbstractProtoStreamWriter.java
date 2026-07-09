@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.OptionalInt;
 import java.util.function.Function;
 
-import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
+import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.descriptors.WireType;
 
@@ -20,7 +20,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * Delegates most {@link ProtoStreamWriter} operations to a {@link TagWriter}.
  * @author Paul Ferraro
  */
-public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOperation implements ProtoStreamWriter, WriteContext {
+public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOperation implements ProtoStreamWriter, ProtobufTagMarshaller.WriteContext {
 
 	interface ProtoStreamWriterContext extends ProtoStreamOperation.Context {
 		/**
@@ -50,15 +50,15 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
 	private final int depth;
 	private final ProtoStreamWriterContext context;
 
-	AbstractProtoStreamWriter(WriteContext context, ProtoStreamWriterContext writerContext) {
-		super(context);
-		this.writer = context.getWriter();
-		this.depth = context.depth();
+	AbstractProtoStreamWriter(ProtobufTagMarshaller.WriteContext writeContext, ImmutableSerializationContext context, ProtoStreamWriterContext writerContext) {
+		super(writeContext, context);
+		this.writer = writeContext.getWriter();
+		this.depth = writeContext.depth();
 		this.context = writerContext;
 	}
 
 	@Override
-	public Context getContext() {
+	public ProtoStreamWriterContext getContext() {
 		return this.context;
 	}
 
@@ -204,7 +204,9 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
 
 	@Override
 	public void writeString(int index, String value) throws IOException {
-		this.writer.writeString(index, value);
+		if (value != null) {
+			this.writer.writeString(index, value);
+		}
 	}
 
 	@Override

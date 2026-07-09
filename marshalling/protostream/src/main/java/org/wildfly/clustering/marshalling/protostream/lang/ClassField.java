@@ -3,12 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.lang;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.Field;
+import org.wildfly.clustering.marshalling.protostream.FieldMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
+import org.wildfly.clustering.marshalling.protostream.ScalarClass;
+import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 
 /**
  * Various strategies for marshalling a Class.
@@ -69,8 +75,8 @@ enum ClassField implements Field<Class<?>> {
 
 	private final FieldMarshaller<Class<?>> marshaller;
 
-	ClassField(ScalarMarshaller<Class<?>> value) {
-		this(new ScalarFieldMarshaller<>(value));
+	ClassField(ScalarMarshaller<Class<?>> marshaller) {
+		this(marshaller.toFieldMarshaller());
 	}
 
 	ClassField(FieldMarshaller<Class<?>> marshaller) {

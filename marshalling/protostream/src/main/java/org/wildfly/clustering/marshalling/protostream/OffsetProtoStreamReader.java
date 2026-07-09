@@ -9,8 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.IntPredicate;
+import org.wildfly.clustering.function.Predicate;
 
 /**
  * A ProtoStream reader that applies an offset to its fields.
@@ -24,6 +25,16 @@ public class OffsetProtoStreamReader implements ProtoStreamReader {
 	OffsetProtoStreamReader(ProtoStreamReader reader, int offset) {
 		this.reader = reader;
 		this.offset = offset;
+	}
+
+	@Override
+	public Predicate<Class<?>> getResolvedClassPredicate() {
+		return this.reader.getResolvedClassPredicate();
+	}
+
+	@Override
+	public IntPredicate getRepeatedFieldPredicate() {
+		return this.reader.getRepeatedFieldPredicate();
 	}
 
 	@Override

@@ -8,7 +8,6 @@ package org.wildfly.clustering.cache.function;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -33,18 +32,18 @@ public enum MapComputeFunctionMarshaller implements ProtoStreamMarshaller<MapCom
 
 	@Override
 	public MapComputeFunction<Object, Object> readFrom(ProtoStreamReader reader) throws IOException {
-		Map<Object, Object> map = new TreeMap<>();
+		Map<Object, Object> result = reader.repeatedEntryCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
 				case ENTRY_INDEX -> {
 					Map.Entry<Object, Object> entry = reader.readObject(SimpleEntry.class);
-					map.put(entry.getKey(), entry.getValue());
+					result.put(entry.getKey(), entry.getValue());
 				}
 				default -> reader.skipField(tag);
 			}
 		}
-		return new MapComputeFunction<>(map);
+		return new MapComputeFunction<>(result);
 	}
 
 	@Override

@@ -30,6 +30,9 @@ public class PackedArrayMarshaller<T> implements ScalarMarshaller<Object> {
 	@Override
 	public Object readFrom(ProtoStreamReader reader) throws IOException {
 		int length = reader.readUInt32();
+		if (!reader.getRepeatedFieldPredicate().test(length)) {
+			throw new ArrayIndexOutOfBoundsException(length);
+		}
 		Object array = Array.newInstance(this.componentType, length);
 		for (int i = 0; i < length; ++i) {
 			Object element = this.element.readFrom(reader);

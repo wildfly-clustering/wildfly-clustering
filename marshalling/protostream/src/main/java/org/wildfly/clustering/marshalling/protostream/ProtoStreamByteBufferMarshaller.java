@@ -8,15 +8,13 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Proxy;
 import java.util.OptionalInt;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.ReadContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
-import org.infinispan.protostream.impl.TagReaderImpl;
-import org.infinispan.protostream.impl.TagWriterImpl;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
@@ -38,7 +36,8 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
 	@Override
 	public OptionalInt size(Object object) {
-		ProtoStreamSizeOperation operation = new DefaultProtoStreamSizeOperation(this.context);
+		ProtoStreamMarshaller.SizeContext context = this.context.createSizeContext();
+		ProtoStreamSizeOperation operation = new DefaultProtoStreamSizeOperation(context, this.context);
 		ProtoStreamMarshaller<Any> marshaller = operation.findMarshaller(Any.class);
 		return marshaller.size(operation, new Any(object));
 	}
@@ -57,6 +56,9 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 		if (Proxy.isProxyClass(targetClass)) {
 			return this.test(Proxy.getInvocationHandler(object));
 		}
+		if (targetClass.isSynthetic()) {
+			return Serializable.class.isAssignableFrom(targetClass);
+		}
 		while (targetClass != null) {
 			if (this.context.canMarshall(targetClass)) {
 				return true;
@@ -68,16 +70,16 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
 	@Override
 	public Object readFrom(InputStream input) throws IOException {
-		ReadContext context = TagReaderImpl.newInstance(this.context, input, input.available());
-		ProtoStreamReader reader = new DefaultProtoStreamReader(context);
+		ReadContext context = this.context.createReadContext(input);
+		ProtoStreamReader reader = new DefaultProtoStreamReader(context, this.context);
 		ProtoStreamMarshaller<Any> marshaller = reader.findMarshaller(Any.class);
 		return marshaller.readFrom(reader).get();
 	}
 
 	@Override
 	public void writeTo(OutputStream output, Object object) throws IOException {
-		WriteContext context = TagWriterImpl.newInstance(this.context, output);
-		ProtoStreamWriter writer = new DefaultProtoStreamWriter(context);
+		WriteContext context = this.context.createWriteContext(output);
+		ProtoStreamWriter writer = new DefaultProtoStreamWriter(context, this.context);
 		ProtoStreamMarshaller<Any> marshaller = writer.findMarshaller(Any.class);
 		marshaller.writeTo(writer, new Any(object));
 	}

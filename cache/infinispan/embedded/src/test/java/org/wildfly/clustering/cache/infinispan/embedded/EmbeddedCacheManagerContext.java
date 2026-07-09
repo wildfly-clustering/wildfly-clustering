@@ -18,7 +18,6 @@ import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
@@ -30,9 +29,10 @@ import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.context.AbstractContext;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Runner;
-import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
 import org.wildfly.clustering.server.jgroups.ForkChannelFactory;
 import org.wildfly.clustering.server.jgroups.JChannelContext;
 
@@ -57,7 +57,7 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 		this.accept(channel::close);
 		try {
 			ClassLoader loader = this.getClass().getClassLoader();
-			Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build()));
+			Marshaller marshaller = new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(ImmutableSerializationContext.Builder.with(ProtoStreamConfiguration.Builder.with(ClassLoaderResolver.of(loader)).build()).build()));
 			Function<String, JChannel> channelFactory = new ForkChannelFactory(channel.get());
 			JGroupsChannelConfigurator configurator = new JGroupsChannelConfigurator() {
 				@Override
@@ -102,11 +102,11 @@ public class EmbeddedCacheManagerContext extends AbstractContext<EmbeddedCacheMa
 			// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
 			builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
 				@Override
-				public void registerMarshallers(SerializationContext context) {
+				public void registerSchema(org.infinispan.protostream.SerializationContext context) {
 				}
 
 				@Override
-				public void registerSchema(SerializationContext context) {
+				public void registerMarshallers(org.infinispan.protostream.SerializationContext context) {
 				}
 			});
 			this.manager = new DefaultCacheManager(new ConfigurationBuilderHolder(loader, builder), false);

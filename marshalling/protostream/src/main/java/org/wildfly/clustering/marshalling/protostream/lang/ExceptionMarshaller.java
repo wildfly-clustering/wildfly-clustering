@@ -3,15 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.lang;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * Generic marshaller for a Throwable.
@@ -46,8 +48,8 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
 		Class<E> exceptionClass = this.exceptionClass;
 		String message = null;
 		Throwable cause = null;
-		List<StackTraceElement> stackTrace = new LinkedList<>();
-		List<Throwable> suppressed = new LinkedList<>();
+		List<StackTraceElement> stackTrace = reader.repeatedElementCollector();
+		List<Throwable> suppressed = reader.repeatedElementCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {

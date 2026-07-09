@@ -5,10 +5,13 @@
 
 package org.wildfly.clustering.marshalling;
 
+import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Boolean2DArrayAssert;
@@ -273,6 +276,21 @@ public abstract class AbstractLangTestCase {
 		Tester<TestRecord> tester = this.factory.createTester();
 		tester.accept(new TestRecord("foo", null));
 		tester.accept(new TestRecord("foo", this.random.nextInt()));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testLambda() {
+		Tester<UnaryOperator<UUID>> functionTester = this.factory.createTester((value1, value2) -> {
+			UUID value = UUID.randomUUID();
+			Assertions.assertThat(value1.apply(value)).isSameAs(value);
+			Assertions.assertThat(value2.apply(value)).isSameAs(value);
+		});
+		functionTester.accept((UnaryOperator<UUID> & Serializable) value -> value);
+
+		Tester<Supplier<UUID>> supplierTester = this.factory.createTester((value1, value2) -> Assertions.assertThat(value1.get()).isEqualTo(value2.get()));
+		UUID value = UUID.randomUUID();
+		supplierTester.accept((Supplier<UUID> & Serializable) () -> value);
 	}
 
 	private static void assertProxyEquals(Object expected, Object actual) {

@@ -7,7 +7,6 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
 import java.util.AbstractMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +37,7 @@ public class MapMarshaller<K, V, T extends Map<K, V>> extends AbstractMapMarshal
 
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
-		List<Map.Entry<K, V>> entries = new LinkedList<>();
+		List<Map.Entry<K, V>> entries = reader.repeatedElementCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {

@@ -10,7 +10,7 @@ package org.wildfly.clustering.marshalling.protostream;
  * @author Paul Ferraro
  * @param <T> the type of the associated marshaller
  */
-interface Field<T> {
+public interface Field<T> {
 	/**
 	 * Returns the index of this field.
 	 * @return the index of this field.
@@ -22,4 +22,15 @@ interface Field<T> {
 	 * @return the marshaller for this field.
 	 */
 	FieldMarshaller<T> getMarshaller();
+
+	/**
+	 * Returns a field for the specified class, or null, if not field exists.
+	 * @param <T> the field type
+	 * @param fieldClass the field type
+	 * @return a field for the specified class, or null, if not field exists.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T> Field<T> forClass(Class<T> fieldClass) {
+		return (Field<T>) AnyField.fromJavaType(fieldClass);
+	}
 }

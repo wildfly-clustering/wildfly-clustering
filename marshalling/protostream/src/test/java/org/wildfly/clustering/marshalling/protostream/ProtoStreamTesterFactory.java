@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
@@ -30,8 +29,8 @@ public class ProtoStreamTesterFactory implements MarshallingTesterFactory {
 	}
 
 	public ProtoStreamTesterFactory(SerializationContextInitializer initializer) {
-		ClassLoader loader = ClassLoader.getSystemClassLoader();
-		ImmutableSerializationContext context = SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).register(initializer).build();
+		ProtoStreamConfiguration configuration = ProtoStreamConfiguration.Builder.with(ClassLoaderResolver.of(ClassLoader.getSystemClassLoader())).build();
+		ImmutableSerializationContext context = ImmutableSerializationContext.Builder.with(configuration).register(initializer).build();
 		this.marshaller = new ProtoStreamByteBufferMarshaller(context);
 	}
 

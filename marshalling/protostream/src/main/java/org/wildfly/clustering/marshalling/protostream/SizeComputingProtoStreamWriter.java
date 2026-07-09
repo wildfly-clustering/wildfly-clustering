@@ -10,32 +10,22 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.infinispan.protostream.impl.TagWriterImpl;
-
 /**
  * A {@link ProtoStreamWriter} implementation used to compute the number of bytes that would be written to a stream.
  * @author Paul Ferraro
  */
 public class SizeComputingProtoStreamWriter extends AbstractProtoStreamWriter implements Supplier<OptionalInt>, Function<Object, OptionalInt> {
 
-	private final TagWriterImpl writer;
-	private final ProtoStreamWriterContext context;
+	private final ProtoStreamTagMarshaller.SizeContext writer;
 	private boolean present = true;
 
-	SizeComputingProtoStreamWriter(ProtoStreamSizeOperation operation, ProtoStreamWriterContext context) {
-		// Creates a TagWriter using a NoopEncoder
-		this(TagWriterImpl.newInstance(operation.getSerializationContext()), context);
+	SizeComputingProtoStreamWriter(ImmutableSerializationContext context, ProtoStreamWriterContext writerContext) {
+		this(context.createSizeContext(), context, writerContext);
 	}
 
-	private SizeComputingProtoStreamWriter(TagWriterImpl writer, ProtoStreamWriterContext writerContext) {
-		super(writer, writerContext);
+	private SizeComputingProtoStreamWriter(ProtoStreamTagMarshaller.SizeContext writer, ImmutableSerializationContext context, ProtoStreamWriterContext writerContext) {
+		super(writer, context, writerContext);
 		this.writer = writer;
-		this.context = writerContext;
-	}
-
-	@Override
-	public ProtoStreamOperation.Context getContext() {
-		return this.context;
 	}
 
 	@Override
@@ -45,7 +35,7 @@ public class SizeComputingProtoStreamWriter extends AbstractProtoStreamWriter im
 
 	@Override
 	public void writeObjectNoTag(Object value) throws IOException {
-		OptionalInt size = this.context.computeSize(value, this);
+		OptionalInt size = this.getContext().computeSize(value, this);
 		if (this.present && size.isPresent()) {
 			int length = size.getAsInt();
 			this.writeVarint32(length);
@@ -60,6 +50,6 @@ public class SizeComputingProtoStreamWriter extends AbstractProtoStreamWriter im
 	@Override
 	public OptionalInt apply(Object value) {
 		ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
-		return marshaller.size(new DefaultProtoStreamSizeOperation(this.getSerializationContext(), this.context), value);
+		return marshaller.size(new DefaultProtoStreamSizeOperation(this.getSerializationContext().createSizeContext(), this.getSerializationContext(), this.getContext()), value);
 	}
 }
