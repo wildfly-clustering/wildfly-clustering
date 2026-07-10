@@ -197,7 +197,7 @@
 			</plugins>
 		</pluginManagement>
 		<plugins>
-			<!-- Enforcer needs to run before checkstyle -->
+			<!-- enforcer:enforce must precede checkstyle:check -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
@@ -207,25 +207,25 @@
 						<goals>
 							<goal>enforce</goal>
 						</goals>
+						<configuration>
+							<rules>
+								<bannedRepositories>
+									<!-- Require TLS -->
+									<bannedRepositories>
+										<bannedRepository>http://*</bannedRepository>
+									</bannedRepositories>
+									<bannedPluginRepositories>
+										<bannedPluginRepository>http://*</bannedPluginRepository>
+									</bannedPluginRepositories>
+								</bannedRepositories>
+								<requireJavaVersion>
+									<!-- Checkstyle requires JDK 21+ -->
+									<version>[21.0,)</version>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<rules>
-						<bannedRepositories>
-							<!-- Require TLS -->
-							<bannedRepositories>
-								<bannedRepository>http://*</bannedRepository>
-							</bannedRepositories>
-							<bannedPluginRepositories>
-								<bannedPluginRepository>http://*</bannedPluginRepository>
-							</bannedPluginRepositories>
-						</bannedRepositories>
-						<requireJavaVersion>
-							<!-- Checkstyle requires JDK 21+ -->
-							<version>[21.0,)</version>
-						</requireJavaVersion>
-					</rules>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -429,6 +429,7 @@
 						<manifestEntries>
 							<Implementation-URL>${project.url}</Implementation-URL>
 							<Scm-Connection>${project.scm.connection}</Scm-Connection>
+							<Automatic-Module-Name>${project.module.name}</Automatic-Module-Name>
 						</manifestEntries>
 					</archive>
 					<skipIfEmpty>true</skipIfEmpty>
@@ -457,6 +458,7 @@
 						</manifestEntries>
 					</archive>
 					<failOnWarnings>true</failOnWarnings>
+					<legacyMode>true</legacyMode>
 				</configuration>
 				<executions>
 					<execution>
@@ -544,6 +546,38 @@
 	</build>
 
 	<profiles>
+		<profile>
+			<id>jar</id>
+			<activation>
+				<property>
+					<name>packaging</name>
+					<value>jar</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-enforcer-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>require-module-name</id>
+								<goals>
+									<goal>enforce</goal>
+								</goals>
+								<configuration>
+									<rules>
+										<requireProperty>
+											<property>project.module.name</property>
+										</requireProperty>
+									</rules>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 		<profile>
 			<id>coverage</id>
 			<properties>

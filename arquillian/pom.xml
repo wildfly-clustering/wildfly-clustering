@@ -17,6 +17,10 @@
 
 	<name>${project.repository.name}: Arquillian extension</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.arquillian</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.kohsuke.metainf-services</groupId>

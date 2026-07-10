@@ -17,6 +17,10 @@
 
 	<name>${project.cache.infinispan.persistence}: JDBC</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.cache.infinispan.persistence.jdbc</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.transaction</groupId>

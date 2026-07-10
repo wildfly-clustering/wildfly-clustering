@@ -17,6 +17,10 @@
 
 	<name>${project.session.container.servlet}: 5.0</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.session.container.servlet</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.servlet</groupId>

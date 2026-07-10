@@ -17,6 +17,10 @@
 
 	<name>${project.server}: Local implementation</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.server.local</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

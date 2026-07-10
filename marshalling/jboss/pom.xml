@@ -17,6 +17,10 @@
 
 	<name>${project.marshalling}: JBoss Marshalling</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.marshalling.jboss</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

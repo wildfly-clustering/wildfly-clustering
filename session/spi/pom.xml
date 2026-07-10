@@ -17,6 +17,10 @@
 
 	<name>${project.session}: SPI</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.session.spi</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

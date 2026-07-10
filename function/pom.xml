@@ -17,4 +17,8 @@
 
 	<name>${project.repository.name}: Functions</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.function</project.module.name>
+	</properties>
+
 </project>

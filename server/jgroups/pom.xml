@@ -17,6 +17,10 @@
 
 	<name>${project.server}: JGroups implementation</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.server.jgroups</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.kohsuke.metainf-services</groupId>
