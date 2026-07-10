@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
  * A ProtoStream size operation.
@@ -42,9 +41,9 @@ public interface ProtoStreamSizeOperation extends ProtoStreamOperation {
 	 * @return the marshalled size of the specified variable-width integer.
 	 */
 	default int varIntSize(int value) {
-		TagWriterImpl writer = TagWriterImpl.newInstance(this.getSerializationContext());
+		ProtoStreamTagMarshaller.SizeContext writer = this.getSerializationContext().createSizeContext();
 		try {
-			writer.writeVarint32(value);
+			writer.getWriter().writeVarint32(value);
 			return writer.getWrittenBytes();
 		} catch (IOException e) {
 			return WireType.MAX_VARINT_SIZE;

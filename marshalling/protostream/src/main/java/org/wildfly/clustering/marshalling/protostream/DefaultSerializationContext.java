@@ -6,29 +6,56 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.infinispan.protostream.BaseMarshaller;
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.impl.SerializationContextImpl;
+import org.infinispan.protostream.impl.TagReaderImpl;
 import org.infinispan.protostream.impl.TagWriterImpl;
+import org.wildfly.clustering.function.Supplier;
 
 /**
  * Decorates {@link SerializationContextImpl}, ensuring that all registered marshallers implement {@link ProtoStreamMarshaller}.
  * We have to use the decorator pattern since SerializationContextImpl is final.
  * @author Paul Ferraro
  */
-public class DefaultSerializationContext extends NativeSerializationContext implements SerializationContext {
-
+class DefaultSerializationContext extends NativeSerializationContext implements SerializationContext {
+	private final ProtoStreamConfiguration configuration;
 	private final org.infinispan.protostream.SerializationContext context;
+	private final Supplier<TagWriterImpl> sizeWriterFactory;
 
 	/**
 	 * Creates a new serialization context from the specified context
+	 * @param configuration the ProtoStream configuration
 	 * @param context a decorated serialization context implementation
 	 */
-	public DefaultSerializationContext(org.infinispan.protostream.SerializationContext context) {
+	DefaultSerializationContext(ProtoStreamConfiguration configuration, org.infinispan.protostream.SerializationContext context) {
 		super(context);
+		this.configuration = configuration;
 		this.context = context;
+		this.sizeWriterFactory = Supplier.of(context).thenApply(TagWriterImpl::newInstance);
+	}
+
+	@Override
+	public ProtobufTagMarshaller.ReadContext createReadContext(InputStream input, int length) throws IOException {
+		return TagReaderImpl.newInstance(this.context, input, input.available());
+	}
+
+	@Override
+	public ProtobufTagMarshaller.WriteContext createWriteContext(OutputStream output) {
+		return TagWriterImpl.newInstance(this.context, output);
+	}
+
+	@Override
+	public ProtoStreamTagMarshaller.SizeContext createSizeContext() {
+		return ProtoStreamTagMarshaller.SizeContext.of(this.sizeWriterFactory, TagWriterImpl::getWrittenBytes);
+	}
+
+	@Override
+	public ProtoStreamConfiguration getConfiguration() {
+		return this.configuration;
 	}
 
 	@Override
@@ -122,10 +149,5 @@ public class DefaultSerializationContext extends NativeSerializationContext impl
 			throw new IllegalArgumentException();
 		}
 		this.context.unregisterMarshallerProvider(provider);
-	}
-
-	@Override
-	public ImmutableSerializationContext getImmutableSerializationContext() {
-		return this.context;
 	}
 }

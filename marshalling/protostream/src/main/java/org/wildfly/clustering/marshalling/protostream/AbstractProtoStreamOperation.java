@@ -5,38 +5,33 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.OperationContext;
-import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
  * A protostream operation.
  * @author Paul Ferraro
  */
 public abstract class AbstractProtoStreamOperation implements ProtoStreamOperation, OperationContext {
+	private final ImmutableSerializationContext context;
+	private final OperationContext operationContext;
 
-	private final OperationContext context;
-
-	AbstractProtoStreamOperation(ImmutableSerializationContext context) {
-		this(TagWriterImpl.newInstance(context));
-	}
-
-	AbstractProtoStreamOperation(OperationContext context) {
+	AbstractProtoStreamOperation(OperationContext operationContext, ImmutableSerializationContext context) {
+		this.operationContext = operationContext;
 		this.context = context;
 	}
 
 	@Override
 	public ImmutableSerializationContext getSerializationContext() {
-		return this.context.getSerializationContext();
+		return this.context;
 	}
 
 	@Override
 	public Object getParam(Object key) {
-		return this.context.getParam(key);
+		return this.operationContext.getParam(key);
 	}
 
 	@Override
 	public void setParam(Object key, Object value) {
-		this.context.setParam(key, value);
+		this.operationContext.setParam(key, value);
 	}
 }

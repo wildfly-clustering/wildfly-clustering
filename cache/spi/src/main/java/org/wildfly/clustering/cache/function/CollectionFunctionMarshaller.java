@@ -7,7 +7,6 @@ package org.wildfly.clustering.cache.function;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -47,7 +46,7 @@ public class CollectionFunctionMarshaller<V, C extends Collection<V>, F extends 
 	@SuppressWarnings("unchecked")
 	@Override
 	public F readFrom(ProtoStreamReader reader) throws IOException {
-		List<V> operand = new LinkedList<>();
+		List<V> operand = reader.repeatedElementCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {

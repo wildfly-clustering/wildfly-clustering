@@ -6,15 +6,73 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.infinispan.protostream.TagReader;
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.IntPredicate;
+import org.wildfly.clustering.function.Predicate;
 
 /**
  * A {@link TagReader} with the additional ability to read an arbitrary embedded object.
  * @author Paul Ferraro
  */
 public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
+
+	/**
+	 * Returns a filter for validating a resolved class.
+	 * @return a filter for validating a resolved class.
+	 */
+	Predicate<Class<?>> getResolvedClassPredicate();
+
+	/**
+	 * Returns the filter for validating the length of a repeated field.
+	 * @return the filter for validating the length of a repeated field.
+	 */
+	IntPredicate getRepeatedFieldPredicate();
+
+	/**
+	 * Returns a list for collecting values for repeated fields.
+	 * The returned list will not grow larger than the configured limits.
+	 * @param <T> the field type
+	 * @return a list for collecting values for repeated fields.
+	 */
+	default <T> List<T> repeatedElementCollector() {
+		return new ArrayList<>(DefaultProtoStreamConfiguration.REPEATED_FIELD_CAPACITY) {
+			@Override
+			public boolean add(T value) {
+				// Validate growth in chunks
+				if (!this.isEmpty() && ((this.size() % DefaultProtoStreamConfiguration.REPEATED_FIELD_CHUNK_SIZE) == 0) && !ProtoStreamReader.this.getRepeatedFieldPredicate().test(this.size())) {
+					throw new ArrayIndexOutOfBoundsException(this.size());
+				}
+				return super.add(value);
+			}
+		};
+	}
+
+	/**
+	 * Returns a map for collecting entries for repeated fields.
+	 * The returned map will not grow larger than the configured limits.
+	 * @param <K> the entry key type
+	 * @param <V> the entry value type
+	 * @return a map for collecting entries for repeated fields.
+	 */
+	default <K, V> Map<K, V> repeatedEntryCollector() {
+		// Limit the number of length validations by chunks
+		return new HashMap<>(DefaultProtoStreamConfiguration.REPEATED_FIELD_CAPACITY) {
+			@Override
+			public V put(K key, V value) {
+				// Validate growth in chunks
+				if (!this.isEmpty() && ((this.size() % DefaultProtoStreamConfiguration.REPEATED_FIELD_CHUNK_SIZE) == 0) && !ProtoStreamReader.this.getRepeatedFieldPredicate().test(this.size())) {
+					throw new ArrayIndexOutOfBoundsException(this.size());
+				}
+				return super.put(key, value);
+			}
+		};
+	}
 
 	/**
 	 * Returns the tag of the current field, or 0 if {@link #readTag()} was not yet called for the next field.

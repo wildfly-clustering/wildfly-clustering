@@ -7,8 +7,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
 
 import org.infinispan.protostream.descriptors.WireType;
 
@@ -27,7 +26,7 @@ public class TypedArrayMarshaller implements FieldMarshaller<Object> {
 	@Override
 	public Object readFrom(ProtoStreamReader reader) throws IOException {
 		Class<?> componentType = this.componentType.readFrom(reader);
-		List<Object> list = new LinkedList<>();
+		Collection<Object> list = reader.repeatedElementCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);

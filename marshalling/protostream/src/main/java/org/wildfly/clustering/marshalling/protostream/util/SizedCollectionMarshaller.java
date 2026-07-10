@@ -7,7 +7,6 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.protostream.descriptors.WireType;
@@ -37,7 +36,7 @@ public class SizedCollectionMarshaller<E, T extends Collection<E>> extends Abstr
 	@SuppressWarnings("unchecked")
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
-		List<E> elements = new LinkedList<>();
+		List<E> elements = reader.repeatedElementCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {

@@ -10,7 +10,6 @@ import java.lang.invoke.VarHandle;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -36,7 +35,7 @@ class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<Enum
 	@Override
 	public EnumMap<E, Object> readFrom(ProtoStreamReader reader) throws IOException {
 		Class<E> enumClass = null;
-		List<Object> elements = new LinkedList<>();
+		List<Object> elements = reader.repeatedElementCollector();
 
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();

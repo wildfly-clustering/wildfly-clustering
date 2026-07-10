@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.lang.invoke.VarHandle;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +38,7 @@ public class LinkedHashMapMarshaller<K, V> extends AbstractMapMarshaller<K, V, L
 	@Override
 	public LinkedHashMap<K, V> readFrom(ProtoStreamReader reader) throws IOException {
 		boolean accessOrder = false;
-		List<Map.Entry<K, V>> entries = new LinkedList<>();
+		List<Map.Entry<K, V>> entries = reader.repeatedElementCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {

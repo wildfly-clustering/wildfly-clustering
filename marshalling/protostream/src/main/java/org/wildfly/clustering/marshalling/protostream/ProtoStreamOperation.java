@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-
 /**
  * Common interface of {@link ProtoStreamReader} and {@link ProtoStreamWriter}.
  * @author Paul Ferraro

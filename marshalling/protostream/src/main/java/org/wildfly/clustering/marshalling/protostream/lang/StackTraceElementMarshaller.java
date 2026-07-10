@@ -3,11 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.lang;
 
 import java.io.IOException;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * ProtoStream marshaller for a {@link StackTraceElement}.

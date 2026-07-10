@@ -8,7 +8,6 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -47,7 +46,7 @@ public class SortedMapMarshaller<K, V, T extends SortedMap<K, V>> extends Abstra
 	public T readFrom(ProtoStreamReader reader) throws IOException {
 		FieldSetReader<Comparator<?>> comparatorReader = reader.createFieldSetReader(ComparatorMarshaller.INSTANCE, COMPARATOR_INDEX);
 		Comparator<K> comparator = (Comparator<K>) ComparatorMarshaller.INSTANCE.createInitialValue();
-		List<Map.Entry<K, V>> entries = new LinkedList<>();
+		List<Map.Entry<K, V>> entries = reader.repeatedElementCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);

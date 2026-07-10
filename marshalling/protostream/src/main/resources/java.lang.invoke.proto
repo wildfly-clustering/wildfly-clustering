@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package java.lang.invoke;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
+
+// IDs: 6-7
+
+/**
+ * @TypeId(6)
+ */
+message SerializedLambda {
+	string	capturingClassName	= 1;
+	string	methodSignature	= 2;
+	string	methodType	= 3;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any capturedArgument	= 4;
+	string	interfaceClassName	= 5;
+	string	interfaceMethodName	= 6;
+	string	interfaceMethodSignature	= 7;
+	string	implementationClassName	= 8;
+	string	implementationMethodName	= 9;
+	string	implementationMethodSignature	= 10;
+}

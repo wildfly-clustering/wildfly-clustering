@@ -7,7 +7,6 @@ package org.wildfly.clustering.server.infinispan.provider;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -47,7 +46,7 @@ public class AddressSetFunctionMarshaller<F extends AbstractCollectionOperationF
 
 	@Override
 	public F readFrom(ProtoStreamReader reader) throws IOException {
-		List<Address> operand = new LinkedList<>();
+		List<Address> operand = reader.repeatedElementCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {

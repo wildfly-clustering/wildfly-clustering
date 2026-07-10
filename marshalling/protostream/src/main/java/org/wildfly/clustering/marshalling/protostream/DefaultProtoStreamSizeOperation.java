@@ -8,7 +8,6 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.util.OptionalInt;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractProtoStreamWriter.DefaultProtoStreamWriterContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractProtoStreamWriter.ProtoStreamWriterContext;
 
@@ -24,8 +23,8 @@ public class DefaultProtoStreamSizeOperation extends AbstractProtoStreamOperatio
 	 * Creates a new ProtoStream size operation using a new context.
 	 * @param context the serialization context
 	 */
-	DefaultProtoStreamSizeOperation(ImmutableSerializationContext context) {
-		this(context, new DefaultProtoStreamWriterContext());
+	DefaultProtoStreamSizeOperation(ProtoStreamTagMarshaller.SizeContext writer, ImmutableSerializationContext context) {
+		this(writer, context, new DefaultProtoStreamWriterContext());
 	}
 
 	/**
@@ -33,8 +32,8 @@ public class DefaultProtoStreamSizeOperation extends AbstractProtoStreamOperatio
 	 * @param context the serialization context
 	 * @param sizeContext the context of the size operation
 	 */
-	DefaultProtoStreamSizeOperation(ImmutableSerializationContext context, ProtoStreamWriterContext sizeContext) {
-		super(context);
+	DefaultProtoStreamSizeOperation(ProtoStreamTagMarshaller.SizeContext writer, ImmutableSerializationContext context, ProtoStreamWriterContext sizeContext) {
+		super(writer, context);
 		this.context = sizeContext;
 	}
 
@@ -45,7 +44,7 @@ public class DefaultProtoStreamSizeOperation extends AbstractProtoStreamOperatio
 
 	@Override
 	public <T> OptionalInt computeSize(Writable<T> operation, T value) {
-		SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this, this.context);
+		SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this.getSerializationContext(), this.context);
 		try {
 			operation.writeTo(writer, value);
 			return writer.get();

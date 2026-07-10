@@ -3,19 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.lang;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.List;
-import java.util.ServiceLoader;
 import java.util.function.Supplier;
 
 /**
  * Methods requiring permission checking when a security manager is enabled.
  * @author Paul Ferraro
  */
-@SuppressWarnings("removal")
 class Privileged {
 	private Privileged() {
 		// Hide
@@ -29,6 +25,7 @@ class Privileged {
 		return getClassLoader(module::getClassLoader);
 	}
 
+	@SuppressWarnings("removal")
 	private static ClassLoader getClassLoader(Supplier<ClassLoader> provider) {
 		if (System.getSecurityManager() == null) {
 			return provider.get();
@@ -37,15 +34,6 @@ class Privileged {
 			@Override
 			public ClassLoader run() {
 				return provider.get();
-			}
-		});
-	}
-
-	static <T> List<T> loadAll(Class<T> targetClass, ClassLoader loader) {
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public List<T> run() {
-				return ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).toList();
 			}
 		});
 	}

@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.lang;
+
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
  * Serialization context initializer for the {@link java.lang} package.
@@ -11,20 +14,16 @@ package org.wildfly.clustering.marshalling.protostream;
  */
 public class LangSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-	private final ClassLoaderMarshaller loaderMarshaller;
-
 	/**
 	 * Creates a serialization context initializer for the the {@link java.lang} package using the specified class loader marshaller.
-	 * @param loaderMarshaller a class loader marshaller
 	 */
-	public LangSerializationContextInitializer(ClassLoaderMarshaller loaderMarshaller) {
+	public LangSerializationContextInitializer() {
 		super(Class.class.getPackage());
-		this.loaderMarshaller = loaderMarshaller;
 	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new ClassMarshaller(this.loaderMarshaller));
+		context.registerMarshaller(new ClassMarshaller(context.getConfiguration().getClassLoaderResolver()));
 		context.registerMarshaller(StackTraceElementMarshaller.INSTANCE);
 		context.registerMarshaller(new ExceptionMarshaller<>(Throwable.class));
 	}

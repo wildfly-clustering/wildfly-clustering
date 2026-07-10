@@ -7,7 +7,6 @@ package org.wildfly.clustering.session.cache.attributes.fine;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -32,18 +31,18 @@ public enum SessionAttributeMapComputeFunctionMarshaller implements ProtoStreamM
 
 	@Override
 	public SessionAttributeMapComputeFunction<Object> readFrom(ProtoStreamReader reader) throws IOException {
-		Map<String, Object> map = new TreeMap<>();
+		Map<String, Object> attributes = reader.repeatedEntryCollector();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
 				case ENTRY_INDEX -> {
 					Map.Entry<String, Object> entry = reader.readObject(SessionAttributeMapEntry.class);
-					map.put(entry.getKey(), entry.getValue());
+					attributes.put(entry.getKey(), entry.getValue());
 				}
 				default -> reader.skipField(tag);
 			}
 		}
-		return new SessionAttributeMapComputeFunction<>(map);
+		return new SessionAttributeMapComputeFunction<>(attributes);
 	}
 
 	@Override

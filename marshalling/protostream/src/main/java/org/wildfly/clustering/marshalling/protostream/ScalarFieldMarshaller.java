@@ -14,7 +14,7 @@ import org.infinispan.protostream.descriptors.WireType;
  * @author Paul Ferraro
  * @param <T> the type of this marshaller
  */
-public class ScalarFieldMarshaller<T> implements FieldMarshaller<T> {
+class ScalarFieldMarshaller<T> implements FieldMarshaller<T> {
 
 	private final ScalarMarshaller<T> marshaller;
 

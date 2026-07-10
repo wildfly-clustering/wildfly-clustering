@@ -30,6 +30,14 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
 	WireType getWireType();
 
 	/**
+	 * Returns a field marshaller for this scalar marshaller.
+	 * @return a field marshaller for this scalar marshaller.
+	 */
+	default FieldMarshaller<T> toFieldMarshaller() {
+		return new ScalarFieldMarshaller<>(this);
+	}
+
+	/**
 	 * Returns a marshaller for a wrapper of this scalar value, using the specified wrapping and unwrapping functions.
 	 * @param <V> the wrapper type
 	 * @param targetClass the wrapper marshaller type

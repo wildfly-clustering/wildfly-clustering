@@ -78,6 +78,10 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 			return AnyField.PROXY;
 		}
 
+		if (valueClass.isSynthetic()) {
+			return AnyField.SYNTHETIC;
+		}
+
 		BaseMarshaller<?> marshaller = writer.findMarshaller(valueClass);
 		return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_OBJECT : AnyField.NAMED_OBJECT;
 	}

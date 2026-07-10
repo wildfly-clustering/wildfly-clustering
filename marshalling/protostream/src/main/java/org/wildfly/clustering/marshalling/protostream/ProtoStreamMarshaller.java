@@ -17,23 +17,16 @@ import org.wildfly.clustering.function.Supplier;
  * @author Paul Ferraro
  * @param <T> the type of this marshaller.
  */
-public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Marshallable<T> {
-
-	@Override
-	default String getTypeName() {
-		Class<?> targetClass = this.getJavaClass();
-		Package targetPackage = targetClass.getPackage();
-		return (targetPackage != null) ? (targetPackage.getName() + '.' + targetClass.getSimpleName()) : targetClass.getSimpleName();
-	}
+public interface ProtoStreamMarshaller<T> extends ProtoStreamTagMarshaller<T>, Marshallable<T> {
 
 	@Override
 	default T read(ReadContext context) throws IOException {
-		return this.readFrom(new DefaultProtoStreamReader(context));
+		return this.readFrom(new DefaultProtoStreamReader(context, (ImmutableSerializationContext) context.getSerializationContext()));
 	}
 
 	@Override
 	default void write(WriteContext context, T value) throws IOException {
-		this.writeTo(new DefaultProtoStreamWriter(context), value);
+		this.writeTo(new DefaultProtoStreamWriter(context, (ImmutableSerializationContext) context.getSerializationContext()), value);
 	}
 
 	/**
