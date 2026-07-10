@@ -15,7 +15,7 @@ import java.util.List;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ProtobufTagMarshaller;
-import org.infinispan.protostream.impl.SerializationContextImpl;
+import org.infinispan.protostream.ProtobufUtil;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 import org.wildfly.clustering.marshalling.protostream.lang.LangSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.lang.invoke.LangInvokeSerializationContextInitializer;
@@ -102,7 +102,7 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 		private final SerializationContext context;
 
 		DefaultBuilder(ProtoStreamConfiguration configuration) {
-			this(new DefaultSerializationContext(configuration, new SerializationContextImpl(configuration)));
+			this(new DefaultSerializationContext(configuration, ProtobufUtil.newSerializationContext(configuration)));
 		}
 
 		DefaultBuilder(SerializationContext context) {

@@ -11,13 +11,13 @@ import java.io.OutputStream;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ProtobufTagMarshaller;
-import org.infinispan.protostream.impl.SerializationContextImpl;
+import org.infinispan.protostream.WrappedMessage;
 import org.infinispan.protostream.impl.TagReaderImpl;
 import org.infinispan.protostream.impl.TagWriterImpl;
 import org.wildfly.clustering.function.Supplier;
 
 /**
- * Decorates {@link SerializationContextImpl}, ensuring that all registered marshallers implement {@link ProtoStreamMarshaller}.
+ * Decorates an {@link org.infinispan.protostream.SerializationContext}, ensuring that all registered marshallers implement {@link ProtoStreamMarshaller}.
  * We have to use the decorator pattern since SerializationContextImpl is final.
  * @author Paul Ferraro
  */
@@ -33,6 +33,13 @@ class DefaultSerializationContext extends NativeSerializationContext implements 
 	 */
 	DefaultSerializationContext(ProtoStreamConfiguration configuration, org.infinispan.protostream.SerializationContext context) {
 		super(context);
+		// Unregister WrappedMessage marshaller and schema
+		// We will replace this with Any
+		context.unregisterMarshaller(context.getMarshaller(WrappedMessage.class));
+		context.unregisterProtoFile(WrappedMessage.PROTO_FILE);
+		if (context.canMarshall(WrappedMessage.class)) {
+			throw new IllegalStateException();
+		}
 		this.configuration = configuration;
 		this.context = context;
 		this.sizeWriterFactory = Supplier.of(context).thenApply(TagWriterImpl::newInstance);
