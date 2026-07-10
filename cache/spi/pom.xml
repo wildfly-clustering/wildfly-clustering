@@ -17,6 +17,10 @@
 
 	<name>${project.cache}: SPI</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.cache.spi</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.kohsuke.metainf-services</groupId>

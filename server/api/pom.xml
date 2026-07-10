@@ -17,4 +17,8 @@
 
 	<name>${project.server}: API</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.server.api</project.module.name>
+	</properties>
+
 </project>

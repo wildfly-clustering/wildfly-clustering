@@ -17,6 +17,10 @@
 
 	<name>${project.session}: Cache</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.session.cache</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

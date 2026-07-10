@@ -17,6 +17,10 @@
 
 	<name>${project.session.infinispan}: Remote</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.session.infinispan.remote</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.transaction</groupId>

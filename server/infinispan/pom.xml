@@ -17,6 +17,10 @@
 
 	<name>${project.server}: Infinispan implementation</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.server.infinispan</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.transaction</groupId>

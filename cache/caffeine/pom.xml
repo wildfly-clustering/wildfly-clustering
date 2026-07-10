@@ -17,6 +17,10 @@
 
 	<name>${project.cache}: Caffeine</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.cache.caffeine</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
