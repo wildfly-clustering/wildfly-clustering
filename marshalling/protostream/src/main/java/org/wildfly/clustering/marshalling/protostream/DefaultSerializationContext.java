@@ -57,7 +57,7 @@ class DefaultSerializationContext extends NativeSerializationContext implements 
 	}
 
 	@Override
-	public Stream<Class<?>> streamTypes() {
+	public Stream<Class<?>> stream() {
 		return this.getGenericDescriptors().values().stream().map(this.type);
 	}
 
