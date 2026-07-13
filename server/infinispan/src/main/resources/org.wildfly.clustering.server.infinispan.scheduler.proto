@@ -22,12 +22,6 @@ message ScheduleCommand {
 }
 
 /**
- * @TypeId(182)
- */
-message EntriesCommand {
-}
-
-/**
  * @TypeId(183)
  */
 message ContainsCommand {

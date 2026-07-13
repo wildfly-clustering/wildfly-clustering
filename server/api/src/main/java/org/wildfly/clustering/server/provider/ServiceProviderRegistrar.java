@@ -24,7 +24,9 @@ public interface ServiceProviderRegistrar<T, M extends GroupMember> extends Serv
 	 * @return a service provider registration to be closed when the local group member no longer provides the specified service.
 	 */
 	@Override
-	ServiceProviderRegistration<T, M> register(T service);
+	default ServiceProviderRegistration<T, M> register(T service) {
+		return this.register(service, ServiceProviderRegistrationListener.of());
+	}
 
 	/**
 	 * Registers the local group member as a provider of the specified service, using the specified listener.
