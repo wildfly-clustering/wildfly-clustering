@@ -22,18 +22,3 @@ message DefaultSessionAccessMetaDataEntry {
 	java.time.Duration	sinceCreation	= 1;
 	java.time.Duration	lastAccess	= 2;
 }
-
-/**
- * @TypeId(207)
- */
-message DefaultSessionCreationMetaDataEntryFunction {
-	org.wildfly.clustering.server.offset.DurationOffset	timeoutOffset	= 1;
-}
-
-/**
- * @TypeId(208)
- */
-message DefaultSessionAccessMetaDataEntryFunction {
-	org.wildfly.clustering.server.offset.DurationOffset	sinceCreationOffset	= 1;
-	org.wildfly.clustering.server.offset.DurationOffset	lastAccessOffset	= 2;
-}
