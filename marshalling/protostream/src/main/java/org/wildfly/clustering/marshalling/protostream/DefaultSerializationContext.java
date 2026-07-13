@@ -8,13 +8,19 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.infinispan.protostream.BaseMarshaller;
+import org.infinispan.protostream.BaseMarshallerDelegate;
 import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.WrappedMessage;
+import org.infinispan.protostream.descriptors.GenericDescriptor;
 import org.infinispan.protostream.impl.TagReaderImpl;
 import org.infinispan.protostream.impl.TagWriterImpl;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 
 /**
  * Decorates an {@link org.infinispan.protostream.SerializationContext}, ensuring that all registered marshallers implement {@link ProtoStreamMarshaller}.
@@ -25,6 +31,7 @@ class DefaultSerializationContext extends NativeSerializationContext implements 
 	private final ProtoStreamConfiguration configuration;
 	private final org.infinispan.protostream.SerializationContext context;
 	private final Supplier<TagWriterImpl> sizeWriterFactory;
+	private final Function<GenericDescriptor, Class<?>> type;
 
 	/**
 	 * Creates a new serialization context from the specified context
@@ -43,6 +50,15 @@ class DefaultSerializationContext extends NativeSerializationContext implements 
 		this.configuration = configuration;
 		this.context = context;
 		this.sizeWriterFactory = Supplier.of(context).thenApply(TagWriterImpl::newInstance);
+		Function<GenericDescriptor, Integer> typeId = GenericDescriptor::getTypeId;
+		Function<GenericDescriptor, BaseMarshaller<?>> identifiedMarshaller = typeId.thenApplyAsInt(Integer::intValue).thenApply(this::getMarshallerDelegate).thenApply(BaseMarshallerDelegate::getMarshaller);
+		Function<GenericDescriptor, BaseMarshaller<?>> namedMarshaller = UnaryOperator.<GenericDescriptor>identity().thenApply(GenericDescriptor::getFullName).thenApply(this::getMarshaller);
+		this.type = Function.when(typeId.thenTest(Objects::nonNull), identifiedMarshaller, namedMarshaller).thenApply(BaseMarshaller::getJavaClass);
+	}
+
+	@Override
+	public Stream<Class<?>> streamTypes() {
+		return this.getGenericDescriptors().values().stream().map(this.type);
 	}
 
 	@Override
