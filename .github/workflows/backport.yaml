@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - origin: ${{ github.event.pull_request.base.repo.default_branch }}
-            target: 10.x
+            target: 11.x
     if: (github.event.pull_request.state == 'closed') && contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
     runs-on: ubuntu-latest
     steps:
