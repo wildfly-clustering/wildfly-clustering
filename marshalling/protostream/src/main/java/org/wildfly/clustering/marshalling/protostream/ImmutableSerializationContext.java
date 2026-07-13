@@ -51,10 +51,10 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 	<T> ProtoStreamMarshaller<T> getMarshaller(String fullTypeName);
 
 	/**
-	 * Returns a stream of marshaller types.
-	 * @return a stream of marshaller types.
+	 * Returns a stream of marshallable types.
+	 * @return a stream of marshallable types.
 	 */
-	Stream<Class<?>> streamTypes();
+	Stream<Class<?>> stream();
 
 	/**
 	 * Returns a reader context for the specified input.
@@ -182,7 +182,7 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 		@Override
 		public ImmutableSerializationContext build() {
 			// Verify that there are no message types without a corresponding marshaller
-			this.context.streamTypes().allMatch(Predicate.of(true));
+			this.context.stream().allMatch(Predicate.of(true));
 			Deque<Integer> missingTypeIds = new LinkedList<>();
 			for (int typeId = 0; typeId <= Integer.MAX_VALUE; ++typeId) {
 				try {
