@@ -138,7 +138,7 @@ enum AnyField implements Field<Object> {
 			return WireType.LENGTH_DELIMITED;
 		}
 	}),
-	SYNTHETIC(LambdaMarshaller.INSTANCE),
+	LAMBDA(LambdaMarshaller.INSTANCE),
 	;
 	private static final AnyField[] VALUES = AnyField.values();
 	private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();

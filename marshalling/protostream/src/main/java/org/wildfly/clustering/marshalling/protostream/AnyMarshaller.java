@@ -6,7 +6,12 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Proxy;
+import java.util.Optional;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -78,8 +83,17 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 			return AnyField.PROXY;
 		}
 
-		if (valueClass.isSynthetic()) {
-			return AnyField.SYNTHETIC;
+		if (valueClass.isSynthetic() && !valueClass.isLocalClass() && !valueClass.isAnonymousClass() && (value instanceof Serializable)) {
+			Optional<MethodHandle> writeReplace = Privileged.findMethodHandle(valueClass, "writeReplace", MethodType.methodType(Object.class));
+			if (writeReplace.isPresent()) {
+				try {
+					if (writeReplace.get().invoke(value) instanceof SerializedLambda) {
+						return AnyField.LAMBDA;
+					}
+				} catch (Throwable e) {
+					// Ignore
+				}
+			}
 		}
 
 		BaseMarshaller<?> marshaller = writer.findMarshaller(valueClass);

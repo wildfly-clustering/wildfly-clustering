@@ -8,14 +8,18 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.stream.Stream;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.ProtobufUtil;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 import org.wildfly.clustering.marshalling.protostream.lang.LangSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.lang.invoke.LangInvokeSerializationContextInitializer;
@@ -45,6 +49,12 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 
 	@Override
 	<T> ProtoStreamMarshaller<T> getMarshaller(String fullTypeName);
+
+	/**
+	 * Returns a stream of marshaller types.
+	 * @return a stream of marshaller types.
+	 */
+	Stream<Class<?>> streamTypes();
 
 	/**
 	 * Returns a reader context for the specified input.
@@ -138,26 +148,23 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 		private void loadWildFly(ClassLoader loader) {
 			List<SerializationContextInitializer> loaded = Privileged.loadAll(SerializationContextInitializer.class, loader);
 			if (!loaded.isEmpty()) {
-				List<SerializationContextInitializer> unregistered = new LinkedList<>(loaded);
-				DescriptorParserException exception = null;
-				while (!unregistered.isEmpty()) {
-					int size = unregistered.size();
-					Iterator<SerializationContextInitializer> remaining = unregistered.iterator();
-					while (remaining.hasNext()) {
-						SerializationContextInitializer initializer = remaining.next();
-						try {
-							this.register(initializer);
-							LOGGER.log(System.Logger.Level.DEBUG, "Registering marshallers/schemas from {0}", initializer.getClass().getName());
-							remaining.remove();
-						} catch (DescriptorParserException e) {
-							// Descriptor might fail to parse due to ordering issues
-							// If so, retry this next iteration
-							exception = e;
+				Queue<SerializationContextInitializer> initializers = new ArrayDeque<>(loaded);
+				List<DescriptorParserException> exceptions = new ArrayList<>(loaded.size());
+				while (!initializers.isEmpty()) {
+					SerializationContextInitializer initializer = initializers.remove();
+					try {
+						initializer.initialize(this.context);
+						LOGGER.log(System.Logger.Level.DEBUG, "Registered schemas and marshallers from {0}", initializer.getClass().getName());
+						exceptions.clear();
+					} catch (DescriptorParserException e) {
+						// Descriptor might fail to parse due to ordering issues
+						exceptions.add(e);
+						// Add to back of queue
+						initializers.add(initializer);
+						// Give up if all initializers failed
+						if (exceptions.size() == initializers.size()) {
+							throw exceptions.get(0);
 						}
-					}
-					// If we have made no progress give up
-					if ((exception != null) && unregistered.size() == size) {
-						throw exception;
 					}
 				}
 			}
@@ -174,6 +181,8 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 
 		@Override
 		public ImmutableSerializationContext build() {
+			// Verify that there are no message types without a corresponding marshaller
+			this.context.streamTypes().allMatch(Predicate.of(true));
 			Deque<Integer> missingTypeIds = new LinkedList<>();
 			for (int typeId = 0; typeId <= Integer.MAX_VALUE; ++typeId) {
 				try {
