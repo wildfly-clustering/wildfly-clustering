@@ -7,6 +7,7 @@ package org.wildfly.clustering.session.cache;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.session.Session;
 
 /**
@@ -45,5 +46,10 @@ public class CachedSession<C> extends DecoratedSession<C> implements CacheableSe
 	@Override
 	public Batch resume() {
 		return this.batch.resume();
+	}
+
+	@Override
+	public Context<Batch> resumeWithContext() {
+		return this.batch.resumeWithContext();
 	}
 }
