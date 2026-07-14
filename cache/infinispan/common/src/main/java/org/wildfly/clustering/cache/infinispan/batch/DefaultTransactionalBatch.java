@@ -144,10 +144,10 @@ public class DefaultTransactionalBatch extends AbstractContextualBatch implement
 	public TransactionalSuspendedBatch suspend() {
 		LOGGER.log(System.Logger.Level.TRACE, "Suspending batch {0}", this);
 		try {
-			Transaction suspendedTx = this.tm.suspend();
-			if (suspendedTx != this.tx) {
+			if (this.tm.getTransaction() != this.tx) {
 				throw new IllegalStateException(this.tx.toString());
 			}
+			this.tm.suspend();
 			return this;
 		} catch (SystemException e) {
 			throw this.exceptionTransformer.apply(e);
