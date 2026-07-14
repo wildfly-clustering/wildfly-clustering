@@ -62,10 +62,10 @@ public class CachedSessionManagerTestCase {
 		doReturn(batch1, batch2).when(batchFactory).get();
 		doReturn(suspended1).when(batch1).suspend();
 		doReturn(suspended2).when(batch2).suspend();
-		doReturn(batch1).when(suspended1).resume();
-		doReturn(batch2).when(suspended2).resume();
 		doReturn(resumed1).when(suspended1).resumeWithContext();
 		doReturn(resumed2).when(suspended2).resumeWithContext();
+		doReturn(batch1).when(resumed1).get();
+		doReturn(batch2).when(resumed2).get();
 		doReturn(CompletableFuture.completedStage(expected1), CompletableFuture.completedStage(expected2)).when(manager).findSessionAsync(id);
 
 		doReturn(id).when(expected1).getId();
@@ -121,12 +121,15 @@ public class CachedSessionManagerTestCase {
 			assertThat(subject.keySet()).containsExactly(id);
 		}
 
-		order.verify(suspended1).resume();
+		order.verify(suspended1).resumeWithContext();
+		order.verify(resumed1).get();
 		order.verify(expected1).close();
 		order.verify(batch1).close();
+		order.verify(resumed1).close();
 		verifyNoMoreInteractions(suspended1);
 		verifyNoMoreInteractions(batch1);
 		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(resumed1);
 
 		// Cache should now be empty
 		assertThat(subject.keySet()).isEmpty();
@@ -152,9 +155,11 @@ public class CachedSessionManagerTestCase {
 			assertThat(subject.keySet()).containsExactly(id);
 		}
 
-		order.verify(suspended2).resume();
+		order.verify(suspended2).resumeWithContext();
+		order.verify(resumed2).get();
 		order.verify(expected2).close();
 		order.verify(batch2).close();
+		order.verify(resumed2).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(suspended2);
 		verifyNoMoreInteractions(batch2);
@@ -201,6 +206,8 @@ public class CachedSessionManagerTestCase {
 		doReturn(batch2).when(suspended2).resume();
 		doReturn(resumed1).when(suspended1).resumeWithContext();
 		doReturn(resumed2).when(suspended2).resumeWithContext();
+		doReturn(batch1).when(resumed1).get();
+		doReturn(batch2).when(resumed2).get();
 		doReturn(future1, future2).when(manager).findSessionAsync(id);
 
 		doReturn(id).when(expected1).getId();
@@ -263,9 +270,11 @@ public class CachedSessionManagerTestCase {
 			assertThat(session.getAttributes()).isSameAs(attributes1);
 		}
 
-		order.verify(suspended1).resume();
+		order.verify(suspended1).resumeWithContext();
+		order.verify(resumed1).get();
 		order.verify(expected1).close();
 		order.verify(batch1).close();
+		order.verify(resumed1).close();
 		verifyNoMoreInteractions(suspended1);
 		verifyNoMoreInteractions(batch1);
 		verifyNoMoreInteractions(batchFactory);
@@ -300,9 +309,11 @@ public class CachedSessionManagerTestCase {
 			assertThat(subject.keySet()).containsExactly(id);
 		}
 
-		order.verify(suspended2).resume();
+		order.verify(suspended2).resumeWithContext();
+		order.verify(resumed2).get();
 		order.verify(expected2).close();
 		order.verify(batch2).close();
+		order.verify(resumed2).close();
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(batch2);
@@ -341,6 +352,8 @@ public class CachedSessionManagerTestCase {
 		doReturn(batch2).when(suspended2).resume();
 		doReturn(resumed1).when(suspended1).resumeWithContext();
 		doReturn(resumed2).when(suspended2).resumeWithContext();
+		doReturn(batch1).when(resumed1).get();
+		doReturn(batch2).when(resumed2).get();
 		doReturn(CompletableFuture.completedStage(null)).when(manager).findSessionAsync(id);
 
 		InOrder order = inOrder(batchFactory, manager, batch1, batch2, suspended1, suspended2, resumed1, resumed2);
@@ -352,8 +365,10 @@ public class CachedSessionManagerTestCase {
 		order.verify(suspended1).resumeWithContext();
 		order.verify(manager).findSessionAsync(id);
 		order.verify(resumed1).close();
-		order.verify(suspended1).resume();
+		order.verify(suspended1).resumeWithContext();
+		order.verify(resumed1).get();
 		order.verify(batch1).close();
+		order.verify(resumed1).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch1);
@@ -369,8 +384,10 @@ public class CachedSessionManagerTestCase {
 		order.verify(suspended2).resumeWithContext();
 		order.verify(manager).findSessionAsync(id);
 		order.verify(resumed2).close();
-		order.verify(suspended2).resume();
+		order.verify(suspended2).resumeWithContext();
+		order.verify(resumed2).get();
 		order.verify(batch2).close();
+		order.verify(resumed2).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch2);
@@ -404,6 +421,7 @@ public class CachedSessionManagerTestCase {
 		doReturn(suspended).when(batch).suspend();
 		doReturn(batch).when(suspended).resume();
 		doReturn(resumed).when(suspended).resumeWithContext();
+		doReturn(batch).when(resumed).get();
 		doReturn(future).when(manager).findSessionAsync(id);
 
 		InOrder order = inOrder(batchFactory, manager, batch, suspended, resumed);
@@ -435,8 +453,10 @@ public class CachedSessionManagerTestCase {
 		assertThat(stage1).isCompletedWithValue(null);
 		assertThat(stage2).isCompletedWithValue(null);
 
-		order.verify(suspended).resume();
+		order.verify(suspended).resumeWithContext();
+		order.verify(resumed).get();
 		order.verify(batch).close();
+		order.verify(resumed).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch);
@@ -472,6 +492,7 @@ public class CachedSessionManagerTestCase {
 		doReturn(suspended).when(batch).suspend();
 		doReturn(batch).when(suspended).resume();
 		doReturn(resumed).when(suspended).resumeWithContext();
+		doReturn(batch).when(resumed).get();
 		doReturn(CompletableFuture.completedStage(expected)).when(manager).findSessionAsync(id);
 
 		doReturn(id).when(expected).getId();
@@ -515,9 +536,11 @@ public class CachedSessionManagerTestCase {
 			assertThat(subject.keySet()).containsExactly(id);
 		}
 
-		order.verify(suspended).resume();
+		order.verify(suspended).resumeWithContext();
+		order.verify(resumed).get();
 		order.verify(expected).close();
 		order.verify(batch).close();
+		order.verify(resumed).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch);
@@ -560,6 +583,7 @@ public class CachedSessionManagerTestCase {
 		doReturn(suspended).when(batch).suspend();
 		doReturn(batch).when(suspended).resume();
 		doReturn(resumed).when(suspended).resumeWithContext();
+		doReturn(batch).when(resumed).get();
 		doReturn(future).when(manager).findSessionAsync(id);
 
 		doReturn(id).when(expected).getId();
@@ -636,9 +660,11 @@ public class CachedSessionManagerTestCase {
 			verifyNoMoreInteractions(resumed);
 		}
 
-		order.verify(suspended).resume();
+		order.verify(suspended).resumeWithContext();
+		order.verify(resumed).get();
 		order.verify(expected).close();
 		order.verify(batch).close();
+		order.verify(resumed).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch);
@@ -683,6 +709,8 @@ public class CachedSessionManagerTestCase {
 		doReturn(batch2).when(suspended2).resume();
 		doReturn(resumed1).when(suspended1).resumeWithContext();
 		doReturn(resumed2).when(suspended2).resumeWithContext();
+		doReturn(batch1).when(resumed1).get();
+		doReturn(batch2).when(resumed2).get();
 		doReturn(CompletableFuture.failedFuture(new Exception())).when(manager).findSessionAsync(id);
 
 		InOrder order = inOrder(batchFactory, manager, batch1, batch2, suspended1, suspended2, resumed1, resumed2);
@@ -694,8 +722,10 @@ public class CachedSessionManagerTestCase {
 		order.verify(suspended1).resumeWithContext();
 		order.verify(manager).findSessionAsync(id);
 		order.verify(resumed1).close();
-		order.verify(suspended1).resume();
+		order.verify(suspended1).resumeWithContext();
+		order.verify(resumed1).get();
 		order.verify(batch1).close();
+		order.verify(resumed1).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch1);
@@ -711,8 +741,10 @@ public class CachedSessionManagerTestCase {
 		order.verify(suspended2).resumeWithContext();
 		order.verify(manager).findSessionAsync(id);
 		order.verify(resumed2).close();
-		order.verify(suspended2).resume();
+		order.verify(suspended2).resumeWithContext();
+		order.verify(resumed2).get();
 		order.verify(batch2).close();
+		order.verify(resumed2).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch2);
@@ -746,6 +778,7 @@ public class CachedSessionManagerTestCase {
 		doReturn(suspended).when(batch).suspend();
 		doReturn(batch).when(suspended).resume();
 		doReturn(resumed).when(suspended).resumeWithContext();
+		doReturn(batch).when(resumed).get();
 		doReturn(future).when(manager).findSessionAsync(id);
 
 		InOrder order = inOrder(batchFactory, manager, batch, suspended, resumed);
@@ -777,8 +810,10 @@ public class CachedSessionManagerTestCase {
 
 		future.completeExceptionally(new Exception());
 
-		order.verify(suspended).resume();
+		order.verify(suspended).resumeWithContext();
+		order.verify(resumed).get();
 		order.verify(batch).close();
+		order.verify(resumed).close();
 		verifyNoMoreInteractions(batch);
 		verifyNoMoreInteractions(suspended);
 		verifyNoMoreInteractions(resumed);
@@ -825,6 +860,8 @@ public class CachedSessionManagerTestCase {
 		doReturn(batch2).when(suspended2).resume();
 		doReturn(resumed1).when(suspended1).resumeWithContext();
 		doReturn(resumed2).when(suspended2).resumeWithContext();
+		doReturn(batch1).when(resumed1).get();
+		doReturn(batch2).when(resumed2).get();
 		doReturn(CompletableFuture.completedStage(expected1), CompletableFuture.completedStage(expected2)).when(manager).createSessionAsync(id, creationTime);
 		doReturn(id).when(expected1).getId();
 		doReturn(true).when(expected1).isValid();
@@ -879,9 +916,11 @@ public class CachedSessionManagerTestCase {
 			assertThat(subject.keySet()).containsExactly(id);
 		}
 
-		order.verify(suspended1).resume();
+		order.verify(suspended1).resumeWithContext();
+		order.verify(resumed1).get();
 		order.verify(expected1).close();
 		order.verify(batch1).close();
+		order.verify(resumed1).close();
 		verifyNoMoreInteractions(suspended1);
 		verifyNoMoreInteractions(batch1);
 		verifyNoMoreInteractions(batchFactory);
@@ -910,9 +949,11 @@ public class CachedSessionManagerTestCase {
 			assertThat(subject.keySet()).containsExactly(id);
 		}
 
-		order.verify(suspended2).resume();
+		order.verify(suspended2).resumeWithContext();
+		order.verify(resumed2).get();
 		order.verify(expected2).close();
 		order.verify(batch2).close();
+		order.verify(resumed2).close();
 		verifyNoMoreInteractions(suspended2);
 		verifyNoMoreInteractions(batch2);
 		verifyNoMoreInteractions(batchFactory);
@@ -958,6 +999,8 @@ public class CachedSessionManagerTestCase {
 		doReturn(batch2).when(suspended2).resume();
 		doReturn(resumed1).when(suspended1).resumeWithContext();
 		doReturn(resumed2).when(suspended2).resumeWithContext();
+		doReturn(batch1).when(resumed1).get();
+		doReturn(batch2).when(resumed2).get();
 		doReturn(future1, future2).when(manager).createSessionAsync(id, creationTime);
 
 		doReturn(id).when(expected1).getId();
@@ -1019,9 +1062,11 @@ public class CachedSessionManagerTestCase {
 			assertThat(session.getAttributes()).isSameAs(attributes1);
 		}
 
-		order.verify(suspended1).resume();
+		order.verify(suspended1).resumeWithContext();
+		order.verify(resumed1).get();
 		order.verify(expected1).close();
 		order.verify(batch1).close();
+		order.verify(resumed1).close();
 		verifyNoMoreInteractions(suspended1);
 		verifyNoMoreInteractions(batch1);
 		verifyNoMoreInteractions(batchFactory);
@@ -1055,9 +1100,11 @@ public class CachedSessionManagerTestCase {
 			assertThat(subject.keySet()).containsExactly(id);
 		}
 
-		order.verify(suspended2).resume();
+		order.verify(suspended2).resumeWithContext();
+		order.verify(resumed2).get();
 		order.verify(expected2).close();
 		order.verify(batch2).close();
+		order.verify(resumed2).close();
 		verifyNoMoreInteractions(suspended2);
 		verifyNoMoreInteractions(batch2);
 		verifyNoMoreInteractions(batchFactory);
@@ -1095,6 +1142,8 @@ public class CachedSessionManagerTestCase {
 		doReturn(batch2).when(suspended2).resume();
 		doReturn(resumed1).when(suspended1).resumeWithContext();
 		doReturn(resumed2).when(suspended2).resumeWithContext();
+		doReturn(batch1).when(resumed1).get();
+		doReturn(batch2).when(resumed2).get();
 		doReturn(CompletableFuture.failedFuture(new Exception())).when(manager).createSessionAsync(id, creationTime);
 
 		InOrder order = inOrder(batchFactory, manager, batch1, suspended1, resumed1, batch2, suspended2, resumed2);
@@ -1106,8 +1155,10 @@ public class CachedSessionManagerTestCase {
 		order.verify(suspended1).resumeWithContext();
 		order.verify(manager).createSessionAsync(id, creationTime);
 		order.verify(resumed1).close();
-		order.verify(suspended1).resume();
+		order.verify(suspended1).resumeWithContext();
+		order.verify(resumed1).get();
 		order.verify(batch1).close();
+		order.verify(resumed1).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch1);
@@ -1123,8 +1174,10 @@ public class CachedSessionManagerTestCase {
 		order.verify(suspended2).resumeWithContext();
 		order.verify(manager).createSessionAsync(id, creationTime);
 		order.verify(resumed2).close();
-		order.verify(suspended2).resume();
+		order.verify(suspended2).resumeWithContext();
+		order.verify(resumed2).get();
 		order.verify(batch2).close();
+		order.verify(resumed2).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch2);
@@ -1159,6 +1212,7 @@ public class CachedSessionManagerTestCase {
 		doReturn(suspended).when(batch).suspend();
 		doReturn(batch).when(suspended).resume();
 		doReturn(resumed).when(suspended).resumeWithContext();
+		doReturn(batch).when(resumed).get();
 		doReturn(future).when(manager).createSessionAsync(id, creationTime);
 
 		InOrder order = inOrder(batchFactory, manager, batch, suspended, resumed);
@@ -1190,8 +1244,10 @@ public class CachedSessionManagerTestCase {
 
 		future.completeExceptionally(new Exception());
 
-		order.verify(suspended).resume();
+		order.verify(suspended).resumeWithContext();
+		order.verify(resumed).get();
 		order.verify(batch).close();
+		order.verify(resumed).close();
 		verifyNoMoreInteractions(batchFactory);
 		verifyNoMoreInteractions(manager);
 		verifyNoMoreInteractions(batch);
