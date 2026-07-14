@@ -63,8 +63,10 @@ public class CachedSessionManager<C> extends DecoratedSessionManager<C> {
 				try {
 					CacheableSession<C> session = stage.toCompletableFuture().join();
 					if (session != null) {
-						try (Batch batch = session.resume()) {
-							Optional.ofNullable(session.get()).ifPresent(Consumer.close());
+						try (Context<Batch> context = session.resumeWithContext()) {
+							try (Batch batch = context.get()) {
+								Optional.ofNullable(session.get()).ifPresent(Consumer.close());
+							}
 						}
 					}
 				} catch (CompletionException | CancellationException e) {
