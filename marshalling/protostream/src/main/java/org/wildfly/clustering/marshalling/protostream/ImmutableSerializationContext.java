@@ -158,10 +158,11 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 					SerializationContextInitializer initializer = unregistered.remove();
 					Set<String> startFiles = this.context.getFileDescriptors().keySet();
 					try {
+						LOGGER.log(System.Logger.Level.TRACE, "Registering schemas from {0}", initializer.getClass().getName());
 						initializer.registerSchema(this.context);
+						LOGGER.log(System.Logger.Level.TRACE, "Registered schemas from {0}", initializer.getClass().getName());
 						registered.add(initializer);
 						exceptions.clear();
-						LOGGER.log(System.Logger.Level.DEBUG, "Registered schemas and marshallers from {0}", initializer.getClass().getName());
 					} catch (DescriptorParserException e) {
 						// Schema registration can fail due to ordering issues
 						// Unregister any successfully registered schemas so that we can retry later
@@ -177,10 +178,12 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 						if (exceptions.size() == unregistered.size()) {
 							throw exceptions.get(0);
 						}
+						LOGGER.log(System.Logger.Level.TRACE, "Deferring schema registration from {0} due to: {1}", initializer.getClass().getName(), e.getLocalizedMessage());
 					}
 				}
 				// Register marshallers in the order the schemas were registered
 				for (SerializationContextInitializer initializer : registered) {
+					LOGGER.log(System.Logger.Level.DEBUG, "Registering marshallers from {0}", initializer.getClass().getName());
 					initializer.registerMarshallers(this.context);
 				}
 			}
