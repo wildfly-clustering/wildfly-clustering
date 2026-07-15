@@ -11,9 +11,11 @@ import java.io.OutputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.infinispan.protostream.DescriptorParserException;
@@ -148,24 +150,41 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 		private void loadWildFly(ClassLoader loader) {
 			List<SerializationContextInitializer> loaded = Privileged.loadAll(SerializationContextInitializer.class, loader);
 			if (!loaded.isEmpty()) {
-				Queue<SerializationContextInitializer> initializers = new ArrayDeque<>(loaded);
+				Queue<SerializationContextInitializer> unregistered = new ArrayDeque<>(loaded);
+				Queue<SerializationContextInitializer> registered = new ArrayDeque<>(loaded.size());
 				List<DescriptorParserException> exceptions = new ArrayList<>(loaded.size());
-				while (!initializers.isEmpty()) {
-					SerializationContextInitializer initializer = initializers.remove();
+				// Register schemas first: determine initialization order before registering marshallers.
+				while (!unregistered.isEmpty()) {
+					SerializationContextInitializer initializer = unregistered.remove();
+					Set<String> startFiles = this.context.getFileDescriptors().keySet();
 					try {
-						initializer.initialize(this.context);
-						LOGGER.log(System.Logger.Level.DEBUG, "Registered schemas and marshallers from {0}", initializer.getClass().getName());
+						LOGGER.log(System.Logger.Level.TRACE, "Registering schemas from {0}", initializer.getClass().getName());
+						initializer.registerSchema(this.context);
+						LOGGER.log(System.Logger.Level.TRACE, "Registered schemas from {0}", initializer.getClass().getName());
+						registered.add(initializer);
 						exceptions.clear();
 					} catch (DescriptorParserException e) {
-						// Descriptor might fail to parse due to ordering issues
+						// Schema registration can fail due to ordering issues
+						// Unregister any successfully registered schemas so that we can retry later
+						Set<String> files = new HashSet<>(this.context.getFileDescriptors().keySet());
+						files.removeAll(startFiles);
+						if (!files.isEmpty()) {
+							this.context.unregisterProtoFiles(files);
+						}
 						exceptions.add(e);
-						// Add to back of queue
-						initializers.add(initializer);
+						// Add to tail of queue
+						unregistered.add(initializer);
 						// Give up if all initializers failed
-						if (exceptions.size() == initializers.size()) {
+						if (exceptions.size() == unregistered.size()) {
 							throw exceptions.get(0);
 						}
+						LOGGER.log(System.Logger.Level.TRACE, "Deferring schema registration from {0} due to: {1}", initializer.getClass().getName(), e.getLocalizedMessage());
 					}
+				}
+				// Register marshallers in the order the schemas were registered
+				for (SerializationContextInitializer initializer : registered) {
+					LOGGER.log(System.Logger.Level.DEBUG, "Registering marshallers from {0}", initializer.getClass().getName());
+					initializer.registerMarshallers(this.context);
 				}
 			}
 		}
