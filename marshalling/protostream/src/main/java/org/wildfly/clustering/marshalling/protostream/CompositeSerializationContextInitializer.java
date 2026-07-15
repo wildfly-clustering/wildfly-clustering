@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public class CompositeSerializationContextInitializer implements SerializationContextInitializer {
 
-	private final Iterable<? extends SerializationContextInitializer> initializers;
+	private final Collection<? extends SerializationContextInitializer> initializers;
 
 	/**
 	 * Creates a composite serialization context initializer.
@@ -46,7 +47,7 @@ public class CompositeSerializationContextInitializer implements SerializationCo
 	 * Creates a composite serialization context initializer.
 	 * @param initializers a number of serialization context initializers
 	 */
-	public CompositeSerializationContextInitializer(Iterable<? extends SerializationContextInitializer> initializers) {
+	public CompositeSerializationContextInitializer(Collection<? extends SerializationContextInitializer> initializers) {
 		this.initializers = initializers;
 	}
 
