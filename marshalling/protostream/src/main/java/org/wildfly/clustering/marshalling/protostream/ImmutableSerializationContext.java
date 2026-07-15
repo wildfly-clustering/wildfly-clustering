@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -152,7 +151,7 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 			if (!loaded.isEmpty()) {
 				Queue<SerializationContextInitializer> unregistered = new ArrayDeque<>(loaded);
 				Queue<SerializationContextInitializer> registered = new ArrayDeque<>(loaded.size());
-				List<DescriptorParserException> exceptions = new ArrayList<>(loaded.size());
+				Queue<DescriptorParserException> exceptions = new ArrayDeque<>(loaded.size());
 				// Register schemas first: determine initialization order before registering marshallers.
 				while (!unregistered.isEmpty()) {
 					SerializationContextInitializer initializer = unregistered.remove();
@@ -176,7 +175,7 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 						unregistered.add(initializer);
 						// Give up if all initializers failed
 						if (exceptions.size() == unregistered.size()) {
-							throw exceptions.get(0);
+							throw exceptions.element();
 						}
 						LOGGER.log(System.Logger.Level.TRACE, "Deferring schema registration from {0} due to: {1}", initializer.getClass().getName(), e.getLocalizedMessage());
 					}
