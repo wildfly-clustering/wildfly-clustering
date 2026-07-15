@@ -132,7 +132,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		ClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
-				return listener.getClass().getClassLoader();
+				return Thread.currentThread().getContextClassLoader();
 			}
 		});
 		@SuppressWarnings("removal")
