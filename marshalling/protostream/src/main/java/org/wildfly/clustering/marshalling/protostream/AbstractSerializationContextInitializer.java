@@ -11,7 +11,6 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
-import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.FileDescriptorSource;
 
 /**
@@ -46,17 +45,7 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 
 	@Override
 	public void registerSchema(SerializationContext context) {
-		try {
-			context.registerProtoFiles(getFileDescriptorSource(this.loader, this.resourceName));
-		} catch (DescriptorParserException e) {
-			try {
-				// If parsing failed, unregister this schema so others can register
-				context.unregisterProtoFile(this.resourceName);
-			} catch (RuntimeException ignore) {
-				// Ignore
-			}
-			throw e;
-		}
+		context.registerProtoFiles(getFileDescriptorSource(this.loader, this.resourceName));
 	}
 
 	@Override

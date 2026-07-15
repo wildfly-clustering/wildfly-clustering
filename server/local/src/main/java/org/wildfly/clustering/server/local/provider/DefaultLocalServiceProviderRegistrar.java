@@ -63,7 +63,7 @@ public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProv
 		ClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
-				return listener.getClass().getClassLoader();
+				return Thread.currentThread().getContextClassLoader();
 			}
 		});
 		@SuppressWarnings("removal")
