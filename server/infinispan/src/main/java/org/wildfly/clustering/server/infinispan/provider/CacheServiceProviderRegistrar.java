@@ -21,6 +21,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
@@ -41,9 +42,11 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.distribution.CacheStreamFilter;
 import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
+import org.wildfly.clustering.server.local.provider.DefaultLocalServiceProviderRegistrar;
 import org.wildfly.clustering.server.local.provider.DefaultServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
@@ -123,19 +126,25 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	}
 
 	@Override
-	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service) {
-		ServiceProviderRegistrationListener<CacheContainerGroupMember> listener = null;
-		return this.register(service, listener);
-	}
-
-	@Override
 	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service, ServiceProviderRegistrationListener<CacheContainerGroupMember> listener) {
-		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> newEntry = new AbstractMap.SimpleEntry<>(listener, null);
+		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> newEntry = new AbstractMap.SimpleEntry<>(Objects.requireNonNull(listener), null);
+		@SuppressWarnings("removal")
+		ClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public ClassLoader run() {
+				return listener.getClass().getClassLoader();
+			}
+		});
+		@SuppressWarnings("removal")
+		ThreadFactory threadFactory = AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public ThreadFactory run() {
+				return new DefaultThreadFactory(DefaultLocalServiceProviderRegistrar.class, listener.getClass().getClassLoader());
+			}
+		});
 		// Only create executor for new registrations
 		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.computeIfAbsent(service, key -> {
-			if (listener != null) {
-				newEntry.setValue(new DefaultExecutorService(Executors::newSingleThreadExecutor, Thread.currentThread().getContextClassLoader()));
-			}
+			newEntry.setValue(new DefaultExecutorService(Executors.newSingleThreadExecutor(threadFactory), loader));
 			return newEntry;
 		});
 		if (entry != newEntry) {
