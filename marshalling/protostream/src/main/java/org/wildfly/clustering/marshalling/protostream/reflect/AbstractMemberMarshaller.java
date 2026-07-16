@@ -21,27 +21,23 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * Generic marshaller based on non-public members.
  * @param <T> the target type of this marshaller
- * @param <H> the handle type
  * @author Paul Ferraro
  */
-public abstract class AbstractMemberMarshaller<T, H> implements ProtoStreamMarshaller<T>, Function<Object[], T> {
+public abstract class AbstractMemberMarshaller<T> implements ProtoStreamMarshaller<T>, Function<Object[], T> {
 	private final Class<? extends T> type;
-	private final BiFunction<H, Object, Object> accessor;
-	private final List<H> handles;
+	private final List<Function<T, Object>> members;
 
 	/**
 	 * Creates a marshaller using the specified member fields.
 	 * @param type the marshalled object type
-	 * @param accessor a field accessor
-	 * @param handleLocator a handle locator function
+	 * @param handleFactory a member handle factory
 	 * @param memberTypes the field types
 	 */
-	public AbstractMemberMarshaller(Class<? extends T> type, BiFunction<H, Object, Object> accessor, BiFunction<Class<?>, Class<?>, H> handleLocator, Class<?>... memberTypes) {
+	public AbstractMemberMarshaller(Class<T> type, BiFunction<Class<T>, Class<?>, Function<T, Object>> handleFactory, Class<?>... memberTypes) {
 		this.type = type;
-		this.accessor = accessor;
-		this.handles = new ArrayList<>(memberTypes.length);
+		this.members = new ArrayList<>(memberTypes.length);
 		for (Class<?> memberType : memberTypes) {
-			this.handles.add(handleLocator.apply(type, memberType));
+			this.members.add(handleFactory.apply(type, memberType));
 		}
 	}
 
@@ -66,7 +62,7 @@ public abstract class AbstractMemberMarshaller<T, H> implements ProtoStreamMarsh
 
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
-		Object[] values = new Object[this.handles.size()];
+		Object[] values = new Object[this.members.size()];
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
@@ -81,8 +77,8 @@ public abstract class AbstractMemberMarshaller<T, H> implements ProtoStreamMarsh
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, T source) throws IOException {
-		for (int i = 0; i < this.handles.size(); ++i) {
-			Object value = this.accessor.apply(this.handles.get(i), source);
+		for (int i = 0; i < this.members.size(); ++i) {
+			Object value = this.members.get(i).apply(source);
 			if (value != null) {
 				writer.writeAny(i + 1, value);
 			}

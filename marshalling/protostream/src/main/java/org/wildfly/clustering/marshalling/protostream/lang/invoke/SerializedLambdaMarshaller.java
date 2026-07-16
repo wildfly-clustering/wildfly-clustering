@@ -8,6 +8,7 @@ package org.wildfly.clustering.marshalling.protostream.lang.invoke;
 import java.io.IOException;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ enum SerializedLambdaMarshaller implements ProtoStreamMarshaller<SerializedLambd
 	INSTANCE;
 
 	@SuppressWarnings("unchecked")
-	private static final Function<SerializedLambda, Class<?>> SERIALIZED_LAMBDA_CAPTURING_CLASS_HANDLE = Privileged.getFieldHandle(SerializedLambda.class, (Class<Class<?>>) (Class<?>) Class.class);
+	private static final Function<SerializedLambda, Class<?>> SERIALIZED_LAMBDA_CAPTURING_CLASS_HANDLE = getFieldHandle(SerializedLambda.class, (Class<Class<?>>) (Class<?>) Class.class);
 
 	private static final FieldSetMarshaller<Descriptor, Descriptor> METHOD_DESCRIPTOR_MARSHALLER = new FieldSetMarshaller.Simple<>() {
 		private static final int CLASS_NAME_INDEX = 0;
@@ -81,6 +82,31 @@ enum SerializedLambdaMarshaller implements ProtoStreamMarshaller<SerializedLambd
 		Optional.of(className.apply(lambda)).filter(Predicate.not(lambda.getCapturingClass()::equals)).ifPresent(descriptor::withClassName);
 		Optional.of(methodSignature.apply(lambda)).filter(Predicate.not(lambda.getInstantiatedMethodType()::equals)).ifPresent(descriptor::withMethodSignature);
 		return descriptor;
+	}
+
+	private static <T, R> Function<T, R> getFieldHandle(Class<T> sourceClass, Class<R> fieldType) {
+		for (Field field : sourceClass.getDeclaredFields()) {
+			if (field.getType() == fieldType) {
+				field.setAccessible(true);
+				return new Function<>() {
+					@Override
+					public R apply(T source) {
+						try {
+							return fieldType.cast(field.get(source));
+						} catch (Throwable e) {
+							if (e instanceof RuntimeException exception) {
+								throw exception;
+							}
+							if (e instanceof RuntimeException error) {
+								throw error;
+							}
+							throw new IllegalStateException(e);
+						}
+					}
+				};
+			}
+		}
+		throw new IllegalArgumentException(String.format("%s::%s", sourceClass.getCanonicalName(), fieldType.getCanonicalName()));
 	}
 
 	@Override

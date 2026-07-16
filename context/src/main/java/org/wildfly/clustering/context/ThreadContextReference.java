@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.context;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -32,37 +30,13 @@ public class ThreadContextReference<C> implements ContextReference<C> {
 		this.applicator = applicator;
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public void accept(C context) {
-		Thread thread = this.reference.get();
-		if (System.getSecurityManager() == null) {
-			this.applicator.accept(thread, context);
-		} else {
-			BiConsumer<Thread, C> applicator = this.applicator;
-			AccessController.doPrivileged(new PrivilegedAction<>() {
-				@Override
-				public Void run() {
-					applicator.accept(thread, context);
-					return null;
-				}
-			});
-		}
+		this.applicator.accept(this.reference.get(), context);
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public C get() {
-		Thread thread = this.reference.get();
-		if (System.getSecurityManager() == null) {
-			return this.accessor.apply(thread);
-		}
-		Function<Thread, C> accessor = this.accessor;
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public C run() {
-				return accessor.apply(thread);
-			}
-		});
+		return this.accessor.apply(this.reference.get());
 	}
 }

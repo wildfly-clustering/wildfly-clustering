@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.server.infinispan.registry;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -320,16 +318,8 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		}
 	}
 
-	@SuppressWarnings("removal")
 	private void shutdown(ExecutorService executor) {
-		PrivilegedAction<Void> action = new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				executor.shutdown();
-				return null;
-			}
-		};
-		AccessController.doPrivileged(action);
+		executor.shutdown();
 		try {
 			executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {

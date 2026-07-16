@@ -7,6 +7,7 @@ package org.wildfly.clustering.marshalling.protostream.lang.invoke;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
 
@@ -27,26 +28,44 @@ public enum LambdaMarshaller implements FieldMarshaller<Object> {
 	@Override
 	public Object readFrom(ProtoStreamReader reader) throws IOException {
 		SerializedLambda lambda = Scalar.ANY.cast(SerializedLambda.class).readFrom(reader);
-		MethodHandle deserializeLambda = Privileged.getMethodHandle(SerializedLambdaMarshaller.getCapturingClass(lambda), "$deserializeLambda$", MethodType.methodType(Object.class, SerializedLambda.class));
+		Class<?> capturingClass = SerializedLambdaMarshaller.getCapturingClass(lambda);
 		try {
-			return deserializeLambda.invoke(lambda);
+			MethodHandle handle = MethodHandles.privateLookupIn(capturingClass, MethodHandles.lookup()).findStatic(capturingClass, "$deserializeLambda$", MethodType.methodType(Object.class, SerializedLambda.class));
+			return handle.invoke(lambda);
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			throw new IllegalStateException(e);
 		} catch (Throwable e) {
-			if (e instanceof IOException) {
-				throw (IOException) e;
+			if (e instanceof IOException exception) {
+				throw exception;
+			}
+			if (e instanceof RuntimeException exception) {
+				throw exception;
+			}
+			if (e instanceof Error error) {
+				throw error;
 			}
 			throw new IllegalStateException(e);
 		}
 	}
 
 	@Override
-	public void writeTo(ProtoStreamWriter writer, Object synthetic) throws IOException {
-		MethodHandle writeReplace = Privileged.getMethodHandle(synthetic.getClass(), "writeReplace", MethodType.methodType(Object.class));
+	public void writeTo(ProtoStreamWriter writer, Object object) throws IOException {
+		Class<?> lambdaClass = object.getClass();
 		try {
-			SerializedLambda lambda = (SerializedLambda) writeReplace.invoke(synthetic);
+			MethodHandle handle = MethodHandles.privateLookupIn(lambdaClass, MethodHandles.lookup()).findVirtual(lambdaClass, "writeReplace", MethodType.methodType(Object.class));
+			SerializedLambda lambda = (SerializedLambda) handle.invoke(object);
 			Scalar.ANY.writeTo(writer, lambda);
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			throw new IllegalStateException(e);
 		} catch (Throwable e) {
-			if (e instanceof IOException) {
-				throw (IOException) e;
+			if (e instanceof IOException exception) {
+				throw exception;
+			}
+			if (e instanceof RuntimeException exception) {
+				throw exception;
+			}
+			if (e instanceof Error error) {
+				throw error;
 			}
 			throw new IllegalStateException(e);
 		}

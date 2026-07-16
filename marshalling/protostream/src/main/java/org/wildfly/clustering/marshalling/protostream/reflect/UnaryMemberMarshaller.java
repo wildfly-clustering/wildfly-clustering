@@ -11,11 +11,10 @@ import java.util.function.Function;
 /**
  * Generic marshaller based on a single non-public member.
  * @param <T> the marshaller target type
- * @param <H> the handle type
  * @param <M1> the component member type
  * @author Paul Ferraro
  */
-public class UnaryMemberMarshaller<T, H, M1> extends AbstractMemberMarshaller<T, H> {
+public class UnaryMemberMarshaller<T, M1> extends AbstractMemberMarshaller<T> {
 
 	private final Class<M1> memberType;
 	private final Function<M1, T> factory;
@@ -23,13 +22,12 @@ public class UnaryMemberMarshaller<T, H, M1> extends AbstractMemberMarshaller<T,
 	/**
 	 * Creates a marshaller for the specified members.
 	 * @param type the marshalled object type
-	 * @param accessor the member accessor
-	 * @param handleLocator the handle function
+	 * @param handleFactory the member handle factory
 	 * @param memberType the member type
 	 * @param factory the marshalled object factory
 	 */
-	public UnaryMemberMarshaller(Class<? extends T> type, BiFunction<H, Object, Object> accessor, BiFunction<Class<?>, Class<?>, H> handleLocator, Class<M1> memberType, Function<M1, T> factory) {
-		super(type, accessor, handleLocator, memberType);
+	public UnaryMemberMarshaller(Class<T> type, BiFunction<Class<T>, Class<?>, Function<T, Object>> handleFactory, Class<M1> memberType, Function<M1, T> factory) {
+		super(type, handleFactory, memberType);
 		this.memberType = memberType;
 		this.factory = factory;
 	}

@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
-import java.lang.invoke.VarHandle;
-
 /**
  * Generic marshaller based on three non-public fields.
  * @param <T> the target type of this marshaller
@@ -15,7 +13,7 @@ import java.lang.invoke.VarHandle;
  * @param <F3> the third component field type
  * @author Paul Ferraro
  */
-public class TernaryFieldMarshaller<T, F1, F2, F3> extends TernaryMemberMarshaller<T, VarHandle, F1, F2, F3> {
+public class TernaryFieldMarshaller<T, F1, F2, F3> extends TernaryMemberMarshaller<T, F1, F2, F3> {
 
 	/**
 	 * Creates a marshaller for the specified fields.
@@ -25,7 +23,7 @@ public class TernaryFieldMarshaller<T, F1, F2, F3> extends TernaryMemberMarshall
 	 * @param field3Type the tertiary field type
 	 * @param factory the object factory
 	 */
-	public TernaryFieldMarshaller(Class<? extends T> type, Class<F1> field1Type, Class<F2> field2Type, Class<F3> field3Type, TriFunction<F1, F2, F3, T> factory) {
-		super(type, AbstractMemberMarshaller::read, Reflect::findVarHandle, field1Type, field2Type, field3Type, factory);
+	public TernaryFieldMarshaller(Class<T> type, Class<F1> field1Type, Class<F2> field2Type, Class<F3> field3Type, TriFunction<F1, F2, F3, T> factory) {
+		super(type, Reflect::findVarHandle, field1Type, field2Type, field3Type, factory);
 	}
 }

@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.server.infinispan.provider;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -100,16 +98,8 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 		}
 	}
 
-	@SuppressWarnings("removal")
 	private void shutdown(ExecutorService executor) {
-		PrivilegedAction<Void> action = new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				executor.shutdown();
-				return null;
-			}
-		};
-		AccessController.doPrivileged(action);
+		executor.shutdown();
 		try {
 			executor.awaitTermination(this.cache.getCacheConfiguration().transaction().cacheStopTimeout(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
@@ -125,13 +115,7 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	@Override
 	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service, ServiceProviderRegistrationListener<CacheContainerGroupMember> listener) {
 		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> newEntry = new AbstractMap.SimpleEntry<>(Objects.requireNonNull(listener), null);
-		@SuppressWarnings("removal")
-		ClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public ClassLoader run() {
-				return Thread.currentThread().getContextClassLoader();
-			}
-		});
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		// Only create executor for new registrations
 		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.computeIfAbsent(service, key -> {
 			newEntry.setValue(new DefaultExecutorService(Executors::newSingleThreadExecutor, loader));

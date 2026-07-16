@@ -6,7 +6,6 @@
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.VarHandle;
 import java.util.function.Function;
 
 /**
@@ -15,7 +14,7 @@ import java.util.function.Function;
  * @param <F> the field type
  * @author Paul Ferraro
  */
-public class UnaryFieldMarshaller<T, F> extends UnaryMemberMarshaller<T, VarHandle, F> {
+public class UnaryFieldMarshaller<T, F> extends UnaryMemberMarshaller<T, F> {
 
 	/**
 	 * Creates a marshaller for the specified field.
@@ -23,8 +22,8 @@ public class UnaryFieldMarshaller<T, F> extends UnaryMemberMarshaller<T, VarHand
 	 * @param fieldClass the field type
 	 * @param factory the object factory
 	 */
-	public UnaryFieldMarshaller(Class<? extends T> targetClass, Class<F> fieldClass, Function<F, T> factory) {
-		super(targetClass, AbstractMemberMarshaller::read, Reflect::findVarHandle, fieldClass, factory);
+	public UnaryFieldMarshaller(Class<T> targetClass, Class<F> fieldClass, Function<F, T> factory) {
+		super(targetClass, Reflect::findVarHandle, fieldClass, factory);
 	}
 
 	/**
@@ -32,11 +31,11 @@ public class UnaryFieldMarshaller<T, F> extends UnaryMemberMarshaller<T, VarHand
 	 * @param targetClass the marshalled object type
 	 * @param fieldClass the field type
 	 */
-	public UnaryFieldMarshaller(Class<? extends T> targetClass, Class<F> fieldClass) {
+	public UnaryFieldMarshaller(Class<T> targetClass, Class<F> fieldClass) {
 		this(targetClass, fieldClass, Reflect.getConstructorHandle(targetClass, fieldClass));
 	}
 
-	private UnaryFieldMarshaller(Class<? extends T> targetClass, Class<F> fieldClass, MethodHandle constructor) {
+	private UnaryFieldMarshaller(Class<T> targetClass, Class<F> fieldClass, MethodHandle constructor) {
 		this(targetClass, fieldClass, value -> invoke(constructor, value));
 	}
 }

@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.affinity;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,13 +54,7 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
 @Listener(observation = Observation.POST)
 public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supplier<BlockingQueue<K>> {
 	static final int DEFAULT_QUEUE_SIZE = 100;
-	@SuppressWarnings("removal")
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(DefaultKeyAffinityService.class, AccessController.doPrivileged(new PrivilegedAction<>() {
-		@Override
-		public ClassLoader run() {
-			return DefaultKeyAffinityService.class.getClassLoader();
-		}
-	}));
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(DefaultKeyAffinityService.class, DefaultKeyAffinityService.class.getClassLoader());
 	private static final Function<Cache<?, ?>, ConsistentHash> CURRENT_CONSISTENT_HASH = cache -> cache.getAdvancedCache().getDistributionManager().getCacheTopology().getWriteConsistentHash();
 	private static final BiFunction<Cache<?, ?>, ConsistentHash, KeyDistribution> KEY_DISTRIBUTION_FACTORY = KeyDistribution::forConsistentHash;
 
@@ -136,16 +128,13 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 		this.cache.addListener(this);
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public void stop() {
 		this.cache.removeListener(this);
 		for (Future<?> future : this.currentState.getAndSet(null).getFutures()) {
 			future.cancel(true);
 		}
-		ExecutorService executor = this.executor.get();
-		PrivilegedAction<List<Runnable>> shutdownAction = executor::shutdownNow;
-		AccessController.doPrivileged(shutdownAction);
+		this.executor.get().shutdownNow();
 	}
 
 	@Override

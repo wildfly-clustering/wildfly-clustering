@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.context;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -34,13 +32,6 @@ public class ContextualThreadFactory<C> implements ThreadFactory {
 
 	@Override
 	public Thread newThread(Runnable task) {
-		@SuppressWarnings("removal")
-		Thread thread = AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public Thread run() {
-				return ContextualThreadFactory.this.factory.newThread(ContextualThreadFactory.this.contextualizer.contextualize(task));
-			}
-		});
-		return thread;
+		return ContextualThreadFactory.this.factory.newThread(ContextualThreadFactory.this.contextualizer.contextualize(task));
 	}
 }

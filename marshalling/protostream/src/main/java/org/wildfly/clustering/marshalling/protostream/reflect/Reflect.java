@@ -8,15 +8,13 @@ package org.wildfly.clustering.marshalling.protostream.reflect;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Utility methods requiring privileged actions for use by reflection-based marshallers.
@@ -24,27 +22,41 @@ import java.util.List;
  * @author Paul Ferraro
  */
 final class Reflect {
+	private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+
 	private Reflect() {
 		// Hide
 	}
 
-	@SuppressWarnings("removal")
-	static VarHandle findVarHandle(Class<?> sourceClass, Class<?> fieldType) {
-		if (System.getSecurityManager() == null) {
-			return findVarHandleUnchecked(sourceClass, fieldType);
+	private static MethodHandles.Lookup privateLookup(Class<?> reflected) {
+		try {
+			return MethodHandles.privateLookupIn(reflected, LOOKUP);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
 		}
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public VarHandle run() {
-				return findVarHandleUnchecked(sourceClass, fieldType);
-			}
-		});
 	}
 
-	private static VarHandle findVarHandleUnchecked(Class<?> sourceClass, Class<?> fieldType) {
+	static <T, R> Function<T, R> findVarHandle(Class<? extends T> sourceClass, Class<? extends R> fieldType) {
+		Field field = findField(sourceClass, fieldType);
 		try {
-			return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).unreflectVarHandle(findField(sourceClass, fieldType));
-		} catch (IllegalAccessException e) {
+			MethodHandle handle = privateLookup(sourceClass).findGetter(field.getDeclaringClass(), field.getName(), field.getType());
+			return new Function<>() {
+				@Override
+				public R apply(T object) {
+					try {
+						return fieldType.cast(handle.invoke(object));
+					} catch (Throwable e) {
+						if (e instanceof RuntimeException exception) {
+							throw exception;
+						}
+						if (e instanceof RuntimeException error) {
+							throw error;
+						}
+						throw new IllegalStateException(e);
+					}
+				}
+			};
+		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
 	}
@@ -82,27 +94,32 @@ final class Reflect {
 		return findField(superClass, fieldType);
 	}
 
-	static MethodHandle findMethodHandle(Class<?> sourceClass, Class<?> returnType) {
-		return findMethodHandle(sourceClass, MethodType.methodType(returnType));
+	static <T, R> Function<T, R> findMethodHandle(Class<? extends T> sourceClass, Class<? extends R> returnType) {
+		MethodType type = MethodType.methodType(returnType);
+		Method method = findMethod(sourceClass, type);
+		return findMethodHandle(sourceClass, method.getName(), type);
 	}
 
-	@SuppressWarnings("removal")
-	static MethodHandle findMethodHandle(Class<?> sourceClass, MethodType type) {
-		if (System.getSecurityManager() == null) {
-			return findMethodHandleUnchecked(sourceClass, type);
-		}
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public MethodHandle run() {
-				return findMethodHandleUnchecked(sourceClass, type);
-			}
-		});
-	}
-
-	private static MethodHandle findMethodHandleUnchecked(Class<?> sourceClass, MethodType type) {
+	static <T, R> Function<T, R> findMethodHandle(Class<? extends T> sourceClass, String name, MethodType type) {
 		try {
-			return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).unreflect(findMethod(sourceClass, type));
-		} catch (IllegalAccessException e) {
+			MethodHandle handle = MethodHandles.lookup().findVirtual(sourceClass, name, type);
+			return new Function<>() {
+				@Override
+				public R apply(T value) {
+					try {
+						return (R) handle.invoke(value);
+					} catch (Throwable e) {
+						if (e instanceof RuntimeException exception) {
+							throw exception;
+						}
+						if (e instanceof RuntimeException error) {
+							throw error;
+						}
+						throw new IllegalStateException(e);
+					}
+				}
+			};
+		} catch (NoSuchMethodException | IllegalAccessException e) {
 			throw new IllegalStateException(e);
 		}
 	}
@@ -137,47 +154,13 @@ final class Reflect {
 		return findMethod(superClass, type);
 	}
 
-	@SuppressWarnings("removal")
-	static MethodHandle getMethodHandle(Class<?> sourceClass, String methodName, MethodType type) {
-		if (System.getSecurityManager() == null) {
-			return getMethodHandleUnchecked(sourceClass, methodName, type);
-		}
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public MethodHandle run() {
-				return getMethodHandleUnchecked(sourceClass, methodName, type);
-			}
-		});
-	}
-
-	private static MethodHandle getMethodHandleUnchecked(Class<?> sourceClass, String methodName, MethodType type) {
-		try {
-			return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).findVirtual(sourceClass, methodName, type);
-		} catch (IllegalAccessException | NoSuchMethodException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
 	static MethodHandle getConstructorHandle(Class<?> sourceClass, Class<?>... parameterTypes) {
 		return getConstructorHandle(sourceClass, MethodType.methodType(void.class, parameterTypes));
 	}
 
-	@SuppressWarnings("removal")
 	static MethodHandle getConstructorHandle(Class<?> sourceClass, MethodType type) {
-		if (System.getSecurityManager() == null) {
-			return getConstructorHandleUnchecked(sourceClass, type);
-		}
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public MethodHandle run() {
-				return getConstructorHandleUnchecked(sourceClass, type);
-			}
-		});
-	}
-
-	private static MethodHandle getConstructorHandleUnchecked(Class<?> sourceClass, MethodType type) {
 		try {
-			return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).findConstructor(sourceClass, type);
+			return MethodHandles.lookup().findConstructor(sourceClass, type);
 		} catch (IllegalAccessException | NoSuchMethodException e) {
 			throw new IllegalStateException(e);
 		}

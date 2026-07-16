@@ -7,9 +7,6 @@ package org.wildfly.clustering.session.cache;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 
@@ -28,13 +25,7 @@ import org.wildfly.clustering.session.IdentifierMarshallerProvider;
  */
 public class SessionKeyMarshaller<K extends Key<String>> implements ProtoStreamMarshaller<K> {
 	private static final int IDENTIFIER_INDEX = 1;
-	@SuppressWarnings("removal")
-	private static final Marshaller<String, ByteBuffer> IDENTIFIER_MARSHALLER = AccessController.doPrivileged(new PrivilegedAction<Optional<Marshaller<String, ByteBuffer>>>() {
-		@Override
-		public Optional<Marshaller<String, ByteBuffer>> run() {
-			return ServiceLoader.load(IdentifierMarshallerProvider.class, IdentifierMarshallerProvider.class.getClassLoader()).findFirst().map(IdentifierMarshallerProvider::getMarshaller);
-		}
-	}).orElseThrow(IllegalStateException::new);
+	private static final Marshaller<String, ByteBuffer> IDENTIFIER_MARSHALLER = ServiceLoader.load(IdentifierMarshallerProvider.class, IdentifierMarshallerProvider.class.getClassLoader()).findFirst().map(IdentifierMarshallerProvider::getMarshaller).orElseThrow(IllegalStateException::new);
 
 	private final Function<String, K> factory;
 

@@ -798,52 +798,24 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	// Listenable methods
 
-	@SuppressWarnings("removal")
 	@Override
 	public <C> CompletionStage<Void> addListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter) {
-		AdvancedCache<K, V> cache = this.cache;
-		return java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<>() {
-			@Override
-			public CompletionStage<Void> run() {
-				return cache.addListenerAsync(listener, filter, converter);
-			}
-		});
+		return this.cache.addListenerAsync(listener, filter, converter);
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public <C> CompletionStage<Void> addFilteredListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter, Set<Class<? extends Annotation>> filterAnnotations) {
-		AdvancedCache<K, V> cache = this.cache;
-		return java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<>() {
-			@Override
-			public CompletionStage<Void> run() {
-				return cache.addFilteredListenerAsync(listener, filter, converter, filterAnnotations);
-			}
-		});
+		return this.cache.addFilteredListenerAsync(listener, filter, converter, filterAnnotations);
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public <C> CompletionStage<Void> addStorageFormatFilteredListenerAsync(Object listener, CacheEventFilter<? super K, ? super V> filter, CacheEventConverter<? super K, ? super V, C> converter, Set<Class<? extends Annotation>> filterAnnotations) {
-		AdvancedCache<K, V> cache = this.cache;
-		return java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<>() {
-			@Override
-			public CompletionStage<Void> run() {
-				return cache.addStorageFormatFilteredListenerAsync(listener, filter, converter, filterAnnotations);
-			}
-		});
+		return this.cache.addStorageFormatFilteredListenerAsync(listener, filter, converter, filterAnnotations);
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public CompletionStage<Void> addListenerAsync(Object listener) {
-		AdvancedCache<K, V> cache = this.cache;
-		return java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<>() {
-			@Override
-			public CompletionStage<Void> run() {
-				return cache.addListenerAsync(listener);
-			}
-		});
+		return this.cache.addListenerAsync(listener);
 	}
 
 	@Override

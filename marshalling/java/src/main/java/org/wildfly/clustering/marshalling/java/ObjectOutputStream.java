@@ -23,8 +23,6 @@ package org.wildfly.clustering.marshalling.java;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import org.wildfly.clustering.marshalling.Serializer;
 
@@ -49,27 +47,14 @@ public class ObjectOutputStream extends java.io.ObjectOutputStream {
 
 	@Override
 	protected void annotateClass(Class<?> targetClass) throws IOException {
-		this.serializer.write(this, getClassLoader(targetClass));
+		this.serializer.write(this, targetClass.getClassLoader());
 	}
 
 	@Override
 	protected void annotateProxyClass(Class<?> proxyClass) throws IOException {
 		for (Class<?> interfaceClass : proxyClass.getInterfaces()) {
-			this.serializer.write(this, getClassLoader(interfaceClass));
+			this.serializer.write(this, interfaceClass.getClassLoader());
 		}
-		this.serializer.write(this, getClassLoader(proxyClass));
-	}
-
-	@SuppressWarnings("removal")
-	private static ClassLoader getClassLoader(Class<?> targetClass) {
-		if (System.getSecurityManager() == null) {
-			return targetClass.getClassLoader();
-		}
-		return AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public ClassLoader run() {
-				return targetClass.getClassLoader();
-			}
-		});
+		this.serializer.write(this, proxyClass.getClassLoader());
 	}
 }

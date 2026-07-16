@@ -6,17 +6,17 @@
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Generic marshaller based on three non-public members.
  * @param <T> the target type of this marshaller
- * @param <H> the handle type
  * @param <M1> the first component member type
  * @param <M2> the second component member type
  * @param <M3> the third component member type
  * @author Paul Ferraro
  */
-public class TernaryMemberMarshaller<T, H, M1, M2, M3> extends AbstractMemberMarshaller<T, H> {
+public class TernaryMemberMarshaller<T, M1, M2, M3> extends AbstractMemberMarshaller<T> {
 
 	private final Class<M1> member1Type;
 	private final Class<M2> member2Type;
@@ -26,15 +26,14 @@ public class TernaryMemberMarshaller<T, H, M1, M2, M3> extends AbstractMemberMar
 	/**
 	 * Creates a marshaller for the specified members.
 	 * @param type the marshalled object type
-	 * @param accessor the member accessor
-	 * @param handleLocator the handle locator function
+	 * @param handleFactory the member handle factory
 	 * @param member1Type the former member type
 	 * @param member2Type the latter member type
 	 * @param member3Type the tertiary member type
 	 * @param factory the marshalled object factory
 	 */
-	public TernaryMemberMarshaller(Class<? extends T> type, BiFunction<H, Object, Object> accessor, BiFunction<Class<?>, Class<?>, H> handleLocator, Class<M1> member1Type, Class<M2> member2Type, Class<M3> member3Type, TriFunction<M1, M2, M3, T> factory) {
-		super(type, accessor, handleLocator, member1Type, member2Type, member3Type);
+	public TernaryMemberMarshaller(Class<T> type, BiFunction<Class<T>, Class<?>, Function<T, Object>> handleFactory, Class<M1> member1Type, Class<M2> member2Type, Class<M3> member3Type, TriFunction<M1, M2, M3, T> factory) {
+		super(type, handleFactory, member1Type, member2Type, member3Type);
 		this.member1Type = member1Type;
 		this.member2Type = member2Type;
 		this.member3Type = member3Type;

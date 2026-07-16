@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.context;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Function;
@@ -21,15 +19,10 @@ public class DefaultExecutorService extends ContextualExecutorService {
 	 * @param factory a function creating an executor service for a given thread factory.
 	 * @param loader the target class loader context
 	 */
-	@SuppressWarnings("removal")
 	public DefaultExecutorService(Function<ThreadFactory, ExecutorService> factory, ClassLoader loader) {
 		// Use thread group of current thread
-		this(factory.apply(AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public ThreadFactory run() {
-				return new DefaultThreadFactory(Thread.currentThread().getThreadGroup(), DefaultExecutorService.class.getClassLoader());
-			}
-		})), loader);
+		// Do not contextualise thread if we are already contextualising tasks
+		this(factory.apply(new DefaultThreadFactory(Thread.currentThread().getThreadGroup(), DefaultExecutorService.class.getClassLoader())), loader);
 	}
 
 	/**

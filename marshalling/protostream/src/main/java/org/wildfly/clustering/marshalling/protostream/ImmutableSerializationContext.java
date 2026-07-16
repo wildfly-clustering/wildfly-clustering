@@ -14,7 +14,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.protostream.DescriptorParserException;
@@ -147,7 +149,7 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 		}
 
 		private void loadWildFly(ClassLoader loader) {
-			List<SerializationContextInitializer> loaded = Privileged.loadAll(SerializationContextInitializer.class, loader);
+			List<SerializationContextInitializer> loaded = ServiceLoader.load(SerializationContextInitializer.class, loader).stream().map(Supplier::get).toList();
 			if (!loaded.isEmpty()) {
 				Queue<SerializationContextInitializer> unregistered = new ArrayDeque<>(loaded);
 				Queue<SerializationContextInitializer> registered = new ArrayDeque<>(loaded.size());
@@ -189,7 +191,7 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 		}
 
 		private void loadNative(ClassLoader loader) {
-			for (org.infinispan.protostream.SerializationContextInitializer initializer : Privileged.loadAll(org.infinispan.protostream.SerializationContextInitializer.class, loader)) {
+			for (org.infinispan.protostream.SerializationContextInitializer initializer : ServiceLoader.load(org.infinispan.protostream.SerializationContextInitializer.class, loader)) {
 				if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
 					LOGGER.log(System.Logger.Level.DEBUG, "Registering native marshallers/schemas from {0}", initializer.getClass().getName());
 					initializer.register(this.context);

@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.context;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +19,6 @@ public enum DefaultContextualizerFactory implements ContextualizerFactory {
 
 	private final List<ContextualizerFactory> factories = new LinkedList<>();
 
-	@SuppressWarnings("removal")
 	DefaultContextualizerFactory() {
 		this.factories.add(new ContextualizerFactory() {
 			@Override
@@ -29,13 +26,7 @@ public enum DefaultContextualizerFactory implements ContextualizerFactory {
 				return Contextualizer.withContextProvider(ThreadContextClassLoaderReference.CURRENT.provide(loader));
 			}
 		});
-		AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				ServiceLoader.load(ContextualizerFactory.class, ContextualizerFactory.class.getClassLoader()).forEach(DefaultContextualizerFactory.this.factories::add);
-				return null;
-			}
-		});
+		ServiceLoader.load(ContextualizerFactory.class, ContextualizerFactory.class.getClassLoader()).forEach(DefaultContextualizerFactory.this.factories::add);
 	}
 
 	@Override

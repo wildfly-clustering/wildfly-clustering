@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
-import java.lang.invoke.MethodHandle;
-
 /**
  * Generic marshaller based on three non-public accessor methods.
  * @param <T> the target type of this marshaller
@@ -15,7 +13,7 @@ import java.lang.invoke.MethodHandle;
  * @param <R3> the third component accessor method return type
  * @author Paul Ferraro
  */
-public class TernaryMethodMarshaller<T, R1, R2, R3> extends TernaryMemberMarshaller<T, MethodHandle, R1, R2, R3> {
+public class TernaryMethodMarshaller<T, R1, R2, R3> extends TernaryMemberMarshaller<T, R1, R2, R3> {
 
 	/**
 	 * Creates a marshaller for the specified methods.
@@ -25,7 +23,7 @@ public class TernaryMethodMarshaller<T, R1, R2, R3> extends TernaryMemberMarshal
 	 * @param member3Type the tertiary member type
 	 * @param factory the marshalled object factory
 	 */
-	public TernaryMethodMarshaller(Class<? extends T> type, Class<R1> member1Type, Class<R2> member2Type, Class<R3> member3Type, TriFunction<R1, R2, R3, T> factory) {
-		super(type, AbstractMemberMarshaller::invoke, Reflect::findMethodHandle, member1Type, member2Type, member3Type, factory);
+	public TernaryMethodMarshaller(Class<T> type, Class<R1> member1Type, Class<R2> member2Type, Class<R3> member3Type, TriFunction<R1, R2, R3, T> factory) {
+		super(type, Reflect::findMethodHandle, member1Type, member2Type, member3Type, factory);
 	}
 }

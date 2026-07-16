@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
-import java.lang.invoke.MethodHandle;
 import java.util.function.Function;
 
 /**
@@ -14,7 +13,7 @@ import java.util.function.Function;
  * @param <R> the method accessor result type
  * @author Paul Ferraro
  */
-public class UnaryMethodMarshaller<T, R> extends UnaryMemberMarshaller<T, MethodHandle, R> {
+public class UnaryMethodMarshaller<T, R> extends UnaryMemberMarshaller<T, R> {
 
 	/**
 	 * Creates a marshaller for the specified methods.
@@ -22,7 +21,7 @@ public class UnaryMethodMarshaller<T, R> extends UnaryMemberMarshaller<T, Method
 	 * @param memberClass the member type
 	 * @param factory the marshalled object factory
 	 */
-	public UnaryMethodMarshaller(Class<? extends T> targetClass, Class<R> memberClass, Function<R, T> factory) {
-		super(targetClass, AbstractMemberMarshaller::invoke, Reflect::findMethodHandle, memberClass, factory);
+	public UnaryMethodMarshaller(Class<T> targetClass, Class<R> memberClass, Function<R, T> factory) {
+		super(targetClass, Reflect::findMethodHandle, memberClass, factory);
 	}
 }
