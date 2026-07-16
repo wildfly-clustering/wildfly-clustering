@@ -20,11 +20,12 @@ public class DecoratorMarshaller<T> extends UnaryFieldMarshaller<T, T> {
 	 * @param decorator the decorator function
 	 * @param sample a sample object
 	 */
+	@SuppressWarnings("unchecked")
 	public DecoratorMarshaller(Class<T> decoratedClass, UnaryOperator<T> decorator, T sample) {
-		this(decorator.apply(sample).getClass().asSubclass(decoratedClass), decoratedClass, decorator);
+		this((Class<T>) decorator.apply(sample).getClass().asSubclass(decoratedClass), decoratedClass, decorator);
 	}
 
-	private DecoratorMarshaller(Class<? extends T> decoratorClass, Class<T> decoratedClass, UnaryOperator<T> decorator) {
+	private DecoratorMarshaller(Class<T> decoratorClass, Class<T> decoratedClass, UnaryOperator<T> decorator) {
 		super(decoratorClass, decoratedClass, decorator);
 	}
 }

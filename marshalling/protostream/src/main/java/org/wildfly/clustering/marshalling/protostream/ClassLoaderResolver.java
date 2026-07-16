@@ -72,7 +72,6 @@ public interface ClassLoaderResolver {
 	 * @return a resolver that resolves classes from the loader of a {@link Module} from the specified {@link ModuleLayer}.
 	 */
 	static ClassLoaderResolver of(ModuleLayer layer, Module defaultModule) {
-		ClassLoader defaultLoader = Privileged.getClassLoader(defaultModule);
 		return (layer != null) ? new ClassLoaderResolver() {
 			@Override
 			public String classLoaderName(Class<?> value) {
@@ -81,13 +80,13 @@ public interface ClassLoaderResolver {
 
 			@Override
 			public ClassLoader resolve(String name) {
-				return layer.findModule(name).map(Privileged::getClassLoader).orElseThrow(Supplier.of(name).thenApply(IllegalArgumentException::new));
+				return layer.findModule(name).map(Module::getClassLoader).orElseThrow(Supplier.of(name).thenApply(IllegalArgumentException::new));
 			}
 
 			@Override
 			public ClassLoader getDefaultClassLoader() {
-				return defaultLoader;
+				return defaultModule.getClassLoader();
 			}
-		} : of(defaultLoader);
+		} : of(defaultModule.getClassLoader());
 	}
 }

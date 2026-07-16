@@ -6,16 +6,16 @@
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Generic marshaller based on two non-public members.
  * @param <T> the target type of this marshaller
- * @param <H> the handle type
  * @param <M1> the first component member type
  * @param <M2> the second component member type
  * @author Paul Ferraro
  */
-public class BinaryMemberMarshaller<T, H, M1, M2> extends AbstractMemberMarshaller<T, H> {
+public class BinaryMemberMarshaller<T, M1, M2> extends AbstractMemberMarshaller<T> {
 
 	private final Class<M1> member1Type;
 	private final Class<M2> member2Type;
@@ -24,14 +24,13 @@ public class BinaryMemberMarshaller<T, H, M1, M2> extends AbstractMemberMarshall
 	/**
 	 * Creates a marshaller for the specified members.
 	 * @param type the marshalled object type
-	 * @param accessor the member accessor
-	 * @param handleLocator the handle locator function
+	 * @param handleFactory the member handle factory
 	 * @param member1Type the former member type
 	 * @param member2Type the latter member type
 	 * @param factory the marshalled object factory
 	 */
-	public BinaryMemberMarshaller(Class<? extends T> type, BiFunction<H, Object, Object> accessor, BiFunction<Class<?>, Class<?>, H> handleLocator, Class<M1> member1Type, Class<M2> member2Type, BiFunction<M1, M2, T> factory) {
-		super(type, accessor, handleLocator, member1Type, member2Type);
+	public BinaryMemberMarshaller(Class<T> type, BiFunction<Class<T>, Class<?>, Function<T, Object>> handleFactory, Class<M1> member1Type, Class<M2> member2Type, BiFunction<M1, M2, T> factory) {
+		super(type, handleFactory, member1Type, member2Type);
 		this.member1Type = member1Type;
 		this.member2Type = member2Type;
 		this.factory = factory;

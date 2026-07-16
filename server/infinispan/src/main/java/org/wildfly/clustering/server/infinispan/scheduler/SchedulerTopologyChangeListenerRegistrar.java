@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.server.infinispan.scheduler;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
@@ -43,13 +41,7 @@ import org.wildfly.clustering.function.Consumer;
  */
 public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements ListenerRegistrar {
 	private static final System.Logger LOGGER = System.getLogger(SchedulerTopologyChangeListenerRegistrar.class.getName());
-	@SuppressWarnings("removal")
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListenerRegistrar.class, AccessController.doPrivileged(new PrivilegedAction<>() {
-		@Override
-		public ClassLoader run() {
-			return SchedulerTopologyChangeListenerRegistrar.class.getClassLoader();
-		}
-	}));
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListenerRegistrar.class, SchedulerTopologyChangeListenerRegistrar.class.getClassLoader());
 
 	/**
 	 * The configuration of the topology change listener registrar for a scheduler.
@@ -154,23 +146,14 @@ public class SchedulerTopologyChangeListenerRegistrar<K, V, SE, CE> implements L
 			return CompletableFuture.completedStage(null);
 		}
 
-		@SuppressWarnings("removal")
 		@Override
 		public void close() {
-			ExecutorService executor = this.executor;
-			Duration stopTimeout = this.stopTimeout;
-			AccessController.doPrivileged(new PrivilegedAction<Void>() {
-				@Override
-				public Void run() {
-					try {
-						executor.shutdownNow();
-						executor.awaitTermination(stopTimeout.toMillis(), TimeUnit.MILLISECONDS);
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
-					return null;
-				}
-			});
+			try {
+				this.executor.shutdownNow();
+				this.executor.awaitTermination(this.stopTimeout.toMillis(), TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
 	}
 }

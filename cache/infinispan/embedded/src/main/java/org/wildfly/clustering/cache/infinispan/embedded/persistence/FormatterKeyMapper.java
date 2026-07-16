@@ -5,15 +5,15 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.persistence;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.UUID;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.wildfly.clustering.marshalling.Formatter;
@@ -40,18 +40,9 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 	/**
 	 * Creates formatter-based key-string mapper.
 	 */
-	@SuppressWarnings("removal")
+	@SuppressWarnings("unchecked")
 	public FormatterKeyMapper() {
-		List<Formatter<?>> formatters = new LinkedList<>(DEFAULT_FORMATTERS);
-		AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				ServiceLoader.load(Formatter.class, FormatterKeyMapper.this.getClass().getClassLoader()).forEach(formatters::add);
-				return null;
-			}
-		});
-		this.formatters = List.copyOf(formatters);
-		this.padding = this.padding();
+		this(Stream.concat(DEFAULT_FORMATTERS.stream(), ServiceLoader.load((Class<Formatter<?>>) (Class<?>) Formatter.class, FormatterKeyMapper.class.getClassLoader()).stream().map(Supplier::get)).collect(Collectors.toUnmodifiableList()));
 	}
 
 	/**

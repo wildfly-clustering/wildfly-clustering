@@ -8,10 +8,10 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Proxy;
-import java.util.Optional;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -84,15 +84,21 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 		}
 
 		if (valueClass.isSynthetic() && !valueClass.isLocalClass() && !valueClass.isAnonymousClass() && (value instanceof Serializable)) {
-			Optional<MethodHandle> writeReplace = Privileged.findMethodHandle(valueClass, "writeReplace", MethodType.methodType(Object.class));
-			if (writeReplace.isPresent()) {
-				try {
-					if (writeReplace.get().invoke(value) instanceof SerializedLambda) {
-						return AnyField.LAMBDA;
-					}
-				} catch (Throwable e) {
-					// Ignore
+			try {
+				MethodHandle handle = MethodHandles.privateLookupIn(valueClass, MethodHandles.lookup()).findVirtual(valueClass, "writeReplace", MethodType.methodType(Object.class));
+				if (handle.invoke(value) instanceof SerializedLambda) {
+					return AnyField.LAMBDA;
 				}
+			} catch (NoSuchMethodException | IllegalAccessException e) {
+				// Not a serializable lambda
+			} catch (Throwable e) {
+				if (e instanceof RuntimeException exception) {
+					throw exception;
+				}
+				if (e instanceof Error error) {
+					throw error;
+				}
+				throw new IllegalStateException(e);
 			}
 		}
 

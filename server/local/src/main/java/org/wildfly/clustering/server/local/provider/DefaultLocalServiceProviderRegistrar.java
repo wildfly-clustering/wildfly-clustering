@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.server.local.provider;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,13 +55,7 @@ public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProv
 	public ServiceProviderRegistration<T, LocalGroupMember> register(T service, ServiceProviderRegistrationListener<LocalGroupMember> listener) {
 		this.services.add(service);
 		Set<LocalGroupMember> members = this.getProviders(service);
-		@SuppressWarnings("removal")
-		ClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public ClassLoader run() {
-				return Thread.currentThread().getContextClassLoader();
-			}
-		});
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		ExecutorService executor = new DefaultExecutorService(Executors::newSingleThreadExecutor, loader);
 		notify(executor, listener, Set.of(), members);
 		return new DefaultServiceProviderRegistration<>(this, service, () -> {

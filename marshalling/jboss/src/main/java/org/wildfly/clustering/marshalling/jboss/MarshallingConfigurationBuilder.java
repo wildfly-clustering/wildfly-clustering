@@ -5,14 +5,11 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -67,9 +64,9 @@ public interface MarshallingConfigurationBuilder extends MarshallerConfiguration
 
 		@Override
 		public MarshallingConfigurationBuilder load(ClassLoader loader) {
-			loadAll(ExternalizerProvider.class, loader, this::register);
-			loadAll(ClassTable.class, loader, this.classTables);
-			loadAll(ObjectTable.class, loader, this.objectTables);
+			ServiceLoader.load(ExternalizerProvider.class, loader).stream().map(Supplier::get).forEach(this::register);
+			ServiceLoader.load(ClassTable.class, loader).stream().map(Supplier::get).forEach(this.classTables);
+			ServiceLoader.load(ObjectTable.class, loader).stream().map(Supplier::get).forEach(this.objectTables);
 			return this;
 		}
 
@@ -84,17 +81,6 @@ public interface MarshallingConfigurationBuilder extends MarshallerConfiguration
 			this.configuration.setClassTable(new ChainingClassTable(this.classTables.build().toArray(ClassTable[]::new)));
 			this.configuration.setObjectTable(new ChainingObjectTable(this.objectTables.build().toArray(ObjectTable[]::new)));
 			return this.configuration;
-		}
-
-		@SuppressWarnings("removal")
-		static <T> void loadAll(Class<T> targetClass, ClassLoader loader, Consumer<T> consumer) {
-			AccessController.doPrivileged(new PrivilegedAction<>() {
-				@Override
-				public Void run() {
-					ServiceLoader.load(targetClass, loader).stream().map(Supplier::get).forEach(consumer);
-					return null;
-				}
-			});
 		}
 	}
 }

@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.context;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -20,14 +18,8 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 	 * @param targetClass the class from which a thread group will be created.
 	 * @param loader the class loader context
 	 */
-	@SuppressWarnings("removal")
 	public DefaultThreadFactory(Class<?> targetClass, ClassLoader loader) {
-		this(AccessController.doPrivileged(new PrivilegedAction<ThreadGroup>() {
-			@Override
-			public ThreadGroup run() {
-				return new ThreadGroup(targetClass.getSimpleName());
-			}
-		}), loader);
+		this(new ThreadGroup(targetClass.getSimpleName()), loader);
 	}
 
 	/**
@@ -56,17 +48,11 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 			this.group = group;
 		}
 
-		@SuppressWarnings("removal")
 		@Override
 		public Thread newThread(Runnable task) {
 			ThreadGroup group = this.group;
-			String name = String.format("%s - %d", this.group.getName(), this.index.incrementAndGet());
-			return AccessController.doPrivileged(new PrivilegedAction<>() {
-				@Override
-				public Thread run() {
-					return new Thread(group, task, name);
-				}
-			});
+			String name = String.format("%s[%d]", this.group.getName(), this.index.incrementAndGet());
+			return new Thread(group, task, name);
 		}
 	}
 }

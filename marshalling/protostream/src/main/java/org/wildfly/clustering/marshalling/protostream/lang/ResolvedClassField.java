@@ -73,7 +73,7 @@ public class ResolvedClassField implements Field<Class<?>>, FieldMarshaller<Clas
 	@Override
 	public void writeTo(ProtoStreamWriter writer, Class<?> targetClass) throws IOException {
 		Scalar.STRING.writeTo(writer, targetClass.getName());
-		if (Privileged.getClassLoader(targetClass) != this.resolver.getDefaultClassLoader()) {
+		if (targetClass.getClassLoader() != this.resolver.getDefaultClassLoader()) {
 			String classLoaderName = this.resolver.classLoaderName(targetClass);
 			if (classLoaderName != null) {
 				writer.writeString(this.classLoaderIndex, classLoaderName);

@@ -7,9 +7,6 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 import org.infinispan.protostream.FileDescriptorSource;
 
@@ -27,7 +24,7 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 	 */
 	protected AbstractSerializationContextInitializer() {
 		this.resourceName = getResourceName(this.getClass().getPackage());
-		this.loader = Privileged.getClassLoader(this.getClass());
+		this.loader = this.getClass().getClassLoader();
 	}
 
 	/**
@@ -36,7 +33,7 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 	 */
 	protected AbstractSerializationContextInitializer(Package targetPackage) {
 		this.resourceName = getResourceName(targetPackage);
-		this.loader = Privileged.getClassLoader(this.getClass());
+		this.loader = this.getClass().getClassLoader();
 	}
 
 	private static String getResourceName(Package targetPackage) {
@@ -53,21 +50,11 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
 		return this.resourceName;
 	}
 
-	@SuppressWarnings("removal")
 	private static FileDescriptorSource getFileDescriptorSource(ClassLoader loader, String resourceName) {
 		try {
-			return AccessController.doPrivileged(new PrivilegedExceptionAction<>() {
-				@Override
-				public FileDescriptorSource run() throws Exception {
-					return FileDescriptorSource.fromResources(loader, resourceName);
-				}
-			});
-		} catch (PrivilegedActionException e) {
-			Exception exception = e.getException();
-			if (exception instanceof IOException ioe) {
-				throw new UncheckedIOException(ioe);
-			}
-			throw new RuntimeException(exception);
+			return FileDescriptorSource.fromResources(loader, resourceName);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
 		}
 	}
 }

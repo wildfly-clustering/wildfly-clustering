@@ -6,8 +6,6 @@
 package org.wildfly.clustering.server.infinispan.scheduler;
 
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
@@ -82,14 +80,8 @@ public class PrimaryOwnerSchedulerService<K, V> extends DecoratedSchedulerServic
 		 * Returns the class loader from which this scheduler will configure its command dispatcher.
 		 * @return a class loader
 		 */
-		@SuppressWarnings("removal")
 		default ClassLoader getClassLoader() {
-			return AccessController.doPrivileged(new PrivilegedAction<>() {
-				@Override
-				public ClassLoader run() {
-					return Configuration.this.getScheduler().getClass().getClassLoader();
-				}
-			});
+			return Configuration.this.getScheduler().getClass().getClassLoader();
 		}
 	}
 

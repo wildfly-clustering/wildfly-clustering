@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.cache.infinispan.batch;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.wildfly.clustering.function.Consumer;
@@ -26,11 +24,9 @@ public abstract class AbstractContextualBatch implements ContextualBatch {
 	 * @param name the name of this batch
 	 * @param closeTask a task to execute when batch should be closed.
 	 */
-	@SuppressWarnings({ "removal" })
 	AbstractContextualBatch(String name, Consumer<Status> closeTask) {
 		this.name = name;
-		PrivilegedAction<StackTraceElement[]> action = Thread.currentThread()::getStackTrace;
-		this.stackTrace = LOGGER.isLoggable(System.Logger.Level.DEBUG) ? ((System.getSecurityManager() != null) ? AccessController.doPrivileged(action) : action.run()) : null;
+		this.stackTrace = LOGGER.isLoggable(System.Logger.Level.DEBUG) ? Thread.currentThread().getStackTrace() : null;
 		this.closeTask = closeTask;
 	}
 

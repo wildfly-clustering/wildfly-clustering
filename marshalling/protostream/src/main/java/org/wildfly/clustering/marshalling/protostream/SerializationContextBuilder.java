@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.util.ServiceLoader;
+
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.SerializationContext;
@@ -35,7 +37,7 @@ public interface SerializationContextBuilder extends MarshallerConfigurationBuil
 
 			@Override
 			public SerializationContextBuilder load(ClassLoader loader) {
-				for (SerializationContextInitializer initializer : Privileged.loadAll(SerializationContextInitializer.class, loader)) {
+				for (SerializationContextInitializer initializer : ServiceLoader.load(SerializationContextInitializer.class, loader)) {
 					this.register(initializer);
 				}
 				return this;

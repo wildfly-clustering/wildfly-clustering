@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.server.local.listener;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,16 +84,8 @@ public class LocalListenerRegistry<T> implements ListenerRegistry<T> {
 		}
 	}
 
-	@SuppressWarnings({ "removal" })
 	private void shutdown(ExecutorService executor) {
-		PrivilegedAction<Void> action = new PrivilegedAction<>() {
-			@Override
-			public Void run() {
-				executor.shutdown();
-				return null;
-			}
-		};
-		AccessController.doPrivileged(action);
+		executor.shutdown();
 		try {
 			executor.awaitTermination(this.shutdownTimeout.toMillis(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {

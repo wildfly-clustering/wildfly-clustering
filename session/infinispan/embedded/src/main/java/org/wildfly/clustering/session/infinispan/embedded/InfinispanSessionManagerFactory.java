@@ -4,8 +4,6 @@
  */
 package org.wildfly.clustering.session.infinispan.embedded;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -76,13 +74,7 @@ import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDa
 public class InfinispanSessionManagerFactory<CC, SC> implements SessionManagerFactory<CC, SC> {
 
 	private static final System.Logger LOGGER = System.getLogger(InfinispanSessionManagerFactory.class.getName());
-	@SuppressWarnings({ "removal" })
-	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationTask.class, AccessController.doPrivileged(new PrivilegedAction<>() {
-		@Override
-		public ClassLoader run() {
-			return SessionExpirationTask.class.getClassLoader();
-		}
-	}));
+	private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SessionExpirationTask.class, SessionExpirationTask.class.getClassLoader());
 
 	/**
 	 * The configuration of this session manager factory.
