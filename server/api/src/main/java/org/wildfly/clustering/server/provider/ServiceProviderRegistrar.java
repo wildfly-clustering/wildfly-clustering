@@ -41,7 +41,9 @@ public interface ServiceProviderRegistrar<T, M extends GroupMember> extends Serv
 		return this.register(service, new ServiceProviderRegistrationListener<>() {
 			@Override
 			public void providersChanged(ServiceProviderRegistrationEvent<M> event) {
-				listener.providersChanged(event.getCurrentProviders());
+				if (listener != null) {
+					listener.providersChanged(event.getCurrentProviders());
+				}
 			}
 		});
 	}

@@ -123,18 +123,19 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	}
 
 	@Override
+	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service) {
+		ServiceProviderRegistrationListener<CacheContainerGroupMember> listener = null;
+		return this.register(service, listener);
+	}
+
+	@Override
 	public ServiceProviderRegistration<T, CacheContainerGroupMember> register(T service, ServiceProviderRegistrationListener<CacheContainerGroupMember> listener) {
-		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> newEntry = new AbstractMap.SimpleEntry<>(Objects.requireNonNull(listener), null);
-		@SuppressWarnings("removal")
-		ClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<>() {
-			@Override
-			public ClassLoader run() {
-				return Thread.currentThread().getContextClassLoader();
-			}
-		});
+		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> newEntry = new AbstractMap.SimpleEntry<>(listener, null);
 		// Only create executor for new registrations
 		Map.Entry<ServiceProviderRegistrationListener<CacheContainerGroupMember>, ExecutorService> entry = this.listeners.computeIfAbsent(service, key -> {
-			newEntry.setValue(new DefaultExecutorService(Executors::newSingleThreadExecutor, loader));
+			if (listener != null) {
+				newEntry.setValue(new DefaultExecutorService(Executors::newSingleThreadExecutor, Thread.currentThread().getContextClassLoader()));
+			}
 			return newEntry;
 		});
 		if (entry != newEntry) {
