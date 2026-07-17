@@ -12,7 +12,6 @@ import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
 
 /**
@@ -40,34 +39,14 @@ public interface LocalServiceProviderRegistrar<T> extends ServiceProviderRegistr
 			}
 
 			@Override
-			public ServiceProviderRegistration<T, LocalGroupMember> register(T service, ServiceProviderRegistrationListener<LocalGroupMember> listener) {
-				Set<LocalGroupMember> members = Set.of(group.getLocalMember());
+			public ServiceProviderRegistration<T, LocalGroupMember> register(T service) {
 				services.add(service);
-				listener.providersChanged(new ServiceProviderRegistrationEvent<>() {
-					@Override
-					public Set<LocalGroupMember> getPreviousProviders() {
-						return Set.of();
-					}
+				return new DefaultServiceProviderRegistration<>(this, service, () -> services.remove(service));
+			}
 
-					@Override
-					public Set<LocalGroupMember> getCurrentProviders() {
-						return members;
-					}
-				});
-				return new DefaultServiceProviderRegistration<>(this, service, () -> {
-					services.remove(service);
-					listener.providersChanged(new ServiceProviderRegistrationEvent<>() {
-						@Override
-						public Set<LocalGroupMember> getPreviousProviders() {
-							return members;
-						}
-
-						@Override
-						public Set<LocalGroupMember> getCurrentProviders() {
-							return Set.of();
-						}
-					});
-				});
+			@Override
+			public ServiceProviderRegistration<T, LocalGroupMember> register(T service, ServiceProviderRegistrationListener<LocalGroupMember> listener) {
+				return this.register(service);
 			}
 
 			@Override
