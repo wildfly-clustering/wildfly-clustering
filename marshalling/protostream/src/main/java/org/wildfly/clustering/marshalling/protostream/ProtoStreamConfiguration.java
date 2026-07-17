@@ -9,12 +9,17 @@ import java.io.ObjectInputFilter;
 import java.util.Optional;
 
 import org.infinispan.protostream.config.Configuration;
+import org.wildfly.clustering.function.Function;
 
 /**
  * ProtoStream configuration extension.
  * @author Paul Ferraro
  */
 public interface ProtoStreamConfiguration extends Configuration {
+	/**
+	 * A function returning a default {@link ProtoStreamConfiguration} for a given {@link ClassLoaderResolver}.
+	 */
+	Function<ClassLoaderResolver, ProtoStreamConfiguration> DEFAULT_FACTORY = Function.of(ProtoStreamConfiguration.Builder::with, ProtoStreamConfiguration.Builder::build);
 
 	/**
 	 * Returns the filter to apply to resolved classes.

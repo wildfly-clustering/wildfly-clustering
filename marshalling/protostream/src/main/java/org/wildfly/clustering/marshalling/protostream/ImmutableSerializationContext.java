@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.ProtobufUtil;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 import org.wildfly.clustering.marshalling.protostream.lang.LangSerializationContextInitializer;
@@ -40,6 +41,10 @@ import org.wildfly.clustering.marshalling.protostream.util.concurrent.atomic.Ato
  * @author Paul Ferraro
  */
 public interface ImmutableSerializationContext extends org.infinispan.protostream.ImmutableSerializationContext {
+	/**
+	 * A function returning a default {@link ImmutableSerializationContext} for a given {@link ProtoStreamConfiguration}.
+	 */
+	Function<ProtoStreamConfiguration, ImmutableSerializationContext> DEFAULT_FACTORY = Function.of(ImmutableSerializationContext.Builder::with, ImmutableSerializationContext.Builder::build);
 
 	@Override
 	ProtoStreamConfiguration getConfiguration();
