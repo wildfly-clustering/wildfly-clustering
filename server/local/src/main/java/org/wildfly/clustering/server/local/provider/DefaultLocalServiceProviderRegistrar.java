@@ -13,8 +13,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
@@ -61,10 +63,17 @@ public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProv
 		ClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<>() {
 			@Override
 			public ClassLoader run() {
-				return Thread.currentThread().getContextClassLoader();
+				return listener.getClass().getClassLoader();
 			}
 		});
-		ExecutorService executor = new DefaultExecutorService(Executors::newSingleThreadExecutor, loader);
+		@SuppressWarnings("removal")
+		ThreadFactory threadFactory = AccessController.doPrivileged(new PrivilegedAction<>() {
+			@Override
+			public ThreadFactory run() {
+				return new DefaultThreadFactory(DefaultLocalServiceProviderRegistrar.class, listener.getClass().getClassLoader());
+			}
+		});
+		ExecutorService executor = new DefaultExecutorService(Executors.newSingleThreadExecutor(threadFactory), loader);
 		notify(executor, listener, Set.of(), members);
 		return new DefaultServiceProviderRegistration<>(this, service, () -> {
 			this.services.remove(service);
