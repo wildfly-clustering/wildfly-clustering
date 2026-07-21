@@ -66,7 +66,7 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Predicate<String>,
 			return expirationTime == null;
 		}
 		LOGGER.tracef("Session %s was not found or is currently in use.", id);
-		return false;
+		return true;
 	}
 
 	@Override
