@@ -4,6 +4,7 @@
  */
 package org.wildfly.clustering.session.infinispan.embedded;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -58,11 +59,14 @@ public class ExpiredSessionRemover<SC, MV, AV, LC> implements Predicate<String>,
 					return false;
 				}
 			}
-			LOGGER.tracef("Session %s is not yet expired.", id);
-		} else {
-			LOGGER.tracef("Session %s was not found or is currently in use.", id);
+			Instant expirationTime = metaData.getExpirationTime().orElse(null);
+			if (expirationTime != null) {
+				LOGGER.debugf("Session %s does not expire until %s", id, expirationTime);
+			}
+			return expirationTime == null;
 		}
-		return false;
+		LOGGER.tracef("Session %s was not found or is currently in use.", id);
+		return true;
 	}
 
 	@Override
