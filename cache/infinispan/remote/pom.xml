@@ -56,12 +56,6 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>wildfly-clustering-cache-spi</artifactId>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
 			<classifier>tests</classifier>
 			<scope>test</scope>
@@ -70,12 +64,6 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
 			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>testcontainers</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

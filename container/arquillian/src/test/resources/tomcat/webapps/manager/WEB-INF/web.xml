@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
+	version="6.1"
+	metadata-complete="true">
+
+	<display-name>Tomcat Manager Application</display-name>
+	<description>
+		A scriptable management web application for the Tomcat Web Server;
+		Manager lets you view, load/unload/etc particular web applications.
+	</description>
+
+	<request-character-encoding>UTF-8</request-character-encoding>
+
+	<servlet>
+		<servlet-name>Manager</servlet-name>
+		<servlet-class>org.apache.catalina.manager.ManagerServlet</servlet-class>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>2</param-value>
+		</init-param>
+	</servlet>
+
+	<!-- Define the Manager Servlet Mapping -->
+	<servlet-mapping>
+		<servlet-name>Manager</servlet-name>
+		<url-pattern>/text/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- Define a Security Constraint on this Application -->
+	<!-- NOTE:	None of these roles are present in the default users file -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Text Manager interface (for scripts)</web-resource-name>
+			<url-pattern>/text/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>manager-script</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<!-- Define the Login Configuration for this Application -->
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>Tomcat Manager Application</realm-name>
+	</login-config>
+
+	<!-- Security roles referenced by this web application -->
+	<security-role>
+		<description>
+			The role that is required to access the text Manager pages
+		</description>
+		<role-name>manager-script</role-name>
+	</security-role>
+
+</web-app>

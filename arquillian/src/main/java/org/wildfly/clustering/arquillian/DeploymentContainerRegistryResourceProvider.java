@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.arquillian.extension;
+package org.wildfly.clustering.arquillian;
 
+import java.lang.System.Logger;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,20 +19,16 @@ import java.util.stream.Collectors;
 
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
-import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.core.spi.ServiceLoader;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jboss.shrinkwrap.api.Archive;
-import org.wildfly.clustering.arquillian.Deployment;
-import org.wildfly.clustering.arquillian.DeploymentContainer;
-import org.wildfly.clustering.arquillian.DeploymentContainerRegistry;
 
 /**
  * Exposes {@link DeploymentContainerRegistry} as an Arquillian resource.
@@ -41,6 +39,8 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 
 	@Inject
 	private Instance<ContainerRegistry> registry;
+	@Inject
+	private Instance<ServiceLoader> loader;
 
 	/**
 	 * Constructs a new resource provider of a deployment container registry.
@@ -56,14 +56,15 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 
 	@Override
 	public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
-		return new WebContainerRegistryImpl(this.registry.get());
+		LifecycleFactory factory = Optional.ofNullable(this.loader.get().onlyOne(LifecycleFactory.class)).orElse(LifecycleFactory.DEFAULT);
+		return new WebContainerRegistryImpl(this.registry.get(), factory);
 	}
 
 	static class WebContainerRegistryImpl implements DeploymentContainerRegistry {
 		private final Map<String, DeploymentContainer> containers;
 
-		WebContainerRegistryImpl(ContainerRegistry registry) {
-			this.containers = registry.getContainers().stream().collect(Collectors.toUnmodifiableMap(Container::getName, WebContainerImpl::new));
+		WebContainerRegistryImpl(ContainerRegistry registry, LifecycleFactory factory) {
+			this.containers = registry.getContainers().stream().collect(Collectors.toUnmodifiableMap(Container::getName, container -> new WebContainerImpl(container, factory)));
 		}
 
 		@Override
@@ -83,10 +84,17 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 	}
 
 	static class WebContainerImpl implements DeploymentContainer {
-		private final Container<ContainerConfiguration> container;
+		private final Container<?> container;
+		private final Lifecycle lifecycle;
 
-		WebContainerImpl(Container<ContainerConfiguration> container) {
+		@SuppressWarnings("resource")
+		WebContainerImpl(Container<?> container, LifecycleFactory factory) {
+			this(container, factory.createContainerLifecycle(container));
+		}
+
+		WebContainerImpl(Container<?> container, Lifecycle lifecycle) {
 			this.container = container;
+			this.lifecycle = lifecycle;
 		}
 
 		@Override
@@ -96,27 +104,19 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 
 		@Override
 		public boolean isStarted() {
-			return this.container.getState() == Container.State.STARTED;
+			return this.lifecycle.isStarted();
 		}
 
 		@Override
 		public void start() {
-			try {
-				LOGGER.log(System.Logger.Level.INFO, "Starting {0}", this.container.getName());
-				this.container.start();
-			} catch (LifecycleException e) {
-				throw new IllegalStateException(e);
-			}
+			LOGGER.log(Logger.Level.INFO, "Starting container {0}", this.container.getName());
+			this.lifecycle.start();
 		}
 
 		@Override
 		public void stop() {
-			try {
-				LOGGER.log(System.Logger.Level.INFO, "Stopping {0}", this.container.getName());
-				this.container.stop();
-			} catch (LifecycleException e) {
-				throw new IllegalStateException(e);
-			}
+			LOGGER.log(Logger.Level.INFO, "Stopping container {0}", this.container.getName());
+			this.lifecycle.stop();
 		}
 
 		@Override
