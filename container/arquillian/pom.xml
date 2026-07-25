@@ -8,17 +8,17 @@
 
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
-		<artifactId>wildfly-clustering</artifactId>
+		<artifactId>wildfly-clustering-container</artifactId>
 		<version>12.0.0.Beta1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>wildfly-clustering-arquillian</artifactId>
+	<artifactId>wildfly-clustering-container-arquillian</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${project.repository.name}: Arquillian extension</name>
+	<name>${project.container}: Arquillian</name>
 
 	<properties>
-		<project.module.name>org.wildfly.clustering.arquillian</project.module.name>
+		<project.module.name>org.wildfly.clustering.container.arquillian</project.module.name>
 		<tomcat.http.port>8080</tomcat.http.port>
 		<tomcat.jmx.port>8089</tomcat.jmx.port>
 		<tomcat.admin.username>admin</tomcat.admin.username>
@@ -33,6 +33,15 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-arquillian</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-container-spi</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-spi</artifactId>
 		</dependency>
@@ -44,5 +53,32 @@
 			<groupId>org.jboss.arquillian.test</groupId>
 			<artifactId>arquillian-test-spi</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.container</groupId>
+			<artifactId>arquillian-tomcat-remote-10</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.junit5</groupId>
+			<artifactId>arquillian-junit5-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite-api</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+	<build>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**</include>
+				</includes>
+			</testResource>
+		</testResources>
+	</build>
 </project>

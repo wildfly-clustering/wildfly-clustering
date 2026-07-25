@@ -23,6 +23,7 @@
 		<module>bom</module>
 		<module>arquillian</module>
 		<module>cache</module>
+		<module>container</module>
 		<module>context</module>
 		<module>function</module>
 		<module>marshalling</module>
@@ -129,6 +130,11 @@
 				<groupId>org.apache.tomcat</groupId>
 				<artifactId>tomcat-catalina</artifactId>
 				<version>11.0.24</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian.container</groupId>
+				<artifactId>arquillian-tomcat-remote-10</artifactId>
+				<version>1.2.5.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.marshalling</groupId>

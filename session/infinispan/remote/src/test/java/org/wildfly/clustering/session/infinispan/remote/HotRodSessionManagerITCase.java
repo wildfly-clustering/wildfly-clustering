@@ -19,7 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
+import org.wildfly.clustering.container.infinispan.InfinispanServerExtension;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
@@ -64,7 +64,7 @@ public class HotRodSessionManagerITCase extends AbstractSessionManagerITCase<Hot
 
 							@Override
 							public HotRodURI getHotRodURI() {
-								return INFINISPAN.getContainer().get();
+								return INFINISPAN.getURI();
 							}
 
 							@Override
