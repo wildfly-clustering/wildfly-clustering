@@ -85,7 +85,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>13.8.0</version>
+							<version>13.9.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -251,6 +251,7 @@
 							</module>
 							<module name="TreeWalker">
 								<module name="AbstractClassName" />
+								<module name="AnnotatedDeclarationVisibility"/>
 								<module name="ArrayTypeStyle" />
 								<module name="AvoidDoubleBraceInitialization" />
 								<module name="AvoidNestedBlocks" />
@@ -305,6 +306,7 @@
 								<module name="MissingOverrideOnRecordAccessor" />
 								<module name="ModifiedControlVariable" />
 								<module name="ModifierOrder" />
+								<module name="MultilineCommentLeadingAsteriskPresence"/>
 								<module name="MultipleVariableDeclarations" />
 								<module name="OneStatementPerLine" />
 								<module name="OneTopLevelClass" />
@@ -336,12 +338,14 @@
 								<module name="UnnecessarySemicolonAfterTypeMemberDeclaration" />
 								<module name="UnnecessarySemicolonInEnumeration" />
 								<module name="UnnecessarySemicolonInTryWithResources" />
+								<module name="UnnecessaryTypeArgumentsWithRecordPattern"/>
 								<module name="UnusedImports" />
 								<module name="UnusedLocalVariable" />
 								<module name="UpperEll" />
 								<module name="UseEnhancedSwitch" />
 								<module name="WhenShouldBeUsed" />
 								<module name="WhitespaceAfter" />
+								<module name="WhitespaceBeforeEmptyBody"/>
 							</module>
 							<module name="UniqueProperties" />
 						</module>
