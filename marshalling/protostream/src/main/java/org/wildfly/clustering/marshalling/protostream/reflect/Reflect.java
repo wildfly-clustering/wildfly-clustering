@@ -39,7 +39,7 @@ final class Reflect {
 	static <T, R> Function<T, R> findVarHandle(Class<? extends T> sourceClass, Class<? extends R> fieldType) {
 		Field field = findField(sourceClass, fieldType);
 		try {
-			MethodHandle handle = privateLookup(sourceClass).findGetter(field.getDeclaringClass(), field.getName(), field.getType());
+			MethodHandle handle = privateLookup(field.getDeclaringClass()).findGetter(field.getDeclaringClass(), field.getName(), field.getType());
 			return new Function<>() {
 				@Override
 				public R apply(T object) {
@@ -97,12 +97,12 @@ final class Reflect {
 	static <T, R> Function<T, R> findMethodHandle(Class<? extends T> sourceClass, Class<? extends R> returnType) {
 		MethodType type = MethodType.methodType(returnType);
 		Method method = findMethod(sourceClass, type);
-		return findMethodHandle(sourceClass, method.getName(), type);
+		return findMethodHandle(method.getDeclaringClass(), method.getName(), type);
 	}
 
-	static <T, R> Function<T, R> findMethodHandle(Class<? extends T> sourceClass, String name, MethodType type) {
+	static <T, R> Function<T, R> findMethodHandle(Class<?> sourceClass, String name, MethodType type) {
 		try {
-			MethodHandle handle = MethodHandles.lookup().findVirtual(sourceClass, name, type);
+			MethodHandle handle = privateLookup(sourceClass).findVirtual(sourceClass, name, type);
 			return new Function<>() {
 				@Override
 				public R apply(T value) {
@@ -160,7 +160,7 @@ final class Reflect {
 
 	static MethodHandle getConstructorHandle(Class<?> sourceClass, MethodType type) {
 		try {
-			return MethodHandles.lookup().findConstructor(sourceClass, type);
+			return privateLookup(sourceClass).findConstructor(sourceClass, type);
 		} catch (IllegalAccessException | NoSuchMethodException e) {
 			throw new IllegalStateException(e);
 		}
