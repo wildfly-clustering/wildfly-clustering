@@ -49,7 +49,7 @@ public class TypedArrayMarshaller implements FieldMarshaller<Object> {
 		this.componentType.writeTo(writer, array.getClass().getComponentType());
 		for (int i = 0; i < Array.getLength(array); ++i) {
 			Object element = Array.get(array, i);
-			writer.writeTag(AnyField.ANY.getIndex(), Scalar.ANY.getWireType());
+			writer.writeTag(AnyField.ANY);
 			Scalar.ANY.writeTo(writer, element);
 		}
 	}

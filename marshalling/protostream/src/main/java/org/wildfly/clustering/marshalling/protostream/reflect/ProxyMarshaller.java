@@ -30,10 +30,9 @@ public class ProxyMarshaller<T> implements ProtoStreamMarshaller<T> {
 	 */
 	public ProxyMarshaller(Class<T> proxyClass) {
 		this.marshaller = Scalar.ANY.toMarshaller(proxyClass, new Function<>() {
-			@SuppressWarnings("unchecked")
 			@Override
 			public Object apply(T object) {
-				return Reflect.findMethodHandle((Class<T>) object.getClass(), "writeReplace", MethodType.methodType(Object.class)).apply(object);
+				return Reflect.findMethodHandle(object.getClass(), "writeReplace", MethodType.methodType(Object.class)).apply(object);
 			}
 		}, new Function<>() {
 			@Override

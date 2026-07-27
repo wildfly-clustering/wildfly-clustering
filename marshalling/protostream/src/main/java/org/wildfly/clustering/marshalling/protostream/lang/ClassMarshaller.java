@@ -52,7 +52,7 @@ class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 	public void writeTo(ProtoStreamWriter writer, Class<?> targetClass) throws IOException {
 		if (targetClass != Object.class) {
 			Field<Class<?>> field = this.getField(writer.getSerializationContext(), targetClass);
-			writer.writeTag(field.getIndex(), field.getMarshaller().getWireType());
+			writer.writeTag(field);
 			field.getMarshaller().writeTo(writer, targetClass);
 		}
 	}

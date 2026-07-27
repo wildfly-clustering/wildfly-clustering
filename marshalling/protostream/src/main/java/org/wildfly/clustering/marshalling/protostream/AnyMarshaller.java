@@ -11,7 +11,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.Proxy;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -49,7 +48,7 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 		Object object = value.get();
 		if (object != null) {
 			AnyField field = getField(writer, object);
-			writer.writeTag(field.getIndex(), field.getMarshaller().getWireType());
+			writer.writeTag(field);
 			field.getMarshaller().writeTo(writer, object);
 		}
 	}
@@ -77,10 +76,6 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 			} catch (IllegalArgumentException e) {
 				return AnyField.ANY_ARRAY;
 			}
-		}
-
-		if (Proxy.isProxyClass(valueClass)) {
-			return AnyField.PROXY;
 		}
 
 		if (valueClass.isSynthetic() && !valueClass.isLocalClass() && !valueClass.isAnonymousClass() && (value instanceof Serializable)) {

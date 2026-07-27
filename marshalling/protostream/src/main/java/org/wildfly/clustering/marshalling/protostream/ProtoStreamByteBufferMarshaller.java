@@ -44,7 +44,7 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
 	@Override
 	public boolean test(Object object) {
-		if ((object == null) || (object instanceof Class)) return true;
+		if (object == null) return true;
 		Class<?> targetClass = object.getClass();
 		if (AnyField.fromJavaType(targetClass) != null) return true;
 		if (targetClass.isArray()) {
