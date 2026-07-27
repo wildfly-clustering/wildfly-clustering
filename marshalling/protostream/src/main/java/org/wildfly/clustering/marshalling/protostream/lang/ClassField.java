@@ -55,7 +55,7 @@ enum ClassField implements Field<Class<?>> {
 			}
 			writer.writeVarint32(dimensions);
 			if (componentClass != Object.class) {
-				writer.writeTag(ANY.getIndex(), ANY.getMarshaller().getWireType());
+				writer.writeTag(ANY);
 				ScalarClass.ANY.writeTo(writer, componentClass);
 			}
 		}

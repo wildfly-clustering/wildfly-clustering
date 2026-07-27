@@ -6,6 +6,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.BitSet;
@@ -110,7 +111,7 @@ enum AnyField implements Field<Object> {
 				int tag = reader.readTag();
 				int index = WireType.getTagFieldNumber(tag);
 				if (index == ANY.getIndex()) {
-					interfaces.add(ScalarClass.ANY.readFrom(reader));
+					interfaces.add(reader.readAny(Class.class));
 				} else {
 					reader.skipField(tag);
 				}
@@ -123,8 +124,7 @@ enum AnyField implements Field<Object> {
 			this.invocationHandlerMarshaller.writeTo(writer, Proxy.getInvocationHandler(proxy));
 
 			for (Class<?> interfaceClass : proxy.getClass().getInterfaces()) {
-				writer.writeTag(ANY.getIndex(), ScalarClass.ANY.getWireType());
-				ScalarClass.ANY.writeTo(writer, interfaceClass);
+				writer.writeAny(ANY.getIndex(), interfaceClass);
 			}
 		}
 
@@ -139,13 +139,14 @@ enum AnyField implements Field<Object> {
 		}
 	}),
 	LAMBDA(LambdaMarshaller.INSTANCE),
+	ANNOTATION(AnnotationMarshaller.INSTANCE),
 	;
 	private static final AnyField[] VALUES = AnyField.values();
 	private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();
 	static {
 		for (AnyField field : VALUES) {
 			Class<?> fieldClass = field.getMarshaller().getJavaClass();
-			if ((fieldClass != Object.class) && (fieldClass != Enum.class) && fieldClass != Class.class) {
+			if ((fieldClass != Object.class) && (fieldClass != Enum.class) && (fieldClass != Class.class) && (fieldClass != Annotation.class)) {
 				FIELDS.put(fieldClass, field);
 			}
 		}
@@ -177,6 +178,8 @@ enum AnyField implements Field<Object> {
 	}
 
 	static AnyField fromJavaType(Class<?> targetClass) {
+		if (!targetClass.isAnnotation() && Annotation.class.isAssignableFrom(targetClass)) return AnyField.ANNOTATION;
+		if (Proxy.isProxyClass(targetClass)) return AnyField.PROXY;
 		return FIELDS.get(targetClass);
 	}
 }

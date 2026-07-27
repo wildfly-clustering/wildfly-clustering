@@ -92,6 +92,15 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 	}
 
 	/**
+	 * Writes a tag for the specified field.
+	 * @param field a field
+	 * @throws IOException if the tag could not be written
+	 */
+	default void writeTag(Field<?> field) throws IOException {
+		this.writeTag(field.getIndex(), field.getMarshaller().getWireType());
+	}
+
+	/**
 	 * Deprecated to discourage use.
 	 * @deprecated Use {@link #writeTag(int, WireType)} instead.
 	 */

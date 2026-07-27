@@ -293,6 +293,21 @@ public abstract class AbstractLangTestCase {
 		supplierTester.accept((Supplier<UUID> & Serializable) () -> value);
 	}
 
+	@Test
+	public void testAnnotation() {
+		Tester<Deprecated> tester = this.factory.createTester();
+		tester.accept(DeprecatedClass.class.getAnnotation(Deprecated.class));
+		tester.accept(DeprecatedForRemovalClass.class.getAnnotation(Deprecated.class));
+	}
+
+	@Deprecated
+	private static class DeprecatedClass {
+	}
+
+	@Deprecated(forRemoval = true, since = "foo")
+	private static class DeprecatedForRemovalClass {
+	}
+
 	private static void assertProxyEquals(Object expected, Object actual) {
 		Assertions.assertThat(actual).isNotNull();
 		Assertions.assertThat(Proxy.isProxyClass(actual.getClass())).isTrue();

@@ -34,7 +34,7 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 			Formatter.Identity.INSTANCE.wrap(UUID.class, UUID::fromString));
 
 	private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
-	private final List<Formatter<?>> formatters;
+	private final List<? extends Formatter<?>> formatters;
 	private final int padding;
 
 	/**
@@ -42,15 +42,12 @@ public class FormatterKeyMapper implements TwoWayKey2StringMapper {
 	 */
 	@SuppressWarnings("unchecked")
 	public FormatterKeyMapper() {
-		this(Stream.concat(DEFAULT_FORMATTERS.stream(), ServiceLoader.load((Class<Formatter<?>>) (Class<?>) Formatter.class, FormatterKeyMapper.class.getClassLoader()).stream().map(Supplier::get)).collect(Collectors.toUnmodifiableList()));
+		this.formatters = Stream.concat(DEFAULT_FORMATTERS.stream(), ServiceLoader.load((Class<Formatter<?>>) (Class<?>) Formatter.class, this.getClass().getClassLoader()).stream().map(Supplier::get)).collect(Collectors.toUnmodifiableList());
+		this.padding = this.padding();
 	}
 
-	/**
-	 * Creates key-string mapper using the specified formatters.
-	 * @param formatters a list of formatters
-	 */
-	public FormatterKeyMapper(List<? extends Formatter<?>> formatters) {
-		this.formatters = List.copyOf(formatters);
+	FormatterKeyMapper(List<? extends Formatter<?>> formatters) {
+		this.formatters = formatters;
 		this.padding = this.padding();
 	}
 
