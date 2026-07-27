@@ -41,7 +41,7 @@ import org.wildfly.clustering.context.Context;
 public class EvictionCacheITCase {
 	private static final String CLUSTER_NAME = "ISPN";
 	private static final int CAPACITY = 10;
-	private static final Duration IDLE_THRESHOLD = Duration.ofSeconds(1);
+	private static final Duration IDLE_THRESHOLD = Duration.ofSeconds(2);
 	private static final Class<?> EVICTABLE = Integer.class;
 
 	@ParameterizedTest
@@ -143,7 +143,8 @@ public class EvictionCacheITCase {
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			} finally {
-				cache.addListener(listener);
+				cache.removeListener(listener);
+				cache.clear();
 				cache.stop();
 			}
 		}
