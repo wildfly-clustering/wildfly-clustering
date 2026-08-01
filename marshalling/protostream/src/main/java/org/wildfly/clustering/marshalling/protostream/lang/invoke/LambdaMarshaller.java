@@ -10,8 +10,10 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
+import java.util.Optional;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.protostream.FieldMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -31,19 +33,8 @@ public enum LambdaMarshaller implements FieldMarshaller<Object> {
 		Class<?> capturingClass = SerializedLambdaMarshaller.getCapturingClass(lambda);
 		try {
 			MethodHandle handle = MethodHandles.privateLookupIn(capturingClass, MethodHandles.lookup()).findStatic(capturingClass, "$deserializeLambda$", MethodType.methodType(Object.class, SerializedLambda.class));
-			return handle.invoke(lambda);
+			return Function.invoke(handle).apply(lambda);
 		} catch (NoSuchMethodException | IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		} catch (Throwable e) {
-			if (e instanceof IOException exception) {
-				throw exception;
-			}
-			if (e instanceof RuntimeException exception) {
-				throw exception;
-			}
-			if (e instanceof Error error) {
-				throw error;
-			}
 			throw new IllegalStateException(e);
 		}
 	}
@@ -53,20 +44,8 @@ public enum LambdaMarshaller implements FieldMarshaller<Object> {
 		Class<?> lambdaClass = object.getClass();
 		try {
 			MethodHandle handle = MethodHandles.privateLookupIn(lambdaClass, MethodHandles.lookup()).findVirtual(lambdaClass, "writeReplace", MethodType.methodType(Object.class));
-			SerializedLambda lambda = (SerializedLambda) handle.invoke(object);
-			Scalar.ANY.writeTo(writer, lambda);
+			Scalar.ANY.writeTo(writer, Function.invoke(handle).apply(object));
 		} catch (NoSuchMethodException | IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		} catch (Throwable e) {
-			if (e instanceof IOException exception) {
-				throw exception;
-			}
-			if (e instanceof RuntimeException exception) {
-				throw exception;
-			}
-			if (e instanceof Error error) {
-				throw error;
-			}
 			throw new IllegalStateException(e);
 		}
 	}
@@ -79,5 +58,10 @@ public enum LambdaMarshaller implements FieldMarshaller<Object> {
 	@Override
 	public WireType getWireType() {
 		return WireType.LENGTH_DELIMITED;
+	}
+
+	@Override
+	public Optional<Class<?>> getOpenClass() {
+		return SerializedLambdaMarshaller.INSTANCE.getOpenClass();
 	}
 }

@@ -14,7 +14,9 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
+
+import org.wildfly.clustering.function.BiFunction;
+import org.wildfly.clustering.function.Function;
 
 /**
  * Utility methods requiring privileged actions for use by reflection-based marshallers.
@@ -28,36 +30,19 @@ final class Reflect {
 		// Hide
 	}
 
-	private static MethodHandles.Lookup privateLookup(Class<?> reflected) {
-		try {
-			return MethodHandles.privateLookupIn(reflected, LOOKUP);
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		}
+	private static MethodHandles.Lookup privateLookup(Class<?> reflected) throws IllegalAccessException {
+		return MethodHandles.privateLookupIn(reflected, LOOKUP);
 	}
 
 	static <T, R> Function<T, R> findVarHandle(Class<? extends T> sourceClass, Class<? extends R> fieldType) {
 		Field field = findField(sourceClass, fieldType);
 		try {
 			MethodHandle handle = privateLookup(field.getDeclaringClass()).findGetter(field.getDeclaringClass(), field.getName(), field.getType());
-			return new Function<>() {
-				@Override
-				public R apply(T object) {
-					try {
-						return fieldType.cast(handle.invoke(object));
-					} catch (Throwable e) {
-						if (e instanceof RuntimeException exception) {
-							throw exception;
-						}
-						if (e instanceof RuntimeException error) {
-							throw error;
-						}
-						throw new IllegalStateException(e);
-					}
-				}
-			};
+			return Function.invoke(handle);
 		} catch (NoSuchFieldException | IllegalAccessException e) {
-			throw new IllegalStateException(e);
+			return value -> {
+				throw new IllegalStateException(e);
+			};
 		}
 	}
 
@@ -103,24 +88,9 @@ final class Reflect {
 	static <T, R> Function<T, R> findMethodHandle(Class<?> sourceClass, String name, MethodType type) {
 		try {
 			MethodHandle handle = privateLookup(sourceClass).findVirtual(sourceClass, name, type);
-			return new Function<>() {
-				@Override
-				public R apply(T value) {
-					try {
-						return (R) handle.invoke(value);
-					} catch (Throwable e) {
-						if (e instanceof RuntimeException exception) {
-							throw exception;
-						}
-						if (e instanceof RuntimeException error) {
-							throw error;
-						}
-						throw new IllegalStateException(e);
-					}
-				}
-			};
+			return Function.invoke(handle);
 		} catch (NoSuchMethodException | IllegalAccessException e) {
-			throw new IllegalStateException(e);
+			return Function.throwing(e);
 		}
 	}
 
@@ -154,15 +124,34 @@ final class Reflect {
 		return findMethod(superClass, type);
 	}
 
-	static MethodHandle getConstructorHandle(Class<?> sourceClass, Class<?>... parameterTypes) {
-		return getConstructorHandle(sourceClass, MethodType.methodType(void.class, parameterTypes));
+	static <T, R> Function<T, R> getConstructorHandle(Class<? extends R> sourceClass, Class<? super T> parameterType) {
+		try {
+			MethodHandle handle = privateLookup(sourceClass).findConstructor(sourceClass, MethodType.methodType(void.class, parameterType));
+			return Function.invoke(handle);
+		} catch (IllegalAccessException | NoSuchMethodException e) {
+			return value -> {
+				throw new IllegalStateException(e);
+			};
+		}
 	}
 
-	static MethodHandle getConstructorHandle(Class<?> sourceClass, MethodType type) {
+	static <T1, T2, R> BiFunction<T1, T2, R> getConstructorHandle(Class<? extends R> sourceClass, Class<? super T1> parameter1Type, Class<? super T2> parameter2Type) {
 		try {
-			return privateLookup(sourceClass).findConstructor(sourceClass, type);
+			MethodHandle handle = privateLookup(sourceClass).findConstructor(sourceClass, MethodType.methodType(void.class, parameter1Type, parameter2Type));
+			return BiFunction.invoke(handle);
 		} catch (IllegalAccessException | NoSuchMethodException e) {
-			throw new IllegalStateException(e);
+			return (value1, value2) -> {
+				throw new IllegalStateException(e);
+			};
+		}
+	}
+
+	static <T1, T2, T3, R> TriFunction<T1, T2, T3, R> getConstructorHandle(Class<? extends R> sourceClass, Class<? super T1> parameter1Type, Class<? super T2> parameter2Type, Class<? super T3> parameter3Type) {
+		try {
+			MethodHandle handle = privateLookup(sourceClass).findConstructor(sourceClass, MethodType.methodType(void.class, parameter1Type, parameter2Type, parameter3Type));
+			return TriFunction.invoke(handle);
+		} catch (IllegalAccessException | NoSuchMethodException e) {
+			return TriFunction.throwing(e);
 		}
 	}
 }

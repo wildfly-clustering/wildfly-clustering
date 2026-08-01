@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.function;
 
+import java.lang.invoke.MethodHandle;
 import java.util.Map;
 
 /**
@@ -337,6 +338,57 @@ public interface BiFunction<V1, V2, R> extends java.util.function.BiFunction<V1,
 			public R apply(T1 value1, T2 value2) {
 				java.util.function.BiFunction<? super T1, ? super T2, ? extends R> function = predicate.test(value1, value2) ? accepted : rejected;
 				return function.apply(value1, value2);
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that invokes the specified method handle.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param <R> the return type
+	 * @param handle a method handle
+	 * @return a function that invokes the specified method handle.
+	 */
+	static <T1, T2, R> BiFunction<T1, T2, R> invoke(MethodHandle handle) {
+		assert handle.type().parameterCount() == 2;
+		return new BiFunction<>() {
+			@Override
+			public R apply(T1 value1, T2 value2) {
+				try {
+					return (R) handle.invoke(value1, value2);
+				} catch (Throwable e) {
+					if (e instanceof RuntimeException exception) {
+						throw exception;
+					}
+					if (e instanceof Error error) {
+						throw error;
+					}
+					throw new IllegalStateException(e);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that always throws the specified exception.
+	 * @param <T1> the former parameter type
+	 * @param <T2> the latter parameter type
+	 * @param <R> the return type
+	 * @param e the exception to throw
+	 * @return a function that always throws the specified exception.
+	 */
+	static <T1, T2, R> BiFunction<T1, T2, R> throwing(Throwable e) {
+		return new BiFunction<>() {
+			@Override
+			public R apply(T1 value1, T2 value2) {
+				if (e instanceof RuntimeException exception) {
+					throw exception;
+				}
+				if (e instanceof Error error) {
+					throw error;
+				}
+				throw new IllegalStateException(e);
 			}
 		};
 	}

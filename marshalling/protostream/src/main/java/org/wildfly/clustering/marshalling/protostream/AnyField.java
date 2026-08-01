@@ -13,6 +13,7 @@ import java.util.BitSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.lang.invoke.LambdaMarshaller;
@@ -142,12 +143,13 @@ enum AnyField implements Field<Object> {
 	ANNOTATION(AnnotationMarshaller.INSTANCE),
 	;
 	private static final AnyField[] VALUES = AnyField.values();
-	private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();
+	private static final Map<Class<?>, AnyField> TYPES = new IdentityHashMap<>();
 	static {
+		Set<Class<?>> ignored = Set.of(Object.class, Enum.class, Annotation.class);
 		for (AnyField field : VALUES) {
 			Class<?> fieldClass = field.getMarshaller().getJavaClass();
-			if ((fieldClass != Object.class) && (fieldClass != Enum.class) && (fieldClass != Class.class) && (fieldClass != Annotation.class)) {
-				FIELDS.put(fieldClass, field);
+			if (!ignored.contains(fieldClass)) {
+				TYPES.put(fieldClass, field);
 			}
 		}
 	}
@@ -173,13 +175,11 @@ enum AnyField implements Field<Object> {
 		return this.marshaller;
 	}
 
-	static AnyField fromIndex(int index) {
+	static AnyField forIndex(int index) {
 		return (index > 0) && (index <= VALUES.length) ? VALUES[index - 1] : null;
 	}
 
-	static AnyField fromJavaType(Class<?> targetClass) {
-		if (!targetClass.isAnnotation() && Annotation.class.isAssignableFrom(targetClass)) return AnyField.ANNOTATION;
-		if (Proxy.isProxyClass(targetClass)) return AnyField.PROXY;
-		return FIELDS.get(targetClass);
+	static AnyField forClass(Class<?> fieldClass) {
+		return TYPES.get(fieldClass);
 	}
 }

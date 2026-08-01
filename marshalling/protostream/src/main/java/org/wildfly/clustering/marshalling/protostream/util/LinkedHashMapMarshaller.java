@@ -6,13 +6,14 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.lang.invoke.VarHandle;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -28,7 +29,7 @@ public class LinkedHashMapMarshaller<K, V> extends AbstractMapMarshaller<K, V, L
 
 	private static final int ACCESS_ORDER_INDEX = ENTRY_INDEX + 1;
 
-	private static final VarHandle ACCESS_ORDER_HANDLE = Reflect.getVarHandle(LinkedHashMap.class, boolean.class);
+	private final Function<LinkedHashMap<K, V>, Boolean> accessOrder = Reflect.getVarHandle(LinkedHashMap.class, boolean.class);
 
 	@SuppressWarnings("unchecked")
 	private LinkedHashMapMarshaller() {
@@ -58,10 +59,15 @@ public class LinkedHashMapMarshaller<K, V> extends AbstractMapMarshaller<K, V, L
 	public void writeTo(ProtoStreamWriter writer, LinkedHashMap<K, V> map) throws IOException {
 		synchronized (map) { // Avoid ConcurrentModificationException
 			super.writeTo(writer, map);
-			boolean accessOrder = (Boolean) ACCESS_ORDER_HANDLE.get(map);
+			boolean accessOrder = this.accessOrder.apply(map);
 			if (accessOrder) {
 				writer.writeBool(ACCESS_ORDER_INDEX, accessOrder);
 			}
 		}
+	}
+
+	@Override
+	public Optional<Class<?>> getOpenClass() {
+		return Optional.of(LinkedHashMap.class);
 	}
 }

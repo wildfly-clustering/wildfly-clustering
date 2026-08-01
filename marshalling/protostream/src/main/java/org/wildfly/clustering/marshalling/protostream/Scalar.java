@@ -345,6 +345,7 @@ public enum Scalar implements ScalarMarshaller<Object> {
 		}
 	}),
 	;
+
 	private final ScalarMarshaller<?> marshaller;
 
 	Scalar(ScalarMarshaller<?> marshaller) {

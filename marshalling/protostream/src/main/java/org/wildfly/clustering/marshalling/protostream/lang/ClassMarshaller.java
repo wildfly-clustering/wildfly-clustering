@@ -58,8 +58,7 @@ class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
 	}
 
 	Field<Class<?>> getField(ImmutableSerializationContext context, Class<?> targetClass) {
-		Field<?> classField = Field.forClass(targetClass);
-		if (classField != null) return ClassField.FIELD;
+		if (Field.forClass(targetClass) != null) return ClassField.FIELD;
 		if (targetClass.isArray()) return ClassField.ARRAY;
 		try {
 			BaseMarshaller<?> marshaller = context.getMarshaller(targetClass);

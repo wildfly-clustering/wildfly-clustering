@@ -6,14 +6,15 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.lang.invoke.VarHandle;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Optional;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -27,10 +28,11 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumMap<E, Object>> {
 	static final ProtoStreamMarshaller<?> INSTANCE = new EnumMapMarshaller<>();
 
-	static final VarHandle ENUM_MAP_KEY_CLASS_HANDLE = Reflect.getVarHandle(EnumMap.class, Class.class);
-
 	private static final int CLASS_INDEX = 1;
 	private static final int ELEMENT_INDEX = 2;
+
+	@SuppressWarnings("unchecked")
+	private final Function<EnumMap<E, Object>, Class<E>> keyClassHandle = Reflect.getVarHandle((Class<EnumMap<E, Object>>) (Class<?>) EnumMap.class, (Class<Class<E>>) (Class<?>) Class.class);
 
 	@Override
 	public EnumMap<E, Object> readFrom(ProtoStreamReader reader) throws IOException {
@@ -77,12 +79,27 @@ class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<Enum
 		return (Class<? extends EnumMap<E, Object>>) (Class<?>) EnumMap.class;
 	}
 
+	@Override
+	public Optional<Class<?>> getOpenClass() {
+		return Optional.of(EnumMap.class);
+	}
+
 	private Class<E> findEnumClass(EnumMap<E, Object> map) {
 		Iterator<E> values = map.keySet().iterator();
 		if (values.hasNext()) {
 			return values.next().getDeclaringClass();
 		}
 		// If EnumMap is empty, we need to resort to reflection to obtain the enum type
-		return (Class<E>) ENUM_MAP_KEY_CLASS_HANDLE.get(map);
+		try {
+			return this.keyClassHandle.apply(map);
+		} catch (Throwable e) {
+			if (e instanceof RuntimeException exception) {
+				throw exception;
+			}
+			if (e instanceof Error error) {
+				throw error;
+			}
+			throw new IllegalStateException(e);
+		}
 	}
 }

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
+import java.lang.reflect.InaccessibleObjectException;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,23 +88,21 @@ enum SerializedLambdaMarshaller implements ProtoStreamMarshaller<SerializedLambd
 	private static <T, R> Function<T, R> getFieldHandle(Class<T> sourceClass, Class<R> fieldType) {
 		for (Field field : sourceClass.getDeclaredFields()) {
 			if (field.getType() == fieldType) {
-				field.setAccessible(true);
-				return new Function<>() {
-					@Override
-					public R apply(T source) {
-						try {
-							return fieldType.cast(field.get(source));
-						} catch (Throwable e) {
-							if (e instanceof RuntimeException exception) {
-								throw exception;
+				try {
+					field.setAccessible(true);
+					return new Function<>() {
+						@Override
+						public R apply(T source) {
+							try {
+								return fieldType.cast(field.get(source));
+							} catch (IllegalAccessException e) {
+								throw new IllegalStateException(e);
 							}
-							if (e instanceof RuntimeException error) {
-								throw error;
-							}
-							throw new IllegalStateException(e);
 						}
-					}
-				};
+					};
+				} catch (InaccessibleObjectException e) {
+					return Function.throwing(e);
+				}
 			}
 		}
 		throw new IllegalArgumentException(String.format("%s::%s", sourceClass.getCanonicalName(), fieldType.getCanonicalName()));
@@ -168,6 +167,11 @@ enum SerializedLambdaMarshaller implements ProtoStreamMarshaller<SerializedLambd
 		for (int i = 0; i < lambda.getCapturedArgCount(); ++i) {
 			writer.writeAny(CAPTURED_ARGUMENT_INDEX, lambda.getCapturedArg(i));
 		}
+	}
+
+	@Override
+	public Optional<Class<?>> getOpenClass() {
+		return Optional.of(SerializedLambda.class);
 	}
 
 	static class Descriptor {

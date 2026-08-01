@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
-import java.lang.invoke.MethodHandle;
 import java.util.function.Function;
 
 /**
@@ -33,9 +32,5 @@ public class UnaryFieldMarshaller<T, F> extends UnaryMemberMarshaller<T, F> {
 	 */
 	public UnaryFieldMarshaller(Class<T> targetClass, Class<F> fieldClass) {
 		this(targetClass, fieldClass, Reflect.getConstructorHandle(targetClass, fieldClass));
-	}
-
-	private UnaryFieldMarshaller(Class<T> targetClass, Class<F> fieldClass, MethodHandle constructor) {
-		this(targetClass, fieldClass, value -> invoke(constructor, value));
 	}
 }

@@ -28,6 +28,9 @@ import org.wildfly.clustering.function.UnaryOperator;
  * @author Paul Ferraro
  */
 class DefaultSerializationContext extends NativeSerializationContext implements SerializationContext {
+	private static final System.Logger LOGGER = System.getLogger(DefaultSerializationContext.class.getName());
+
+	private final Module module = this.getClass().getModule();
 	private final ProtoStreamConfiguration configuration;
 	private final org.infinispan.protostream.SerializationContext context;
 	private final Supplier<TagWriterImpl> sizeWriterFactory;
@@ -99,13 +102,20 @@ class DefaultSerializationContext extends NativeSerializationContext implements 
 
 	@Override
 	public void registerMarshaller(ProtoStreamMarshaller<?> marshaller) {
-		this.context.registerMarshaller(marshaller);
+		Class<?> openClass = marshaller.getOpenClass().orElse(null);
+		Module openModule = (openClass != null) ? openClass.getModule() : null;
+		String openPackageName = (openClass != null) ? openClass.getPackageName() : null;
+		if ((openModule == null) || openModule.isOpen(openPackageName, this.module)) {
+			this.context.registerMarshaller(marshaller);
+		} else {
+			LOGGER.log(System.Logger.Level.DEBUG, "ProtoStream marshaller for {0} is disabled. To enable, add --add-opens={1}/{2}={3} to JVM parameters", marshaller.getJavaClass().getCanonicalName(), openModule.getName(), openPackageName, this.module.isNamed() ? this.module.getName() : "ALL-UNNAMED");
+		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void registerMarshaller(BaseMarshaller<?> marshaller) {
-		if (marshaller instanceof ProtoStreamMarshaller protostreamMarshaller) {
+		if (marshaller instanceof ProtoStreamMarshaller<?> protostreamMarshaller) {
 			this.registerMarshaller(protostreamMarshaller);
 		} else if (marshaller instanceof ProtobufTagMarshaller nativeMarshaller) {
 			// Adapt native ProtobufTagMarshaller to ProtoStreamMarshaller interface

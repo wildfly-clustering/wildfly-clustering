@@ -14,9 +14,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.BiFunction;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.marshalling.protostream.util.StringKeyMapEntry;
 
@@ -30,23 +33,27 @@ public enum AnnotationMarshaller implements FieldMarshaller<Annotation> {
 
 	private static final Class<? extends InvocationHandler> ANNOTATION_INVOCATION_HANDLER = Proxy.getInvocationHandler(DeprecatedClass.class.getAnnotation(Deprecated.class)).getClass().asSubclass(InvocationHandler.class);
 
-	private static final MethodHandle ANNOTATION_PROPERTIES_HANDLE = findFieldHandle(Map.class);
-	private static final MethodHandle ANNOTATION_INVOCATION_HANDLER_CONSTRUCTOR_HANDLE = findConstructorHandle(MethodType.methodType(void.class, Class.class, Map.class));
+	@SuppressWarnings("unchecked")
+	private static final Function<InvocationHandler, Map<String, Object>> ANNOTATION_PROPERTIES_HANDLE = findFieldHandle((Class<Map<String, Object>>) (Class<?>) Map.class);
+	@SuppressWarnings("unchecked")
+	private static final BiFunction<Class<?>, Map<String, Object>, InvocationHandler> ANNOTATION_INVOCATION_HANDLER_CONSTRUCTOR_HANDLE = findConstructorHandle((Class<Class<?>>) (Class<?>) Class.class, (Class<Map<String, Object>>) (Class<?>) Map.class);
 
-	private static MethodHandle findFieldHandle(Class<?> fieldClass) {
+	private static <T> Function<InvocationHandler, T> findFieldHandle(Class<T> fieldClass) {
 		Field field = Stream.of(ANNOTATION_INVOCATION_HANDLER.getDeclaredFields()).filter(Predicate.of(Field::getType, Predicate.identicalTo(fieldClass))).findFirst().get();
 		try {
-			return MethodHandles.privateLookupIn(ANNOTATION_INVOCATION_HANDLER, MethodHandles.lookup()).findGetter(ANNOTATION_INVOCATION_HANDLER, field.getName(), fieldClass);
+			MethodHandle handle = MethodHandles.privateLookupIn(ANNOTATION_INVOCATION_HANDLER, MethodHandles.lookup()).findGetter(ANNOTATION_INVOCATION_HANDLER, field.getName(), fieldClass);
+			return Function.invoke(handle);
 		} catch (IllegalAccessException | NoSuchFieldException e) {
-			throw new IllegalStateException(e);
+			return Function.throwing(e);
 		}
 	}
 
-	private static MethodHandle findConstructorHandle(MethodType type) {
+	private static BiFunction<Class<?>, Map<String, Object>, InvocationHandler> findConstructorHandle(Class<Class<?>> parameter1Type, Class<Map<String, Object>> parameter2Type) {
 		try {
-			return MethodHandles.privateLookupIn(ANNOTATION_INVOCATION_HANDLER, MethodHandles.lookup()).findConstructor(ANNOTATION_INVOCATION_HANDLER, type);
+			MethodHandle handle = MethodHandles.privateLookupIn(ANNOTATION_INVOCATION_HANDLER, MethodHandles.lookup()).findConstructor(ANNOTATION_INVOCATION_HANDLER, MethodType.methodType(void.class, parameter1Type, parameter2Type));
+			return BiFunction.invoke(handle);
 		} catch (IllegalAccessException | NoSuchMethodException e) {
-			throw new IllegalStateException(e);
+			return BiFunction.throwing(e);
 		}
 	}
 
@@ -71,18 +78,8 @@ public enum AnnotationMarshaller implements FieldMarshaller<Annotation> {
 			}
 		}
 
-		try {
-			InvocationHandler handler = (InvocationHandler) ANNOTATION_INVOCATION_HANDLER_CONSTRUCTOR_HANDLE.invoke(annotationType, properties);
-			return (Annotation) Proxy.newProxyInstance(annotationType.getClassLoader(), new Class<?>[] { annotationType }, handler);
-		} catch (Throwable e) {
-			if (e instanceof RuntimeException exception) {
-				throw exception;
-			}
-			if (e instanceof Error error) {
-				throw error;
-			}
-			throw new IllegalStateException(e);
-		}
+		InvocationHandler handler = ANNOTATION_INVOCATION_HANDLER_CONSTRUCTOR_HANDLE.apply(annotationType, properties);
+		return (Annotation) Proxy.newProxyInstance(annotationType.getClassLoader(), new Class<?>[] { annotationType }, handler);
 	}
 
 	@Override
@@ -90,25 +87,20 @@ public enum AnnotationMarshaller implements FieldMarshaller<Annotation> {
 		ScalarClass.ANY.writeTo(writer, annotation.annotationType());
 
 		InvocationHandler handler = Proxy.getInvocationHandler(annotation);
-		try {
-			Map<String, Object> properties = (Map<String, Object>) ANNOTATION_PROPERTIES_HANDLE.invoke(handler);
-			for (Map.Entry<String, Object> entry : properties.entrySet()) {
-				writer.writeObject(AnyField.ANY.getIndex(), new StringKeyMapEntry<>(entry));
-			}
-		} catch (Throwable e) {
-			if (e instanceof RuntimeException exception) {
-				throw exception;
-			}
-			if (e instanceof Error error) {
-				throw error;
-			}
-			throw new IllegalStateException(e);
+		Map<String, Object> properties = ANNOTATION_PROPERTIES_HANDLE.apply(handler);
+		for (Map.Entry<String, Object> entry : properties.entrySet()) {
+			writer.writeObject(AnyField.ANY.getIndex(), new StringKeyMapEntry<>(entry));
 		}
 	}
 
 	@Override
 	public WireType getWireType() {
 		return ScalarClass.ANY.getWireType();
+	}
+
+	@Override
+	public Optional<Class<?>> getOpenClass() {
+		return Optional.of(ANNOTATION_INVOCATION_HANDLER);
 	}
 
 	@Deprecated

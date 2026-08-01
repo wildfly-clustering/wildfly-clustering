@@ -31,6 +31,6 @@ public interface Field<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	static <T> Field<T> forClass(Class<T> fieldClass) {
-		return (Field<T>) AnyField.fromJavaType(fieldClass);
+		return (Field<T>) AnyField.forClass(fieldClass);
 	}
 }
