@@ -68,12 +68,12 @@ public enum ScalarClass implements ScalarMarshaller<Class<?>> {
 	FIELD(WireType.VARINT) {
 		@Override
 		public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
-			return AnyField.fromIndex(reader.readUInt32() + 1).getMarshaller().getJavaClass();
+			return AnyField.forIndex(reader.readUInt32() + 1).getMarshaller().getJavaClass();
 		}
 
 		@Override
 		public void writeTo(ProtoStreamWriter writer, Class<?> value) throws IOException {
-			writer.writeVarint32(AnyField.fromJavaType(value).getIndex() - 1);
+			writer.writeVarint32(AnyField.forClass(value).getIndex() - 1);
 		}
 	},
 	;

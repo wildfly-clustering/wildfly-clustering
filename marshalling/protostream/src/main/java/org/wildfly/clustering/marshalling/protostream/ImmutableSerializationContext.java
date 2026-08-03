@@ -49,6 +49,32 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 	@Override
 	ProtoStreamConfiguration getConfiguration();
 
+	/**
+	 * Returns a marshaller suitable of marshalling an object of the specified type.
+	 * @param <T> the type of the associated marshaller
+	 * @param <V> the type of the object to be marshalled
+	 * @param javaClass the type of the value to be written.
+	 * @return a marshaller suitable for the specified type
+	 * @throws IllegalArgumentException if no suitable marshaller exists
+	 */
+	@SuppressWarnings("unchecked")
+	default <T, V extends T> ProtoStreamMarshaller<T> findMarshaller(Class<V> javaClass) {
+		Class<?> targetClass = javaClass;
+		IllegalArgumentException exception = null;
+		while (targetClass != null) {
+			try {
+				return (ProtoStreamMarshaller<T>) this.getMarshaller((Class<T>) targetClass);
+			} catch (IllegalArgumentException e) {
+				// If no marshaller was found, check super class
+				if (exception == null) {
+					exception = e;
+				}
+				targetClass = targetClass.getSuperclass();
+			}
+		}
+		throw exception;
+	}
+
 	@Override
 	<T> ProtoStreamMarshaller<T> getMarshaller(Class<T> targetClass);
 

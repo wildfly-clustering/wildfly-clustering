@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -44,9 +45,13 @@ public abstract class AbstractMemberMarshaller<T> implements ProtoStreamMarshall
 	static <T, R> R invoke(MethodHandle handle, T parameter) {
 		try {
 			return (R) handle.invoke(parameter);
-		} catch (RuntimeException | Error e) {
-			throw e;
 		} catch (Throwable e) {
+			if (e instanceof RuntimeException exception) {
+				throw exception;
+			}
+			if (e instanceof Error error) {
+				throw error;
+			}
 			throw new IllegalStateException(e);
 		}
 	}
@@ -83,5 +88,10 @@ public abstract class AbstractMemberMarshaller<T> implements ProtoStreamMarshall
 				writer.writeAny(i + 1, value);
 			}
 		}
+	}
+
+	@Override
+	public Optional<Class<?>> getOpenClass() {
+		return Optional.of(this.type);
 	}
 }

@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.marshalling.protostream.reflect;
 
+import java.lang.invoke.MethodHandle;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -39,5 +40,58 @@ public interface TriFunction<P1, P2, P3, R> {
 	default <V> TriFunction<P1, P2, P3, V> andThen(Function<? super R, ? extends V> after) {
 		Objects.requireNonNull(after);
 		return (p1, p2, p3) -> after.apply(this.apply(p1, p2, p3));
+	}
+
+	/**
+	 * Returns a function that invokes the specified method handle.
+	 * @param <P1> the first function parameter type
+	 * @param <P2> the second function parameter type
+	 * @param <P3> the third function parameter type
+	 * @param <R> the return type
+	 * @param handle a method handle
+	 * @return a function that invokes the specified method handle.
+	 */
+	static <P1, P2, P3, R> TriFunction<P1, P2, P3, R> invoke(MethodHandle handle) {
+		assert handle.type().parameterCount() == 3;
+		return new TriFunction<>() {
+			@Override
+			public R apply(P1 value1, P2 value2, P3 value3) {
+				try {
+					return (R) handle.invoke(value1, value2, value3);
+				} catch (Throwable e) {
+					if (e instanceof RuntimeException exception) {
+						throw exception;
+					}
+					if (e instanceof Error error) {
+						throw error;
+					}
+					throw new IllegalStateException(e);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that always throws the specified exception.
+	 * @param <P1> the first function parameter type
+	 * @param <P2> the second function parameter type
+	 * @param <P3> the third function parameter type
+	 * @param <R> the return type
+	 * @param e the thrown exception
+	 * @return a function that always throws the specified exception
+	 */
+	static <P1, P2, P3, R> TriFunction<P1, P2, P3, R> throwing(Throwable e) {
+		return new TriFunction<>() {
+			@Override
+			public R apply(P1 value1, P2 value2, P3 value3) {
+				if (e instanceof RuntimeException exception) {
+					throw exception;
+				}
+				if (e instanceof Error error) {
+					throw error;
+				}
+				throw new IllegalStateException(e);
+			}
+		};
 	}
 }

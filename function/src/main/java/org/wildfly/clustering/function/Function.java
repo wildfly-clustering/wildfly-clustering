@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.function;
 
+import java.lang.invoke.MethodHandle;
 import java.util.AbstractMap;
 import java.util.Map;
 
@@ -298,6 +299,55 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Objec
 			@Override
 			public Map.Entry<K, V> apply(T object) {
 				return new AbstractMap.SimpleImmutableEntry<>(key.apply(object), value.apply(object));
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that invokes the specified method handle.
+	 * @param <T> the parameter type
+	 * @param <R> the return type
+	 * @param handle a method handle
+	 * @return a function that invokes the specified method handle.
+	 */
+	static <T, R> Function<T, R> invoke(MethodHandle handle) {
+		assert handle.type().parameterCount() == 1;
+		return new Function<>() {
+			@Override
+			public R apply(T value) {
+				try {
+					return (R) handle.invoke(value);
+				} catch (Throwable e) {
+					if (e instanceof RuntimeException exception) {
+						throw exception;
+					}
+					if (e instanceof Error error) {
+						throw error;
+					}
+					throw new IllegalStateException(e);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Returns a function that always throws the specified exception.
+	 * @param <T> the parameter type
+	 * @param <R> the return type
+	 * @param e the exception to throw
+	 * @return a function that always throws the specified exception.
+	 */
+	static <T, R> Function<T, R> throwing(Throwable e) {
+		return new Function<>() {
+			@Override
+			public R apply(T value) {
+				if (e instanceof RuntimeException exception) {
+					throw exception;
+				}
+				if (e instanceof Error error) {
+					throw error;
+				}
+				throw new IllegalStateException(e);
 			}
 		};
 	}

@@ -7,11 +7,12 @@ package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.wildfly.clustering.function.Function;
 
 /**
  * @author Paul Ferraro
@@ -21,7 +22,7 @@ final class Reflect {
 		// Hide
 	}
 
-	static VarHandle getVarHandle(Class<?> sourceClass, Class<?> fieldType) {
+	static <T, R> Function<T, R> getVarHandle(Class<? super T> sourceClass, Class<R> fieldType) {
 		List<Field> assignableFields = new LinkedList<>();
 		Field[] fields = sourceClass.getDeclaredFields();
 		// Try first with precise type checking
@@ -47,25 +48,16 @@ final class Reflect {
 		if (!assignableFields.isEmpty()) {
 			Field field = assignableFields.get(0);
 			try {
-				return MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).unreflectVarHandle(field);
-			} catch (IllegalAccessException e) {
-				throw new IllegalStateException(e);
+				MethodHandle handle = MethodHandles.privateLookupIn(sourceClass, MethodHandles.lookup()).findGetter(field.getDeclaringClass(), field.getName(), field.getType());
+				return Function.invoke(handle);
+			} catch (NoSuchFieldException | IllegalAccessException e) {
+				return Function.throwing(e);
 			}
 		}
-		Class<?> superClass = sourceClass.getSuperclass();
+		Class<? super T> superClass = sourceClass.getSuperclass();
 		if ((superClass == null) || (superClass == Object.class)) {
 			throw new IllegalArgumentException(fieldType.getName());
 		}
 		return getVarHandle(superClass, fieldType);
-	}
-
-	static <T> T invoke(MethodHandle handle, Object source, Class<T> fieldType) {
-		try {
-			return fieldType.cast(handle.invoke(source));
-		} catch (RuntimeException | Error e) {
-			throw e;
-		} catch (Throwable e) {
-			throw new IllegalStateException(e);
-		}
 	}
 }

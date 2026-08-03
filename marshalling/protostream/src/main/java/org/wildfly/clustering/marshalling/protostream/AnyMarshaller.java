@@ -7,21 +7,32 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Proxy;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 import org.infinispan.protostream.BaseMarshaller;
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.function.Function;
 
 /**
  * Marshaller for an {@link Any} object.
  * @author Paul Ferraro
  */
-enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
-	INSTANCE;
+class AnyMarshaller implements ProtoStreamMarshaller<Any> {
+	private final Set<Class<?>> knownSerializableLambdas = Collections.newSetFromMap(Collections.synchronizedMap(new IdentityHashMap<>()));
+
+	private final Set<AnyField> fields;
+
+	AnyMarshaller(Set<AnyField> fields) {
+		this.fields = fields;
+	}
 
 	@Override
 	public Class<? extends Any> getJavaClass() {
@@ -29,12 +40,22 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 	}
 
 	@Override
+	public boolean test(ImmutableSerializationContext context, Any any) {
+		Object value = any.get();
+		try {
+			return (value == null) || (this.getField(context, value) != null);
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+
+	@Override
 	public Any readFrom(ProtoStreamReader reader) throws IOException {
 		Object value = null;
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
-			AnyField field = AnyField.fromIndex(WireType.getTagFieldNumber(tag));
-			if (field != null) {
+			AnyField field = AnyField.forIndex(WireType.getTagFieldNumber(tag));
+			if ((field != null) && this.fields.contains(field)) {
 				value = field.getMarshaller().readFrom(reader);
 			} else {
 				reader.skipField(tag);
@@ -47,28 +68,48 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 	public void writeTo(ProtoStreamWriter writer, Any value) throws IOException {
 		Object object = value.get();
 		if (object != null) {
-			AnyField field = getField(writer, object);
+			AnyField field = this.getField(writer.getSerializationContext(), object);
 			writer.writeTag(field);
 			field.getMarshaller().writeTo(writer, object);
 		}
 	}
 
-	private static AnyField getField(ProtoStreamWriter writer, Object value) {
+	private AnyField getField(ImmutableSerializationContext context, Object value) {
 		if (value instanceof Reference) return AnyField.REFERENCE;
 
-		ImmutableSerializationContext context = writer.getSerializationContext();
 		Class<?> valueClass = value.getClass();
-		AnyField field = AnyField.fromJavaType(valueClass);
+
+		if (valueClass.isSynthetic() && !valueClass.isLocalClass() && !valueClass.isAnonymousClass() && (value instanceof Serializable) && this.fields.contains(AnyField.LAMBDA)) {
+			if (this.knownSerializableLambdas.contains(valueClass)) {
+				return AnyField.LAMBDA;
+			}
+			try {
+				MethodHandle handle = MethodHandles.privateLookupIn(valueClass, MethodHandles.lookup()).findVirtual(valueClass, "writeReplace", MethodType.methodType(Object.class));
+				if (Function.invoke(handle).apply(value) instanceof SerializedLambda) {
+					this.knownSerializableLambdas.add(valueClass);
+					return AnyField.LAMBDA;
+				}
+			} catch (NoSuchMethodException | IllegalAccessException e) {
+				// Not a serializable lambda
+			}
+		}
+
+		return getField(context, valueClass);
+	}
+
+	private static AnyField getField(ImmutableSerializationContext context, Class<?> valueClass) {
+		AnyField field = AnyField.forClass(valueClass);
 		if (field != null) return field;
 
-		if (value instanceof Enum<?> enumValue) {
-			BaseMarshaller<?> marshaller = context.getMarshaller(enumValue.getDeclaringClass());
+		Class<?> declaringClass = valueClass.getDeclaringClass();
+		if ((declaringClass != null) && declaringClass.isEnum()) {
+			BaseMarshaller<?> marshaller = context.getMarshaller(declaringClass);
 			return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_ENUM : AnyField.NAMED_ENUM;
 		}
 
 		if (valueClass.isArray()) {
 			Class<?> componentType = valueClass.getComponentType();
-			AnyField componentTypeField = AnyField.fromJavaType(componentType);
+			AnyField componentTypeField = AnyField.forClass(componentType);
 			if (componentTypeField != null) return AnyField.FIELD_ARRAY;
 			try {
 				BaseMarshaller<?> marshaller = context.getMarshaller(componentType);
@@ -78,26 +119,10 @@ enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
 			}
 		}
 
-		if (valueClass.isSynthetic() && !valueClass.isLocalClass() && !valueClass.isAnonymousClass() && (value instanceof Serializable)) {
-			try {
-				MethodHandle handle = MethodHandles.privateLookupIn(valueClass, MethodHandles.lookup()).findVirtual(valueClass, "writeReplace", MethodType.methodType(Object.class));
-				if (handle.invoke(value) instanceof SerializedLambda) {
-					return AnyField.LAMBDA;
-				}
-			} catch (NoSuchMethodException | IllegalAccessException e) {
-				// Not a serializable lambda
-			} catch (Throwable e) {
-				if (e instanceof RuntimeException exception) {
-					throw exception;
-				}
-				if (e instanceof Error error) {
-					throw error;
-				}
-				throw new IllegalStateException(e);
-			}
-		}
+		if (!valueClass.isAnnotation() && Annotation.class.isAssignableFrom(valueClass)) return AnyField.ANNOTATION;
+		if (Proxy.isProxyClass(valueClass)) return AnyField.PROXY;
 
-		BaseMarshaller<?> marshaller = writer.findMarshaller(valueClass);
+		BaseMarshaller<?> marshaller = context.findMarshaller(valueClass);
 		return hasTypeId(context, marshaller) ? AnyField.IDENTIFIED_OBJECT : AnyField.NAMED_OBJECT;
 	}
 
