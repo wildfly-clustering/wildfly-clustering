@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.function;
 
+import java.lang.invoke.MethodHandle;
 import java.util.AbstractMap;
 import java.util.Map;
 
@@ -235,6 +236,32 @@ public interface Supplier<V> extends java.util.function.Supplier<V>, VoidOperati
 			@Override
 			public Map.Entry<K, V> get() {
 				return new AbstractMap.SimpleImmutableEntry<>(key.get(), value.get());
+			}
+		};
+	}
+
+	/**
+	 * Returns a supplier that invokes the specified method handle.
+	 * @param <T> the supplied type
+	 * @param handle a method handle
+	 * @return a supplier that invokes the specified method handle.
+	 */
+	static <T> Supplier<T> invoke(MethodHandle handle) {
+		assert handle.type().parameterCount() == 0;
+		return new Supplier<>() {
+			@Override
+			public T get() {
+				try {
+					return (T) handle.invoke();
+				} catch (Throwable e) {
+					if (e instanceof RuntimeException exception) {
+						throw exception;
+					}
+					if (e instanceof Error error) {
+						throw error;
+					}
+					throw new IllegalStateException(e);
+				}
 			}
 		};
 	}
