@@ -27,7 +27,10 @@ class LinkedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
 	@Override
 	public void add(K key, V value) {
 		Object token = this.queue.offerLastAndReturnToken(new SimpleImmutableEntry<>(key, value));
-		this.tokens.put(key, token);
+		Object previousToken = this.tokens.put(key, token);
+		if (previousToken != null) {
+			this.queue.removeToken(previousToken);
+		}
 	}
 
 	@Override
