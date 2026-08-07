@@ -24,7 +24,6 @@
 	<modules>
 		<module>arquillian</module>
 		<module>infinispan</module>
-		<module>junit</module>
 		<module>spi</module>
 	</modules>
 
