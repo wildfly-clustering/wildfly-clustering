@@ -7,13 +7,13 @@ package org.wildfly.clustering.container;
 
 import java.io.PrintStream;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -21,13 +21,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-import org.wildfly.clustering.function.IntUnaryOperator;
+import org.wildfly.clustering.function.UnaryOperator;
 
 /**
  * An OCI container configured from a set of properties.
  * @author Paul Ferraro
  */
 public class DefaultContainer extends GenericContainer<DefaultContainer> {
+
 	static final String IMAGE_PROPERTY = "oci:image";
 	static final String NETWORK_MODE_PROPERTY = "oci:network-mode";
 	static final String START_TIMEOUT_PROPERTY = "oci:start-timeout";
@@ -36,7 +37,8 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> {
 	static final String REF_PROPERTY_PREFIX = "ref:";
 	static final String FILE_PROPERTY_PREFIX = "file:";
 
-	private static final String HOST_NETWORK_MODE = "host";
+	private static final System.Logger LOGGER = System.getLogger(DefaultContainer.class.getName());
+
 	private static final String DEFAULT_NETWORK_MODE = "bridge";
 	private static final Duration DEFAULT_START_TIMEOUT = Duration.ofMinutes(1L);
 
@@ -106,23 +108,24 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> {
 	}
 
 	@Override
-	protected void configure() {
-		if (!this.isPortMapping() && !this.getExposedPorts().isEmpty()) {
-			this.setWaitStrategy(Wait.forListeningPorts(this.getExposedPorts().stream().mapToInt(IntUnaryOperator.identity().box()).toArray()));
-		}
-	}
-
-	@Override
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		super.setWaitStrategy(waitStrategy.withStartupTimeout(this.startTimeout));
 	}
 
-	/**
-	 * Indicates whether this OCI container uses port mapping.
-	 * @return true, if this container uses port mapping, false otherwise.
-	 */
-	public boolean isPortMapping() {
-		return !this.getNetworkMode().equals(HOST_NETWORK_MODE);
+	@Override
+	public void start() {
+		LOGGER.log(System.Logger.Level.INFO, "Starting {0}", this);
+		Instant start = Instant.now();
+		super.start();
+		LOGGER.log(System.Logger.Level.INFO, "Started {0} in {1}", this, Duration.between(start, Instant.now()));
+	}
+
+	@Override
+	public void stop() {
+		LOGGER.log(System.Logger.Level.INFO, "Stopping {0}", this);
+		Instant start = Instant.now();
+		super.stop();
+		LOGGER.log(System.Logger.Level.INFO, "Stopped {0} in {1}", this, Duration.between(start, Instant.now()));
 	}
 
 	@Override
