@@ -9,34 +9,48 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
 
 import org.infinispan.protostream.ProtobufTagMarshaller.ReadContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
-import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
+import org.wildfly.clustering.marshalling.AbstractByteBufferMarshaller;
 
 /**
  * A ProtoStream byte buffer marshaller.
  * @author Paul Ferraro
  */
-public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
+public class ProtoStreamByteBufferMarshaller extends AbstractByteBufferMarshaller {
 
 	private final ImmutableSerializationContext context;
 	private final ProtoStreamMarshaller<Any> marshaller;
+	private final Supplier<Context<ClassLoader>> contextProvider;
 
 	/**
 	 * Constructs a new ProtoStream marshaller using the specified context
 	 * @param context a serialization context
 	 */
 	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context) {
+		this(context, context.getConfiguration().getClassLoaderResolver().getDefaultClassLoader());
+	}
+
+	private ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context, ClassLoader loader) {
+		super(loader);
 		this.context = context;
 		this.marshaller = context.findMarshaller(Any.class);
+		this.contextProvider = ThreadContextClassLoaderReference.CURRENT.provide(loader);
 	}
 
 	@Override
 	public OptionalInt size(Object object) {
-		ProtoStreamMarshaller.SizeContext context = this.context.createSizeContext();
-		ProtoStreamSizeOperation operation = new DefaultProtoStreamSizeOperation(context, this.context);
-		return this.marshaller.size(operation, new Any(object));
+		try (Context<ClassLoader> loader = this.contextProvider.get()) {
+			ProtoStreamMarshaller.SizeContext context = this.context.createSizeContext();
+			ProtoStreamSizeOperation operation = new DefaultProtoStreamSizeOperation(context, this.context);
+			return this.marshaller.size(operation, new Any(object));
+		} catch (Throwable e) {
+			return OptionalInt.empty();
+		}
 	}
 
 	@Override
