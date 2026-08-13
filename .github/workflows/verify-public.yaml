@@ -38,11 +38,12 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
+          cache: maven
+          distribution: temurin
           java-version: |
             ${{ env.JAVA_MIN }}
             ${{ env.JAVA_DEFAULT }}
             ${{ env.JAVA_MAX }}
-          distribution: temurin
 
       - name: Maven validate
         if: contains(github.event.pull_request.labels.*.name, env.VALIDATE_ONLY_LABEL)
