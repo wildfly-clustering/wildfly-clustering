@@ -6,6 +6,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -19,16 +20,18 @@ import org.infinispan.protostream.impl.TagWriterImpl;
  * @author Paul Ferraro
  */
 public class DefaultSerializationContext extends NativeSerializationContext implements SerializationContext {
-
 	private final org.infinispan.protostream.SerializationContext context;
+	private final UnaryOperator<ProtoStreamMarshaller<?>> wrapper;
 
 	/**
 	 * Creates a new serialization context from the specified context
 	 * @param context a decorated serialization context implementation
+	 * @param wrapper a marshaller decorator
 	 */
-	public DefaultSerializationContext(org.infinispan.protostream.SerializationContext context) {
+	public DefaultSerializationContext(org.infinispan.protostream.SerializationContext context, UnaryOperator<ProtoStreamMarshaller<?>> wrapper) {
 		super(context);
 		this.context = context;
+		this.wrapper = wrapper;
 	}
 
 	@Override
@@ -49,7 +52,7 @@ public class DefaultSerializationContext extends NativeSerializationContext impl
 
 	@Override
 	public void registerMarshaller(ProtoStreamMarshaller<?> marshaller) {
-		this.context.registerMarshaller(marshaller);
+		this.context.registerMarshaller(this.wrapper.apply(marshaller));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

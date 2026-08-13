@@ -59,10 +59,10 @@ public abstract class AbstractByteBufferMarshaller implements ByteBufferMarshall
 				size.setPlain(size.getPlain() + length);
 			}
 		};
-		try {
+		try (Context<ClassLoader> context = this.contextProvider.get()) {
 			this.writeTo(output, object);
 			return OptionalInt.of(size.getPlain());
-		} catch (IOException e) {
+		} catch (Throwable e) {
 			return OptionalInt.empty();
 		}
 	}
