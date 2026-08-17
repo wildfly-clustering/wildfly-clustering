@@ -7,12 +7,14 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.ServiceLoader;
-import java.util.function.Function;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -21,6 +23,9 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.config.Configuration;
 import org.infinispan.protostream.impl.SerializationContextImpl;
+import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 import org.wildfly.clustering.marshalling.protostream.math.MathSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.net.NetSerializationContextInitializer;
@@ -53,9 +58,16 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	 * @param wrapper a serialization context wrapper
 	 * @return a new builder
 	 */
-	static SerializationContextBuilder<SerializationContextInitializer> newInstance(ClassLoaderMarshaller marshaller, Function<org.infinispan.protostream.SerializationContext, SerializationContext> wrapper) {
+	static SerializationContextBuilder<SerializationContextInitializer> newInstance(ClassLoaderMarshaller marshaller, BiFunction<org.infinispan.protostream.SerializationContext, UnaryOperator<ProtoStreamMarshaller<?>>, SerializationContext> wrapper) {
 		// Don't register WrappedMessage marshaller
-		return new DefaultSerializationContextBuilder(wrapper.apply(new SerializationContextImpl(Configuration.builder().build())), marshaller);
+		Supplier<Context<ClassLoader>> contextProvider = ThreadContextClassLoaderReference.CURRENT.provide(marshaller.createInitialValue());
+		UnaryOperator<ProtoStreamMarshaller<?>> decorator = new UnaryOperator<>() {
+			@Override
+			public ProtoStreamMarshaller<?> apply(ProtoStreamMarshaller<?> marshaller) {
+				return marshaller.getJavaClass().isEnum() ? marshaller : new ContextProtoStreamMarshaller<>(marshaller, contextProvider);
+			}
+		};
+		return new DefaultSerializationContextBuilder(wrapper.apply(new SerializationContextImpl(Configuration.builder().build()), decorator), marshaller);
 	}
 
 	/**
@@ -114,29 +126,43 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 		}
 
 		private void loadWildFly(ClassLoader loader) {
-			List<SerializationContextInitializer> loaded = loadAll(SerializationContextInitializer.class, loader);
+			List<SerializationContextInitializer> loaded = ServiceLoader.load(SerializationContextInitializer.class, loader).stream().map(Supplier::get).toList();
 			if (!loaded.isEmpty()) {
-				List<SerializationContextInitializer> unregistered = new LinkedList<>(loaded);
-				DescriptorParserException exception = null;
+				Queue<SerializationContextInitializer> unregistered = new ArrayDeque<>(loaded);
+				Queue<SerializationContextInitializer> registered = new ArrayDeque<>(loaded.size());
+				Queue<DescriptorParserException> exceptions = new ArrayDeque<>(loaded.size());
+				// Register schemas first: determine initialization order before registering marshallers.
 				while (!unregistered.isEmpty()) {
-					int size = unregistered.size();
-					Iterator<SerializationContextInitializer> remaining = unregistered.iterator();
-					while (remaining.hasNext()) {
-						SerializationContextInitializer initializer = remaining.next();
-						try {
-							this.register(initializer);
-							LOGGER.log(System.Logger.Level.DEBUG, "Registering marshallers/schemas from {0}", initializer.getClass().getName());
-							remaining.remove();
-						} catch (DescriptorParserException e) {
-							// Descriptor might fail to parse due to ordering issues
-							// If so, retry this next iteration
-							exception = e;
+					SerializationContextInitializer initializer = unregistered.remove();
+					Set<String> startFiles = this.context.getFileDescriptors().keySet();
+					try {
+						LOGGER.log(System.Logger.Level.TRACE, "Registering schemas from {0}", initializer.getClass().getName());
+						initializer.registerSchema(this.context);
+						LOGGER.log(System.Logger.Level.TRACE, "Registered schemas from {0}", initializer.getClass().getName());
+						registered.add(initializer);
+						exceptions.clear();
+					} catch (DescriptorParserException e) {
+						// Schema registration can fail due to ordering issues
+						// Unregister any successfully registered schemas so that we can retry later
+						Set<String> files = new HashSet<>(this.context.getFileDescriptors().keySet());
+						files.removeAll(startFiles);
+						if (!files.isEmpty()) {
+							this.context.unregisterProtoFiles(files);
 						}
+						exceptions.add(e);
+						// Add to tail of queue
+						unregistered.add(initializer);
+						// Give up if all initializers failed
+						if (exceptions.size() == unregistered.size()) {
+							throw exceptions.element();
+						}
+						LOGGER.log(System.Logger.Level.TRACE, "Deferring schema registration from {0} due to: {1}", initializer.getClass().getName(), e.getLocalizedMessage());
 					}
-					// If we have made no progress give up
-					if ((exception != null) && unregistered.size() == size) {
-						throw exception;
-					}
+				}
+				// Register marshallers in the order the schemas were registered
+				for (SerializationContextInitializer initializer : registered) {
+					LOGGER.log(System.Logger.Level.DEBUG, "Registering marshallers from {0}", initializer.getClass().getName());
+					initializer.registerMarshallers(this.context);
 				}
 			}
 		}
