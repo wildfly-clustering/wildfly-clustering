@@ -27,7 +27,7 @@ See: https://java.testcontainers.org/supported_docker_environment/
 
 #### Using rootless Podman
 
-For those using the latest version of Podman, you should be able to run the remote infinispan integration tests without root permissions.
+For those using a recent version of Podman, you should be able to run the remote infinispan integration tests without root permissions.
 
 See: https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md
 
@@ -48,16 +48,11 @@ See: https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tuto
 
 #### Integration tests
 
-By default, the remote Infinispan integration tests launch docker/podman using "bridge" network mode.
-If running a Linux distribution, and encounter issues with connectivity between you test client and the Infinispan server instance running in the container, try using "host" network mode via:
-
-		$ mvn install -Ddocker.network.mode=host
-
-By default, remote Infinispan integration tests will use the Infinispan server docker image published at `quay.io` corresponding to the `${version.org.infinispan}` version configured by this project's pom.
-You can override this to use an arbitrary Infinispan server docker image and user via system properties.
+By default, remote Infinispan integration tests will use the Infinispan server docker image published at `quay.io` corresponding to the infinispan dependency version configured by this project's pom.
+You can override this to use an arbitrary Infinispan server container image and user credentials via system properties.
 e.g.
 
-		$ mvn install -Dinfinispan.server.image=quay.io/infinispan/server:16.1 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
+		$ mvn install -Doci.image=quay.io/infinispan/server:16.1 -Dinfinispan.server.username=foo -Dinfinispan.server.password=bar
 
 #### Testing with alternate Java versions
 
