@@ -32,16 +32,16 @@ public interface MarshallingTesterFactory extends TesterFactory {
 					OptionalInt size = marshaller.size(subject);
 					ByteBuffer buffer = marshaller.write(subject);
 
-					int bufferSize = buffer.limit() - buffer.arrayOffset();
+					int length = buffer.remaining();
 
 					if (size.isPresent()) {
-						assertThat(size).hasValue(bufferSize);
+						assertThat(size).hasValue(length);
 					}
 
 					if (subject != null) {
 						Class<?> subjectClass = (subject instanceof Enum<?> enumValue) ? enumValue.getDeclaringClass() : subject.getClass();
 						Object subjectValue = (subject instanceof Character character) ? (int) character.charValue() : subject;
-						LOGGER.log(System.Logger.Level.DEBUG, "{0}\t{1}\t{2}\t{3}", marshaller, subjectClass.getCanonicalName(), subjectValue, bufferSize);
+						LOGGER.log(System.Logger.Level.DEBUG, "{0}\t{1}\t{2}\t{3}", marshaller, subjectClass.getCanonicalName(), subjectValue, length);
 					}
 
 					@SuppressWarnings("unchecked")
