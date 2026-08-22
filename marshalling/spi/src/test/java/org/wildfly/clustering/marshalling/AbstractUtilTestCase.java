@@ -46,6 +46,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.marshalling.test.TestComparator;
 
 /**
@@ -167,11 +174,15 @@ public abstract class AbstractUtilTestCase {
 		result.get(result.keySet().iterator().next());
 		// Validate that marshalled map uses insertion order
 		assertThat(result.keySet().iterator().next()).isEqualTo(BASIS.keySet().iterator().next());
+	}
 
+	@Test
+	public void testAccessOrderLinkedHashMap() {
+		UnaryOperator<LinkedHashMap<Object, Object>> tester = this.factory.createSequencedMapTester();
 		// Verify map with access-order
 		LinkedHashMap<Object, Object> accessOrderMap = new LinkedHashMap<>(BASIS.size(), 1, true);
 		accessOrderMap.putAll(BASIS);
-		result = tester.apply(accessOrderMap);
+		LinkedHashMap<Object, Object> result = tester.apply(accessOrderMap);
 		// Access first entry
 		result.get(result.keySet().iterator().next());
 		// Validate that marshalled map uses access order
@@ -190,12 +201,33 @@ public abstract class AbstractUtilTestCase {
 		tester.accept(new LinkedList<>(BASIS.keySet()));
 	}
 
-	@Test
-	public void testLocale() {
+	@ParameterizedTest
+	@ArgumentsSource(LocaleSource.class)
+	public void testLocale(Locale locale) {
 		Consumer<Locale> tester = this.factory.createTester();
-		for (Locale locale : Locale.getAvailableLocales()) {
-			tester.accept(locale);
+		tester.accept(locale);
+	}
+
+	public static class LocaleSource implements ArgumentsProvider {
+		private final Predicate<Locale> filter;
+
+		public LocaleSource() {
+			this(Predicate.of(true));
 		}
+
+		protected LocaleSource(Predicate<Locale> filter) {
+			this.filter = filter;
+		}
+
+		@Override
+		public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) {
+			return Stream.of(Locale.getAvailableLocales()).filter(this.filter).map(Arguments::arguments);
+		}
+	}
+
+	@Test
+	public void testLocaleWithExtensions() {
+		this.testLocale(new Locale.Builder().setLanguageTag("en-GB-oed").setScript("fooo").setExtension('x', "bar").setExtension('y', "baz").setExtension('z', "qux").build());
 	}
 
 	@Test

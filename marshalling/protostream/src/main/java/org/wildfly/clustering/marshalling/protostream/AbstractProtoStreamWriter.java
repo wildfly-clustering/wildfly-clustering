@@ -199,7 +199,8 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
 
 	@Override
 	public void writeBytes(int index, ByteBuffer value) throws IOException {
-		this.writer.writeBytes(index, value);
+		// Preserve buffer position/mark
+		this.writer.writeBytes(index, value.duplicate());
 	}
 
 	@Override
