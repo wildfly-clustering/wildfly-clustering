@@ -146,6 +146,12 @@ public class SegmentedEvictableDataContainer<K, V> extends DefaultSegmentedDataC
 	}
 
 	@Override
+	public InternalCacheEntry<K, V> peek(int segment, Object k) {
+		// Use get() to trigger Caffeine expireAfterRead, resetting the idle-timeout eviction timer
+		return this.entries.get(k);
+	}
+
+	@Override
 	public InternalCacheEntry<K, V> peek(Object k) {
 		return this.peek(-1, k);
 	}
