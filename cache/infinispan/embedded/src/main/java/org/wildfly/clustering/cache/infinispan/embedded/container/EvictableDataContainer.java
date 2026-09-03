@@ -89,6 +89,12 @@ public class EvictableDataContainer<K, V> extends AbstractInternalDataContainer<
 	}
 
 	@Override
+	public InternalCacheEntry<K, V> peek(int segment, Object k) {
+		// Use get() to trigger Caffeine expireAfterRead, resetting the idle-timeout eviction timer
+		return this.entries.get(k);
+	}
+
+	@Override
 	protected PeekableTouchableMap<K, V> getMapForSegment(int segment) {
 		return this.entries;
 	}
