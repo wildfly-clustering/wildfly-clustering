@@ -44,7 +44,13 @@ public interface RegistryFactory<M extends GroupMember, K, V> {
 				if (!reference.compareAndSet(null, entry)) {
 					throw new IllegalStateException();
 				}
-				return factory.apply(entry, () -> reference.set(null));
+				try {
+					return factory.apply(entry, () -> reference.set(null));
+				} catch (RuntimeException | Error e) {
+					// Release the singleton reference, since no registry was created
+					reference.set(null);
+					throw e;
+				}
 			}
 		};
 	}
