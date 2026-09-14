@@ -5,10 +5,11 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.ObjectInput;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
+
+import org.wildfly.clustering.marshalling.ObjectInput;
 
 /**
  * {@link ObjectInput} implementation used to write the unexposed fields of an {@link java.io.Externalizable} object.

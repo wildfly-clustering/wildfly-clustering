@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.DataOutput;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 
@@ -13,6 +12,7 @@ import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.DoubleConsumer;
 import org.wildfly.clustering.function.IntConsumer;
 import org.wildfly.clustering.function.LongConsumer;
+import org.wildfly.clustering.marshalling.DataOutput;
 
 /**
  * {@link DataOutput} implementation used to read the unexposed serializable fields of an object.
@@ -65,18 +65,8 @@ public class SimpleDataOutput implements DataOutput {
 	}
 
 	@Override
-	public void write(byte[] buffer) {
-		this.bufferConsumer.accept(ByteBuffer.wrap(buffer));
-	}
-
-	@Override
 	public void write(byte[] buffer, int offset, int length) {
 		this.bufferConsumer.accept(ByteBuffer.wrap(buffer, offset, length));
-	}
-
-	@Override
-	public void write(int value) {
-		this.writeByte(value);
 	}
 
 	@Override
