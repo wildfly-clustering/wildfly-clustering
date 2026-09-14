@@ -5,9 +5,8 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.ObjectOutput;
-
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.marshalling.ObjectOutput;
 
 /**
  * {@link ObjectOutput} implementation used to read the unexposed fields of an {@link java.io.Externalizable} object.

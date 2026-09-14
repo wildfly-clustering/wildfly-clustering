@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.DataInput;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -15,6 +14,8 @@ import java.util.PrimitiveIterator;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+
+import org.wildfly.clustering.marshalling.DataInput;
 
 /**
  * {@link DataInput} implementation used to write the unexposed serializable fields of an object.
@@ -71,18 +72,8 @@ public class SimpleDataInput implements DataInput {
 	}
 
 	@Override
-	public void readFully(byte[] bytes) {
-		this.nextBuffer().get(bytes);
-	}
-
-	@Override
 	public void readFully(byte[] bytes, int offset, int length) {
 		this.nextBuffer().get(bytes, offset, length);
-	}
-
-	@Override
-	public int skipBytes(int n) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -118,11 +109,6 @@ public class SimpleDataInput implements DataInput {
 	@Override
 	public float readFloat() {
 		return this.floats.next();
-	}
-
-	@Override
-	public String readLine() {
-		return this.strings.next();
 	}
 
 	/**
