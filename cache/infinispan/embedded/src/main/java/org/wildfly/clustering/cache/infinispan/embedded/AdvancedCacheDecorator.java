@@ -47,6 +47,7 @@ import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.EventType;
 import org.infinispan.partitionhandling.AvailabilityMode;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.security.AuthorizationManager;
@@ -378,7 +379,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction, Metadata metadata) {
-		// Infinispan does not touch entry if present!
+		// Infinispan neglects to touch entry if present!
 		return this.evictable.test(key) ? this.cache.compute(key, (k, v) -> (v != null) ? v : mappingFunction.apply(k), metadata) : this.cache.computeIfAbsent(key, mappingFunction, metadata);
 	}
 
@@ -399,7 +400,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public CompletableFuture<V> computeIfAbsentAsync(K key, Function<? super K, ? extends V> mappingFunction, Metadata metadata) {
-		// Infinispan does not touch entry if present!
+		// Infinispan neglects to touch entry if present!
 		return this.evictable.test(key) ? this.cache.computeAsync(key, (k, v) -> (v != null) ? v : mappingFunction.apply(k), metadata) : this.cache.computeIfAbsentAsync(key, mappingFunction, metadata);
 	}
 
@@ -447,7 +448,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 	public V get(Object key) {
 		V result = this.cache.get(key);
 		if ((result != null) && this.touchOnRead.test(key)) {
-			// Manually touch entry to prevent premature eviction for replicated caches
+			// Infinispan neglects to touch entry for replicated caches
 			this.cache.getDataContainer().get(key);
 		}
 		return result;
@@ -456,12 +457,15 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 	@Override
 	public CompletableFuture<V> getAsync(K key) {
 		CompletableFuture<V> result = this.cache.getAsync(key);
-		return this.touchOnRead.test(key) ? result.whenComplete((value, e) -> {
-				// Manually touch entry to prevent premature eviction for replicated caches
+		if (this.touchOnRead.test(key)) {
+			result.whenComplete((value, e) -> {
+				// Infinispan neglects to touch entry for replicated caches
 				if (value != null) {
 					this.cache.getDataContainer().get(key);
 				}
-			}) : result;
+			});
+		}
+		return result;
 	}
 
 	@Override
@@ -637,8 +641,12 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public V putIfAbsent(K key, V value, Metadata metadata) {
-		// Infinispan does not touch entry if present!
-		return this.evictable.test(key) ? Optional.ofNullable(this.cache.compute(key, (k, v) -> (v != null) ? v : value, metadata)).filter(Predicate.identicalTo(value).negate()).orElse(null) : this.cache.putIfAbsent(key, value, metadata);
+		V result = this.cache.putIfAbsent(key, value, metadata);
+		if ((result != null) && this.evictable.test(key)) {
+			// Infinispan neglects to touch entry if present!
+			this.cache.getDataContainer().get(key);
+		}
+		return result;
 	}
 
 	@Override
@@ -658,8 +666,16 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public CompletableFuture<V> putIfAbsentAsync(K key, V value, Metadata metadata) {
-		// Infinispan does not touch entry if present!
-		return this.evictable.test(key) ? this.cache.computeAsync(key, (k, v) -> (v != null) ? v : value, metadata).thenApply(v -> (v != value) ? v : null) : this.cache.putIfAbsentAsync(key, value, metadata);
+		CompletableFuture<V> result = this.cache.putIfAbsentAsync(key, value, metadata);
+		if (this.evictable.test(key)) {
+			result.whenComplete((present, exception) -> {
+				if (present != null) {
+					// Infinispan neglects to touch entry if present!
+					this.cache.getDataContainer().get(key);
+				}
+			});
+		}
+		return result;
 	}
 
 	@Override
@@ -868,16 +884,14 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 		});
 	}
 
-	@SuppressWarnings("removal")
 	@Override
 	public CompletionStage<Void> addListenerAsync(Object listener) {
-		AdvancedCache<K, V> cache = this.cache;
-		return java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<>() {
+		return this.addListenerAsync(listener, new CacheEventFilter<>() {
 			@Override
-			public CompletionStage<Void> run() {
-				return cache.addListenerAsync(listener);
+			public boolean accept(K key, V oldValue, Metadata oldMetadata, V newValue, Metadata newMetadata, EventType eventType) {
+				return true;
 			}
-		});
+		}, null);
 	}
 
 	@Override

@@ -16,16 +16,12 @@ import java.util.Queue;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.config.Configuration;
 import org.infinispan.protostream.impl.SerializationContextImpl;
-import org.wildfly.clustering.context.Context;
-import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
-import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.marshalling.MarshallerConfigurationBuilder;
 import org.wildfly.clustering.marshalling.protostream.math.MathSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.net.NetSerializationContextInitializer;
@@ -49,25 +45,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	 * @return a new builder
 	 */
 	static SerializationContextBuilder<SerializationContextInitializer> newInstance(ClassLoaderMarshaller marshaller) {
-		return newInstance(marshaller, DefaultSerializationContext::new);
-	}
-
-	/**
-	 * Constructs a builder of a {@link SerializationContext} using a default set of initializers.
-	 * @param marshaller the marshaller used to write/resolve a ClassLoader
-	 * @param wrapper a serialization context wrapper
-	 * @return a new builder
-	 */
-	static SerializationContextBuilder<SerializationContextInitializer> newInstance(ClassLoaderMarshaller marshaller, BiFunction<org.infinispan.protostream.SerializationContext, UnaryOperator<ProtoStreamMarshaller<?>>, SerializationContext> wrapper) {
-		// Don't register WrappedMessage marshaller
-		Supplier<Context<ClassLoader>> contextProvider = ThreadContextClassLoaderReference.CURRENT.provide(marshaller.createInitialValue());
-		UnaryOperator<ProtoStreamMarshaller<?>> decorator = new UnaryOperator<>() {
-			@Override
-			public ProtoStreamMarshaller<?> apply(ProtoStreamMarshaller<?> marshaller) {
-				return marshaller.getJavaClass().isEnum() ? marshaller : new ContextProtoStreamMarshaller<>(marshaller, contextProvider);
-			}
-		};
-		return new DefaultSerializationContextBuilder(wrapper.apply(new SerializationContextImpl(Configuration.builder().build()), decorator), marshaller);
+		return new DefaultSerializationContextBuilder(new DefaultSerializationContext(new SerializationContextImpl(ProtoStreamConfiguration.Builder.with(marshaller.createInitialValue()).build())), marshaller);
 	}
 
 	/**
@@ -75,16 +53,7 @@ public interface SerializationContextBuilder<I> extends MarshallerConfigurationB
 	 * @return a new builder
 	 */
 	static SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer> newInstance() {
-		return newInstance(UnaryOperator.identity());
-	}
-
-	/**
-	 * Constructs a builder of a native {@link SerializationContext}.
-	 * @param wrapper a serialization context wrapper
-	 * @return a new builder
-	 */
-	static SerializationContextBuilder<org.infinispan.protostream.SerializationContextInitializer> newInstance(UnaryOperator<org.infinispan.protostream.SerializationContext> wrapper) {
-		return new NativeSerializationContextBuilder(wrapper.apply(ProtobufUtil.newSerializationContext(Configuration.builder().build())));
+		return new NativeSerializationContextBuilder(ProtobufUtil.newSerializationContext(Configuration.builder().build()));
 	}
 
 	/**

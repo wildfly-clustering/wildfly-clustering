@@ -13,7 +13,6 @@ import org.infinispan.protostream.ImmutableSerializationContext;
  * @author Paul Ferraro
  */
 public interface SerializationContext extends org.infinispan.protostream.SerializationContext {
-
 	/**
 	 * Registers a marshaller with this context.
 	 * @param marshaller the marshaller to register
