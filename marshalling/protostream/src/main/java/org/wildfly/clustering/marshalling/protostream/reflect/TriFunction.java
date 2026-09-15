@@ -54,6 +54,7 @@ public interface TriFunction<P1, P2, P3, R> {
 	static <P1, P2, P3, R> TriFunction<P1, P2, P3, R> invoke(MethodHandle handle) {
 		assert handle.type().parameterCount() == 3;
 		return new TriFunction<>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public R apply(P1 value1, P2 value2, P3 value3) {
 				try {

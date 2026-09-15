@@ -42,6 +42,7 @@ public abstract class AbstractMemberMarshaller<T> implements ProtoStreamMarshall
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	static <T, R> R invoke(MethodHandle handle, T parameter) {
 		try {
 			return (R) handle.invoke(parameter);
@@ -56,6 +57,7 @@ public abstract class AbstractMemberMarshaller<T> implements ProtoStreamMarshall
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	static <T, R> R read(VarHandle handle, T parameter) {
 		return (R) handle.get(parameter);
 	}
