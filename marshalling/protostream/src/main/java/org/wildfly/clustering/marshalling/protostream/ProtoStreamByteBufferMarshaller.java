@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Proxy;
+import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -17,6 +18,9 @@ import org.infinispan.protostream.ProtobufTagMarshaller.ReadContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
 import org.infinispan.protostream.impl.TagReaderImpl;
 import org.infinispan.protostream.impl.TagWriterImpl;
+import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
@@ -26,21 +30,43 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
 	private final ImmutableSerializationContext context;
+	private final java.util.function.Supplier<Context<ClassLoader>> provider;
 
 	/**
 	 * Constructs a new ProtoStream marshaller using the specified context
 	 * @param context a serialization context
 	 */
 	public ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context) {
-		// N.B. Marshallers in WildFly require TCCL to resolve org.jboss.weld.Container
+		this(context, (context.getConfiguration() instanceof ProtoStreamConfiguration configuration) ? configuration.getClassLoader() : null);
+	}
+
+	private ProtoStreamByteBufferMarshaller(ImmutableSerializationContext context, ClassLoader loader) {
 		this.context = context;
+		// N.B. Marshallers in WildFly require TCCL to resolve org.jboss.weld.Container
+		this.provider = (loader != null) ? ThreadContextClassLoaderReference.CURRENT.provide(loader) : Supplier.of(Context.empty());
+	}
+
+	@Override
+	public Object read(ByteBuffer buffer) throws IOException {
+		try (Context<ClassLoader> context = this.provider.get()) {
+			return ByteBufferMarshaller.super.read(buffer);
+		}
+	}
+
+	@Override
+	public ByteBuffer write(Object object) throws IOException {
+		try (Context<ClassLoader> context = this.provider.get()) {
+			return ByteBufferMarshaller.super.write(object);
+		}
 	}
 
 	@Override
 	public OptionalInt size(Object object) {
-		ProtoStreamSizeOperation operation = new DefaultProtoStreamSizeOperation(this.context);
-		ProtoStreamMarshaller<Any> marshaller = operation.findMarshaller(Any.class);
-		return marshaller.size(operation, new Any(object));
+		try (Context<ClassLoader> context = this.provider.get()) {
+			ProtoStreamSizeOperation operation = new DefaultProtoStreamSizeOperation(this.context);
+			ProtoStreamMarshaller<Any> marshaller = operation.findMarshaller(Any.class);
+			return marshaller.size(operation, new Any(object));
+		}
 	}
 
 	@Override
