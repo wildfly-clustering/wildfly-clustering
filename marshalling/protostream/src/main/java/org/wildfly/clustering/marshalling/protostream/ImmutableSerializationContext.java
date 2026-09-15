@@ -251,7 +251,7 @@ public interface ImmutableSerializationContext extends org.infinispan.protostrea
 		}
 
 		private static void logTypeId(int typeId, String name) {
-			LOGGER.log(System.Logger.Level.DEBUG, "@TypeId({0}) = {1}", typeId, name);
+			LOGGER.log(System.Logger.Level.TRACE, "@TypeId({0}) = {1}", typeId, name);
 		}
 	}
 }
