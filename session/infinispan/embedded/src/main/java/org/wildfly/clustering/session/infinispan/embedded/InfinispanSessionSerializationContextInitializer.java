@@ -13,7 +13,6 @@ import org.wildfly.clustering.marshalling.protostream.CompositeSerializationCont
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
-import org.wildfly.clustering.session.cache.affinity.SessionAffinitySerializationContextInitializer;
 import org.wildfly.clustering.session.cache.attributes.fine.FineSessionAttributesSerializationContextInitializer;
 import org.wildfly.clustering.session.cache.metadata.coarse.CoarseSessionMetaDataSerializationContextInitializer;
 import org.wildfly.clustering.session.cache.user.UserSerializationContextInitializer;
@@ -39,7 +38,6 @@ public class InfinispanSessionSerializationContextInitializer extends CompositeS
 						context.registerMarshaller(ProtoStreamMarshaller.of(SessionCacheEntryFilter.class));
 					}
 				},
-				new SessionAffinitySerializationContextInitializer(),
 				new CoarseSessionMetaDataSerializationContextInitializer(),
 				new FineSessionAttributesSerializationContextInitializer(),
 				new SessionMetaDataSerializationContextInitializer(),
