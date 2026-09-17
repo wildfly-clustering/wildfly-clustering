@@ -93,6 +93,10 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 		this.entries = new PeekableTouchableCaffeineMap<>(this.evictionCache);
 	}
 
+	private PeekableTouchableMap<K, V> getContainerMapForSegment(int segment) {
+		return this.maps.get(this.segmented ? segment : 0);
+	}
+
 	@Override
 	public int getSegmentForKey(Object key) {
 		return this.segmented ? super.getSegmentForKey(key) : 0;
@@ -138,7 +142,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	void computeEntryWritten(int segment, K key, InternalCacheEntry<K, V> value) {
-		ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+		ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 		if (map != null) {
 			map.put(key, value);
 		}
@@ -150,7 +154,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	void computeEntryRemoved(int segment, K key, InternalCacheEntry<K, V> value) {
-		ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+		ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 		if (map != null) {
 			map.remove(key, value);
 		}
@@ -199,7 +203,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 
 	@Override
 	public InternalCacheEntry<K, V> peek(int segment, Object key) {
-		Map<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+		Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 		return (map != null) ? map.get(key) : null;
 	}
 
@@ -218,7 +222,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	private void clearMapIfPresent(int segment) {
-		Map<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+		Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 		if (map != null) {
 			map.clear();
 		}
@@ -237,7 +241,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 		boolean includeOthers = false;
 		while (iter.hasNext()) {
 			int segment = iter.nextInt();
-			ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+			ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 			if (map != null) {
 				valueIterables.add(map.values());
 			} else {
