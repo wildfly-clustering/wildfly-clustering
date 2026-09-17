@@ -17,7 +17,6 @@ import java.util.Spliterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -134,7 +133,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 
 	@Override
 	protected void computeEntryWritten(int segment, K key, InternalCacheEntry<K, V> value) {
-		ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+		Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 		if (map != null) {
 			map.put(key, value);
 		}
@@ -142,7 +141,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 
 	@Override
 	protected void computeEntryRemoved(int segment, K key, InternalCacheEntry<K, V> value) {
-		ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+		Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 		if (map != null) {
 			map.remove(key, value);
 		}
@@ -168,6 +167,10 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 		return ref.getPlain();
 	}
 
+	private PeekableTouchableMap<K, V> getContainerMapForSegment(int segment) {
+		return this.maps.get(this.segmented ? segment : 0);
+	}
+
 	@Override
 	public PeekableTouchableMap<K, V> getMapForSegment(int segment) {
 		// All writes and other ops go directly to the caffeine cache
@@ -191,7 +194,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 
 	@Override
 	public InternalCacheEntry<K, V> peek(int segment, Object key) {
-		Map<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+		Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 		return (map != null) ? map.get(key) : null;
 	}
 
@@ -210,7 +213,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	private void clearMapIfPresent(int segment) {
-		Map<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+		Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 		if (map != null) {
 			map.clear();
 		}
@@ -229,7 +232,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 		boolean includeOthers = false;
 		while (iter.hasNext()) {
 			int segment = iter.nextInt();
-			ConcurrentMap<K, InternalCacheEntry<K, V>> map = super.getMapForSegment(segment);
+			Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
 			if (map != null) {
 				valueIterables.add(map.values());
 			} else {
@@ -256,7 +259,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 		AtomicBoolean usedOthers = new AtomicBoolean(false);
 
 		return new FlattenSpliterator<>(i -> {
-			ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.maps.get(segmentArray[i]);
+			Map<K, InternalCacheEntry<K, V>> map = this.maps.get(segmentArray[i]);
 			if (map == null) {
 				if (!usedOthers.getAndSet(true)) {
 					return this.entries.values().stream()
