@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package org.infinispan.commons.tx;
 
-// IDs: 165-168
+// IDs: 167-168
 
 /**
- * @TypeId(165)
+ * @TypeId(167)
  */
 message XidImpl {
 	sint32	formatId	= 1;
