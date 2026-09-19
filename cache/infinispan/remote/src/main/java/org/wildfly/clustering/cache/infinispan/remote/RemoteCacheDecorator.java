@@ -40,6 +40,7 @@ import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
+import org.infinispan.client.hotrod.event.impl.ContinuousQueryImpl;
 import org.infinispan.client.hotrod.impl.ClientStatistics;
 import org.infinispan.client.hotrod.impl.InternalRemoteCache;
 import org.infinispan.client.hotrod.impl.MarshallerRegistry;
@@ -106,6 +107,7 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 		return this.cache.getMarshaller();
 	}
 
+	@SuppressWarnings("removal")
 	@Override
 	public <T> Query<T> query(String query) {
 		// Override default implementation which still relies on marshaller of RemoteCacheManager
@@ -117,7 +119,7 @@ public class RemoteCacheDecorator<K, V> extends BlockingBasicCacheDecorator<K, V
 	public ContinuousQuery<K, V> continuousQuery() {
 		// Override default implementation which still relies on marshaller of RemoteCacheManager
 		InternalRemoteCache<K, V> cache = new QueryRemoteCache<>(this);
-		return new RemoteQueryFactory(cache).continuousQuery(cache);
+		return new ContinuousQueryImpl<>(cache);
 	}
 
 	@Override

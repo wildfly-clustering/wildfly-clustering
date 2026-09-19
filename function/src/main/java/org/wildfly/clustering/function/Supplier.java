@@ -249,6 +249,7 @@ public interface Supplier<V> extends java.util.function.Supplier<V>, VoidOperati
 	static <T> Supplier<T> invoke(MethodHandle handle) {
 		assert handle.type().parameterCount() == 0;
 		return new Supplier<>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public T get() {
 				try {

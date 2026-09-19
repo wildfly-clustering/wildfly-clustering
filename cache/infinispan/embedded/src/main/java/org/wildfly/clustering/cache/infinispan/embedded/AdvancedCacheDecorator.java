@@ -53,6 +53,7 @@ import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.security.AuthorizationManager;
 import org.infinispan.stats.Stats;
 import org.infinispan.util.concurrent.locks.LockManager;
+import org.wildfly.clustering.cache.function.ComputeIfAbsentFunction;
 import org.wildfly.clustering.cache.infinispan.NonBlockingBasicCacheDecorator;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfiguration;
 import org.wildfly.clustering.function.Predicate;
@@ -380,7 +381,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 	@Override
 	public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction, Metadata metadata) {
 		// Infinispan neglects to touch entry if present!
-		return !this.cache.containsFlag(Flag.IGNORE_RETURN_VALUES) && this.evictable.test(key) ? this.cache.compute(key, (k, v) -> (v != null) ? v : mappingFunction.apply(k), metadata) : this.cache.computeIfAbsent(key, mappingFunction, metadata);
+		return !this.cache.containsFlag(Flag.IGNORE_RETURN_VALUES) && this.evictable.test(key) ? this.cache.compute(key, new ComputeIfAbsentFunction<>(mappingFunction), metadata) : this.cache.computeIfAbsent(key, mappingFunction, metadata);
 	}
 
 	@Override
@@ -401,7 +402,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 	@Override
 	public CompletableFuture<V> computeIfAbsentAsync(K key, Function<? super K, ? extends V> mappingFunction, Metadata metadata) {
 		// Infinispan neglects to touch entry if present!
-		return !this.cache.containsFlag(Flag.IGNORE_RETURN_VALUES) && this.evictable.test(key) ? this.cache.computeAsync(key, (k, v) -> (v != null) ? v : mappingFunction.apply(k), metadata) : this.cache.computeIfAbsentAsync(key, mappingFunction, metadata);
+		return !this.cache.containsFlag(Flag.IGNORE_RETURN_VALUES) && this.evictable.test(key) ? this.cache.computeAsync(key, new ComputeIfAbsentFunction<>(mappingFunction), metadata) : this.cache.computeIfAbsentAsync(key, mappingFunction, metadata);
 	}
 
 	@Override
