@@ -353,6 +353,7 @@ public interface BiFunction<V1, V2, R> extends java.util.function.BiFunction<V1,
 	static <T1, T2, R> BiFunction<T1, T2, R> invoke(MethodHandle handle) {
 		assert handle.type().parameterCount() == 2;
 		return new BiFunction<>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public R apply(T1 value1, T2 value2) {
 				try {

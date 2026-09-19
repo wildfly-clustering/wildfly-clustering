@@ -34,3 +34,17 @@ message SetRemoveFunction {
 message RemappingFunction {
 	org.wildfly.clustering.marshalling.protostream.Any	operand	= 1;
 }
+
+/**
+ * @TypeId(164)
+ */
+message ComputeIfAbsentFunction {
+	org.wildfly.clustering.marshalling.protostream.Any	defaultValueFactory	= 1;
+}
+
+/**
+ * @TypeId(165)
+ */
+message PutIfAbsentFunction {
+	org.wildfly.clustering.marshalling.protostream.Any	defaultValue	= 1;
+}
