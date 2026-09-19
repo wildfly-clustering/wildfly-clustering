@@ -313,6 +313,7 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Objec
 	static <T, R> Function<T, R> invoke(MethodHandle handle) {
 		assert handle.type().parameterCount() == 1;
 		return new Function<>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public R apply(T value) {
 				try {
