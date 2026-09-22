@@ -23,7 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
-import java.util.function.IntConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -43,6 +43,7 @@ import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.impl.BasicComponentRegistry;
 import org.infinispan.factories.impl.ComponentRef;
 import org.infinispan.util.concurrent.DataOperationOrderer.Operation;
+import org.reactivestreams.Publisher;
 import org.wildfly.clustering.cache.caffeine.CacheConfiguration;
 import org.wildfly.clustering.cache.caffeine.CacheFactory;
 import org.wildfly.clustering.function.Supplier;
@@ -208,23 +209,57 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	@Override
-	public void clear() {
-		this.entries.clear();
-		for (int i = 0; i < this.maps.length(); ++i) {
-			this.clearMapIfPresent(i);
+	public Publisher<InternalCacheEntry<K, V>> publisher(int segment) {
+		return super.publisher(this.segmented ? segment : 0);
+	}
+
+	@Override
+	public Publisher<InternalCacheEntry<K, V>> publisher(IntSet segments) {
+		return this.segmented ? super.publisher(segments) : super.publisher(0);
+	}
+
+	@Override
+	public Iterator<InternalCacheEntry<K, V>> iterator(IntSet segments) {
+		return this.segmented ? super.iterator(segments) : this.iterator();
+	}
+
+	@Override
+	public Spliterator<InternalCacheEntry<K, V>> spliterator(IntSet segments) {
+		return this.segmented ? super.spliterator(segments) : this.spliterator();
+	}
+
+	@Override
+	public int size(IntSet segments) {
+		return this.segmented ? super.size(segments) : super.size();
+	}
+
+	@Override
+	public int sizeIncludingExpired(IntSet segment) {
+		return this.segmented ? super.sizeIncludingExpired(segment) : this.sizeIncludingExpired();
+	}
+
+	@Override
+	public void forEach(IntSet segments, Consumer<? super InternalCacheEntry<K, V>> action) {
+		if (this.segmented) {
+			super.forEach(segments, action);
+		} else {
+			this.forEach(action);
 		}
 	}
 
 	@Override
-	public void clear(IntSet segments) {
-		this.clearSegments(segments);
-		segments.forEach((IntConsumer) this::clearMapIfPresent);
+	public void clear() {
+		this.entries.clear();
+		super.clear();
 	}
 
-	private void clearMapIfPresent(int segment) {
-		Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
-		if (map != null) {
-			map.clear();
+	@Override
+	public void clear(IntSet segments) {
+		if (this.segmented) {
+			this.clearSegments(segments);
+			super.clear(segments);
+		} else {
+			this.clear();
 		}
 	}
 
@@ -235,6 +270,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 
 	@Override
 	public Iterator<InternalCacheEntry<K, V>> iteratorIncludingExpired(IntSet segments) {
+		if (!this.segmented) return this.iteratorIncludingExpired();
 		// We could explore a streaming approach here to not have to allocate an additional ArrayList
 		List<Collection<InternalCacheEntry<K, V>>> valueIterables = new ArrayList<>(segments.size() + 1);
 		PrimitiveIterator.OfInt iter = segments.iterator();
@@ -263,6 +299,7 @@ public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<
 
 	@Override
 	public Spliterator<InternalCacheEntry<K, V>> spliteratorIncludingExpired(IntSet segments) {
+		if (!this.segmented) return this.spliteratorIncludingExpired();
 		// Copy the ints into an array to parallelize them
 		int[] segmentArray = segments.toIntArray();
 		AtomicBoolean usedOthers = new AtomicBoolean(false);
