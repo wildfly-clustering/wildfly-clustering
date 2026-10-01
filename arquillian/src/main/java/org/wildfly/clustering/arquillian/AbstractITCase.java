@@ -5,8 +5,10 @@
 
 package org.wildfly.clustering.arquillian;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -41,10 +43,17 @@ public abstract class AbstractITCase<C, A extends Archive<A>> implements Consume
 	@Override
 	public void accept(C configuration) {
 		Archive<?> archive = this.createArchive(configuration);
-		List<Deployment> deployments = this.getDeploymentContainers().stream().map(container -> container.deploy(archive)).toList();
-		try (Lifecycle composite = Lifecycle.composite(deployments)) {
-			try (Tester tester = this.testerFactory.get()) {
-				tester.accept(deployments);
+		try (Lifecycle manualLifecycle = Lifecycle.composite(this.getDeploymentContainers().stream().filter(Predicate.not(DeploymentContainer::isStarted)).toList())) {
+			manualLifecycle.start();
+			List<DeploymentContainer> containers = this.getDeploymentContainers();
+			List<Deployment> deployments = new ArrayList<>(containers.size());
+			try (Lifecycle deploymentLifecycle = Lifecycle.composite(deployments)) {
+				for (DeploymentContainer container : containers) {
+					deployments.add(container.deploy(archive));
+				}
+				try (Tester tester = this.testerFactory.get()) {
+					tester.accept(deployments);
+				}
 			}
 		}
 	}
