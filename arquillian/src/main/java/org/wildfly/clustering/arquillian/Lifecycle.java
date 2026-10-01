@@ -5,7 +5,10 @@
 
 package org.wildfly.clustering.arquillian;
 
-import java.util.Collection;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Implemented by objects with an unmanaged lifecycle.
@@ -35,7 +38,11 @@ public interface Lifecycle extends AutoCloseable {
 	@Override
 	default void close() {
 		if (this.isStarted()) {
-			this.stop();
+			try {
+				this.stop();
+			} catch (RuntimeException | Error e) {
+				System.getLogger(this.getClass().getName()).log(System.Logger.Level.WARNING, e);
+			}
 		}
 	}
 
@@ -44,7 +51,7 @@ public interface Lifecycle extends AutoCloseable {
 	 * @param lifecycles a collection of lifecycle objects
 	 * @return a composite lifecycle
 	 */
-	static Lifecycle composite(Collection<? extends Lifecycle> lifecycles) {
+	static Lifecycle composite(List<? extends Lifecycle> lifecycles) {
 		return new Lifecycle() {
 			@Override
 			public boolean isStarted() {
@@ -53,17 +60,37 @@ public interface Lifecycle extends AutoCloseable {
 
 			@Override
 			public void start() {
-				lifecycles.forEach(Lifecycle::start);
+				Deque<Lifecycle> started = new ArrayDeque<>(lifecycles.size());
+				try {
+					for (Lifecycle lifecycle : lifecycles) {
+						if (!lifecycle.isStarted()) {
+							lifecycle.start();
+							started.add(lifecycle);
+						}
+					}
+				} catch (RuntimeException | Error e) {
+					started.descendingIterator().forEachRemaining(Lifecycle::close);
+					throw e;
+				}
 			}
 
 			@Override
 			public void stop() {
-				lifecycles.forEach(Lifecycle::stop);
+				ListIterator<? extends Lifecycle> iterator = lifecycles.listIterator(lifecycles.size());
+				while (iterator.hasPrevious()) {
+					Lifecycle lifecycle = iterator.previous();
+					if (lifecycle.isStarted()) {
+						lifecycle.stop();
+					}
+				}
 			}
 
 			@Override
 			public void close() {
-				lifecycles.forEach(Lifecycle::close);
+				ListIterator<? extends Lifecycle> iterator = lifecycles.listIterator(lifecycles.size());
+				while (iterator.hasPrevious()) {
+					iterator.previous().close();
+				}
 			}
 		};
 	}
