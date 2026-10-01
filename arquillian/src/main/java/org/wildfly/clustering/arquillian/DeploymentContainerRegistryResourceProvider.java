@@ -15,14 +15,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
+import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
+import org.jboss.arquillian.container.spi.context.ContainerContext;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.spi.ServiceLoader;
@@ -35,10 +38,13 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author Paul Ferraro
  */
 public class DeploymentContainerRegistryResourceProvider implements ResourceProvider {
-	private static final System.Logger LOGGER = System.getLogger(DeploymentContainerRegistryResourceProvider.class.getName());
 
 	@Inject
 	private Instance<ContainerRegistry> registry;
+
+	@Inject
+	private Instance<ContainerContext> containerContext;
+
 	@Inject
 	private Instance<ServiceLoader> loader;
 
@@ -57,14 +63,15 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 	@Override
 	public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
 		LifecycleFactory factory = Optional.ofNullable(this.loader.get().onlyOne(LifecycleFactory.class)).orElse(LifecycleFactory.DEFAULT);
-		return new WebContainerRegistryImpl(this.registry.get(), factory);
+		return new WebContainerRegistryImpl(this.registry.get(), factory, this.containerContext.get());
 	}
 
 	static class WebContainerRegistryImpl implements DeploymentContainerRegistry {
 		private final Map<String, DeploymentContainer> containers;
 
-		WebContainerRegistryImpl(ContainerRegistry registry, LifecycleFactory factory) {
-			this.containers = registry.getContainers().stream().collect(Collectors.toUnmodifiableMap(Container::getName, container -> new WebContainerImpl(container, factory)));
+		@SuppressWarnings("unchecked")
+		WebContainerRegistryImpl(ContainerRegistry registry, LifecycleFactory factory, ContainerContext context) {
+			this.containers = registry.getContainers().stream().collect(Collectors.toUnmodifiableMap(Container::getName, container -> new WebContainerImpl(container, factory, context)));
 		}
 
 		@Override
@@ -84,17 +91,38 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 	}
 
 	static class WebContainerImpl implements DeploymentContainer {
-		private final Container<?> container;
+		private static final System.Logger LOGGER = System.getLogger(WebContainerImpl.class.getName());
+
+		private final Container<ContainerConfiguration> container;
 		private final Lifecycle lifecycle;
+		private final ContainerContext context;
 
 		@SuppressWarnings("resource")
-		WebContainerImpl(Container<?> container, LifecycleFactory factory) {
-			this(container, factory.createContainerLifecycle(container));
+		WebContainerImpl(Container<ContainerConfiguration> container, LifecycleFactory factory, ContainerContext context) {
+			this(container, factory.createContainerLifecycle(container), context);
 		}
 
-		WebContainerImpl(Container<?> container, Lifecycle lifecycle) {
+		WebContainerImpl(Container<ContainerConfiguration> container, Lifecycle lifecycle, ContainerContext context) {
 			this.container = container;
 			this.lifecycle = lifecycle;
+			this.context = context;
+			this.context.activate(this.container.getName());
+			try {
+				this.container.setup();
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			} finally {
+				this.context.deactivate();
+			}
+		}
+
+		private void lifecycle(Consumer<Lifecycle> consumer) {
+			this.context.activate(this.container.getName());
+			try {
+				consumer.accept(this.lifecycle);
+			} finally {
+				this.context.deactivate();
+			}
 		}
 
 		@Override
@@ -110,13 +138,18 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		@Override
 		public void start() {
 			LOGGER.log(Logger.Level.INFO, "Starting container {0}", this.container.getName());
-			this.lifecycle.start();
+			this.lifecycle(Lifecycle::start);
 		}
 
 		@Override
 		public void stop() {
 			LOGGER.log(Logger.Level.INFO, "Stopping container {0}", this.container.getName());
-			this.lifecycle.stop();
+			this.lifecycle(Lifecycle::stop);
+		}
+
+		@Override
+		public void close() {
+			this.lifecycle(Lifecycle::close);
 		}
 
 		@Override
@@ -136,20 +169,26 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 		}
 
 		ProtocolMetaData deployArchive(Archive<?> archive) {
+			LOGGER.log(System.Logger.Level.INFO, "Deploying {1} to {0}", this.container.getName(), archive.getName());
+			this.context.activate(this.container.getName());
 			try {
-				LOGGER.log(System.Logger.Level.INFO, "Deploying {0} to {1}", archive.getName(), WebContainerImpl.this.container.getName());
-				return WebContainerImpl.this.container.getDeployableContainer().deploy(archive);
+				return this.container.getDeployableContainer().deploy(archive);
 			} catch (DeploymentException e) {
 				throw new IllegalStateException(e);
+			} finally {
+				this.context.deactivate();
 			}
 		}
 
 		void undeployArchive(Archive<?> archive) {
+			LOGGER.log(System.Logger.Level.INFO, "Undeploying {1} from {0}", this.container.getName(), archive.getName());
+			this.context.activate(this.container.getName());
 			try {
-				LOGGER.log(System.Logger.Level.INFO, "Undeploying {0} from {1}", archive.getName(), this.container.getName());
-				WebContainerImpl.this.container.getDeployableContainer().undeploy(archive);
+				this.container.getDeployableContainer().undeploy(archive);
 			} catch (DeploymentException e) {
 				throw new IllegalStateException(e);
+			} finally {
+				this.context.deactivate();
 			}
 		}
 
@@ -162,6 +201,7 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 					uris.put(servlet.getName(), servlet.getBaseURI());
 				}
 			}
+			LOGGER.log(System.Logger.Level.INFO, "{1} deployed to {0} provides {2}", this.container.getName(), archive.getName(), uris);
 			AtomicBoolean started = new AtomicBoolean(true);
 			return new Deployment() {
 				@Override
@@ -190,7 +230,12 @@ public class DeploymentContainerRegistryResourceProvider implements ResourceProv
 
 				@Override
 				public URI locate(String resourceName) {
-					return uris.get(resourceName);
+					URI uri = uris.get(resourceName);
+					// Workaround buggy container implementations, e.g. open-liberty
+					if ((uri == null) && (uris.size() == 1)) {
+						uri = uris.values().iterator().next();
+					}
+					return uri;
 				}
 
 				@Override
