@@ -40,4 +40,9 @@ class RemoteContainerLifecycle implements Lifecycle {
 	public boolean isStarted() {
 		return this.started.get();
 	}
+
+	@Override
+	public void close() {
+		this.container.close();
+	}
 }
