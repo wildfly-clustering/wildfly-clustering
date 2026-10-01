@@ -32,6 +32,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> {
 	static final String IMAGE_PROPERTY = "oci:image";
 	static final String NETWORK_MODE_PROPERTY = "oci:network-mode";
 	static final String START_TIMEOUT_PROPERTY = "oci:start-timeout";
+	static final String COMMAND_PROPERTY = "oci:command";
 	static final String START_MESSAGE_PATTERN_PROPERTY = "oci:start-message-pattern";
 	static final String ENV_PROPERTY_PREFIX = "env:";
 	static final String REF_PROPERTY_PREFIX = "ref:";
@@ -56,13 +57,20 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> {
 
 	/**
 	 * Create a generic test container.
+	 * @param name the container name
 	 * @param properties the properties with which to configure the OCI container
 	 * @param references a property reference resolver
 	 */
-	public DefaultContainer(Map<String, String> properties, UnaryOperator<String> references) {
+	public DefaultContainer(String name, Map<String, String> properties, UnaryOperator<String> references) {
 		this(Objects.requireNonNull(properties.get(IMAGE_PROPERTY)), Optional.ofNullable(properties.get(START_TIMEOUT_PROPERTY)).map(Duration::parse).orElse(DEFAULT_START_TIMEOUT));
 
 		this.setNetworkMode(properties.getOrDefault(NETWORK_MODE_PROPERTY, DEFAULT_NETWORK_MODE));
+
+		String command = properties.get(COMMAND_PROPERTY);
+		if (command != null) {
+			this.withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("sh"));
+			this.setCommand(command);
+		}
 
 		List<Map.Entry<String, String>> paths = new ArrayList<>(properties.size());
 		for (Map.Entry<String, String> entry : properties.entrySet()) {
@@ -71,7 +79,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> {
 			if (key.startsWith(ENV_PROPERTY_PREFIX)) {
 				this.addEnv(key.substring(ENV_PROPERTY_PREFIX.length()), value);
 			} else if (key.startsWith(REF_PROPERTY_PREFIX)) {
-				String ref = references.apply(value);
+				String ref = value.isEmpty() ? name : references.apply(value);
 				if (ref == null) {
 					throw new IllegalArgumentException(value);
 				}
