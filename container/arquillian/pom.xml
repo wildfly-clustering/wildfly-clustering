@@ -42,31 +42,22 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.jboss.arquillian.config</groupId>
+			<artifactId>arquillian-config-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-spi</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.jboss.arquillian.container</groupId>
-			<artifactId>arquillian-container-impl-base</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.arquillian.test</groupId>
-			<artifactId>arquillian-test-spi</artifactId>
-		</dependency>
 
-		<dependency>
-			<groupId>org.jboss.arquillian.container</groupId>
-			<artifactId>arquillian-tomcat-remote-10</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.jboss.arquillian.junit5</groupId>
 			<artifactId>arquillian-junit5-container</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-suite-api</artifactId>
+			<groupId>org.wildfly.arquillian</groupId>
+			<artifactId>wildfly-arquillian-container-remote</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -15,5 +15,6 @@ import java.util.function.Consumer;
 public interface Tester extends Consumer<List<Deployment>>, AutoCloseable {
 
 	@Override
-	void close();
+	default void close() {
+	}
 }
