@@ -19,6 +19,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.wildfly.clustering.function.UnaryOperator;
@@ -27,7 +28,7 @@ import org.wildfly.clustering.function.UnaryOperator;
  * An OCI container configured from a set of properties.
  * @author Paul Ferraro
  */
-public class DefaultContainer extends GenericContainer<DefaultContainer> {
+public class DefaultContainer extends GenericContainer<DefaultContainer> implements ContainerLifecycle {
 
 	static final String IMAGE_PROPERTY = "oci:image";
 	static final String NETWORK_MODE_PROPERTY = "oci:network-mode";
@@ -121,6 +122,11 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> {
 	}
 
 	@Override
+	public boolean isStarted() {
+		return this.isRunning();
+	}
+
+	@Override
 	public void start() {
 		LOGGER.log(System.Logger.Level.INFO, "Starting {0}", this);
 		Instant start = Instant.now();
@@ -134,6 +140,21 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> {
 		Instant start = Instant.now();
 		super.stop();
 		LOGGER.log(System.Logger.Level.INFO, "Stopped {0} in {1}", this, Duration.between(start, Instant.now()));
+	}
+
+	@Override
+	public void close() {
+		if (this.isRunning()) {
+			this.stop();
+		}
+		// Testcontainers never closes its dependencies?!?
+		for (Startable dependency : this.dependencies) {
+			try {
+				dependency.close();
+			} catch (RuntimeException | Error e) {
+				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+			}
+		}
 	}
 
 	@Override

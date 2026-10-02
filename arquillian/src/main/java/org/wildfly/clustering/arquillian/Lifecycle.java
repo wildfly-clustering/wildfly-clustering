@@ -15,6 +15,23 @@ import java.util.ListIterator;
  * @author Paul Ferraro
  */
 public interface Lifecycle extends AutoCloseable {
+	/**
+	 * An empty lifecycle.
+	 */
+	Lifecycle EMPTY = new Lifecycle() {
+		@Override
+		public void start() {
+		}
+
+		@Override
+		public void stop() {
+		}
+
+		@Override
+		public boolean isStarted() {
+			return false;
+		}
+	};
 
 	/**
 	 * Starts this object.

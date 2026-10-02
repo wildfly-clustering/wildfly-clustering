@@ -5,40 +5,33 @@
 
 package org.wildfly.clustering.container.arquillian;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.testcontainers.lifecycle.Startable;
 import org.wildfly.clustering.arquillian.Lifecycle;
+import org.wildfly.clustering.container.ContainerLifecycle;
 
 /**
  * Lifecycle facade for an OCI container.
  * @author Paul Ferraro
  */
 class RemoteContainerLifecycle implements Lifecycle {
-	private final Startable container;
-	private final AtomicBoolean started = new AtomicBoolean(false);
+	private final ContainerLifecycle container;
 
-	RemoteContainerLifecycle(Startable container) {
+	RemoteContainerLifecycle(ContainerLifecycle container) {
 		this.container = container;
 	}
 
 	@Override
 	public void start() {
-		if (this.started.compareAndSet(false, true)) {
-			this.container.start();
-		}
+		this.container.start();
 	}
 
 	@Override
 	public void stop() {
-		if (this.started.compareAndSet(true, false)) {
-			this.container.stop();
-		}
+		this.container.stop();
 	}
 
 	@Override
 	public boolean isStarted() {
-		return this.started.get();
+		return this.container.isStarted();
 	}
 
 	@Override
