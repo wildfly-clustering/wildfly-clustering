@@ -29,15 +29,15 @@ import org.wildfly.clustering.function.UnaryOperator;
  * @author Paul Ferraro
  */
 public class DefaultContainer extends GenericContainer<DefaultContainer> implements ContainerLifecycle {
-
-	static final String IMAGE_PROPERTY = "oci:image";
-	static final String NETWORK_MODE_PROPERTY = "oci:network-mode";
-	static final String START_TIMEOUT_PROPERTY = "oci:start-timeout";
-	static final String COMMAND_PROPERTY = "oci:command";
-	static final String START_MESSAGE_PATTERN_PROPERTY = "oci:start-message-pattern";
+	static final String OCI_PROPERTY_PREFIX = "oci:";
 	static final String ENV_PROPERTY_PREFIX = "env:";
 	static final String REF_PROPERTY_PREFIX = "ref:";
 	static final String FILE_PROPERTY_PREFIX = "file:";
+	static final String IMAGE_PROPERTY = OCI_PROPERTY_PREFIX + "image";
+	static final String NETWORK_MODE_PROPERTY = OCI_PROPERTY_PREFIX + "network-mode";
+	static final String START_TIMEOUT_PROPERTY = OCI_PROPERTY_PREFIX + "start-timeout";
+	static final String COMMAND_PROPERTY = OCI_PROPERTY_PREFIX + "command";
+	static final String START_MESSAGE_PATTERN_PROPERTY = OCI_PROPERTY_PREFIX + "start-message-pattern";
 
 	private static final System.Logger LOGGER = System.getLogger(DefaultContainer.class.getName());
 
@@ -51,10 +51,8 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	 * @param image the container image name
 	 */
 	public DefaultContainer(String image) {
-		this(image, DEFAULT_START_TIMEOUT);
-
-		this.setNetworkMode(DEFAULT_NETWORK_MODE);
-}
+		this(image, Map.of(IMAGE_PROPERTY, image), UnaryOperator.identity());
+	}
 
 	/**
 	 * Create a generic test container.
@@ -63,7 +61,19 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	 * @param references a property reference resolver
 	 */
 	public DefaultContainer(String name, Map<String, String> properties, UnaryOperator<String> references) {
-		this(Objects.requireNonNull(properties.get(IMAGE_PROPERTY)), Optional.ofNullable(properties.get(START_TIMEOUT_PROPERTY)).map(Duration::parse).orElse(DEFAULT_START_TIMEOUT));
+		super(DockerImageName.parse(Objects.requireNonNull(properties.get(IMAGE_PROPERTY))));
+
+		this.startTimeout = Optional.ofNullable(properties.get(START_TIMEOUT_PROPERTY)).map(Duration::parse).orElse(DEFAULT_START_TIMEOUT);
+		this.setHostAccessible(true);
+
+		Map<OutputFrame.OutputType, Optional<PrintStream>> outputs = new EnumMap<>(OutputFrame.OutputType.class);
+		outputs.put(OutputFrame.OutputType.END, Optional.empty());
+		outputs.put(OutputFrame.OutputType.STDERR, Optional.of(System.err));
+		outputs.put(OutputFrame.OutputType.STDOUT, Optional.of(System.out));
+
+		this.withLogConsumer(frame -> outputs.get(frame.getType()).ifPresent(stream -> stream.println(frame.getUtf8StringWithoutLineEnding())));
+
+		this.setWaitStrategy(Wait.defaultWaitStrategy());
 
 		this.setNetworkMode(properties.getOrDefault(NETWORK_MODE_PROPERTY, DEFAULT_NETWORK_MODE));
 
@@ -97,23 +107,6 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 		if (properties.containsKey(START_MESSAGE_PATTERN_PROPERTY)) {
 			this.setWaitStrategy(Wait.forLogMessage(properties.get(START_MESSAGE_PATTERN_PROPERTY), 1));
 		}
-	}
-
-	private DefaultContainer(String image, Duration startTimeout) {
-		super(DockerImageName.parse(image));
-		this.startTimeout = startTimeout;
-
-		this.setHostAccessible(true);
-		this.setNetworkMode(DEFAULT_NETWORK_MODE);
-
-		Map<OutputFrame.OutputType, Optional<PrintStream>> outputs = new EnumMap<>(OutputFrame.OutputType.class);
-		outputs.put(OutputFrame.OutputType.END, Optional.empty());
-		outputs.put(OutputFrame.OutputType.STDERR, Optional.of(System.err));
-		outputs.put(OutputFrame.OutputType.STDOUT, Optional.of(System.out));
-
-		this.withLogConsumer(frame -> outputs.get(frame.getType()).ifPresent(stream -> stream.println(frame.getUtf8StringWithoutLineEnding())));
-
-		this.setWaitStrategy(Wait.defaultWaitStrategy());
 	}
 
 	@Override
