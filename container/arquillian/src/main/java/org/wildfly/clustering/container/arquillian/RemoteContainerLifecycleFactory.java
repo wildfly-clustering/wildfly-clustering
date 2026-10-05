@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.container.arquillian;
 
+import java.util.List;
+
 import org.jboss.arquillian.config.descriptor.api.ContainerDef;
 import org.jboss.arquillian.config.descriptor.api.ExtensionDef;
 import org.jboss.arquillian.container.spi.Container;
@@ -30,7 +32,8 @@ public class RemoteContainerLifecycleFactory implements LifecycleFactory {
 	@Override
 	public Lifecycle createContainerLifecycle(Container<?> container) {
 		ContainerDef configuration = container.getContainerConfiguration();
-		ExtensionDef extension = configuration.extension("OCI");
-		return (extension != null) ? new RemoteContainerLifecycle(new DefaultContainer(extension.getExtensionProperties(), configuration::getContainerProperty)) : LifecycleFactory.DEFAULT.createContainerLifecycle(container);
+		ExtensionDef extension = configuration.getExtensions().stream().filter(ext -> ext.getExtensionName().equals("OCI")).findAny().orElse(null);
+		Lifecycle lifecycle = LifecycleFactory.DEFAULT.createContainerLifecycle(container);
+		return (extension != null) ? Lifecycle.composite(List.of(new RemoteContainerLifecycle(new DefaultContainer(container.getName(), extension.getExtensionProperties(), configuration::getContainerProperty)), lifecycle)) : lifecycle;
 	}
 }

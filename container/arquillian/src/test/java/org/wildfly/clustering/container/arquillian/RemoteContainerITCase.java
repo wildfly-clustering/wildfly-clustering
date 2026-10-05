@@ -33,21 +33,26 @@ public class RemoteContainerITCase {
 	@RunAsClient
 	@Test
 	public void test() {
-		assertThat(this.registry.getContainerNames()).containsExactly("tomcat");
-		DeploymentContainer container = this.registry.getContainer("tomcat");
-		assertThat(container.isStarted()).isFalse();
-		container.start();
-		assertThat(container.isStarted()).isTrue();
+		assertThat(this.registry.getContainerNames()).isNotEmpty();
 
-		WebArchive archive = ShrinkWrap.create(WebArchive.class, "test.war").add(EmptyAsset.INSTANCE, "index.html");
+		for (String containerName : this.registry.getContainerNames()) {
+			try (DeploymentContainer container = this.registry.getContainer(containerName)) {
+				assertThat(container.isStarted()).isFalse();
+				container.start();
+				assertThat(container.isStarted()).isTrue();
 
-		Deployment deployment = container.deploy(archive);
-		assertThat(deployment.isStarted()).isTrue();
+				WebArchive archive = ShrinkWrap.create(WebArchive.class, "test.war").add(EmptyAsset.INSTANCE, "index.html");
 
-		deployment.stop();
-		assertThat(deployment.isStarted()).isFalse();
+				Deployment deployment = container.deploy(archive);
+				assertThat(deployment.isStarted()).isTrue();
 
-		container.stop();
-		assertThat(container.isStarted()).isFalse();
+				deployment.stop();
+				assertThat(deployment.isStarted()).isFalse();
+
+				container.stop();
+				assertThat(container.isStarted()).isFalse();
+			}
+			assertThat(this.registry.getContainer(containerName).isStarted()).isFalse();
+		}
 	}
 }

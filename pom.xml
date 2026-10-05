@@ -104,6 +104,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.wildfly.arquillian</groupId>
+				<artifactId>wildfly-arquillian-bom</artifactId>
+				<version>5.1.0.Final</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
 			<!-- BOM-less dependencies -->
 			<dependency>
@@ -130,11 +137,6 @@
 				<groupId>org.apache.tomcat</groupId>
 				<artifactId>tomcat-catalina</artifactId>
 				<version>11.0.26</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.container</groupId>
-				<artifactId>arquillian-tomcat-remote-10</artifactId>
-				<version>1.2.5.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.marshalling</groupId>
