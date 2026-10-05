@@ -33,7 +33,7 @@ public class RemoteCacheStoreConfiguration extends AbstractStoreConfiguration<Re
 	static final AttributeDefinition<String> TEMPLATE = AttributeDefinition.builder("template", null, String.class).build();
 	static final AttributeDefinition<String> CONFIGURATION = AttributeDefinition.builder("configuration", """
 {
-	"distributed-cache": {
+	"distributed-cache" : {
 		"mode" : "SYNC",
 		"encoding" : {
 			"key" : {
