@@ -25,6 +25,9 @@
 		<toolchain.jdk.test.label>java${toolchain.jdk.version}</toolchain.jdk.test.label>
 		<!-- Sets encoding for compiler/resources plugins -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- Sets encoding for javadoc/jacoco plugins -->
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.site.lifecycle.disabled>true</maven.site.lifecycle.disabled>
 
 		<project.repository.organization.id>wildfly-clustering</project.repository.organization.id>
 		<project.repository.organization.host>github.com</project.repository.organization.host>
@@ -77,6 +80,11 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.8.0</version>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
