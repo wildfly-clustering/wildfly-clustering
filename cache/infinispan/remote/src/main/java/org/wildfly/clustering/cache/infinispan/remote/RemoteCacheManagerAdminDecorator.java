@@ -6,6 +6,7 @@
 package org.wildfly.clustering.cache.infinispan.remote;
 
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
@@ -108,5 +109,15 @@ public class RemoteCacheManagerAdminDecorator implements RemoteCacheManagerAdmin
 	@Override
 	public RemoteSchemasAdmin schemas() {
 		return this.admin.schemas();
+	}
+
+	@Override
+	public void reindexCache(String name, long timeout, TimeUnit timeUnit) throws HotRodClientException {
+		this.admin.reindexCache(name, timeout, timeUnit);
+	}
+
+	@Override
+	public void updateIndexSchema(String cacheName, long timeout, TimeUnit timeUnit) throws HotRodClientException {
+		this.admin.updateIndexSchema(cacheName, timeout, timeUnit);
 	}
 }
