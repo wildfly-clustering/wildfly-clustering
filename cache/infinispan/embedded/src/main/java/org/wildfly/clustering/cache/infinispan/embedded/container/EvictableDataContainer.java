@@ -5,364 +5,108 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.container;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.PrimitiveIterator;
 import java.util.Spliterator;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import org.infinispan.commons.util.ConcatIterator;
-import org.infinispan.commons.util.FlattenSpliterator;
-import org.infinispan.commons.util.IntSet;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
-import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.commons.api.Lifecycle;
 import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.container.impl.DefaultSegmentedDataContainer;
-import org.infinispan.container.impl.PeekableTouchableCaffeineMap;
-import org.infinispan.container.impl.PeekableTouchableContainerMap;
+import org.infinispan.container.impl.InternalDataContainer;
 import org.infinispan.container.impl.PeekableTouchableMap;
-import org.infinispan.factories.KnownComponentNames;
-import org.infinispan.factories.impl.BasicComponentRegistry;
-import org.infinispan.util.concurrent.DataOperationOrderer.Operation;
-import org.infinispan.util.concurrent.WithinThreadExecutor;
-import org.reactivestreams.Publisher;
+import org.infinispan.eviction.EvictionManager;
+import org.infinispan.eviction.impl.PassivationManager;
+import org.infinispan.util.concurrent.DataOperationOrderer;
 
 import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.RemovalCause;
-import com.github.benmanes.caffeine.cache.RemovalListener;
 
 /**
- * A enhanced version of {@link org.infinispan.container.impl.BoundedSegmentedDataContainer} with support for selective and time-based eviction.
- * Unfortunately, due to inflexible constructors and package protected fields, we cannot simply extend {@link org.infinispan.container.impl.BoundedSegmentedDataContainer}.
+ * An evictable data containers.
  * @author Paul Ferraro
  * @param <K> the container key type
  * @param <V> the container value type
  */
-public class EvictableDataContainer<K, V> extends DefaultSegmentedDataContainer<K, V> {
-	private static final System.Logger LOGGER = System.getLogger(EvictableDataContainer.class.getName());
+public interface EvictableDataContainer<K, V> extends InternalDataContainer<K, V>, Lifecycle {
+	/** The data container logger. */
+	System.Logger LOGGER = System.getLogger(EvictableDataContainer.class.getName());
 
-	private final boolean segmented;
-	private final Executor executor;
-	private final Cache<K, InternalCacheEntry<K, V>> evictionCache;
-	private final PeekableTouchableMap<K, V> entries;
+	/**
+	 * Returns the caffeine cache used for eviction.
+	 * @return the caffeine cache used for eviction.
+	 */
+	Cache<K, InternalCacheEntry<K, V>> getEvictionCache();
 
-	EvictableDataContainer(BasicComponentRegistry registry, Configuration configuration, boolean segmented) {
-		super(PeekableTouchableContainerMap::new, segmented ? configuration.clustering().hash().numSegments() : 1);
-		this.segmented = segmented;
-		Map<Object, CompletableFuture<Void>> evictions = new ConcurrentHashMap<>();
-		RemovalListener<K, InternalCacheEntry<K, V>> evictionListener = new RemovalListener<>() {
-			@Override
-			public void onRemoval(K key, InternalCacheEntry<K, V> entry, RemovalCause cause) {
-				// Schedule an eviction to happen after the key lock is released
-				CompletableFuture<Void> eviction = new CompletableFuture<>();
-				if (evictions.putIfAbsent(key, eviction) == null) {
-					EvictableDataContainer.this.handleEviction(key, entry, eviction);
-				}
-			}
-		};
-		RemovalListener<K, InternalCacheEntry<K, V>> removalListener = new RemovalListener<>() {
-			@Override
-			public void onRemoval(K key, InternalCacheEntry<K, V> entry, RemovalCause cause) {
-				EvictableDataContainer.this.computeEntryRemoved(key, entry);
-				CompletableFuture<Void> eviction = evictions.remove(key);
-				if (eviction != null) {
-					eviction.complete(null);
-				}
-			}
-		};
-		DataContainerConfiguration container = Optional.ofNullable(configuration.module(DataContainerConfiguration.class)).orElseGet(() -> new DataContainerConfigurationBuilder().create());
-		this.executor = registry.getComponent(KnownComponentNames.NON_BLOCKING_EXECUTOR, Executor.class).running();
-		this.evictionCache = container.builder(registry, configuration.memory())
-				.executor(new WithinThreadExecutor())
-				.evictionListener(evictionListener)
-				.removalListener(removalListener)
-				.build();
-		this.entries = new PeekableTouchableCaffeineMap<>(this.evictionCache);
-	}
+	/**
+	 * Returns the caffeine cache map.
+	 * @return the caffeine cache map.
+	 */
+	PeekableTouchableMap<K, V> getEntries();
 
-	private PeekableTouchableMap<K, V> getContainerMapForSegment(int segment) {
-		return this.maps.get(this.segmented ? segment : 0);
+	/**
+	 * Returns the data operation orderer.
+	 * @return the data operation orderer.
+	 */
+	DataOperationOrderer getOrderer();
+
+	/**
+	 * Returns the executor used for eviction/passivation operations.
+	 * @return the executor used for eviction/passivation operations.
+	 */
+	Executor getExecutor();
+
+	/**
+	 * Returns the eviction manager, if present.
+	 * @return the eviction manager, if present.
+	 */
+	Optional<EvictionManager<K, V>> getEvictionManager();
+
+	/**
+	 * Returns the passivation manager, if present.
+	 * @return the passivation manager, if present.
+	 */
+	Optional<PassivationManager> getPassivatorManager();
+
+	@Override
+	default Iterator<InternalCacheEntry<K, V>> iteratorIncludingExpired() {
+		return this.getEntries().values().iterator();
 	}
 
 	@Override
-	public int getSegmentForKey(Object key) {
-		return this.segmented ? super.getSegmentForKey(key) : 0;
-	}
-
-	CompletionStage<Void> handleEviction(K key, InternalCacheEntry<K, V> entry, CompletableFuture<Void> selfDelay) {
-		CompletableFuture<Operation> future = new CompletableFuture<>();
-		CompletionStage<Operation> ordererStage = this.orderer != null ? this.orderer.orderOn(key, future) : null;
-		if (ordererStage != null) {
-			LOGGER.log(System.Logger.Level.TRACE, "Encountered concurrent operation during eviction of {0}", key);
-			// We have to use thenComposeAsync here in case if the stage is completed between checking and passing
-			// this lambda to prevent running the following code while the write lock is held
-			return ordererStage.thenComposeAsync(operation -> {
-				LOGGER.log(System.Logger.Level.TRACE, "Concurrent operation during eviction of {0} was {1}", key, operation);
-				return selfDelay.thenCompose(ignore -> switch (operation) {
-					case REMOVE -> this.skipPassivation(key, future, operation);
-					case READ -> this.handleNotificationAndOrderer(key, entry, this.passivate(entry), future);
-					case WRITE -> this.containsKey(key) ? this.skipPassivation(key, future, operation) : this.handleNotificationAndOrderer(key, entry, this.passivate(entry), future);
-				});
-			}, this.executor);
-		}
-		return selfDelay.thenCompose(ignore -> this.handleNotificationAndOrderer(key, entry, this.passivate(entry), future));
-	}
-
-	private CompletionStage<Void> passivate(InternalCacheEntry<K, V> entry) {
-		return this.passivator.isRunning() ? this.passivator.running().passivateAsync(entry) : CompletableFutures.completedNull();
-	}
-
-	private CompletionStage<Void> skipPassivation(Object key, CompletableFuture<Operation> future, Operation operation) {
-		LOGGER.log(System.Logger.Level.TRACE, "Skipping passivation for key {0} due to {1}", key, operation);
-		this.orderer.completeOperation(key, future, Operation.READ);
-		return CompletableFutures.completedNull();
-	}
-
-	private CompletionStage<Void> handleNotificationAndOrderer(K key, InternalCacheEntry<K, V> value, CompletionStage<Void> stage, CompletableFuture<Operation> future) {
-		CompletionStage<Void> result = (this.evictionManager != null) ? stage.thenCompose(ignore -> this.evictionManager.onEntryEviction(Collections.singletonMap(key, value))) : stage;
-		return (this.orderer != null) ? result.whenComplete((ignored, e) -> this.orderer.completeOperation(key, future, Operation.READ)) : result;
+	default Spliterator<InternalCacheEntry<K, V>> spliteratorIncludingExpired() {
+		// Technically this spliterator is distinct, but it won't be set - we assume that is okay for now
+		return this.getEntries().values().spliterator();
 	}
 
 	@Override
-	protected void computeEntryWritten(K key, InternalCacheEntry<K, V> value) {
-		this.computeEntryWritten(this.getSegmentForKey(key), key, value);
-	}
-
-	void computeEntryWritten(int segment, K key, InternalCacheEntry<K, V> value) {
-		ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
-		if (map != null) {
-			map.put(key, value);
-		}
+	default int sizeIncludingExpired() {
+		return this.getEntries().size();
 	}
 
 	@Override
-	protected void computeEntryRemoved(K key, InternalCacheEntry<K, V> value) {
-		this.computeEntryRemoved(this.getSegmentForKey(key), key, value);
-	}
-
-	void computeEntryRemoved(int segment, K key, InternalCacheEntry<K, V> value) {
-		ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
-		if (map != null) {
-			map.remove(key, value);
-		}
+	default void cleanUp() {
+		// Caffeine may not evict an entry right away if concurrent threads are writing, so this forces a cleanUp
+		this.getEvictionCache().cleanUp();
 	}
 
 	@Override
-	protected void putEntryInMap(PeekableTouchableMap<K, V> map, int segment, K key, InternalCacheEntry<K, V> ice) {
-		map.compute(key, (k, v) -> {
-			this.computeEntryWritten(segment, k, ice);
-			return ice;
-		});
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	protected InternalCacheEntry<K, V> removeEntryInMap(PeekableTouchableMap<K, V> map, int segment, Object key) {
-		AtomicReference<InternalCacheEntry<K, V>> ref = new AtomicReference<>(null);
-		map.computeIfPresent((K) key, (k, prev) -> {
-			this.computeEntryRemoved(segment, k, prev);
-			ref.setPlain(prev);
-			return null;
-		});
-		return ref.getPlain();
+	default long capacity() {
+		return this.getEvictionCache().policy().eviction().get().getMaximum();
 	}
 
 	@Override
-	public PeekableTouchableMap<K, V> getMapForSegment(int segment) {
-		// All writes and other ops go directly to the caffeine cache
-		return this.entries;
+	default void resize(long newSize) {
+		this.getEvictionCache().policy().eviction().get().setMaximum(newSize);
 	}
 
 	@Override
-	public InternalCacheEntry<K, V> get(Object key) {
-		return this.entries.get(key);
-	}
-
-	@Override
-	public InternalCacheEntry<K, V> get(int segment, Object key) {
-		return this.get(key);
-	}
-
-	@Override
-	public InternalCacheEntry<K, V> peek(Object key) {
-		return this.peek(this.getSegmentForKey(key), key);
-	}
-
-	@Override
-	public InternalCacheEntry<K, V> peek(int segment, Object key) {
-		Map<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
-		return (map != null) ? map.get(key) : null;
-	}
-
-	@Override
-	public Publisher<InternalCacheEntry<K, V>> publisher(int segment) {
-		return super.publisher(this.segmented ? segment : 0);
-	}
-
-	@Override
-	public Publisher<InternalCacheEntry<K, V>> publisher(IntSet segments) {
-		return this.segmented ? super.publisher(segments) : super.publisher(0);
-	}
-
-	@Override
-	public Iterator<InternalCacheEntry<K, V>> iterator(IntSet segments) {
-		return this.segmented ? super.iterator(segments) : this.iterator();
-	}
-
-	@Override
-	public Spliterator<InternalCacheEntry<K, V>> spliterator(IntSet segments) {
-		return this.segmented ? super.spliterator(segments) : this.spliterator();
-	}
-
-	@Override
-	public int size(IntSet segments) {
-		return this.segmented ? super.size(segments) : super.size();
-	}
-
-	@Override
-	public int sizeIncludingExpired(IntSet segment) {
-		return this.segmented ? super.sizeIncludingExpired(segment) : this.sizeIncludingExpired();
-	}
-
-	@Override
-	public void forEach(IntSet segments, Consumer<? super InternalCacheEntry<K, V>> action) {
-		if (this.segmented) {
-			super.forEach(segments, action);
-		} else {
-			this.forEach(action);
-		}
-	}
-
-	@Override
-	public void clear() {
-		this.entries.clear();
-		super.clear();
-	}
-
-	@Override
-	public void clear(IntSet segments) {
-		if (this.segmented) {
-			this.clearSegments(segments);
-			super.clear(segments);
-		} else {
-			this.clear();
-		}
-	}
-
-	@Override
-	public Iterator<InternalCacheEntry<K, V>> iteratorIncludingExpired() {
-		return this.entries.values().iterator();
-	}
-
-	@Override
-	public Iterator<InternalCacheEntry<K, V>> iteratorIncludingExpired(IntSet segments) {
-		if (!this.segmented) return this.iteratorIncludingExpired();
-		// We could explore a streaming approach here to not have to allocate an additional ArrayList
-		List<Collection<InternalCacheEntry<K, V>>> valueIterables = new ArrayList<>(segments.size() + 1);
-		PrimitiveIterator.OfInt iter = segments.iterator();
-		boolean includeOthers = false;
-		while (iter.hasNext()) {
-			int segment = iter.nextInt();
-			ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.getContainerMapForSegment(segment);
-			if (map != null) {
-				valueIterables.add(map.values());
-			} else {
-				includeOthers = true;
-			}
-		}
-		if (includeOthers) {
-			valueIterables.add(this.entries.values().stream()
-					.filter(e -> segments.contains(this.getSegmentForKey(e.getKey())))
-					.collect(Collectors.toSet()));
-		}
-		return new ConcatIterator<>(valueIterables);
-	}
-
-	@Override
-	public Spliterator<InternalCacheEntry<K, V>> spliteratorIncludingExpired() {
-		return this.entries.values().spliterator();
-	}
-
-	@Override
-	public Spliterator<InternalCacheEntry<K, V>> spliteratorIncludingExpired(IntSet segments) {
-		if (!this.segmented) return this.spliteratorIncludingExpired();
-		// Copy the ints into an array to parallelize them
-		int[] segmentArray = segments.toIntArray();
-		AtomicBoolean usedOthers = new AtomicBoolean(false);
-
-		return new FlattenSpliterator<>(i -> {
-			ConcurrentMap<K, InternalCacheEntry<K, V>> map = this.maps.get(segmentArray[i]);
-			if (map == null) {
-				if (!usedOthers.getAndSet(true)) {
-					return this.entries.values().stream()
-							.filter(e -> segments.contains(this.getSegmentForKey(e.getKey())))
-							.collect(Collectors.toSet());
-				}
-				return List.of();
-			}
-			return map.values();
-		}, segmentArray.length, Spliterator.CONCURRENT | Spliterator.NONNULL | Spliterator.DISTINCT);
-	}
-
-	@Override
-	public int sizeIncludingExpired() {
-		return this.entries.size();
+	default long evictionSize() {
+		return this.getEvictionCache().policy().eviction().get().weightedSize().orElse(this.getEntries().size());
 	}
 
 	/**
-	 * Clears entries out of caffeine map by invoking remove on iterator. This can either keep all keys that match the
-	 * provided segments when keepSegments is <code>true</code> or it will remove only the provided segments when
-	 * keepSegments is <code>false</code>.
-	 * @param segments the segments to either remove or keep
+	 * Callback indicating an entry was removed from the caffeine map.
+	 * @param key the removed key
+	 * @param value the removed value
 	 */
-	private void clearSegments(IntSet segments) {
-		for (Iterator<K> keyIterator = this.entries.keySet().iterator(); keyIterator.hasNext(); ) {
-			K key = keyIterator.next();
-			int keySegment = this.getSegmentForKey(key);
-			if (segments.contains(keySegment)) {
-				keyIterator.remove();
-			}
-		}
-	}
-
-	@Override
-	public void removeSegments(IntSet segments) {
-		// Call super remove segments so the maps are removed more efficiently
-		super.removeSegments(segments);
-		// Finally remove the entries from bounded cache
-		this.clearSegments(segments);
-	}
-
-	@Override
-	public long capacity() {
-		return this.evictionCache.policy().eviction().get().getMaximum();
-	}
-
-	@Override
-	public void resize(long newSize) {
-		this.evictionCache.policy().eviction().get().setMaximum(newSize);
-	}
-
-	@Override
-	public long evictionSize() {
-		return this.evictionCache.policy().eviction().get().weightedSize().orElse(this.entries.size());
-	}
-
-	@Override
-	public void cleanUp() {
-		this.evictionCache.cleanUp();
-	}
+	void computeEntryRemoved(K key, InternalCacheEntry<K, V> value);
 }
