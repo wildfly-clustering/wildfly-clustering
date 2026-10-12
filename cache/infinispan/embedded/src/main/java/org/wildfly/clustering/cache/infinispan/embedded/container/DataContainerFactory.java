@@ -78,7 +78,7 @@ public class DataContainerFactory extends AbstractNamedCacheComponentFactory imp
 		if (hasSize) {
 			return segmented ? new BoundedSegmentedDataContainer<>(segments, memory.maxSizeBytes(), hasSize) : DefaultDataContainer.boundedDataContainer(this.configuration.locking().concurrencyLevel(), memory.maxSizeBytes(), hasSize);
 		}
-		return new EvictableDataContainer<>(this.basicComponentRegistry, this.configuration, segmented);
+		return new DefaultEvictableDataContainer<>(this.basicComponentRegistry, this.configuration, segmented);
 	}
 
 	private OffHeapConcurrentMap createAndStartOffHeapConcurrentMap() {
