@@ -72,6 +72,9 @@ public interface CacheConfiguration<K, V> {
 	 * @param <V> the cache value type
 	 */
 	interface Builder<K, V> {
+		/** Logger */
+		System.Logger LOGGER = System.getLogger(CacheConfiguration.class.getName());
+
 		/**
 		 * Defines the maximum weight of entries in the cache
 		 * @param weight the maximum weight.
@@ -177,7 +180,8 @@ public interface CacheConfiguration<K, V> {
 			return this.whenEvicted(new RemovalListener<>() {
 				@Override
 				public void onRemoval(K key, V value, RemovalCause cause) {
-					if ((cause == RemovalCause.EXPIRED) || (cause == RemovalCause.SIZE)) {
+					LOGGER.log(System.Logger.Level.TRACE, "{0} evicted due to {1}", key, cause);
+					if (cause.wasEvicted()) {
 						handler.accept(key, value);
 					}
 				}
@@ -200,7 +204,8 @@ public interface CacheConfiguration<K, V> {
 			return this.whenRemoved(new RemovalListener<>() {
 				@Override
 				public void onRemoval(K key, V value, RemovalCause cause) {
-					if ((cause == RemovalCause.EXPIRED) || (cause == RemovalCause.SIZE)) {
+					LOGGER.log(System.Logger.Level.TRACE, "{0} removed due to {1}", key, cause);
+					if (cause.wasEvicted()) {
 						handler.accept(key, value);
 					}
 				}
