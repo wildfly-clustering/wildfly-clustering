@@ -6,16 +6,15 @@
 package org.wildfly.clustering.cache.infinispan.embedded.container;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Spliterator;
-import java.util.concurrent.Executor;
 
 import com.github.benmanes.caffeine.cache.Cache;
 
 import org.infinispan.commons.api.Lifecycle;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.impl.InternalDataContainer;
-import org.infinispan.container.impl.PeekableTouchableMap;
 import org.infinispan.eviction.EvictionManager;
 import org.infinispan.eviction.impl.PassivationManager;
 import org.infinispan.util.concurrent.DataOperationOrderer;
@@ -27,9 +26,6 @@ import org.infinispan.util.concurrent.DataOperationOrderer;
  * @param <V> the container value type
  */
 public interface EvictableDataContainer<K, V> extends InternalDataContainer<K, V>, Lifecycle {
-	/** The data container logger. */
-	System.Logger LOGGER = System.getLogger(EvictableDataContainer.class.getName());
-
 	/**
 	 * Returns the caffeine cache used for eviction.
 	 * @return the caffeine cache used for eviction.
@@ -40,19 +36,13 @@ public interface EvictableDataContainer<K, V> extends InternalDataContainer<K, V
 	 * Returns the caffeine cache map.
 	 * @return the caffeine cache map.
 	 */
-	PeekableTouchableMap<K, V> getEntries();
+	Map<K, InternalCacheEntry<K, V>> getEntries();
 
 	/**
 	 * Returns the data operation orderer.
 	 * @return the data operation orderer.
 	 */
 	DataOperationOrderer getOrderer();
-
-	/**
-	 * Returns the executor used for eviction/passivation operations.
-	 * @return the executor used for eviction/passivation operations.
-	 */
-	Executor getExecutor();
 
 	/**
 	 * Returns the eviction manager, if present.
@@ -104,9 +94,9 @@ public interface EvictableDataContainer<K, V> extends InternalDataContainer<K, V
 	}
 
 	/**
-	 * Callback indicating an entry was removed from the caffeine map.
-	 * @param key the removed key
-	 * @param value the removed value
+	 * Indicates entry was evicted from caffeine cache.
+	 * @param key the evicted cache key
+	 * @param entry the evicted cache entry
 	 */
-	void computeEntryRemoved(K key, InternalCacheEntry<K, V> value);
+	void evicted(K key, InternalCacheEntry<K, V> entry);
 }

@@ -15,7 +15,6 @@ import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheType;
@@ -64,7 +63,7 @@ public class EvictionCacheITCase {
 		try (Context<EmbeddedCacheManager> context = new EmbeddedCacheManagerContext(CLUSTER_NAME, "member1")) {
 			EmbeddedCacheManager manager = context.get();
 			manager.defineConfiguration(cacheName, configuration);
-			Cache<Object, String> cache = new AdvancedCacheDecorator<>(manager.<Object, String>getCache(cacheName).getAdvancedCache(), UnaryOperator.identity());
+			Cache<Object, String> cache = manager.getCache(cacheName);
 			cache.start();
 			BlockingQueue<Map.Entry<Object, String>> evictedEntries = new LinkedBlockingQueue<>();
 			Object listener = new EvictionEventListener<>(evictedEntries);
@@ -106,7 +105,7 @@ public class EvictionCacheITCase {
 				for (int i = 0; i < 4; ++i) {
 					// Read remaining evictable entries so that they are no longer idle
 					for (Map.Entry<Object, String> entry : remainingEvictable) {
-						assertThat(cache.get(entry.getKey())).isNotNull().isSameAs(entry.getValue());
+						assertThat(cache.get(entry.getKey())).isSameAs(entry.getValue());
 					}
 
 					Thread.sleep(activeDelay.toMillis());
@@ -170,7 +169,7 @@ public class EvictionCacheITCase {
 		}
 	}
 
-	@Listener
+	@Listener(observation = Listener.Observation.POST)
 	private static class EvictionEventListener<K, V> {
 		private final Queue<Map.Entry<K, V>> entries;
 
@@ -180,9 +179,7 @@ public class EvictionCacheITCase {
 
 		@CacheEntriesEvicted
 		public void cacheEntriesEvicted(CacheEntriesEvictedEvent<K, V> event) {
-			if (!event.isPre()) {
-				event.getEntries().entrySet().forEach(this.entries::add);
-			}
+			event.getEntries().entrySet().forEach(this.entries::add);
 		}
 	}
 }

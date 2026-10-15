@@ -15,7 +15,6 @@ import java.util.Optional;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -33,6 +32,7 @@ import org.infinispan.container.impl.PeekableTouchableContainerMap;
 import org.infinispan.container.impl.PeekableTouchableMap;
 import org.infinispan.eviction.EvictionManager;
 import org.infinispan.eviction.impl.PassivationManager;
+import org.infinispan.factories.impl.ComponentRef;
 import org.infinispan.util.concurrent.DataOperationOrderer;
 
 /**
@@ -44,13 +44,11 @@ import org.infinispan.util.concurrent.DataOperationOrderer;
 public class SegmentedDataContainer<K, V> extends DefaultSegmentedDataContainer<K, V> implements EvictableDataContainer<K, V> {
 	private final Cache<K, InternalCacheEntry<K, V>> evictionCache;
 	private final PeekableTouchableMap<K, V> entries;
-	private final Executor executor;
 
-	SegmentedDataContainer(Configuration configuration, Cache<K, InternalCacheEntry<K, V>> evictionCache, Executor executor) {
+	SegmentedDataContainer(Configuration configuration, Cache<K, InternalCacheEntry<K, V>> evictionCache) {
 		super(PeekableTouchableContainerMap::new, configuration.clustering().hash().numSegments());
 		this.evictionCache = evictionCache;
 		this.entries = new PeekableTouchableCaffeineMap<>(evictionCache);
-		this.executor = executor;
 	}
 
 	@Override
@@ -59,8 +57,13 @@ public class SegmentedDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	@Override
-	public PeekableTouchableMap<K, V> getEntries() {
+	public Map<K, InternalCacheEntry<K, V>> getEntries() {
 		return this.entries;
+	}
+
+	@Override
+	public void evicted(K key, InternalCacheEntry<K, V> entry) {
+		this.computeEntryRemoved(this.getSegmentForKey(key), key, entry);
 	}
 
 	@Override
@@ -69,13 +72,8 @@ public class SegmentedDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	@Override
-	public Executor getExecutor() {
-		return this.executor;
-	}
-
-	@Override
 	public Optional<PassivationManager> getPassivatorManager() {
-		return this.passivator.isRunning() ? Optional.of(this.passivator.running()) : Optional.empty();
+		return Optional.ofNullable(this.passivator).filter(ComponentRef::isRunning).map(ComponentRef::running).filter(PassivationManager::isEnabled);
 	}
 
 	@Override
@@ -96,7 +94,7 @@ public class SegmentedDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	@Override
-	public void computeEntryRemoved(K key, InternalCacheEntry<K, V> value) {
+	protected void computeEntryRemoved(K key, InternalCacheEntry<K, V> value) {
 		this.computeEntryRemoved(this.getSegmentForKey(key), key, value);
 	}
 
@@ -129,19 +127,16 @@ public class SegmentedDataContainer<K, V> extends DefaultSegmentedDataContainer<
 
 	@Override
 	public PeekableTouchableMap<K, V> getMapForSegment(int segment) {
-		// All writes and other ops go directly to the caffeine cache
 		return this.entries;
 	}
 
 	@Override
 	public InternalCacheEntry<K, V> get(Object key) {
-		// Avoid unnecessary segment lookup
 		return this.get(-1, key);
 	}
 
 	@Override
 	public InternalCacheEntry<K, V> peek(Object key) {
-		// Avoid unnecessary segment lookup
 		return this.peek(-1, key);
 	}
 
