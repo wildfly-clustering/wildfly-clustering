@@ -65,6 +65,7 @@ public class DefaultEvictableDataContainer<K, V> extends AbstractDelegatingInter
 	DefaultEvictableDataContainer(BasicComponentRegistry registry, Configuration configuration, boolean segmented) {
 		Map<Object, CompletableFuture<Void>> evictions = new ConcurrentHashMap<>();
 		RemovalListener<K, InternalCacheEntry<K, V>> evictionListener = (key, entry, cause) -> {
+			LOGGER.log(System.Logger.Level.TRACE, "{0} evicted due to {1}", key, cause);
 			if (cause.wasEvicted()) {
 				this.evictionRecorder.accept(key, entry);
 				this.delegate().evicted(key, entry);
@@ -73,6 +74,7 @@ public class DefaultEvictableDataContainer<K, V> extends AbstractDelegatingInter
 			}
 		};
 		RemovalListener<K, InternalCacheEntry<K, V>> removalListener = (key, entry, cause) -> {
+			LOGGER.log(System.Logger.Level.TRACE, "{0} removed due to {1}", key, cause);
 			if (cause.wasEvicted()) {
 				CompletableFuture<Void> eviction = evictions.remove(key);
 				if (eviction != null) {
