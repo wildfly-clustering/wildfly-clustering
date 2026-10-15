@@ -38,7 +38,7 @@ public class EmbeddedCacheProperties implements CacheProperties {
 	 * @param configuration an embedded cache configuration
 	 */
 	public EmbeddedCacheProperties(Configuration configuration) {
-		this.transactional = configuration.transaction().transactionMode().isTransactional();
+		this.transactional = configuration.transaction().mode().isTransactional();
 		this.lockOnWrite = this.transactional && (configuration.transaction().lockingMode() == LockingMode.PESSIMISTIC);
 		this.lockOnRead = this.lockOnWrite && (configuration.locking().lockIsolationLevel() == IsolationLevel.REPEATABLE_READ);
 		boolean distributed = configuration.clustering().cacheMode().needsStateTransfer();

@@ -11,9 +11,9 @@ import org.infinispan.configuration.cache.CacheType;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.IsolationLevel;
+import org.infinispan.configuration.cache.TransactionMode;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.LockingMode;
-import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
@@ -55,7 +55,7 @@ public class InfinispanSessionManagerFactoryContext<CC, SC> extends AbstractCont
 			builder.clustering().cacheType(parameters.getCacheType());
 			builder.clustering().hash().numSegments(16);
 			TransactionMode transactionMode = parameters.getTransactionMode();
-			builder.transaction().transactionMode(transactionMode);
+			builder.transaction().mode(transactionMode);
 			if (transactionMode.isTransactional()) {
 				builder.transaction().lockingMode(LockingMode.PESSIMISTIC);
 				builder.transaction().transactionManagerLookup(EmbeddedTransactionManager::getInstance);

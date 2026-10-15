@@ -27,11 +27,11 @@ public class SchedulerSerializationContextInitializer extends AbstractSerializat
 	public SchedulerSerializationContextInitializer() {
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(Scalar.ANY.toMarshaller(CancelCommand.class, CancelCommand::getKey, CancelCommand::new));
 		context.registerMarshaller(Scalar.ANY.toMarshaller(ContainsCommand.class, ContainsCommand::getKey, ContainsCommand::new));
-		@SuppressWarnings("unchecked")
 		Class<Map.Entry<Object, Object>> entryClass = (Class<Map.Entry<Object, Object>>) (Class<?>) AbstractMap.SimpleEntry.class;
 		context.registerMarshaller(context.getMarshaller(entryClass).wrap(ScheduleCommand.class, ScheduleCommand::getParameter, ScheduleCommand::new));
 	}
