@@ -15,11 +15,11 @@ import java.util.stream.Stream;
 import org.h2.jdbcx.JdbcDataSource;
 import org.infinispan.configuration.cache.CacheType;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
+import org.infinispan.configuration.cache.TransactionMode;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
-import org.infinispan.transaction.TransactionMode;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -44,9 +44,10 @@ public class InfinispanSessionManagerITCase extends AbstractSessionManagerITCase
 		Map<CacheType, Set<TransactionMode>> types = new EnumMap<>(CacheType.class);
 
 		InfinispanSessionManagerArgumentsProvider() {
-			this.types.put(CacheType.DISTRIBUTION, EnumSet.allOf(TransactionMode.class));
-			this.types.put(CacheType.REPLICATION, EnumSet.allOf(TransactionMode.class));
-			this.types.put(CacheType.INVALIDATION, EnumSet.allOf(TransactionMode.class));
+			Set<TransactionMode> modes = EnumSet.of(TransactionMode.NONE, TransactionMode.NON_DURABLE_XA);
+			this.types.put(CacheType.DISTRIBUTION, modes);
+			this.types.put(CacheType.REPLICATION, modes);
+			this.types.put(CacheType.INVALIDATION, modes);
 		}
 
 		@Override

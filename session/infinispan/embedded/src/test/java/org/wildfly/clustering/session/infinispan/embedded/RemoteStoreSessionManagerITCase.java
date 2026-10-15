@@ -14,8 +14,8 @@ import java.util.stream.Stream;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.configuration.cache.CacheType;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
+import org.infinispan.configuration.cache.TransactionMode;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.transaction.TransactionMode;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,7 +40,7 @@ public class RemoteStoreSessionManagerITCase extends AbstractSessionManagerITCas
 
 	static class InfinispanInvalidationSessionManagerArgumentsProvider implements ArgumentsProvider {
 		Class<? extends MarshallingTesterFactory> marshallerClass = MarshallingTesterFactory.class;
-		Set<TransactionMode> transactionModes = EnumSet.allOf(TransactionMode.class);
+		Set<TransactionMode> transactionModes = EnumSet.of(TransactionMode.NONE, TransactionMode.NON_DURABLE_XA);
 		Set<SessionAttributePersistenceStrategy> strategies = EnumSet.allOf(SessionAttributePersistenceStrategy.class);
 
 		@Override
