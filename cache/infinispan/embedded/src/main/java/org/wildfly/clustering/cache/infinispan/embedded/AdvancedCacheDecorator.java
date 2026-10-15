@@ -8,7 +8,6 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -53,10 +52,7 @@ import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.security.AuthorizationManager;
 import org.infinispan.stats.Stats;
 import org.infinispan.util.concurrent.locks.LockManager;
-import org.wildfly.clustering.cache.function.ComputeIfAbsentFunction;
 import org.wildfly.clustering.cache.infinispan.NonBlockingBasicCacheDecorator;
-import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfiguration;
-import org.wildfly.clustering.function.Predicate;
 
 /**
  * An {@link AdvancedCache} decorator.
@@ -70,8 +66,6 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 	private final InternalCache<K, V> internalCache;
 	private final UnaryOperator<AdvancedCache<K, V>> decorator;
 	private final Metadata defaultMetadata;
-	private final java.util.function.Predicate<Object> evictable;
-	private final java.util.function.Predicate<Object> touchOnRead;
 
 	/**
 	 * Creates an embedded cache decorator.
@@ -86,9 +80,6 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 		this.decorator = decorator;
 		Configuration configuration = cache.getCacheConfiguration();
 		this.defaultMetadata = Configurations.newDefaultMetadata(configuration);
-		DataContainerConfiguration container = configuration.module(DataContainerConfiguration.class);
-		this.evictable = Optional.ofNullable(container).map(DataContainerConfiguration::idleTimeout).isPresent() ? container.evictable() : Predicate.of(false);
-		this.touchOnRead = configuration.clustering().cacheMode().isReplicated() ? this.evictable : Predicate.of(false);
 	}
 
 	@Override
@@ -380,8 +371,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction, Metadata metadata) {
-		// Infinispan neglects to touch entry if present!
-		return !this.cache.containsFlag(Flag.IGNORE_RETURN_VALUES) && this.evictable.test(key) ? this.cache.compute(key, new ComputeIfAbsentFunction<>(mappingFunction), metadata) : this.cache.computeIfAbsent(key, mappingFunction, metadata);
+		return this.cache.computeIfAbsent(key, mappingFunction, metadata);
 	}
 
 	@Override
@@ -401,8 +391,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public CompletableFuture<V> computeIfAbsentAsync(K key, Function<? super K, ? extends V> mappingFunction, Metadata metadata) {
-		// Infinispan neglects to touch entry if present!
-		return !this.cache.containsFlag(Flag.IGNORE_RETURN_VALUES) && this.evictable.test(key) ? this.cache.computeAsync(key, new ComputeIfAbsentFunction<>(mappingFunction), metadata) : this.cache.computeIfAbsentAsync(key, mappingFunction, metadata);
+		return this.cache.computeIfAbsentAsync(key, mappingFunction, metadata);
 	}
 
 	@Override
@@ -447,26 +436,12 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public V get(Object key) {
-		V result = this.cache.get(key);
-		if ((result != null) && this.touchOnRead.test(key)) {
-			// Infinispan neglects to touch entry for replicated caches
-			this.cache.getDataContainer().get(key);
-		}
-		return result;
+		return this.cache.get(key);
 	}
 
 	@Override
 	public CompletableFuture<V> getAsync(K key) {
-		CompletableFuture<V> result = this.cache.getAsync(key);
-		if (this.touchOnRead.test(key)) {
-			result.whenComplete((value, e) -> {
-				// Infinispan neglects to touch entry for replicated caches
-				if (value != null) {
-					this.cache.getDataContainer().get(key);
-				}
-			});
-		}
-		return result;
+		return this.cache.getAsync(key);
 	}
 
 	@Override
@@ -642,12 +617,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public V putIfAbsent(K key, V value, Metadata metadata) {
-		V result = this.cache.putIfAbsent(key, value, metadata);
-		if ((result != null) && this.evictable.test(key)) {
-			// Infinispan neglects to touch entry if present!
-			this.cache.getDataContainer().get(key);
-		}
-		return result;
+		return this.cache.putIfAbsent(key, value, metadata);
 	}
 
 	@Override
@@ -667,16 +637,7 @@ public class AdvancedCacheDecorator<K, V> extends NonBlockingBasicCacheDecorator
 
 	@Override
 	public CompletableFuture<V> putIfAbsentAsync(K key, V value, Metadata metadata) {
-		CompletableFuture<V> result = this.cache.putIfAbsentAsync(key, value, metadata);
-		if (this.evictable.test(key)) {
-			result.whenComplete((present, exception) -> {
-				if (present != null) {
-					// Infinispan neglects to touch entry if present!
-					this.cache.getDataContainer().get(key);
-				}
-			});
-		}
-		return result;
+		return this.cache.putIfAbsentAsync(key, value, metadata);
 	}
 
 	@Override

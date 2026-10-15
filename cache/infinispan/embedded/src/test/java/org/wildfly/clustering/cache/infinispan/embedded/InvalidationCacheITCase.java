@@ -38,7 +38,7 @@ public class InvalidationCacheITCase extends SoftAssertions {
 	private static final String CLUSTER_NAME = "ISPN";
 	private static final UnaryOperator<TransactionConfigurationBuilder> NON_TRANSACTIONAL = UnaryOperator.identity();
 	private static final UnaryOperator<TransactionConfigurationBuilder> TRANSACTIONAL = builder -> builder
-			.transactionMode(org.infinispan.transaction.TransactionMode.TRANSACTIONAL)
+			.mode(org.infinispan.configuration.cache.TransactionMode.NON_DURABLE_XA)
 			.transactionManagerLookup(org.infinispan.transaction.tm.EmbeddedTransactionManager::getInstance)
 			.lockingMode(org.infinispan.transaction.LockingMode.PESSIMISTIC)
 			;

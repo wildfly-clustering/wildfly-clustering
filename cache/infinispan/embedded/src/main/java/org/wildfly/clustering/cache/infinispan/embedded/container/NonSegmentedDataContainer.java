@@ -6,9 +6,9 @@
 package org.wildfly.clustering.cache.infinispan.embedded.container;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Spliterator;
-import java.util.concurrent.Executor;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 
@@ -38,12 +38,10 @@ import org.reactivestreams.Publisher;
 public class NonSegmentedDataContainer<K, V> extends AbstractInternalDataContainer<K, V> implements EvictableDataContainer<K, V> {
 	private final Cache<K, InternalCacheEntry<K, V>> evictionCache;
 	private final PeekableTouchableMap<K, V> entries;
-	private final Executor executor;
 
-	NonSegmentedDataContainer(Cache<K, InternalCacheEntry<K, V>> evictionCache, Executor executor) {
+	NonSegmentedDataContainer(Cache<K, InternalCacheEntry<K, V>> evictionCache) {
 		this.evictionCache = evictionCache;
 		this.entries = new PeekableTouchableCaffeineMap<>(evictionCache);
-		this.executor = executor;
 	}
 
 	@Override
@@ -60,8 +58,13 @@ public class NonSegmentedDataContainer<K, V> extends AbstractInternalDataContain
 	}
 
 	@Override
-	public PeekableTouchableMap<K, V> getEntries() {
+	public Map<K, InternalCacheEntry<K, V>> getEntries() {
 		return this.entries;
+	}
+
+	@Override
+	public void evicted(K key, InternalCacheEntry<K, V> entry) {
+		// Do nothing
 	}
 
 	@Override
@@ -70,23 +73,13 @@ public class NonSegmentedDataContainer<K, V> extends AbstractInternalDataContain
 	}
 
 	@Override
-	public Executor getExecutor() {
-		return this.executor;
-	}
-
-	@Override
 	public Optional<PassivationManager> getPassivatorManager() {
-		return Optional.ofNullable(this.passivator).filter(ComponentRef::isRunning).map(ComponentRef::running);
+		return Optional.ofNullable(this.passivator).filter(ComponentRef::isRunning).map(ComponentRef::running).filter(PassivationManager::isEnabled);
 	}
 
 	@Override
 	public Optional<EvictionManager<K, V>> getEvictionManager() {
 		return Optional.ofNullable(this.evictionManager);
-	}
-
-	@Override
-	public void computeEntryRemoved(K key, InternalCacheEntry<K, V> value) {
-		// Do nothing
 	}
 
 	@Override
