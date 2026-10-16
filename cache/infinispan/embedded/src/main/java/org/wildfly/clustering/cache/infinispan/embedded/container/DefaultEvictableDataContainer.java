@@ -26,14 +26,12 @@ import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.impl.AbstractDelegatingInternalDataContainer;
-import org.infinispan.eviction.EvictionManager;
 import org.infinispan.eviction.impl.PassivationManager;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.factories.impl.BasicComponentRegistry;
-import org.infinispan.factories.impl.ComponentRef;
 import org.infinispan.persistence.manager.PassivationPersistenceManager;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.MarshallableEntry;
@@ -87,9 +85,13 @@ public class DefaultEvictableDataContainer<K, V> extends AbstractDelegatingInter
 		}
 		Optional<Duration> idleTimeout = Optional.ofNullable(container.idleTimeout());
 		idleTimeout.ifPresent(builder::evictAfter);
+		if (idleTimeout.isPresent() && (!configuration.persistence().passivation() || !configuration.persistence().usingStores())) {
+			// Do not configure a scheduler if evicted entries need to passivate
+			// This ensures that the eviction listener will be invoked synchronously
+			builder.withExecutor(registry.getComponent(KnownComponentNames.EXPIRATION_SCHEDULED_EXECUTOR, ScheduledExecutorService.class).running());
+		}
 		// Discourage spurious asynchronous eviction of an entry during a given cache operation
 		this.allowPeeking = idleTimeout.isEmpty();
-		Optional.ofNullable(registry.getComponent(KnownComponentNames.EXPIRATION_SCHEDULED_EXECUTOR, ScheduledExecutorService.class)).map(ComponentRef::running).ifPresent(builder::withExecutor);
 		Cache<K, InternalCacheEntry<K, V>> evictionCache = new CacheFactory<K, InternalCacheEntry<K, V>>().apply(builder.whenEvicted(evictionListener).whenRemoved(removalListener).build());
 		this.executor = registry.getComponent(KnownComponentNames.NON_BLOCKING_EXECUTOR, Executor.class).running();
 		this.container = segmented ? new SegmentedDataContainer<>(configuration, evictionCache) : new NonSegmentedDataContainer<>(evictionCache);
@@ -136,13 +138,13 @@ public class DefaultEvictableDataContainer<K, V> extends AbstractDelegatingInter
 	@Override
 	public InternalCacheEntry<K, V> peek(Object key) {
 		// Discourage spurious asynchronous eviction of an entry during a given cache operation
-		return this.allowPeeking ? super.peek(key) : this.get(key);
+		return this.allowPeeking ? this.container.peek(key) : this.container.getEntries().get(key);
 	}
 
 	@Override
 	public InternalCacheEntry<K, V> peek(int segment, Object key) {
 		// Discourage spurious asynchronous eviction of an entry during a given cache operation
-		return this.allowPeeking ? super.peek(segment, key) : this.get(segment, key);
+		return this.allowPeeking ? this.container.peek(segment, key) : this.container.getEntries().get(key);
 	}
 
 	CompletionStage<Void> handleEviction(K key, InternalCacheEntry<K, V> entry, CompletableFuture<Void> selfDelay) {
@@ -152,16 +154,15 @@ public class DefaultEvictableDataContainer<K, V> extends AbstractDelegatingInter
 		BiConsumer<Void, Throwable> completeOperation = (orderer != null) ? (ignore, e) -> orderer.completeOperation(key, future, DataOperationOrderer.Operation.READ) : BiConsumer.of();
 		Function<Void, CompletionStage<Void>> passivate = ignore -> {
 			CompletionStage<Void> result = CompletableFutures.completedNull();
-			PassivationManager passivationManager = this.container.getPassivatorManager().orElse(null);
-			if (passivationManager != null) {
+			PassivationManager passivationManager = this.container.getPassivatorManager();
+			if (passivationManager.isEnabled()) {
 				LOGGER.log(System.Logger.Level.TRACE, "Passivating evicted entry: {0}", key);
-				result = passivationManager.passivateAsync(entry).whenComplete((ignored, e) -> LOGGER.log(System.Logger.Level.TRACE, "Passivated evicted entry: {0}", key));
+				result = passivationManager.passivateAsync(entry);
+				if (LOGGER.isLoggable(System.Logger.Level.TRACE)) {
+					result.whenComplete((ignored, e) -> LOGGER.log(System.Logger.Level.TRACE, "Passivated evicted entry: {0}", key));
+				}
 			}
-			EvictionManager<K, V> evictionManager = this.container.getEvictionManager().orElse(null);
-			if (evictionManager != null) {
-				result = result.thenCompose(ignored -> evictionManager.onEntryEviction(Collections.singletonMap(key, entry)));
-			}
-			return result;
+			return result.thenCompose(ignored -> this.container.getEvictionManager().onEntryEviction(Collections.singletonMap(key, entry)));
 		};
 		if (ordererStage != null) {
 			LOGGER.log(System.Logger.Level.TRACE, "Encountered concurrent operation during eviction of {0}", key);

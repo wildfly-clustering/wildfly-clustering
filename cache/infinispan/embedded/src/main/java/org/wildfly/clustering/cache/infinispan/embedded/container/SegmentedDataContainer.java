@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.PrimitiveIterator;
 import java.util.Spliterator;
 import java.util.concurrent.ConcurrentMap;
@@ -32,7 +31,6 @@ import org.infinispan.container.impl.PeekableTouchableContainerMap;
 import org.infinispan.container.impl.PeekableTouchableMap;
 import org.infinispan.eviction.EvictionManager;
 import org.infinispan.eviction.impl.PassivationManager;
-import org.infinispan.factories.impl.ComponentRef;
 import org.infinispan.util.concurrent.DataOperationOrderer;
 
 /**
@@ -72,13 +70,13 @@ public class SegmentedDataContainer<K, V> extends DefaultSegmentedDataContainer<
 	}
 
 	@Override
-	public Optional<PassivationManager> getPassivatorManager() {
-		return Optional.ofNullable(this.passivator).filter(ComponentRef::isRunning).map(ComponentRef::running).filter(PassivationManager::isEnabled);
+	public PassivationManager getPassivatorManager() {
+		return this.passivator.running();
 	}
 
 	@Override
-	public Optional<EvictionManager<K, V>> getEvictionManager() {
-		return Optional.ofNullable(this.evictionManager);
+	public EvictionManager<K, V> getEvictionManager() {
+		return this.evictionManager;
 	}
 
 	@Override
