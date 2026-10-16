@@ -256,7 +256,7 @@ public interface CacheConfiguration<K, V> {
 			private Weigher<K, V> weigher = Weigher.singletonWeigher();
 			private Optional<RemovalListener<K, V>> evictionListener = Optional.empty();
 			private Optional<RemovalListener<K, V>> removalListener = Optional.empty();
-			private Scheduler scheduler = Scheduler.systemScheduler();
+			private Scheduler scheduler = Scheduler.disabledScheduler();
 
 			@Override
 			public Builder<K, V> withMaxWeight(long weight) {
