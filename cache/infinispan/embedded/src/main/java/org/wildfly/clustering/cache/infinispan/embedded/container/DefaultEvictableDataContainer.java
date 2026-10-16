@@ -18,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -61,7 +60,7 @@ public class DefaultEvictableDataContainer<K, V> extends AbstractDelegatingInter
 
 	private final EvictableDataContainer<K, V> container;
 	private final Executor executor;
-	private final boolean allowPeeking;
+	private final Function<Object, InternalCacheEntry<K, V>> peek;
 
 	private volatile BiConsumer<K, InternalCacheEntry<K, V>> evictionRecorder = BiConsumer.of();
 
@@ -87,16 +86,12 @@ public class DefaultEvictableDataContainer<K, V> extends AbstractDelegatingInter
 		}
 		Optional<Duration> idleTimeout = Optional.ofNullable(container.idleTimeout());
 		idleTimeout.ifPresent(builder::evictAfter);
-		if (idleTimeout.isPresent() && (!configuration.persistence().passivation() || !configuration.persistence().usingStores())) {
-			// Do not configure a scheduler if evicted entries need to passivate
-			// This ensures that the eviction listener will be invoked synchronously
-			builder.withExecutor(registry.getComponent(KnownComponentNames.EXPIRATION_SCHEDULED_EXECUTOR, ScheduledExecutorService.class).running());
-		}
-		// Discourage spurious asynchronous eviction of an entry during a given cache operation
-		this.allowPeeking = idleTimeout.isEmpty();
 		Cache<K, InternalCacheEntry<K, V>> evictionCache = new CacheFactory<K, InternalCacheEntry<K, V>>().apply(builder.whenEvicted(evictionListener).whenRemoved(removalListener).build());
 		this.executor = registry.getComponent(KnownComponentNames.NON_BLOCKING_EXECUTOR, Executor.class).running();
 		this.container = segmented ? new SegmentedDataContainer<>(configuration, evictionCache) : new NonSegmentedDataContainer<>(evictionCache);
+		// Discourage spurious asynchronous eviction of an entry mid-operation
+		// Perform manual cleanup to ensure timely passivation of idle entries
+		this.peek = idleTimeout.isEmpty() ? this.container::peek : this.container.getEntries()::get;
 	}
 
 	/**
@@ -148,14 +143,12 @@ public class DefaultEvictableDataContainer<K, V> extends AbstractDelegatingInter
 
 	@Override
 	public InternalCacheEntry<K, V> peek(Object key) {
-		// Discourage spurious asynchronous eviction of an entry during a given cache operation
-		return this.allowPeeking ? this.container.peek(key) : this.container.getEntries().get(key);
+		return this.peek.apply(key);
 	}
 
 	@Override
 	public InternalCacheEntry<K, V> peek(int segment, Object key) {
-		// Discourage spurious asynchronous eviction of an entry during a given cache operation
-		return this.allowPeeking ? this.container.peek(segment, key) : this.container.getEntries().get(key);
+		return this.peek.apply(key);
 	}
 
 	CompletionStage<Void> handleEviction(K key, InternalCacheEntry<K, V> entry, CompletableFuture<Void> selfDelay) {

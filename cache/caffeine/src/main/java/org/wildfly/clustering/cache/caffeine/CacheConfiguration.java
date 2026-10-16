@@ -8,7 +8,6 @@ package org.wildfly.clustering.cache.caffeine;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.OptionalLong;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -19,7 +18,6 @@ import java.util.function.ToIntBiFunction;
 import com.github.benmanes.caffeine.cache.Expiry;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.github.benmanes.caffeine.cache.RemovalListener;
-import com.github.benmanes.caffeine.cache.Scheduler;
 import com.github.benmanes.caffeine.cache.Weigher;
 
 /**
@@ -59,12 +57,6 @@ public interface CacheConfiguration<K, V> {
 	 * @return an optional listener to be notified on entry removal.
 	 */
 	Optional<RemovalListener<K, V>> getRemovalListener();
-
-	/**
-	 * Returns a scheduler of asynchronous tasks.
-	 * @return a scheduler of asynchronous tasks.
-	 */
-	Scheduler getScheduler();
 
 	/**
 	 * A builder of a Caffeine cache configuration.
@@ -220,22 +212,6 @@ public interface CacheConfiguration<K, V> {
 		Builder<K, V> whenRemoved(RemovalListener<K, V> listener);
 
 		/**
-		 * Defines an executor for use with time-based eviction.
-		 * @param executor an executor for use with time-based eviction.
-		 * @return a reference to this builder
-		 */
-		default Builder<K, V> withExecutor(ScheduledExecutorService executor) {
-			return this.withScheduler((executor != null) ? Scheduler.forScheduledExecutorService(executor) : Scheduler.systemScheduler());
-		}
-
-		/**
-		 * Defines a scheduler for use with time-based eviction.
-		 * @param scheduler a scheduler for use with time-based eviction.
-		 * @return a reference to this builder
-		 */
-		Builder<K, V> withScheduler(Scheduler scheduler);
-
-		/**
 		 * Builds a cache configuration.
 		 * @return a cache configuration.
 		 */
@@ -255,7 +231,6 @@ public interface CacheConfiguration<K, V> {
 			private Weigher<K, V> weigher = Weigher.singletonWeigher();
 			private Optional<RemovalListener<K, V>> evictionListener = Optional.empty();
 			private Optional<RemovalListener<K, V>> removalListener = Optional.empty();
-			private Scheduler scheduler = Scheduler.disabledScheduler();
 
 			@Override
 			public Builder<K, V> withMaxWeight(long weight) {
@@ -288,19 +263,12 @@ public interface CacheConfiguration<K, V> {
 			}
 
 			@Override
-			public Builder<K, V> withScheduler(Scheduler scheduler) {
-				this.scheduler = scheduler;
-				return this;
-			}
-
-			@Override
 			public CacheConfiguration<K, V> build() {
 				OptionalLong maxWeight = this.maxWeight;
 				Expiry<K, V> expiry = this.expiry;
 				Weigher<K, V> weigher = this.weigher;
 				Optional<RemovalListener<K, V>> evictionListener = this.evictionListener;
 				Optional<RemovalListener<K, V>> removalListener = this.removalListener;
-				Scheduler scheduler = this.scheduler;
 				return new CacheConfiguration<>() {
 					@Override
 					public OptionalLong getMaxWeight() {
@@ -325,11 +293,6 @@ public interface CacheConfiguration<K, V> {
 					@Override
 					public Optional<RemovalListener<K, V>> getRemovalListener() {
 						return removalListener;
-					}
-
-					@Override
-					public Scheduler getScheduler() {
-						return scheduler;
 					}
 				};
 			}
