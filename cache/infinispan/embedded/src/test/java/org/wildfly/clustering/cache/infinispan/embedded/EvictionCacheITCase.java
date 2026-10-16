@@ -8,13 +8,10 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -27,6 +24,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
 import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
+import org.jgroups.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
@@ -40,7 +38,7 @@ import org.wildfly.clustering.context.Context;
 public class EvictionCacheITCase {
 	private static final String CLUSTER_NAME = "ISPN";
 	private static final int CAPACITY = 10;
-	private static final Duration IDLE_THRESHOLD = Duration.ofSeconds(2);
+	private static final Duration IDLE_THRESHOLD = Duration.ofSeconds(2L);
 	private static final Class<?> EVICTABLE = Integer.class;
 
 	@ParameterizedTest
@@ -147,13 +145,16 @@ public class EvictionCacheITCase {
 				// Wait for the remaining time until idle
 				Thread.sleep(IDLE_THRESHOLD.minus(activeDelay).toMillis());
 
-				// Verify that idle evictable entries are no longer present and that the corresponding events were fired
-				Instant deadline = Instant.now().plus(IDLE_THRESHOLD.multipliedBy(10L));
-				while ((entries.size() < remainingEvictable.size()) && Instant.now().isBefore(deadline)) {
-					assertThat(cache.containsKey(UUID.randomUUID())).isFalse();
-					Optional.ofNullable(evictedEntries.poll()).ifPresent(entries::add);
+				// Eviction is triggered by subsequent writes
+				Object key = UUID.randomUUID();
+				cache.put(key, key.toString());
+				cache.remove(key);
+
+				for (Map.Entry<Object, String> entry : remainingEvictable) {
+					assertThat(cache.get(entry.getKey())).isNull();
 				}
 
+				assertThat(evictedEntries.drainTo(entries)).isEqualTo(remainingEvictable.size());
 				assertThat(entries).containsExactlyInAnyOrderElementsOf(remainingEvictable);
 
 				// Cache should only contain non-evictable entries

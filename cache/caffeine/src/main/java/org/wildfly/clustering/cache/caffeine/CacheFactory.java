@@ -95,6 +95,6 @@ public class CacheFactory<K, V> implements Function<CacheConfiguration<K, V>, Ca
 		configuration.getEvictionListener().ifPresent(builder::evictionListener);
 		configuration.getRemovalListener().ifPresent(builder::removalListener);
 		// Eviction listeners must by triggered synchronously.
-		return builder.executor(Runnable::run).scheduler(configuration.getScheduler()).build();
+		return builder.executor(Runnable::run).build();
 	}
 }
