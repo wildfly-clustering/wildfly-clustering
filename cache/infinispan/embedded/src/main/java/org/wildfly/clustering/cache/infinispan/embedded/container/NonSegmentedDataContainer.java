@@ -7,7 +7,6 @@ package org.wildfly.clustering.cache.infinispan.embedded.container;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
@@ -23,7 +22,6 @@ import org.infinispan.container.impl.PeekableTouchableCaffeineMap;
 import org.infinispan.container.impl.PeekableTouchableMap;
 import org.infinispan.eviction.EvictionManager;
 import org.infinispan.eviction.impl.PassivationManager;
-import org.infinispan.factories.impl.ComponentRef;
 import org.infinispan.util.concurrent.DataOperationOrderer;
 import org.reactivestreams.Publisher;
 
@@ -73,13 +71,13 @@ public class NonSegmentedDataContainer<K, V> extends AbstractInternalDataContain
 	}
 
 	@Override
-	public Optional<PassivationManager> getPassivatorManager() {
-		return Optional.ofNullable(this.passivator).filter(ComponentRef::isRunning).map(ComponentRef::running).filter(PassivationManager::isEnabled);
+	public PassivationManager getPassivatorManager() {
+		return this.passivator.running();
 	}
 
 	@Override
-	public Optional<EvictionManager<K, V>> getEvictionManager() {
-		return Optional.ofNullable(this.evictionManager);
+	public EvictionManager<K, V> getEvictionManager() {
+		return this.evictionManager;
 	}
 
 	@Override

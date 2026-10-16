@@ -7,7 +7,6 @@ package org.wildfly.clustering.cache.infinispan.embedded.container;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Spliterator;
 
 import org.infinispan.commons.api.Lifecycle;
@@ -48,13 +47,13 @@ public interface EvictableDataContainer<K, V> extends InternalDataContainer<K, V
 	 * Returns the eviction manager, if present.
 	 * @return the eviction manager, if present.
 	 */
-	Optional<EvictionManager<K, V>> getEvictionManager();
+	EvictionManager<K, V> getEvictionManager();
 
 	/**
 	 * Returns the passivation manager, if present.
 	 * @return the passivation manager, if present.
 	 */
-	Optional<PassivationManager> getPassivatorManager();
+	PassivationManager getPassivatorManager();
 
 	@Override
 	default Iterator<InternalCacheEntry<K, V>> iteratorIncludingExpired() {
