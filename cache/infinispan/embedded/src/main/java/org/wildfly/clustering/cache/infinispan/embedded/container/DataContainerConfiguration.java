@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.cache.infinispan.embedded.container;
 
-import java.util.Optional;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiPredicate;
 
 import org.infinispan.commons.configuration.BuiltBy;
@@ -15,9 +13,7 @@ import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.commons.configuration.attributes.IdentityAttributeCopier;
 import org.infinispan.commons.configuration.attributes.Matchable;
 import org.infinispan.configuration.cache.MemoryConfiguration;
-import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.impl.BasicComponentRegistry;
-import org.infinispan.factories.impl.ComponentRef;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
@@ -69,16 +65,13 @@ public class DataContainerConfiguration implements Matchable<DataContainerConfig
 		return this.attributes;
 	}
 
+	@SuppressWarnings("unused")
 	public <K, V> Caffeine<K, V> builder(BasicComponentRegistry registry, MemoryConfiguration memory) {
 		@SuppressWarnings("unchecked")
 		Caffeine<K, V> builder = (Caffeine<K, V>) Caffeine.newBuilder();
 		Weigher<K, V> weigher = this.attributes.attribute(WEIGHER).get();
 		Expiry<K, V> expiry = this.attributes.attribute(EXPIRY).get();
 		if (expiry != NEVER) {
-			Scheduler scheduler = Optional.ofNullable(registry.getComponent(KnownComponentNames.EXPIRATION_SCHEDULED_EXECUTOR, ScheduledExecutorService.class))
-					.map(ComponentRef::running)
-					.map(Scheduler::forScheduledExecutorService)
-					.orElse(Scheduler.systemScheduler());
 			// If a weigher was defined, ensure we exclude entries with no weight
 			builder.expireAfter((weigher != Weigher.singletonWeigher()) ? new Expiry<K, V>() {
 				private final BiPredicate<K, V> expirable = new BiPredicate<>() {
@@ -102,7 +95,7 @@ public class DataContainerConfiguration implements Matchable<DataContainerConfig
 				public long expireAfterRead(K key, V value, long currentTime, long currentDuration) {
 					return this.expirable.test(key, value) ? expiry.expireAfterRead(key, value, currentTime, currentDuration) : currentDuration;
 				}
-			} : expiry).scheduler(scheduler);
+			} : expiry);
 		}
 		if (memory.maxCount() > 0) {
 			if (weigher != Weigher.singletonWeigher()) {
@@ -111,7 +104,8 @@ public class DataContainerConfiguration implements Matchable<DataContainerConfig
 				builder.maximumSize(memory.maxCount());
 			}
 		}
-		return builder;
+		// Eviction listeners must by triggered synchronously.
+		return builder.executor(Runnable::run).scheduler(Scheduler.disabledScheduler());
 	}
 
 	@Override

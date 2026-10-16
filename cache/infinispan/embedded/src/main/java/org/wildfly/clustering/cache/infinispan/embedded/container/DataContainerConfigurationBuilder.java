@@ -64,7 +64,7 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
 		return this.withWeigher(new Weigher<K, V>() {
 			@Override
 			public int weigh(K key, V value) {
-				return (int) Math.min(calculator.calculateSize(key, value), (long) Integer.MAX_VALUE);
+				return (int) Math.min(calculator.calculateSize(key, value), Integer.MAX_VALUE);
 			}
 		});
 	}
