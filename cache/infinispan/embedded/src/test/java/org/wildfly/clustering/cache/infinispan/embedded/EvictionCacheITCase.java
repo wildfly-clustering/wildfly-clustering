@@ -8,13 +8,15 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheType;
@@ -141,15 +143,17 @@ public class EvictionCacheITCase {
 				}
 
 				entries.clear();
-				Duration delay = IDLE_THRESHOLD.multipliedBy(3);
-				for (int i = 0; i < remainingEvictable.size(); ++i) {
-					Map.Entry<Object, String> evictedEntry = evictedEntries.poll(delay.toMillis(), TimeUnit.MILLISECONDS);
-					assertThat(evictedEntry).isNotNull();
-					entries.add(evictedEntry);
-					delay = activeDelay;
-				}
+
+				// Wait for the remaining time until idle
+				Thread.sleep(IDLE_THRESHOLD.minus(activeDelay).toMillis());
 
 				// Verify that idle evictable entries are no longer present and that the corresponding events were fired
+				Instant deadline = Instant.now().plus(IDLE_THRESHOLD.multipliedBy(10L));
+				while ((entries.size() < remainingEvictable.size()) && Instant.now().isBefore(deadline)) {
+					assertThat(cache.containsKey(UUID.randomUUID())).isFalse();
+					Optional.ofNullable(evictedEntries.poll()).ifPresent(entries::add);
+				}
+
 				assertThat(entries).containsExactlyInAnyOrderElementsOf(remainingEvictable);
 
 				// Cache should only contain non-evictable entries
