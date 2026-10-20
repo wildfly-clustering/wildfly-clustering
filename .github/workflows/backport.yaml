@@ -17,8 +17,8 @@ jobs:
       # Matrix of source and target branches to which we will attempt to backport
       matrix:
         include:
-          - origin: ${{ github.event.pull_request.base.repo.default_branch }}
-            target: 10.x
+          - target: 12.x
+          - target: 10.x
     if: (github.event.pull_request.state == 'closed') && contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
     runs-on: ubuntu-latest
     steps:
@@ -29,8 +29,8 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - id: filter-origin
-        name: Filter backport matrix by source branch
-        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == matrix.origin)
+        name: Filter by default origin branch
+        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch)
         run: echo "Attempt backport of ${{ github.event.pull_request.number }} to ${{ matrix.target }}"
 
       - id: filter-target
