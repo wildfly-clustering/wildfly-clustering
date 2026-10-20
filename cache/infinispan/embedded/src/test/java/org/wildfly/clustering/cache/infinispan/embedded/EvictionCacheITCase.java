@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheType;
@@ -25,6 +24,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
 import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
+import org.jgroups.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.wildfly.clustering.cache.infinispan.embedded.container.DataContainerConfigurationBuilder;
@@ -38,7 +38,7 @@ import org.wildfly.clustering.context.Context;
 public class EvictionCacheITCase {
 	private static final String CLUSTER_NAME = "ISPN";
 	private static final int CAPACITY = 10;
-	private static final Duration IDLE_THRESHOLD = Duration.ofSeconds(1);
+	private static final Duration IDLE_THRESHOLD = Duration.ofSeconds(2L);
 	private static final Class<?> EVICTABLE = Integer.class;
 
 	@ParameterizedTest
@@ -141,15 +141,20 @@ public class EvictionCacheITCase {
 				}
 
 				entries.clear();
-				Duration delay = IDLE_THRESHOLD.multipliedBy(3);
-				for (int i = 0; i < remainingEvictable.size(); ++i) {
-					Map.Entry<Object, String> evictedEntry = evictedEntries.poll(delay.toMillis(), TimeUnit.MILLISECONDS);
-					assertThat(evictedEntry).isNotNull();
-					entries.add(evictedEntry);
-					delay = activeDelay;
+
+				// Wait for the remaining time until idle
+				Thread.sleep(IDLE_THRESHOLD.minus(activeDelay).toMillis());
+
+				// Eviction is triggered by subsequent writes
+				Object key = UUID.randomUUID();
+				cache.put(key, key.toString());
+				cache.remove(key);
+
+				for (Map.Entry<Object, String> entry : remainingEvictable) {
+					assertThat(cache.get(entry.getKey())).isNull();
 				}
 
-				// Verify that idle evictable entries are no longer present and that the corresponding events were fired
+				assertThat(evictedEntries.drainTo(entries)).isEqualTo(remainingEvictable.size());
 				assertThat(entries).containsExactlyInAnyOrderElementsOf(remainingEvictable);
 
 				// Cache should only contain non-evictable entries

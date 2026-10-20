@@ -54,7 +54,7 @@ public class CacheFactory<K, V> implements Function<CacheConfiguration<K, V>, Ca
 	@Override
 	public Cache<K, V> apply(CacheConfiguration<K, V> configuration) {
 		@SuppressWarnings("unchecked")
-		Caffeine<K, V> builder = (Caffeine<K, V>) Caffeine.newBuilder().executor(Runnable::run);
+		Caffeine<K, V> builder = (Caffeine<K, V>) Caffeine.newBuilder();
 		Expiry<K, V> expiry = configuration.getExpiry();
 		Weigher<K, V> weigher = configuration.getWeigher();
 		if (expiry != NEVER) {
@@ -81,7 +81,7 @@ public class CacheFactory<K, V> implements Function<CacheConfiguration<K, V>, Ca
 				public long expireAfterRead(K key, V value, long currentTime, long currentDuration) {
 					return this.expirable.test(key, value) ? expiry.expireAfterRead(key, value, currentTime, currentDuration) : currentDuration;
 				}
-			} : expiry).scheduler(configuration.getScheduler());
+			} : expiry);
 		}
 		OptionalLong maxWeight = configuration.getMaxWeight();
 		if (maxWeight.isPresent()) {
@@ -94,6 +94,7 @@ public class CacheFactory<K, V> implements Function<CacheConfiguration<K, V>, Ca
 		}
 		configuration.getEvictionListener().ifPresent(builder::evictionListener);
 		configuration.getRemovalListener().ifPresent(builder::removalListener);
-		return builder.build();
+		// Eviction listeners must by triggered synchronously.
+		return builder.executor(Runnable::run).build();
 	}
 }
