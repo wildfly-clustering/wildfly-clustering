@@ -110,6 +110,11 @@ public class EvictionCacheITCase {
 
 					Thread.sleep(activeDelay.toMillis());
 
+					// Eviction is triggered by subsequent writes
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
+
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
 				}
@@ -122,6 +127,11 @@ public class EvictionCacheITCase {
 					}
 
 					Thread.sleep(activeDelay.toMillis());
+
+					// Eviction is triggered by subsequent writes
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
 
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
@@ -136,6 +146,11 @@ public class EvictionCacheITCase {
 
 					Thread.sleep(activeDelay.toMillis());
 
+					// Eviction is triggered by subsequent writes
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
+
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
 				}
@@ -146,9 +161,11 @@ public class EvictionCacheITCase {
 				Thread.sleep(IDLE_THRESHOLD.minus(activeDelay).toMillis());
 
 				// Eviction is triggered by subsequent writes
-				Object key = UUID.randomUUID();
-				cache.put(key, key.toString());
-				cache.remove(key);
+				for (int i = 0; i < remainingEvictable.size(); ++i) {
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
+				}
 
 				for (Map.Entry<Object, String> entry : remainingEvictable) {
 					assertThat(cache.get(entry.getKey())).isNull();
