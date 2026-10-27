@@ -29,7 +29,7 @@ import org.wildfly.clustering.function.Consumer;
  */
 public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCallback, ContainerResourceLocator<HotRodURI> {
 
-	static final String CONTAINER_IMAGE_PROPERTY = "oci.image";
+	static final String CONTAINER_IMAGE_PROPERTY = "infinispan.server.image";
 	static final String INFINISPAN_SERVER_PORT_PROPERTY = "infinispan.server.port";
 	static final String INFINISPAN_CLUSTER_SIZE_PROPERTY = "infinispan.cluster.size";
 	static final String INFINISPAN_CLUSTER_PORT_OFFSET_PROPERTY = "infinispan.cluster.port-offset";
