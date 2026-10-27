@@ -35,24 +35,30 @@ public class RemoteContainerITCase {
 	public void test() {
 		assertThat(this.registry.getContainerNames()).isNotEmpty();
 
+		WebArchive archive = ShrinkWrap.create(WebArchive.class, "test.war").add(EmptyAsset.INSTANCE, "index.html");
+
 		for (String containerName : this.registry.getContainerNames()) {
 			try (DeploymentContainer container = this.registry.getContainer(containerName)) {
-				assertThat(container.isStarted()).isFalse();
-				container.start();
-				assertThat(container.isStarted()).isTrue();
-
-				WebArchive archive = ShrinkWrap.create(WebArchive.class, "test.war").add(EmptyAsset.INSTANCE, "index.html");
-
-				Deployment deployment = container.deploy(archive);
-				assertThat(deployment.isStarted()).isTrue();
-
-				deployment.stop();
-				assertThat(deployment.isStarted()).isFalse();
-
-				container.stop();
-				assertThat(container.isStarted()).isFalse();
+				verifyLifecycle(container, archive);
+				// Verify that we can restart and redeploy
+				verifyLifecycle(container, archive);
 			}
 			assertThat(this.registry.getContainer(containerName).isStarted()).isFalse();
 		}
+	}
+
+	private static void verifyLifecycle(DeploymentContainer container, WebArchive archive) {
+		assertThat(container.isStarted()).isFalse();
+		container.start();
+		assertThat(container.isStarted()).isTrue();
+
+		Deployment deployment = container.deploy(archive);
+		assertThat(deployment.isStarted()).isTrue();
+
+		deployment.stop();
+		assertThat(deployment.isStarted()).isFalse();
+
+		container.stop();
+		assertThat(container.isStarted()).isFalse();
 	}
 }

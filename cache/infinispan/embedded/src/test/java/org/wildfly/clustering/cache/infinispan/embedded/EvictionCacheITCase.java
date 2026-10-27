@@ -161,16 +161,18 @@ public class EvictionCacheITCase {
 				Thread.sleep(IDLE_THRESHOLD.minus(activeDelay).toMillis());
 
 				// Eviction is triggered by subsequent writes
-				Object key = UUID.randomUUID();
-				cache.put(key, key.toString());
-				cache.remove(key);
-
-				assertThat(evictedEntries.drainTo(entries)).isEqualTo(remainingEvictable.size());
-				assertThat(entries).containsExactlyInAnyOrderElementsOf(remainingEvictable);
+				for (int i = 0; i < remainingEvictable.size(); ++i) {
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
+				}
 
 				for (Map.Entry<Object, String> entry : remainingEvictable) {
 					assertThat(cache.get(entry.getKey())).isNull();
 				}
+
+				assertThat(evictedEntries.drainTo(entries)).isEqualTo(remainingEvictable.size());
+				assertThat(entries).containsExactlyInAnyOrderElementsOf(remainingEvictable);
 
 				// Cache should only contain non-evictable entries
 				assertThat(cache.size()).isEqualTo(nonEvictable.size());
