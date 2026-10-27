@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright The WildFly Authors
+	SPDX-License-Identifier: Apache-2.0
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.wildfly.clustering</groupId>
+		<artifactId>wildfly-clustering-marshalling</artifactId>
+		<version>12.0.0.Final-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>wildfly-clustering-marshalling-fory</artifactId>
+	<packaging>jar</packaging>
+
+	<name>${project.marshalling}: Apache Fory</name>
+
+	<properties>
+		<project.module.name>org.wildfly.clustering.marshalling.fory</project.module.name>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.kohsuke.metainf-services</groupId>
+			<artifactId>metainf-services</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.fory</groupId>
+			<artifactId>fory-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+	</dependencies>
+
+</project>
