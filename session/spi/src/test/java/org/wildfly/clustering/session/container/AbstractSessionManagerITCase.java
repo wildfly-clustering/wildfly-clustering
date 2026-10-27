@@ -14,8 +14,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.wildfly.clustering.arquillian.AbstractITCase;
-import org.wildfly.clustering.arquillian.Tester;
+import org.wildfly.clustering.junit.AbstractITCase;
+import org.wildfly.clustering.junit.Tester;
 
 /**
  * Abstract container integration test.
