@@ -110,11 +110,6 @@ public class EvictionCacheITCase {
 
 					Thread.sleep(activeDelay.toMillis());
 
-					// Eviction is triggered by subsequent writes
-					Object key = UUID.randomUUID();
-					cache.put(key, key.toString());
-					cache.remove(key);
-
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
 				}
@@ -128,11 +123,6 @@ public class EvictionCacheITCase {
 
 					Thread.sleep(activeDelay.toMillis());
 
-					// Eviction is triggered by subsequent writes
-					Object key = UUID.randomUUID();
-					cache.put(key, key.toString());
-					cache.remove(key);
-
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
 				}
@@ -145,11 +135,6 @@ public class EvictionCacheITCase {
 					}
 
 					Thread.sleep(activeDelay.toMillis());
-
-					// Eviction is triggered by subsequent writes
-					Object key = UUID.randomUUID();
-					cache.put(key, key.toString());
-					cache.remove(key);
 
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
@@ -165,12 +150,12 @@ public class EvictionCacheITCase {
 				cache.put(key, key.toString());
 				cache.remove(key);
 
-				assertThat(evictedEntries.drainTo(entries)).isEqualTo(remainingEvictable.size());
-				assertThat(entries).containsExactlyInAnyOrderElementsOf(remainingEvictable);
-
 				for (Map.Entry<Object, String> entry : remainingEvictable) {
 					assertThat(cache.get(entry.getKey())).isNull();
 				}
+
+				assertThat(evictedEntries.drainTo(entries)).isEqualTo(remainingEvictable.size());
+				assertThat(entries).containsExactlyInAnyOrderElementsOf(remainingEvictable);
 
 				// Cache should only contain non-evictable entries
 				assertThat(cache.size()).isEqualTo(nonEvictable.size());
