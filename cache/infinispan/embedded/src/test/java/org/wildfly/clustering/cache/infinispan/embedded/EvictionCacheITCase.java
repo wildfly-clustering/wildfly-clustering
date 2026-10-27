@@ -8,6 +8,7 @@ package org.wildfly.clustering.cache.infinispan.embedded;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +111,11 @@ public class EvictionCacheITCase {
 
 					Thread.sleep(activeDelay.toMillis());
 
+					// Eviction is triggered by subsequent writes
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
+
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
 				}
@@ -122,6 +128,11 @@ public class EvictionCacheITCase {
 					}
 
 					Thread.sleep(activeDelay.toMillis());
+
+					// Eviction is triggered by subsequent writes
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
 
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
@@ -136,6 +147,11 @@ public class EvictionCacheITCase {
 
 					Thread.sleep(activeDelay.toMillis());
 
+					// Eviction is triggered by subsequent writes
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
+
 					// Verify nothing else was evicted yet
 					assertThat(evictedEntries.poll()).isNull();
 				}
@@ -143,19 +159,22 @@ public class EvictionCacheITCase {
 				entries.clear();
 
 				// Wait for the remaining time until idle
-				Thread.sleep(IDLE_THRESHOLD.minus(activeDelay).toMillis());
+				Thread.sleep(activeDelay.toMillis());
 
 				// Eviction is triggered by subsequent writes
-				Object key = UUID.randomUUID();
-				cache.put(key, key.toString());
-				cache.remove(key);
-
-				for (Map.Entry<Object, String> entry : remainingEvictable) {
-					assertThat(cache.get(entry.getKey())).isNull();
+				Instant stop = Instant.now().plus(activeDelay);
+				while ((evictedEntries.peek() == null) && Instant.now().isBefore(stop)) {
+					Object key = UUID.randomUUID();
+					cache.put(key, key.toString());
+					cache.remove(key);
 				}
 
 				assertThat(evictedEntries.drainTo(entries)).isEqualTo(remainingEvictable.size());
 				assertThat(entries).containsExactlyInAnyOrderElementsOf(remainingEvictable);
+
+				for (Map.Entry<Object, String> entry : remainingEvictable) {
+					assertThat(cache.get(entry.getKey())).isNull();
+				}
 
 				// Cache should only contain non-evictable entries
 				assertThat(cache.size()).isEqualTo(nonEvictable.size());
