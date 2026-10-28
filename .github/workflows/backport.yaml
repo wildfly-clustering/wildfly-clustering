@@ -14,11 +14,11 @@ jobs:
       contents: write
       pull-requests: write
     strategy:
-      # Matrix of source and target branches to which we will attempt to backport
+      # Matrix of target branches to which we will attempt to backport
       matrix:
-        include:
-          - target: 12.x
-          - target: 10.x
+        target:
+          - 12.x
+          - 10.x
     if: (github.event.pull_request.state == 'closed') && contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
     runs-on: ubuntu-latest
     steps:
