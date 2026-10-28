@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -45,8 +44,6 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	private static final String DEFAULT_NETWORK_MODE = "bridge";
 	private static final Duration DEFAULT_START_TIMEOUT = Duration.ofMinutes(1L);
 
-	private final String name;
-	private final AtomicReference<String> containerId = new AtomicReference<>();
 	private final Duration startTimeout;
 
 	/**
@@ -66,7 +63,6 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	public DefaultContainer(String name, Map<String, String> properties, UnaryOperator<String> references) {
 		super(DockerImageName.parse(Objects.requireNonNull(properties.get(IMAGE_PROPERTY))));
 
-		this.name = name;
 		this.startTimeout = Optional.ofNullable(properties.get(START_TIMEOUT_PROPERTY)).map(Duration::parse).orElse(DEFAULT_START_TIMEOUT);
 		this.setHostAccessible(true);
 
@@ -129,9 +125,6 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 		Instant start = Instant.now();
 		super.start();
 		LOGGER.log(System.Logger.Level.INFO, "Started {0} in {1}", this, Duration.between(start, Instant.now()));
-		this.containerId.set(this.getContainerId());
-		// Create image snapshot in case we restart
-		this.dockerClient.commitCmd(this.getContainerId()).withRepository("temp").withTag(this.getContainerId()).exec();
 	}
 
 	@Override
@@ -139,8 +132,6 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 		LOGGER.log(System.Logger.Level.INFO, "Stopping {0}", this);
 		Instant start = Instant.now();
 		super.stop();
-		// Reset image to snapshot image, in case of restart
-		this.setDockerImageName("temp:" + this.containerId.get());
 		LOGGER.log(System.Logger.Level.INFO, "Stopped {0} in {1}", this, Duration.between(start, Instant.now()));
 	}
 
@@ -155,20 +146,5 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			}
 		}
-	}
-
-	@Override
-	public boolean equals(Object object) {
-		return (object instanceof DefaultContainer container) && this.name.equals(container.name);
-	}
-
-	@Override
-	public int hashCode() {
-		return this.name.hashCode();
-	}
-
-	@Override
-	public String toString() {
-		return this.name.toString();
 	}
 }
