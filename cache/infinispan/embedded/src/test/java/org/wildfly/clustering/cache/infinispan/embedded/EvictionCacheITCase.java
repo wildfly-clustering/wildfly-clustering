@@ -167,7 +167,6 @@ public class EvictionCacheITCase {
 					Object key = UUID.randomUUID();
 					cache.put(key, key.toString());
 					cache.remove(key);
-					Thread.yield();
 				}
 
 				assertThat(evictedEntries.drainTo(entries)).isEqualTo(remainingEvictable.size());
