@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.wildfly.clustering.arquillian.Deployment;
-import org.wildfly.clustering.arquillian.Tester;
+import org.wildfly.clustering.junit.Tester;
 
 /**
  * A smoke test client for validating container integration.

@@ -3,10 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.arquillian;
+package org.wildfly.clustering.junit;
 
 import java.util.List;
 import java.util.Set;
+
+import org.wildfly.clustering.arquillian.DeploymentContainer;
+import org.wildfly.clustering.arquillian.DeploymentContainerRegistry;
 
 /**
  * Encapsulates the deployment container configuration for a test.

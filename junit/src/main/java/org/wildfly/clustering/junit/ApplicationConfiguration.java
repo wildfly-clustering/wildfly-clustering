@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.arquillian;
+package org.wildfly.clustering.junit;
 
 import org.jboss.shrinkwrap.api.Archive;
 

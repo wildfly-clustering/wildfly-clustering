@@ -19,10 +19,6 @@
 
 	<properties>
 		<project.module.name>org.wildfly.clustering.arquillian</project.module.name>
-		<tomcat.http.port>8080</tomcat.http.port>
-		<tomcat.jmx.port>8089</tomcat.jmx.port>
-		<tomcat.admin.username>admin</tomcat.admin.username>
-		<tomcat.admin.password>admin</tomcat.admin.password>
 	</properties>
 
 	<dependencies>
