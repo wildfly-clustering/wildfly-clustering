@@ -215,17 +215,16 @@ public class ReadForUpdateRemoteCacheTestCase {
 		order.verify(tm).resume(tx);
 		order.verifyNoMoreInteractions();
 
-		future.complete(otherTxId);
-
 		assertThat(result).isNotCompleted();
 		assertThat(tx.getEnlistedSynchronization()).isEmpty();
 
-		TimeUnit.MILLISECONDS.sleep(50L);
+		TimeUnit.MILLISECONDS.sleep(transactionTimeout);
+
+		future.complete(otherTxId);
 
 		assertThat(result).isCompletedExceptionally();
 		assertThat(tx.getEnlistedSynchronization()).isEmpty();
 
-		order.verify(txPutCache, atLeastOnce()).putIfAbsentAsync(txKey, txId, transactionTimeout, TimeUnit.MILLISECONDS);
 		order.verifyNoMoreInteractions();
 	}
 
