@@ -137,7 +137,9 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 
 	@Override
 	public void close() {
-		super.stop();
+		if (this.isRunning()) {
+			super.stop();
+		}
 		// Testcontainers never closes its dependencies?!?
 		for (Startable dependency : this.dependencies) {
 			try {
