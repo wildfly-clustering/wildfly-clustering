@@ -24,7 +24,7 @@ import org.wildfly.clustering.arquillian.DeploymentContainerRegistry;
 import org.wildfly.clustering.arquillian.Lifecycle;
 
 /**
- * An abstract integration test that runs against a specific set of containers.
+ * An abstract integration test that deploys to a set of containers.
  * @author Paul Ferraro
  * @param <C> the test configuration type
  * @param <A> the archive type
