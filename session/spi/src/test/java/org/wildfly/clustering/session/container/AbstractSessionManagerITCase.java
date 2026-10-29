@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
-import org.wildfly.clustering.junit.AbstractITCase;
+import org.wildfly.clustering.junit.AbstractArquillianITCase;
 import org.wildfly.clustering.junit.Tester;
 
 /**
@@ -21,7 +21,7 @@ import org.wildfly.clustering.junit.Tester;
  * @param <C> the test configuration type
  * @param <A> the archive type
  */
-public abstract class AbstractSessionManagerITCase<C, A extends Archive<A> & ClassContainer<A>> extends AbstractITCase<C, A> {
+public abstract class AbstractSessionManagerITCase<C, A extends Archive<A> & ClassContainer<A>> extends AbstractArquillianITCase<C, A> {
 
 	private final SessionManagementTesterConfiguration configuration;
 	private final Class<A> archiveClass;
