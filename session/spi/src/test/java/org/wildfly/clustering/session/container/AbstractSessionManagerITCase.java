@@ -9,11 +9,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.clustering.junit.AbstractITCase;
 import org.wildfly.clustering.junit.Tester;
 
@@ -24,9 +22,6 @@ import org.wildfly.clustering.junit.Tester;
  * @param <A> the archive type
  */
 public abstract class AbstractSessionManagerITCase<C, A extends Archive<A> & ClassContainer<A>> extends AbstractITCase<C, A> {
-
-	@RegisterExtension
-	static final ArquillianExtension ARQUILLIAN = new ArquillianExtension();
 
 	private final SessionManagementTesterConfiguration configuration;
 	private final Class<A> archiveClass;
