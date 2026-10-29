@@ -131,6 +131,15 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	public void stop() {
 		LOGGER.log(System.Logger.Level.INFO, "Stopping {0}", this);
 		Instant start = Instant.now();
+		String containerId = this.getContainerId();
+		if (containerId != null) {
+			try {
+				// Stop container first, before super implementation kills it
+				this.getDockerClient().stopContainerCmd(containerId).exec();
+			} catch (RuntimeException | Error e) {
+				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+			}
+		}
 		super.stop();
 		LOGGER.log(System.Logger.Level.INFO, "Stopped {0} in {1}", this, Duration.between(start, Instant.now()));
 	}
@@ -138,9 +147,9 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	@Override
 	public void close() {
 		if (this.isRunning()) {
-			super.stop();
+			this.stop();
 		}
-		// Testcontainers never closes its dependencies?!?
+		// Testcontainers never closes the container's dependencies?!?
 		for (Startable dependency : this.dependencies) {
 			try {
 				dependency.close();
