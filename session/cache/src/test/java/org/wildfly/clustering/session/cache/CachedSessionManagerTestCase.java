@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -17,8 +19,10 @@ import org.mockito.InOrder;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.server.cache.CacheStrategy;
+import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -47,37 +51,52 @@ public class CachedSessionManagerTestCase {
 
 		Session<Void> expected1 = mock(Session.class);
 		Session<Void> expected2 = mock(Session.class);
+		Session<Void> expected3 = mock(Session.class);
 		String id = "foo";
 		SessionMetaData metaData1 = mock(SessionMetaData.class);
-		SessionAttributes attributes1 = mock(SessionAttributes.class);
 		SessionMetaData metaData2 = mock(SessionMetaData.class);
+		SessionMetaData metaData3 = mock(SessionMetaData.class);
+		SessionAttributes attributes1 = mock(SessionAttributes.class);
 		SessionAttributes attributes2 = mock(SessionAttributes.class);
+		SessionAttributes attributes3 = mock(SessionAttributes.class);
 		Batch batch1 = mock(Batch.class);
 		Batch batch2 = mock(Batch.class);
+		Batch batch3 = mock(Batch.class);
 		SuspendedBatch suspended1 = mock(SuspendedBatch.class);
 		SuspendedBatch suspended2 = mock(SuspendedBatch.class);
+		SuspendedBatch suspended3 = mock(SuspendedBatch.class);
 		Context<Batch> resumed1 = mock(Context.class);
 		Context<Batch> resumed2 = mock(Context.class);
+		Context<Batch> resumed3 = mock(Context.class);
 
-		doReturn(batch1, batch2).when(batchFactory).get();
+		Reference.Reader<Map<String, Object>> attributesReader = subject.getSessionReference(id).getReader().map(Function.when(Objects::nonNull, Session::getAttributes, null));
+
+		doReturn(batch1, batch2, batch3).when(batchFactory).get();
 		doReturn(suspended1).when(batch1).suspend();
 		doReturn(suspended2).when(batch2).suspend();
+		doReturn(suspended3).when(batch3).suspend();
 		doReturn(resumed1).when(suspended1).resumeWithContext();
 		doReturn(resumed2).when(suspended2).resumeWithContext();
+		doReturn(resumed3).when(suspended3).resumeWithContext();
 		doReturn(batch1).when(resumed1).get();
 		doReturn(batch2).when(resumed2).get();
-		doReturn(CompletableFuture.completedStage(expected1), CompletableFuture.completedStage(expected2)).when(manager).findSessionAsync(id);
+		doReturn(batch3).when(resumed3).get();
+		doReturn(CompletableFuture.completedStage(expected1), CompletableFuture.completedStage(expected2), CompletableFuture.completedStage(expected3)).when(manager).findSessionAsync(id);
 
 		doReturn(id).when(expected1).getId();
-		doReturn(true).when(expected1).isValid();
-		doReturn(attributes1).when(expected1).getAttributes();
-		doReturn(metaData1).when(expected1).getMetaData();
 		doReturn(id).when(expected2).getId();
+		doReturn(id).when(expected3).getId();
+		doReturn(true).when(expected1).isValid();
 		doReturn(true).when(expected2).isValid();
+		doReturn(true).when(expected3).isValid();
+		doReturn(attributes1).when(expected1).getAttributes();
 		doReturn(attributes2).when(expected2).getAttributes();
+		doReturn(attributes3).when(expected3).getAttributes();
+		doReturn(metaData1).when(expected1).getMetaData();
 		doReturn(metaData2).when(expected2).getMetaData();
+		doReturn(metaData3).when(expected3).getMetaData();
 
-		InOrder order = inOrder(batchFactory, manager, batch1, batch2, suspended1, suspended2, resumed1, resumed2, expected1, expected2);
+		InOrder order = inOrder(batchFactory, manager, batch1, batch2, batch3, suspended1, suspended2, suspended3, resumed1, resumed2, resumed3, expected1, expected2, expected3);
 
 		try (Session<Void> session1 = subject.findSession(id)) {
 			order.verify(batchFactory).get();
@@ -99,7 +118,7 @@ public class CachedSessionManagerTestCase {
 			assertThat(subject.keySet()).containsExactly(id);
 
 			try (Session<Void> session2 = subject.findSession(id)) {
-				// Should return the same session without invoking the manager
+				// Should return cached session without invoking the manager or creating a separate tx
 				verifyNoMoreInteractions(manager);
 				verifyNoMoreInteractions(batchFactory);
 				verifyNoMoreInteractions(batch1);
@@ -119,6 +138,15 @@ public class CachedSessionManagerTestCase {
 			verifyNoMoreInteractions(batchFactory);
 
 			assertThat(subject.keySet()).containsExactly(id);
+
+			// Should return cached session without invoking the manager or creating a separate tx
+			assertThat(attributesReader.get()).isSameAs(attributes1);
+
+			verifyNoMoreInteractions(manager);
+			verifyNoMoreInteractions(batchFactory);
+			verifyNoMoreInteractions(batch1);
+			verifyNoMoreInteractions(suspended1);
+			verifyNoMoreInteractions(resumed1);
 		}
 
 		order.verify(suspended1).resumeWithContext();
@@ -153,6 +181,15 @@ public class CachedSessionManagerTestCase {
 			assertThat(session.getAttributes()).isSameAs(attributes2);
 
 			assertThat(subject.keySet()).containsExactly(id);
+
+			// Should return cached session without invoking the manager or creating a separate tx
+			assertThat(attributesReader.get()).isSameAs(attributes2);
+
+			verifyNoMoreInteractions(batchFactory);
+			verifyNoMoreInteractions(manager);
+			verifyNoMoreInteractions(batch2);
+			verifyNoMoreInteractions(suspended2);
+			verifyNoMoreInteractions(resumed2);
 		}
 
 		order.verify(suspended2).resumeWithContext();
@@ -165,6 +202,28 @@ public class CachedSessionManagerTestCase {
 		verifyNoMoreInteractions(batch2);
 		verifyNoMoreInteractions(suspended2);
 		verifyNoMoreInteractions(resumed2);
+
+		// Cache should now be empty
+		assertThat(subject.keySet()).isEmpty();
+
+		assertThat(attributesReader.get()).isSameAs(attributes3);
+
+		// Should use third session instance, with new batch context
+		order.verify(batchFactory).get();
+		order.verify(batch3).suspend();
+		order.verify(suspended3).resumeWithContext();
+		order.verify(manager).findSessionAsync(id);
+		order.verify(resumed3).close();
+		order.verify(suspended3).resumeWithContext();
+		order.verify(resumed3).get();
+		order.verify(expected3).close();
+		order.verify(batch3).close();
+		order.verify(resumed3).close();
+		verifyNoMoreInteractions(batchFactory);
+		verifyNoMoreInteractions(manager);
+		verifyNoMoreInteractions(batch3);
+		verifyNoMoreInteractions(suspended3);
+		verifyNoMoreInteractions(resumed3);
 
 		// Cache should now be empty
 		assertThat(subject.keySet()).isEmpty();
