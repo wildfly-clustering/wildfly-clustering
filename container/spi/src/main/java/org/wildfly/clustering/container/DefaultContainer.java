@@ -44,6 +44,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	private static final String DEFAULT_NETWORK_MODE = "bridge";
 	private static final Duration DEFAULT_START_TIMEOUT = Duration.ofMinutes(1L);
 
+	private final String name;
 	private final Duration startTimeout;
 
 	/**
@@ -63,6 +64,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	public DefaultContainer(String name, Map<String, String> properties, UnaryOperator<String> references) {
 		super(DockerImageName.parse(Objects.requireNonNull(properties.get(IMAGE_PROPERTY))));
 
+		this.name = name;
 		this.startTimeout = Optional.ofNullable(properties.get(START_TIMEOUT_PROPERTY)).map(Duration::parse).orElse(DEFAULT_START_TIMEOUT);
 		this.setHostAccessible(true);
 
@@ -157,5 +159,10 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			}
 		}
+	}
+
+	@Override
+	public String toString() {
+		return this.name;
 	}
 }
