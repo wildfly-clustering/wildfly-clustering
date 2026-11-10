@@ -6,8 +6,9 @@
 package org.wildfly.clustering.server.local.listener;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,7 +29,7 @@ import org.wildfly.clustering.server.listener.ListenerRegistry;
 public class LocalListenerRegistry<T> implements ListenerRegistry<T> {
 	private static final System.Logger LOGGER = System.getLogger(LocalListenerRegistry.class.getName());
 
-	private final Map<T, ExecutorService> listeners = new ConcurrentHashMap<>();
+	private final Map<T, ExecutorService> listeners = Collections.synchronizedMap(new IdentityHashMap<>());
 	private final Duration shutdownTimeout;
 	private final Function<T, ExecutorService> executorFactory = new Function<>() {
 		@Override
@@ -54,13 +55,15 @@ public class LocalListenerRegistry<T> implements ListenerRegistry<T> {
 	@Override
 	public void accept(Consumer<T> event) {
 		try {
-			for (Map.Entry<T, ExecutorService> entry : this.listeners.entrySet()) {
-				T listener = entry.getKey();
-				Executor executor = entry.getValue();
-				try {
-					executor.execute(() -> event.accept(listener));
-				} catch (RejectedExecutionException e) {
-					// Listener was unregistered
+			synchronized (this.listeners) {
+				for (Map.Entry<T, ExecutorService> entry : this.listeners.entrySet()) {
+					T listener = entry.getKey();
+					Executor executor = entry.getValue();
+					try {
+						executor.execute(() -> event.accept(listener));
+					} catch (RejectedExecutionException e) {
+						// Listener was unregistered
+					}
 				}
 			}
 		} catch (Throwable e) {

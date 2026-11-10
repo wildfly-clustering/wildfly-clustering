@@ -13,19 +13,6 @@ import org.wildfly.clustering.server.GroupMember;
  * @param <M> the member type
  */
 public interface ServiceProviderRegistrationListener<M extends GroupMember> {
-	/**
-	 * Returns an empty listener.
-	 * @param <M> the group member type
-	 * @return an empty listener.
-	 */
-	static <M extends GroupMember> ServiceProviderRegistrationListener<M> of() {
-		return new ServiceProviderRegistrationListener<>() {
-			@Override
-			public void providersChanged(ServiceProviderRegistrationEvent<M> event) {
-				// Do nothing
-			}
-		};
-	}
 
 	/**
 	 * Indicates that the providers of a given service have changed.

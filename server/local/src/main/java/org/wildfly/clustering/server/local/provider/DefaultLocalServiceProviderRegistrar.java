@@ -5,19 +5,19 @@
 
 package org.wildfly.clustering.server.local.provider;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.listener.ListenerRegistry;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.LocalGroupMember;
+import org.wildfly.clustering.server.local.listener.LocalListenerRegistry;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationEvent;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListener;
+import org.wildfly.clustering.server.provider.ServiceProviderRegistryListener;
 
 /**
  * Local service provider registrar.
@@ -27,6 +27,7 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistrationListene
 public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProviderRegistrar<T> {
 	private final LocalGroup group;
 	private final Set<T> services = ConcurrentHashMap.newKeySet();
+	private final ListenerRegistry<ServiceProviderRegistryListener<T, LocalGroupMember>> listeners = new LocalListenerRegistry<>(Duration.ZERO);
 
 	/**
 	 * Constructs a service provider registrar for the specified local group.
@@ -34,6 +35,11 @@ public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProv
 	 */
 	public DefaultLocalServiceProviderRegistrar(LocalGroup group) {
 		this.group = group;
+	}
+
+	@Override
+	public void close() {
+		this.listeners.close();
 	}
 
 	@Override
@@ -52,24 +58,27 @@ public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProv
 	}
 
 	@Override
-	public ServiceProviderRegistration<T, LocalGroupMember> register(T service, ServiceProviderRegistrationListener<LocalGroupMember> listener) {
-		this.services.add(service);
-		Set<LocalGroupMember> members = this.getProviders(service);
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		ExecutorService executor = new DefaultExecutorService(Executors::newSingleThreadExecutor, loader);
-		notify(executor, listener, Set.of(), members);
+	public ServiceProviderRegistration<T, LocalGroupMember> register(T service) {
+		if (!this.services.add(service)) {
+			throw new IllegalArgumentException(service.toString());
+		}
+		Set<LocalGroupMember> singleton = Set.of(this.group.getLocalMember());
+		ServiceProviderRegistrationEvent<LocalGroupMember> addEvent = createEvent(Set.of(), singleton);
+		this.listeners.accept(listener -> listener.providersChanged(service, addEvent));
 		return new DefaultServiceProviderRegistration<>(this, service, () -> {
 			this.services.remove(service);
-			try {
-				notify(executor, listener, members, Set.of());
-			} finally {
-				executor.shutdown();
-			}
+			ServiceProviderRegistrationEvent<LocalGroupMember> removeEvent = createEvent(singleton, Set.of());
+			this.listeners.accept(listener -> listener.providersChanged(service, removeEvent));
 		});
 	}
 
-	private static void notify(Executor executor, ServiceProviderRegistrationListener<LocalGroupMember> listener, Set<LocalGroupMember> previousProviders, Set<LocalGroupMember> currentProviders) {
-		executor.execute(() -> listener.providersChanged(new ServiceProviderRegistrationEvent<>() {
+	@Override
+	public Registration register(ServiceProviderRegistryListener<T, LocalGroupMember> listener) {
+		return this.listeners.register(listener);
+	}
+
+	private static ServiceProviderRegistrationEvent<LocalGroupMember> createEvent(Set<LocalGroupMember> previousProviders, Set<LocalGroupMember> currentProviders) {
+		return new ServiceProviderRegistrationEvent<>() {
 			@Override
 			public Set<LocalGroupMember> getPreviousProviders() {
 				return previousProviders;
@@ -79,6 +88,6 @@ public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProv
 			public Set<LocalGroupMember> getCurrentProviders() {
 				return currentProviders;
 			}
-		}));
+		};
 	}
 }
