@@ -74,6 +74,7 @@ public abstract class AbstractArquillianITCase<C, A extends Archive<A>> implemen
 	 */
 	@AfterAll
 	protected void destroy() {
+		this.getDeploymentContainers().stream().filter(DeploymentContainer::isStarted).forEach(DeploymentContainer::stop);
 		this.getDeploymentContainers().forEach(DeploymentContainer::close);
 	}
 
