@@ -46,6 +46,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 
 	private static final Duration DEFAULT_START_TIMEOUT = Duration.ofMinutes(1L);
 
+	private final String name;
 	private final Duration startTimeout;
 
 	/**
@@ -65,6 +66,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	public DefaultContainer(String name, Map<String, String> properties, UnaryOperator<String> references) {
 		super(DockerImageName.parse(Objects.requireNonNull(properties.get(IMAGE_PROPERTY))));
 
+		this.name = name;
 		this.startTimeout = Optional.ofNullable(properties.get(START_TIMEOUT_PROPERTY)).map(Duration::parse).orElse(DEFAULT_START_TIMEOUT);
 		this.setHostAccessible(true);
 		this.withCreateContainerCmdModifier(command -> command.withHostName(InetAddress.getLoopbackAddress().getHostName()));
@@ -163,5 +165,10 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 		for (Startable dependency : this.dependencies) {
 			Consumer.close().accept(dependency);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return this.name;
 	}
 }
