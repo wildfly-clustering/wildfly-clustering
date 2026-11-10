@@ -93,7 +93,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>14.3.0</version>
+							<version>14.4.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -331,6 +331,7 @@
 								</module>
 								<module name="RedundantImport" />
 								<module name="RedundantModifier" />
+								<module name="RedundantModifierCompactSource" />
 								<module name="RequireThis" />
 								<module name="RightCurly" />
 								<module name="SimplifyBooleanExpression" />
