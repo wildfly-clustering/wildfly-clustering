@@ -6,13 +6,18 @@
 <arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jboss.org/schema/arquillian https://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 	<extension qualifier="OCI">
 		<property name="oci:image">quay.io/wildfly/wildfly:latest</property>
-		<property name="oci:network-mode">host</property>
+		<property name="oci:expose">port managementPort</property>
 		<property name="oci:command">/opt/jboss/wildfly/bin/start.sh</property>
 		<property name="oci:start-message-pattern">.*\QWFLYSRV0025\E.*</property>
+		<property name="ref:HTTP_PORT">port</property>
+		<property name="ref:MANAGEMENT_PORT">managementPort</property>
 		<property name="file:${project.basedir}/src/test/resources/wildfly">/opt/jboss/wildfly</property>
 	</extension>
 	<container qualifier="wildfly" mode="manual" default="true">
 		<configuration>
+			<property name="managementAddress">localhost</property>
+			<property name="managementPort">9990</property>
+			<property name="port">8080</property>
 			<property name="username">admin</property>
 			<property name="password">admin</property>
 		</configuration>

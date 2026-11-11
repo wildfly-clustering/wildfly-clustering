@@ -6,6 +6,7 @@
 package org.wildfly.clustering.container;
 
 import java.io.PrintStream;
+import java.net.InetAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.UnaryOperator;
 
 /**
@@ -34,6 +36,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	static final String REF_PROPERTY_PREFIX = "ref:";
 	static final String FILE_PROPERTY_PREFIX = "file:";
 	static final String IMAGE_PROPERTY = OCI_PROPERTY_PREFIX + "image";
+	static final String EXPOSE_PROPERTY = OCI_PROPERTY_PREFIX + "expose";
 	static final String NETWORK_MODE_PROPERTY = OCI_PROPERTY_PREFIX + "network-mode";
 	static final String START_TIMEOUT_PROPERTY = OCI_PROPERTY_PREFIX + "start-timeout";
 	static final String COMMAND_PROPERTY = OCI_PROPERTY_PREFIX + "command";
@@ -41,7 +44,6 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 
 	private static final System.Logger LOGGER = System.getLogger(DefaultContainer.class.getName());
 
-	private static final String DEFAULT_NETWORK_MODE = "bridge";
 	private static final Duration DEFAULT_START_TIMEOUT = Duration.ofMinutes(1L);
 
 	private final String name;
@@ -67,6 +69,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 		this.name = name;
 		this.startTimeout = Optional.ofNullable(properties.get(START_TIMEOUT_PROPERTY)).map(Duration::parse).orElse(DEFAULT_START_TIMEOUT);
 		this.setHostAccessible(true);
+		this.withCreateContainerCmdModifier(command -> command.withHostName(InetAddress.getLoopbackAddress().getHostName()));
 
 		Map<OutputFrame.OutputType, Optional<PrintStream>> outputs = new EnumMap<>(OutputFrame.OutputType.class);
 		outputs.put(OutputFrame.OutputType.END, Optional.empty());
@@ -77,7 +80,14 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 
 		this.setWaitStrategy(Wait.defaultWaitStrategy());
 
-		this.setNetworkMode(properties.getOrDefault(NETWORK_MODE_PROPERTY, DEFAULT_NETWORK_MODE));
+		Optional.ofNullable(properties.get(NETWORK_MODE_PROPERTY)).ifPresent(this::setNetworkMode);
+
+		// Configure fixed port bindings
+		if (properties.containsKey(EXPOSE_PROPERTY)) {
+			for (int port : List.of(properties.get(EXPOSE_PROPERTY).split("\\s+")).stream().map(references).filter(Objects::nonNull).mapToInt(Integer::parseInt).toArray()) {
+				this.addFixedExposedPort(port, port);
+			}
+		}
 
 		String command = properties.get(COMMAND_PROPERTY);
 		if (command != null) {
@@ -153,11 +163,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 		}
 		// Testcontainers never closes the container's dependencies?!?
 		for (Startable dependency : this.dependencies) {
-			try {
-				dependency.close();
-			} catch (RuntimeException | Error e) {
-				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-			}
+			Consumer.close().accept(dependency);
 		}
 	}
 
