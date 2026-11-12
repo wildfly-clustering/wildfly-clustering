@@ -64,7 +64,7 @@ public class HotRodSessionManagerITCase extends AbstractSessionManagerITCase<Hot
 
 							@Override
 							public HotRodURI getHotRodURI() {
-								return INFINISPAN.getURI();
+								return INFINISPAN.getExternalURI();
 							}
 
 							@Override

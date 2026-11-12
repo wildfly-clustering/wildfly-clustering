@@ -6,7 +6,6 @@
 package org.wildfly.clustering.container;
 
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,6 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
@@ -36,6 +36,7 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	static final String REF_PROPERTY_PREFIX = "ref:";
 	static final String FILE_PROPERTY_PREFIX = "file:";
 	static final String IMAGE_PROPERTY = OCI_PROPERTY_PREFIX + "image";
+	static final String HOST_PROPERTY = OCI_PROPERTY_PREFIX + "host";
 	static final String EXPOSE_PROPERTY = OCI_PROPERTY_PREFIX + "expose";
 	static final String NETWORK_MODE_PROPERTY = OCI_PROPERTY_PREFIX + "network-mode";
 	static final String START_TIMEOUT_PROPERTY = OCI_PROPERTY_PREFIX + "start-timeout";
@@ -60,6 +61,15 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 	/**
 	 * Create a generic test container.
 	 * @param name the container name
+	 * @param image the container image name
+	 */
+	public DefaultContainer(String name, String image) {
+		this(name, Map.of(IMAGE_PROPERTY, image), UnaryOperator.identity());
+	}
+
+	/**
+	 * Create a generic test container.
+	 * @param name the container name
 	 * @param properties the properties with which to configure the OCI container
 	 * @param references a property reference resolver
 	 */
@@ -68,8 +78,9 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 
 		this.name = name;
 		this.startTimeout = Optional.ofNullable(properties.get(START_TIMEOUT_PROPERTY)).map(Duration::parse).orElse(DEFAULT_START_TIMEOUT);
-		this.setHostAccessible(true);
-		this.withCreateContainerCmdModifier(command -> command.withHostName(InetAddress.getLoopbackAddress().getHostName()));
+
+		this.setNetwork(Network.SHARED);
+		this.withCreateContainerCmdModifier(command -> command.withHostName(properties.getOrDefault(HOST_PROPERTY, name)));
 
 		Map<OutputFrame.OutputType, Optional<PrintStream>> outputs = new EnumMap<>(OutputFrame.OutputType.class);
 		outputs.put(OutputFrame.OutputType.END, Optional.empty());
@@ -121,6 +132,14 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 		}
 	}
 
+	/**
+	 * Returns the name of this container.
+	 * @return the name of this container.
+	 */
+	public String getName() {
+		return this.name;
+	}
+
 	@Override
 	public void setWaitStrategy(WaitStrategy waitStrategy) {
 		super.setWaitStrategy(waitStrategy.withStartupTimeout(this.startTimeout));
@@ -169,6 +188,6 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 
 	@Override
 	public String toString() {
-		return this.name;
+		return this.getName();
 	}
 }

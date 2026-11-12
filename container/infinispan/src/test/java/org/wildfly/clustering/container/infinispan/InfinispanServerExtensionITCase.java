@@ -22,11 +22,10 @@ public class InfinispanServerExtensionITCase {
 	public void test() {
 		for (DefaultContainer container : INFINISPAN.getContainers()) {
 			Assertions.assertThat(container.isCreated()).isTrue();
-			Assertions.assertThat(container.isHostAccessible()).isTrue();
 			Assertions.assertThat(container.isRunning()).isTrue();
 		}
 
-		try (RemoteCacheManager manager = new RemoteCacheManager(INFINISPAN.getURI().toConfigurationBuilder().build())) {
+		try (RemoteCacheManager manager = new RemoteCacheManager(INFINISPAN.getExternalURI().toConfigurationBuilder().build())) {
 			Assertions.assertThat(manager.isStarted()).isTrue();
 			Assertions.assertThat(manager.getServers()).hasSize(CLUSTER_SIZE);
 		}
