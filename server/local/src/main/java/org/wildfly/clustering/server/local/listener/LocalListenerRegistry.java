@@ -6,8 +6,10 @@
 package org.wildfly.clustering.server.local.listener;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -74,10 +76,14 @@ public class LocalListenerRegistry<T> implements ListenerRegistry<T> {
 	@Override
 	public void close() {
 		// Cleanup any stray listeners
-		for (ExecutorService executor : this.listeners.values()) {
+		List<ExecutorService> executors;
+		synchronized (this.listeners) {
+			executors = new ArrayList<>(this.listeners.values());
+			this.listeners.clear();
+		}
+		for (ExecutorService executor : executors) {
 			this.shutdown(executor);
 		}
-		this.listeners.clear();
 	}
 
 	private void unregister(T listener) {
