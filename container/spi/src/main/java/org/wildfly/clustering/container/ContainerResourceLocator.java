@@ -12,8 +12,14 @@ package org.wildfly.clustering.container;
  */
 public interface ContainerResourceLocator<I> {
 	/**
-	 * Returns an identifier of a container resource.
-	 * @return an identifier of a container resource.
+	 * Returns an identifier of a container resource for use by a client outside the network of this container.
+	 * @return an identifier of a container resource for use by a client outside the network of this container.
 	 */
-	I getURI();
+	I getExternalURI();
+
+	/**
+	 * Returns an identifier of a container resource for use by a client within the network of this container.
+	 * @return an identifier of a container resource for use by a client within the network of this container.
+	 */
+	I getInternalURI();
 }
