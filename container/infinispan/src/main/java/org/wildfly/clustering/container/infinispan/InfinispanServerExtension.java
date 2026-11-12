@@ -21,7 +21,9 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 import org.wildfly.clustering.container.ContainerResourceLocator;
 import org.wildfly.clustering.container.DefaultContainer;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 
 /**
  * JUnit extension that manages the lifecycle of one or more Infinispan server containers and configures a HotRod client.
@@ -73,7 +75,16 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 	}
 
 	@Override
-	public HotRodURI getURI() {
+	public HotRodURI getExternalURI() {
+		return this.getURI(DefaultContainer::getHost, DefaultContainer::getMappedPort, ClientIntelligence.BASIC);
+	}
+
+	@Override
+	public HotRodURI getInternalURI() {
+		return this.getURI(DefaultContainer::getName, BiFunction.latter(), ClientIntelligence.HASH_DISTRIBUTION_AWARE);
+	}
+
+	private HotRodURI getURI(Function<DefaultContainer, String> host, BiFunction<DefaultContainer, Integer, Integer> portMapper, ClientIntelligence clientIntelligence) {
 		Map<String, String> env = this.containers.element().getEnvMap();
 		String username = env.get(USERNAME_ENV);
 		String password = env.get(PASSWORD_ENV);
@@ -89,10 +100,10 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 				} else {
 					builder.append(',');
 				}
-				builder.append(container.getHost()).append(':').append(container.getMappedPort(port));
+				builder.append(host.apply(container)).append(':').append(portMapper.apply(container, port));
 			}
 		}
-		builder.append('?').append(CLIENT_INTELLIGENCE).append('=').append((this.containers.size() > 1) ? ClientIntelligence.HASH_DISTRIBUTION_AWARE : ClientIntelligence.BASIC);
+		builder.append('?').append(CLIENT_INTELLIGENCE).append('=').append(clientIntelligence);
 		return HotRodURI.create(builder.toString());
 	}
 
@@ -108,7 +119,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 			MountableFile configuration = context.getConfigurationParameter(INFINISPAN_CONFIGURATION_PROPERTY).map(MountableFile::forHostPath).orElse(null);
 			try {
 				for (int i = 0; i < clusterSize; ++i) {
-					DefaultContainer container = new DefaultContainer(image);
+					DefaultContainer container = new DefaultContainer(String.format("infinispan%s", (clusterSize > 0) ? Integer.toString(i) : ""), image);
 
 					container.addExposedPort(port);
 					container.setWaitStrategy(Wait.forLogMessage(".*\\QISPN080001\\E.*", 1));
@@ -142,10 +153,5 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 				Consumer.close().accept(this.containers.removeLast());
 			}
 		}
-	}
-
-	@Override
-	public String toString() {
-		return this.getURI().toString();
 	}
 }
