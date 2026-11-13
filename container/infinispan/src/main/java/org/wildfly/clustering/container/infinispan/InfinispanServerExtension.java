@@ -9,6 +9,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
@@ -17,9 +18,10 @@ import org.infinispan.commons.util.Version;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
-import org.wildfly.clustering.container.ContainerResourceLocator;
+import org.wildfly.clustering.container.ContainerResourceLocation;
 import org.wildfly.clustering.container.DefaultContainer;
 import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
@@ -29,7 +31,7 @@ import org.wildfly.clustering.function.Function;
  * JUnit extension that manages the lifecycle of one or more Infinispan server containers and configures a HotRod client.
  * @author Paul Ferraro
  */
-public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCallback, ContainerResourceLocator<HotRodURI> {
+public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCallback, ContainerResourceLocation<HotRodURI> {
 
 	static final String CONTAINER_IMAGE_PROPERTY = "infinispan.server.image";
 	static final String INFINISPAN_SERVER_PORT_PROPERTY = "infinispan.server.port";
@@ -51,6 +53,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 	private static final String PASSWORD_ENV = "PASS";
 	private static final String CLIENT_INTELLIGENCE = ConfigurationProperties.CLIENT_INTELLIGENCE.substring(ConfigurationProperties.ICH.length());
 
+	private final AtomicReference<Network> network = new AtomicReference<>();
 	private final Deque<DefaultContainer> containers;
 	private final int defaultClusterSize;
 
@@ -75,13 +78,13 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 	}
 
 	@Override
-	public HotRodURI getExternalURI() {
-		return this.getURI(DefaultContainer::getHost, DefaultContainer::getMappedPort, ClientIntelligence.BASIC);
+	public HotRodURI getLocator() {
+		return this.getURI(DefaultContainer::getName, BiFunction.latter(), ClientIntelligence.HASH_DISTRIBUTION_AWARE);
 	}
 
 	@Override
-	public HotRodURI getInternalURI() {
-		return this.getURI(DefaultContainer::getName, BiFunction.latter(), ClientIntelligence.HASH_DISTRIBUTION_AWARE);
+	public HotRodURI getExternalLocator() {
+		return this.getURI(DefaultContainer::getHost, DefaultContainer::getMappedPort, ClientIntelligence.BASIC);
 	}
 
 	private HotRodURI getURI(Function<DefaultContainer, String> host, BiFunction<DefaultContainer, Integer, Integer> portMapper, ClientIntelligence clientIntelligence) {
@@ -117,10 +120,11 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 			String username = context.getConfigurationParameter(INFINISPAN_USERNAME_PROPERTY).orElse(DEFAULT_HOTROD_USERNAME);
 			String password = context.getConfigurationParameter(INFINISPAN_PASSWORD_PROPERTY).orElse(DEFAULT_HOTROD_PASSWORD);
 			MountableFile configuration = context.getConfigurationParameter(INFINISPAN_CONFIGURATION_PROPERTY).map(MountableFile::forHostPath).orElse(null);
+			Network network = Network.newNetwork();
 			try {
 				for (int i = 0; i < clusterSize; ++i) {
 					DefaultContainer container = new DefaultContainer(String.format("infinispan%s", (clusterSize > 0) ? Integer.toString(i) : ""), image);
-
+					container.setNetwork(network);
 					container.addExposedPort(port);
 					container.setWaitStrategy(Wait.forLogMessage(".*\\QISPN080001\\E.*", 1));
 
@@ -137,10 +141,12 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 
 					this.containers.add(container);
 				}
+				this.network.set(network);
 			} catch (RuntimeException | Error e) {
 				while (!this.containers.isEmpty()) {
 					Consumer.close().accept(this.containers.removeLast());
 				}
+				Consumer.close().accept(network);
 				throw e;
 			}
 		}
@@ -152,6 +158,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 			while (!this.containers.isEmpty()) {
 				Consumer.close().accept(this.containers.removeLast());
 			}
+			Consumer.close().accept(this.network.getAndSet(null));
 		}
 	}
 }
