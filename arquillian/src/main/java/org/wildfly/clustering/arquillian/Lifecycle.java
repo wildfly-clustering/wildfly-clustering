@@ -80,10 +80,8 @@ public interface Lifecycle extends AutoCloseable {
 				Deque<Lifecycle> started = new ArrayDeque<>(lifecycles.size());
 				try {
 					for (Lifecycle lifecycle : lifecycles) {
-						if (!lifecycle.isStarted()) {
-							lifecycle.start();
-							started.add(lifecycle);
-						}
+						lifecycle.start();
+						started.add(lifecycle);
 					}
 				} catch (RuntimeException | Error e) {
 					started.descendingIterator().forEachRemaining(Lifecycle::close);
@@ -95,10 +93,7 @@ public interface Lifecycle extends AutoCloseable {
 			public void stop() {
 				ListIterator<? extends Lifecycle> iterator = lifecycles.listIterator(lifecycles.size());
 				while (iterator.hasPrevious()) {
-					Lifecycle lifecycle = iterator.previous();
-					if (lifecycle.isStarted()) {
-						lifecycle.stop();
-					}
+					iterator.previous().stop();
 				}
 			}
 
