@@ -52,6 +52,11 @@ public class SessionManagementTester implements Tester {
 	@Override
 	public void close() {
 		this.executor.shutdown();
+		try {
+			this.executor.awaitTermination(15, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	@Override
