@@ -234,8 +234,8 @@ public class CacheServiceProviderRegistrar<T> implements CacheContainerServicePr
 	}
 
 	/**
-	 * Non-blocking handler of cache entry creation events.
-	 * @param event a cache entry creation event
+	 * Non-blocking handler of cache entry removed events.
+	 * @param event a cache entry removed event
 	 * @return a completion stage
 	 */
 	@CacheEntryRemoved
