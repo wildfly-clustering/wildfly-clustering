@@ -38,4 +38,19 @@ class RemoteContainerLifecycle implements Lifecycle {
 	public void close() {
 		this.container.close();
 	}
+
+	@Override
+	public int hashCode() {
+		return this.container.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this.container.equals(obj);
+	}
+
+	@Override
+	public String toString() {
+		return this.container.toString();
+	}
 }
