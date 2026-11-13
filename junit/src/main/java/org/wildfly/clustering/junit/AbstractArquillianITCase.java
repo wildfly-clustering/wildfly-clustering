@@ -7,9 +7,14 @@ package org.wildfly.clustering.junit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
+
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -32,10 +37,12 @@ import org.wildfly.clustering.arquillian.Lifecycle;
 @ExtendWith(ArquillianExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractArquillianITCase<C, A extends Archive<A>> implements Consumer<C>, ApplicationConfiguration<C, A>, DeploymentContainerConfiguration {
+	private final System.Logger logger = System.getLogger(this.getClass().getCanonicalName());
 
 	@ArquillianResource
 	private DeploymentContainerRegistry registry;
 
+	private final Retry retry = Retry.of(this.getClass().getName(), RetryConfig.custom().maxAttempts(2).build());
 	private final AtomicBoolean beforeAll = new AtomicBoolean(true);
 	private final Supplier<Tester> testerFactory;
 
@@ -48,7 +55,7 @@ public abstract class AbstractArquillianITCase<C, A extends Archive<A>> implemen
 	}
 
 	/**
-	 * Initialise test prior to execution.
+	 * Initialisation prior to all tests test.
 	 */
 	@BeforeEach
 	void initTest() {
@@ -74,22 +81,38 @@ public abstract class AbstractArquillianITCase<C, A extends Archive<A>> implemen
 	 */
 	@AfterAll
 	protected void destroy() {
-		this.getDeploymentContainers().forEach(DeploymentContainer::close);
+		for (DeploymentContainer container : this.getDeploymentContainers()) {
+			try {
+				if (container.isStarted()) {
+					container.stop();
+				}
+			} catch (RuntimeException | Error e) {
+				this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+			} finally {
+				try {
+					container.close();
+				} catch (RuntimeException | Error e) {
+					this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+				}
+			}
+		}
 	}
 
 	@Override
 	public DeploymentContainerRegistry getDeploymentContainerRegistry() {
-		return this.registry;
+		return Objects.requireNonNull(this.registry);
 	}
 
 	@Override
 	public void accept(C configuration) {
 		Archive<?> archive = this.createArchive(configuration);
+		// Retry deployment, to handle the case where a cached remote JMX connection is no longer valid
+		Function<DeploymentContainer, Deployment> deployer = this.retry.<DeploymentContainer, Deployment>decorateCheckedFunction(container -> container.deploy(archive)).unchecked();
 		List<DeploymentContainer> containers = this.getDeploymentContainers();
 		List<Deployment> deployments = new ArrayList<>(containers.size());
 		try (Lifecycle deploymentLifecycle = Lifecycle.composite(deployments)) {
 			for (DeploymentContainer container : containers) {
-				deployments.add(container.deploy(archive));
+				deployments.add(deployer.apply(container));
 			}
 			try (Tester tester = this.testerFactory.get()) {
 				tester.accept(deployments);
