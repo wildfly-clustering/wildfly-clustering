@@ -12,7 +12,7 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
  * An OCI container lifecycle.
  * @author Paul Ferraro
  */
-public interface LifecycleFactory {
+public interface LifecycleFactory extends AutoCloseable {
 	/** A default lifecycle factory */
 	LifecycleFactory DEFAULT = new LifecycleFactory() {
 		@Override
@@ -42,6 +42,11 @@ public interface LifecycleFactory {
 				}
 			};
 		}
+
+		@Override
+		public void close() {
+			// Do nothing
+		}
 	};
 
 	/**
@@ -50,4 +55,7 @@ public interface LifecycleFactory {
 	 * @return the lifecycle for the specified container.
 	 */
 	Lifecycle createContainerLifecycle(Container<?> container);
+
+	@Override
+	void close();
 }
