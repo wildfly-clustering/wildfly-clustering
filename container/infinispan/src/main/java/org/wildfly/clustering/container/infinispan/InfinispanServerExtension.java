@@ -34,6 +34,7 @@ import org.wildfly.clustering.function.Function;
 public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCallback, ContainerResourceLocation<HotRodURI> {
 
 	static final String CONTAINER_IMAGE_PROPERTY = "infinispan.server.image";
+	static final String CONTAINER_HOST_PROPERTY = "infinispan.server.host";
 	static final String INFINISPAN_SERVER_PORT_PROPERTY = "infinispan.server.port";
 	static final String INFINISPAN_CLUSTER_SIZE_PROPERTY = "infinispan.cluster.size";
 	static final String INFINISPAN_CLUSTER_PORT_OFFSET_PROPERTY = "infinispan.cluster.port-offset";
@@ -45,6 +46,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
 	private static final String DEFAULT_CONTAINER_IMAGE = "quay.io/infinispan/server:" + Version.getVersion();
+	private static final String DEFAULT_CONTAINER_HOST = "infinispan";
 	private static final String CONTAINER_IMAGE_CONFIGURATION_PATH = "/opt/infinispan/server/conf/infinispan.xml";
 	private static final Boolean DEFAULT_AUTHENTICATION = Boolean.TRUE;
 	private static final String DEFAULT_HOTROD_USERNAME = "admin";
@@ -114,6 +116,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 	public void beforeAll(ExtensionContext context) {
 		if (COUNTER.getAndIncrement() == 0) {
 			String image = context.getConfigurationParameter(CONTAINER_IMAGE_PROPERTY).orElse(DEFAULT_CONTAINER_IMAGE);
+			String host = context.getConfigurationParameter(CONTAINER_HOST_PROPERTY).orElse(DEFAULT_CONTAINER_HOST);
 			int clusterSize = context.getConfigurationParameter(INFINISPAN_CLUSTER_SIZE_PROPERTY, Integer::valueOf).orElse(this.defaultClusterSize);
 			int port = context.getConfigurationParameter(INFINISPAN_SERVER_PORT_PROPERTY, Integer::valueOf).orElse(ConfigurationProperties.DEFAULT_HOTROD_PORT);
 			boolean requireAuthentication = context.getConfigurationParameter(INFINISPAN_AUTHENTICATION_PROPERTY, Boolean::valueOf).orElse(DEFAULT_AUTHENTICATION);
@@ -123,7 +126,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 			Network network = Network.newNetwork();
 			try {
 				for (int i = 0; i < clusterSize; ++i) {
-					DefaultContainer container = new DefaultContainer(String.format("infinispan%s", (clusterSize > 0) ? Integer.toString(i) : ""), image);
+					DefaultContainer container = new DefaultContainer((clusterSize > 0) ? String.format("%s-%d", host, i) : host, image);
 					container.setNetwork(network);
 					container.addExposedPort(port);
 					container.setWaitStrategy(Wait.forLogMessage(".*\\QISPN080001\\E.*", 1));
