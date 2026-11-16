@@ -21,17 +21,15 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
-import org.wildfly.clustering.container.ContainerResourceLocation;
+import org.wildfly.clustering.container.ContainerResourceLocator;
 import org.wildfly.clustering.container.DefaultContainer;
-import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
-import org.wildfly.clustering.function.Function;
 
 /**
  * JUnit extension that manages the lifecycle of one or more Infinispan server containers and configures a HotRod client.
  * @author Paul Ferraro
  */
-public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCallback, ContainerResourceLocation<HotRodURI> {
+public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCallback, ContainerResourceLocator<HotRodURI> {
 
 	static final String CONTAINER_IMAGE_PROPERTY = "infinispan.server.image";
 	static final String CONTAINER_HOST_PROPERTY = "infinispan.server.host";
@@ -83,16 +81,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 	}
 
 	@Override
-	public HotRodURI getLocator() {
-		return this.getURI(DefaultContainer::getName, BiFunction.latter(), ClientIntelligence.HASH_DISTRIBUTION_AWARE);
-	}
-
-	@Override
-	public HotRodURI getExternalLocator() {
-		return this.getURI(DefaultContainer::getHost, DefaultContainer::getMappedPort, ClientIntelligence.BASIC);
-	}
-
-	private HotRodURI getURI(Function<DefaultContainer, String> host, BiFunction<DefaultContainer, Integer, Integer> portMapper, ClientIntelligence clientIntelligence) {
+	public HotRodURI getLocation() {
 		Map<String, String> env = this.containers.element().getEnvMap();
 		String username = env.get(USERNAME_ENV);
 		String password = env.get(PASSWORD_ENV);
@@ -103,15 +92,16 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 		boolean first = true;
 		for (DefaultContainer container : this.containers) {
 			for (int port : container.getExposedPorts()) {
+				String host = container.getContainerInfo().getNetworkSettings().getNetworks().values().stream().filter(network -> network.getNetworkID().equals(container.getNetwork().getId())).findFirst().get().getGateway();
 				if (first) {
 					first = false;
 				} else {
 					builder.append(',');
 				}
-				builder.append(host.apply(container)).append(':').append(portMapper.apply(container, port));
+				builder.append(host).append(':').append(container.getMappedPort(port));
 			}
 		}
-		builder.append('?').append(CLIENT_INTELLIGENCE).append('=').append(clientIntelligence);
+		builder.append('?').append(CLIENT_INTELLIGENCE).append('=').append(ClientIntelligence.BASIC);
 		return HotRodURI.create(builder.toString());
 	}
 
