@@ -71,6 +71,9 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 	 * @param clusterSize the default size of the cluster
 	 */
 	public InfinispanServerExtension(int clusterSize) {
+		if (clusterSize < 1) {
+			throw new IllegalArgumentException(Integer.toString(clusterSize));
+		}
 		this.defaultClusterSize = clusterSize;
 		this.containers = new ArrayDeque<>(clusterSize);
 	}
@@ -126,7 +129,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 			Network network = Network.newNetwork();
 			try {
 				for (int i = 0; i < clusterSize; ++i) {
-					DefaultContainer container = new DefaultContainer((clusterSize > 0) ? String.format("%s-%d", host, i) : host, image);
+					DefaultContainer container = new DefaultContainer((clusterSize > 1) ? String.format("%s-%d", host, i) : host, image);
 					container.setNetwork(network);
 					container.addExposedPort(port);
 					container.setWaitStrategy(Wait.forLogMessage(".*\\QISPN080001\\E.*", 1));
