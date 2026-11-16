@@ -106,6 +106,7 @@ public abstract class AbstractArquillianITCase<C, A extends Archive<A>> implemen
 	@Override
 	public void accept(C configuration) {
 		Archive<?> archive = this.createArchive(configuration);
+		this.logger.log(System.Logger.Level.INFO, "Created deployment {0}", archive.getName(), archive.toString(true));
 		// Retry deployment, to handle the case where a cached remote JMX connection is no longer valid
 		Function<DeploymentContainer, Deployment> deployer = this.retry.<DeploymentContainer, Deployment>decorateCheckedFunction(container -> container.deploy(archive)).unchecked();
 		List<DeploymentContainer> containers = this.getDeploymentContainers();
