@@ -28,6 +28,7 @@ public class InfinispanServerExtensionITCase {
 		try (RemoteCacheManager manager = new RemoteCacheManager(INFINISPAN.getLocation().toConfigurationBuilder().build())) {
 			Assertions.assertThat(manager.isStarted()).isTrue();
 			Assertions.assertThat(manager.getServers()).hasSize(CLUSTER_SIZE);
+			Assertions.assertThat(manager.getCacheNames()).isNotEmpty();
 		}
 	}
 }
