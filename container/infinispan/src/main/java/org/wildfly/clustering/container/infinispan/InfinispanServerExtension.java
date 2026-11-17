@@ -24,6 +24,7 @@ import org.testcontainers.utility.MountableFile;
 import org.wildfly.clustering.container.ContainerResourceLocator;
 import org.wildfly.clustering.container.DefaultContainer;
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
 
 /**
  * JUnit extension that manages the lifecycle of one or more Infinispan server containers and configures a HotRod client.
@@ -81,7 +82,16 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 	}
 
 	@Override
+	public HotRodURI getExternalLocation() {
+		return this.getLocation(DefaultContainer::getHost);
+	}
+
+	@Override
 	public HotRodURI getLocation() {
+		return this.getLocation(container -> container.getContainerInfo().getNetworkSettings().getNetworks().values().stream().filter(network -> network.getNetworkID().equals(container.getNetwork().getId())).findFirst().get().getGateway());
+	}
+
+	private HotRodURI getLocation(Function<DefaultContainer, String> hostFactory) {
 		Map<String, String> env = this.containers.element().getEnvMap();
 		String username = env.get(USERNAME_ENV);
 		String password = env.get(PASSWORD_ENV);
@@ -91,8 +101,8 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 		}
 		boolean first = true;
 		for (DefaultContainer container : this.containers) {
+			String host = hostFactory.apply(container);
 			for (int port : container.getExposedPorts()) {
-				String host = container.getHost().equals(container.getContainerInfo().getConfig().getHostName()) ? container.getHost() : container.getContainerInfo().getNetworkSettings().getNetworks().values().stream().filter(network -> network.getNetworkID().equals(container.getNetwork().getId())).findFirst().get().getGateway();
 				if (first) {
 					first = false;
 				} else {
