@@ -92,7 +92,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 		boolean first = true;
 		for (DefaultContainer container : this.containers) {
 			for (int port : container.getExposedPorts()) {
-				String host = container.getContainerInfo().getNetworkSettings().getNetworks().values().stream().filter(network -> network.getNetworkID().equals(container.getNetwork().getId())).findFirst().get().getGateway();
+				String host = container.getHost().equals(container.getContainerInfo().getConfig().getHostName()) ? container.getHost() : container.getContainerInfo().getNetworkSettings().getNetworks().values().stream().filter(network -> network.getNetworkID().equals(container.getNetwork().getId())).findFirst().get().getGateway();
 				if (first) {
 					first = false;
 				} else {
@@ -119,7 +119,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 			Network network = Network.newNetwork();
 			try {
 				for (int i = 0; i < clusterSize; ++i) {
-					DefaultContainer container = new DefaultContainer((clusterSize > 1) ? String.format("%s-%d", host, i) : host, image);
+					DefaultContainer container = new DefaultContainer(host, image);
 					container.setNetwork(network);
 					container.addExposedPort(port);
 					container.setWaitStrategy(Wait.forLogMessage(".*\\QISPN080001\\E.*", 1));
