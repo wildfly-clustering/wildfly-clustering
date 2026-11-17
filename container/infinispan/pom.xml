@@ -36,16 +36,4 @@
 			<artifactId>junit-jupiter-api</artifactId>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<configuration>
-					<argLine>@{argLine} -Dinfinispan.server.host=localhost</argLine>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
