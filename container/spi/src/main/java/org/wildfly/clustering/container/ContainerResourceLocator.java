@@ -12,8 +12,14 @@ package org.wildfly.clustering.container;
  */
 public interface ContainerResourceLocator<T> {
 	/**
-	 * Returns the location of a container resource.
-	 * @return the location of a container resource.
+	 * Returns the location of a container resource for use within the container network.
+	 * @return the location of a container resource for use within the container network.
 	 */
 	T getLocation();
+
+	/**
+	 * Returns the location of a container resource for use outside the container network.
+	 * @return the location of a container resource for use outside the container network..
+	 */
+	T getExternalLocation();
 }
