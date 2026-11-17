@@ -92,7 +92,7 @@ public class InfinispanServerExtension implements AfterAllCallback, BeforeAllCal
 		boolean first = true;
 		for (DefaultContainer container : this.containers) {
 			for (int port : container.getExposedPorts()) {
-				String host = container.getContainerInfo().getNetworkSettings().getNetworks().values().stream().filter(network -> network.getNetworkID().equals(container.getNetwork().getId())).findFirst().get().getGateway();
+				String host = container.getHost();
 				if (first) {
 					first = false;
 				} else {
