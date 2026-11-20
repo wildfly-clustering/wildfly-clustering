@@ -24,7 +24,7 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistryListener;
  * @author Paul Ferraro
  * @param <T> the service type
  */
-public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProviderRegistrar<T> {
+public class DefaultLocalServiceProviderRegistrar<T> implements LocalServiceProviderRegistrar<T>, AutoCloseable {
 	private final LocalGroup group;
 	private final Set<T> services = ConcurrentHashMap.newKeySet();
 	private final ListenerRegistry<ServiceProviderRegistryListener<T, LocalGroupMember>> listeners = new LocalListenerRegistry<>(Duration.ZERO);

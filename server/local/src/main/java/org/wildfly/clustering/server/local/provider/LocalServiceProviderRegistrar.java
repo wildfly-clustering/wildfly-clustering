@@ -14,21 +14,8 @@ import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
  * @param <T> the service provider type
  * @author Paul Ferraro
  */
-public interface LocalServiceProviderRegistrar<T> extends ServiceProviderRegistrar<T, LocalGroupMember>, AutoCloseable {
+public interface LocalServiceProviderRegistrar<T> extends ServiceProviderRegistrar<T, LocalGroupMember> {
 
 	@Override
 	LocalGroup getGroup();
-
-	@Override
-	void close();
-
-	/**
-	 * Creates a local service provider registrar for the specified group.
-	 * @param <T> the service type
-	 * @param group a local group
-	 * @return a local service provider registrar for the specified group.
-	 */
-	static <T> LocalServiceProviderRegistrar<T> of(LocalGroup group) {
-		return new DefaultLocalServiceProviderRegistrar<>(group);
-	}
 }
