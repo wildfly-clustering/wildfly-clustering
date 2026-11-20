@@ -33,24 +33,6 @@ public interface ServiceProviderRegistrar<T, M extends GroupMember> extends Serv
 	 * Registers the local group member as a provider of the specified service, using the specified listener.
 	 *
 	 * @param service a service to register
-	 * @param listener a listener to notify of service provider changes
-	 * @return a service provider registration to be closed when the local group member no longer provides the specified service.
-	 * @deprecated Use {@link #register(Object, ServiceProviderRegistrationListener)} instead.
-	 */
-	@Deprecated(forRemoval = true)
-	default ServiceProviderRegistration<T, M> register(T service, ServiceProviderListener<M> listener) {
-		return this.register(service, new ServiceProviderRegistrationListener<>() {
-			@Override
-			public void providersChanged(ServiceProviderRegistrationEvent<M> event) {
-				listener.providersChanged(event.getCurrentProviders());
-			}
-		});
-	}
-
-	/**
-	 * Registers the local group member as a provider of the specified service, using the specified listener.
-	 *
-	 * @param service a service to register
 	 * @param listener a listener to notify of provider changes to the specified service.
 	 * @return a service provider registration to be closed when the local group member no longer provides the specified service.
 	 */
