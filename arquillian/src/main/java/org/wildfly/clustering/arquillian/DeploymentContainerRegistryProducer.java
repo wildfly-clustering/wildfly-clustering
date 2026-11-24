@@ -58,9 +58,7 @@ public class DeploymentContainerRegistryProducer {
 	 * @param registry a container registry
 	 */
 	public void init(@Observes ContainerRegistry registry) {
-		System.out.println("Container registry created " + registry.getClass().getName());
 		LifecycleFactory factory = Optional.ofNullable(this.lifecycleFactory.get()).orElse(LifecycleFactory.DEFAULT);
-		System.out.println("Lifecycle factory = " + factory.getClass().getName());
 		ContainerContext context = Objects.requireNonNull(this.context.get());
 		this.producer.set(new DeploymentContainerRegistryImpl(registry, factory, context));
 	}
