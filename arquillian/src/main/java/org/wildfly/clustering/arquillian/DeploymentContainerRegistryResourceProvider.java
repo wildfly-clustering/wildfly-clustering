@@ -19,7 +19,7 @@ import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 public class DeploymentContainerRegistryResourceProvider implements ResourceProvider {
 
 	@Inject
-	private Instance<CloseableDeploymentContainerRegistry> registry;
+	private Instance<DeploymentContainerRegistry> registry;
 
 	/** Default constructor */
 	public DeploymentContainerRegistryResourceProvider() {

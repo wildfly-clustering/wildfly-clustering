@@ -30,8 +30,6 @@ import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
-import org.jboss.arquillian.core.api.event.ManagerStopping;
-import org.jboss.arquillian.core.spi.ServiceLoader;
 import org.jboss.shrinkwrap.api.Archive;
 
 /**
@@ -44,11 +42,11 @@ public class DeploymentContainerRegistryProducer {
 	private Instance<ContainerContext> context;
 
 	@Inject
-	private Instance<ServiceLoader> loader;
+	private Instance<LifecycleFactory> lifecycleFactory;
 
 	@ApplicationScoped
 	@Inject
-	private InstanceProducer<CloseableDeploymentContainerRegistry> producer;
+	private InstanceProducer<DeploymentContainerRegistry> producer;
 
 	/** Default constructor */
 	public DeploymentContainerRegistryProducer() {
@@ -59,28 +57,19 @@ public class DeploymentContainerRegistryProducer {
 	 * Observes production of a {@link ContainerRegistry}.
 	 * @param registry a container registry
 	 */
-	public void whenProduced(@Observes ContainerRegistry registry) {
-		ServiceLoader loader = Objects.requireNonNull(this.loader.get());
-		LifecycleFactory factory = Optional.ofNullable(loader.onlyOne(LifecycleFactory.class)).orElse(LifecycleFactory.DEFAULT);
+	public void init(@Observes ContainerRegistry registry) {
+		System.out.println("Container registry created " + registry.getClass().getName());
+		LifecycleFactory factory = Optional.ofNullable(this.lifecycleFactory.get()).orElse(LifecycleFactory.DEFAULT);
+		System.out.println("Lifecycle factory = " + factory.getClass().getName());
 		ContainerContext context = Objects.requireNonNull(this.context.get());
 		this.producer.set(new DeploymentContainerRegistryImpl(registry, factory, context));
 	}
 
-	/**
-	 * Observes {@link ManagerStopping} events.
-	 * @param event an event
-	 */
-	public void onStop(@SuppressWarnings("unused") @Observes ManagerStopping event) {
-		this.producer.get().close();
-	}
-
-	static class DeploymentContainerRegistryImpl implements CloseableDeploymentContainerRegistry {
+	static class DeploymentContainerRegistryImpl implements DeploymentContainerRegistry {
 		private final Map<String, DeploymentContainer> containers;
-		private final LifecycleFactory factory;
 
 		@SuppressWarnings("unchecked")
 		DeploymentContainerRegistryImpl(ContainerRegistry registry, LifecycleFactory factory, ContainerContext context) {
-			this.factory = factory;
 			this.containers = registry.getContainers().stream().collect(Collectors.toUnmodifiableMap(Container::getName, container -> new DeploymentContainerImpl(container, factory, context)));
 		}
 
@@ -98,11 +87,6 @@ public class DeploymentContainerRegistryProducer {
 		public List<DeploymentContainer> getContainers(Set<String> names) {
 			return names.stream().sorted().map(this.containers::get).map(Objects::requireNonNull).toList();
 		}
-
-		@Override
-		public void close() {
-			this.factory.close();
-		}
 	}
 
 	static class DeploymentContainerImpl implements DeploymentContainer {
@@ -117,7 +101,7 @@ public class DeploymentContainerRegistryProducer {
 			this(container, factory.createContainerLifecycle(container), context);
 		}
 
-		DeploymentContainerImpl(Container<ContainerConfiguration> container, Lifecycle lifecycle, ContainerContext context) {
+		private DeploymentContainerImpl(Container<ContainerConfiguration> container, Lifecycle lifecycle, ContainerContext context) {
 			this.container = container;
 			this.lifecycle = lifecycle;
 			this.context = context;
