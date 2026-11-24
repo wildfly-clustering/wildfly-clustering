@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.arquillian;
 
-import java.util.ServiceLoader;
-
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.kohsuke.MetaInfServices;
@@ -25,7 +23,6 @@ public class DeploymentContainerRegistryExtension implements LoadableExtension {
 
 	@Override
 	public void register(ExtensionBuilder builder) {
-		ServiceLoader.load(LifecycleFactory.class, LifecycleFactory.class.getClassLoader()).stream().forEach(provider -> builder.service(LifecycleFactory.class, provider.type()));
 		builder.observer(DeploymentContainerRegistryProducer.class);
 		builder.service(ResourceProvider.class, DeploymentContainerRegistryResourceProvider.class);
 	}

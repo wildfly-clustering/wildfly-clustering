@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.TreeMap;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -129,7 +131,26 @@ public class DefaultContainer extends GenericContainer<DefaultContainer> impleme
 
 		if (properties.containsKey(START_MESSAGE_PATTERN_PROPERTY)) {
 			this.setWaitStrategy(Wait.forLogMessage(properties.get(START_MESSAGE_PATTERN_PROPERTY), 1));
+		} else {
+			this.setWaitStrategy(Wait.forListeningPorts());
 		}
+	}
+
+	/**
+	 * Returns a container configured from the specified properties, if possible.
+	 * @param properties the properties from which to configure a container
+	 * @return a container configured from the specified properties, if possible.
+	 */
+	public static Optional<DefaultContainer> from(Properties properties) {
+		String image = properties.getProperty(DefaultContainer.IMAGE_PROPERTY);
+		if (image == null) return Optional.empty();
+		Map<String, String> containerProperties = new TreeMap<>();
+		for (String propertyName : properties.stringPropertyNames()) {
+			if (propertyName.startsWith(DefaultContainer.OCI_PROPERTY_PREFIX) || propertyName.startsWith(DefaultContainer.ENV_PROPERTY_PREFIX) || propertyName.startsWith(DefaultContainer.FILE_PROPERTY_PREFIX)) {
+				containerProperties.put(propertyName, properties.getProperty(propertyName));
+			}
+		}
+		return Optional.of(new DefaultContainer(image, containerProperties, properties::getProperty));
 	}
 
 	/**
