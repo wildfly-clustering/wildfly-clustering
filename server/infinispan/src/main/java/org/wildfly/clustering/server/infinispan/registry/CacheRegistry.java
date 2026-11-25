@@ -268,7 +268,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 		if (!event.isOriginLocal()) {
 			Map.Entry<K, V> entry = event.getValue();
 			if (entry != null) {
-				this.executor.execute(() -> this.notifyListeners(event.getType(), entry));
+				this.notifyListeners(event.getType(), entry);
 			}
 		}
 		return CompletableFuture.completedStage(null);
@@ -285,7 +285,7 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 			Map.Entry<K, V> entry = event.getOldValue();
 			// WFLY-4938 For some reason, the old value can be null
 			if (entry != null) {
-				this.executor.execute(() -> this.notifyListeners(event.getType(), entry));
+				this.notifyListeners(event.getType(), entry);
 			}
 		}
 		return CompletableFuture.completedStage(null);
