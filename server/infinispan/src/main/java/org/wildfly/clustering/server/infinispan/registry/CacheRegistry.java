@@ -209,6 +209,9 @@ public class CacheRegistry<K, V> implements CacheContainerRegistry<K, V> {
 			Set<Address> leftMembers = new HashSet<>(previousMembers);
 			leftMembers.removeAll(members);
 
+			// Exclude members that are still in cluster topology
+			leftMembers.removeAll(container.getMembers());
+
 			if (!leftMembers.isEmpty()) {
 				Locality locality = Locality.forConsistentHash(cache, hash);
 				// We're only interested in the entries for which we are the primary owner
